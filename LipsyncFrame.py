@@ -168,9 +168,14 @@ class LipsyncFrame(wx.Frame):
 		LoadLanguages()
 		languageList = languageTable.keys()
 		languageList.sort()
+		c = 0
+		select = 0
 		for language in languageList:
 			self.languageChoice.Append(language)
-			self.languageChoice.SetSelection(0)
+			if language == "English":
+				select = c
+			c += 1
+		self.languageChoice.SetSelection(select)
 			
 		self.ignoreTextChanges = False
 		self.config = wx.Config("Papagayo", "Lost Marble")
