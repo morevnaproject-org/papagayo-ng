@@ -128,12 +128,10 @@ class LipsyncFrame(wx.Frame):
 		global ID_VOICETEXT; ID_VOICETEXT = wx.NewId()
 		self.voiceText = wx.TextCtrl(self.panel_2, ID_VOICETEXT, "", style=wx.TE_MULTILINE)
 		self.label_4 = wx.StaticText(self.panel_2, -1, "Phonetic breakdown:")
+		global ID_LANGUAGECHOICE; ID_LANGUAGECHOICE = wx.NewId()
+		self.languageChoice = wx.Choice(self.panel_2, ID_LANGUAGECHOICE, choices=[])
 		global ID_BREAKDOWN; ID_BREAKDOWN = wx.NewId()
-		self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, "English")
-		global ID_SPANISH_BREAKDOWN; ID_SPANISH_BREAKDOWN = wx.NewId()
-		self.spanishBut = wx.Button(self.panel_2, ID_SPANISH_BREAKDOWN, "Spanish")
-		global ID_ITALIAN_BREAKDOWN; ID_ITALIAN_BREAKDOWN = wx.NewId()
-		self.italianBut = wx.Button(self.panel_2, ID_ITALIAN_BREAKDOWN, "Italian")
+		self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, "Breakdown")
 		global ID_EXPORT; ID_EXPORT = wx.NewId()
 		self.exportBut = wx.Button(self.panel_2, ID_EXPORT, "Export Voice...")
 		self.label_3 = wx.StaticText(self.panel_2, -1, "Fps:")
@@ -165,6 +163,15 @@ class LipsyncFrame(wx.Frame):
 			self.mouthChoice.Append(mouth)
 		self.mouthChoice.SetSelection(0)
 		self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
+		
+		# setup language initialisation here
+		LoadLanguages()
+		languageList = languageTable.keys()
+		languageList.sort()
+		for language in languageList:
+			self.languageChoice.Append(language)
+			self.languageChoice.SetSelection(0)
+			
 		self.ignoreTextChanges = False
 		self.config = wx.Config("Papagayo", "Lost Marble")
 
@@ -191,8 +198,6 @@ class LipsyncFrame(wx.Frame):
 		wx.EVT_TEXT(self, ID_VOICENAME, self.OnVoiceName)
 		wx.EVT_TEXT(self, ID_VOICETEXT, self.OnVoiceText)
 		wx.EVT_BUTTON(self, ID_BREAKDOWN, self.OnVoiceBreakdown)
-		wx.EVT_BUTTON(self, ID_SPANISH_BREAKDOWN, self.OnSpanishBreakdown)
-		wx.EVT_BUTTON(self, ID_ITALIAN_BREAKDOWN, self.OnItalianBreakdown)
 		wx.EVT_BUTTON(self, ID_EXPORT, self.OnVoiceExport)
 		wx.EVT_TEXT(self, ID_FPS, self.OnFps)
 		wx.EVT_LISTBOX(self, ID_VOICELIST, self.OnSelVoice)
@@ -240,11 +245,9 @@ class LipsyncFrame(wx.Frame):
 		sizer_7.Add(self.label_1, 0, wx.LEFT|wx.TOP|wx.FIXED_MINSIZE, 4)
 		sizer_7.Add(self.voiceText, 1, wx.LEFT|wx.RIGHT|wx.TOP|wx.EXPAND|wx.FIXED_MINSIZE, 4)
 		sizer_7.Add(self.label_4, 0, wx.LEFT|wx.TOP|wx.FIXED_MINSIZE, 4)
-		sizer_9.Add(self.breakdownBut, 0, wx.FIXED_MINSIZE, 0)
-		sizer_9.Add((20, 20), 0, wx.FIXED_MINSIZE, 0)
-		sizer_9.Add(self.spanishBut, 0, wx.FIXED_MINSIZE, 0)
+		sizer_9.Add(self.languageChoice, 0, 0, 0)
 		sizer_9.Add((20, 20), 0, 0, 0)
-		sizer_9.Add(self.italianBut, 0, wx.FIXED_MINSIZE, 0)
+		sizer_9.Add(self.breakdownBut, 0, wx.FIXED_MINSIZE, 0)
 		sizer_9.Add((8, 8), 1, wx.FIXED_MINSIZE, 0)
 		sizer_9.Add(self.exportBut, 0, wx.FIXED_MINSIZE, 0)
 		sizer_7.Add(sizer_9, 0, wx.ALL|wx.EXPAND, 4)
@@ -354,9 +357,8 @@ class LipsyncFrame(wx.Frame):
 				self.voiceName.SetValue(self.doc.currentVoice.name)
 				self.voiceText.Enable(True)
 				self.voiceText.SetValue(self.doc.currentVoice.text)
+				self.languageChoice.Enable(True)
 				self.breakdownBut.Enable(True)
-				self.spanishBut.Enable(True)
-				self.italianBut.Enable(True)
 				self.exportBut.Enable(True)
 		dlg.Destroy()
 
@@ -401,9 +403,8 @@ class LipsyncFrame(wx.Frame):
 		self.voiceName.Enable(False)
 		self.voiceText.Clear()
 		self.voiceText.Enable(False)
+		self.languageChoice.Enable(False)
 		self.breakdownBut.Enable(False)
-		self.spanishBut.Enable(False)
-		self.italianBut.Enable(False)
 		self.exportBut.Enable(False)
 		# voice list
 		self.fpsCtrl.Clear()
@@ -478,27 +479,9 @@ class LipsyncFrame(wx.Frame):
 
 	def OnVoiceBreakdown(self, event = None):
 		if (self.doc is not None) and (self.doc.currentVoice is not None):
-			LoadDictionaries()
+			language = self.languageChoice.GetStringSelection()
 			self.doc.dirty = True
-			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, LANG_ENGLISH)
-			self.waveformView.UpdateDrawing()
-			self.ignoreTextChanges = True
-			self.voiceText.SetValue(self.doc.currentVoice.text)
-			self.ignoreTextChanges = False
-
-	def OnSpanishBreakdown(self, event = None):
-		if (self.doc is not None) and (self.doc.currentVoice is not None):
-			self.doc.dirty = True
-			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, LANG_SPANISH)
-			self.waveformView.UpdateDrawing()
-			self.ignoreTextChanges = True
-			self.voiceText.SetValue(self.doc.currentVoice.text)
-			self.ignoreTextChanges = False
-
-	def OnItalianBreakdown(self, event = None):
-		if (self.doc is not None) and (self.doc.currentVoice is not None):
-			self.doc.dirty = True
-			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, LANG_ITALIAN)
+			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language)
 			self.waveformView.UpdateDrawing()
 			self.ignoreTextChanges = True
 			self.voiceText.SetValue(self.doc.currentVoice.text)

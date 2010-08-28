@@ -36,7 +36,7 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 # input_encoding = 'latin-1'
 # input_encoding = 'iso-8859-1'
 
-def breakdownGermanWord(word, recursive=False):
+def breakdownWord(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys('aeiouäöü').has_key
     phonemes = []
@@ -214,7 +214,7 @@ def breakdownGermanWord(word, recursive=False):
             pass
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownGermanWord(hammer(letter[0]), True)
+                phon = breakdownWord(hammer(letter[0]), True)
                 if phon:
                     phonemes.append(phon[0])
         #~ else:
@@ -243,4 +243,4 @@ if __name__ == "__main__":
                         'meñe', 'på', 'hänsyn'
                         ]
     for word in testwords:
-        print word, breakdownGermanWord(unicode(word, input_encoding))
+        print word, breakdownWord(unicode(word, input_encoding))

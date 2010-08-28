@@ -41,7 +41,7 @@ input_encoding = 'koi8-r'  # cyrillic
 # input_encoding = 'latin-1'
 # input_encoding = 'iso-8859-1'
 
-def breakdownRussianWord(word, recursive=False):
+def breakdownWord(word, recursive=False):
     word = word.lower()
     phonemes = []
     simple_convert = {
@@ -218,7 +218,7 @@ def breakdownRussianWord(word, recursive=False):
             pass
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownRussianWord(hammer(letter), True)
+                phon = breakdownWord(hammer(letter), True)
                 if phon:
                     phonemes.append(phon)
         #~ else:
@@ -397,6 +397,6 @@ if __name__ == "__main__":
     u"\N{CYRILLIC SMALL LETTER VE}"
     u"\N{CYRILLIC SMALL LETTER A}".split()
     #~ for word in testwordsC:
-        #~ print word, breakdownRussianWord(unicode(word, input_encoding))
+        #~ print word, breakdownWord(unicode(word, input_encoding))
     #~ for word in testwords:
-        #~ print word, breakdownRussianWord(unicode(word, input_encoding))
+        #~ print word, breakdownWord(unicode(word, input_encoding))

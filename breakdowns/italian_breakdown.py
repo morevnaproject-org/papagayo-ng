@@ -45,7 +45,7 @@ u'\N{LATIN SMALL LETTER U WITH ACUTE}\N{LATIN SMALL LETTER U WITH GRAVE}\N{LATIN
 
 # print vowels.encode('cp1252')
 
-def breakdownItalianWord(word,  recursive=False):
+def breakdownWord(word,  recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys(vowels).has_key
     phonemes = []
@@ -181,7 +181,7 @@ def breakdownItalianWord(word,  recursive=False):
             pass
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownItalianWord(hammer(letter), True)
+                phon = breakdownWord(hammer(letter), True)
                 if phon:
                     phonemes.append(phon[0])
         #~ else:
@@ -231,4 +231,4 @@ if __name__ == "__main__":
                         'på', 'hänsyn'
                         ]
     for word in testwords:
-        print word, breakdownItalianWord(unicode(word, input_encoding))
+        print word, breakdownWord(unicode(word, input_encoding))

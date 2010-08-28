@@ -84,7 +84,7 @@ unconditional_conversions = {
 # lettera "i,ì,í": per combinazioni con "c", "g", "l"
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # breaks down a word into phonemes
-def breakdownItalianWord(input_word, recursive=False):
+def breakdownWord(input_word, recursive=False):
     word = input_word
     word = word.lower()  # trasformando tutte le parole in minuscolo si diminuiscono le combinazioni da gestire
     previous = u''
@@ -164,7 +164,7 @@ def breakdownItalianWord(input_word, recursive=False):
         elif len(hammer(letter)) == 1:
             # print "hammer"
             if not recursive:
-                phon = " ".join(breakdownItalianWord(hammer(letter), True))
+                phon = " ".join(breakdownWord(hammer(letter), True))
                 if phon:
                     breakdown_word.append(phon.split()[0])
         #~ else:
@@ -184,5 +184,5 @@ if __name__ == '__main__' :
                   'HO', 'HAi', 'CHE', 'CHIuso', 'anCHE','BanJo','marGIne',
                   'RAdio', 'ROnco', 'RUbino', 'REsto', 'ramaRRo', 'cROsta', 'på', 'hänsyn']
     for word in test_words:
-        print word," --> ", breakdownItalianWord(unicode(word, input_encoding))
+        print word," --> ", breakdownWord(unicode(word, input_encoding))
 

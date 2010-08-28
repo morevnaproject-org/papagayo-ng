@@ -18,18 +18,15 @@
 
 import os
 import codecs
+import ConfigParser
 import wx
 from phonemes import *
-import breakdowns
 from PronunciationDialog import PronunciationDialog
 import SoundPlayer
 
-LANG_ENGLISH = 0
-LANG_SPANISH = 1
-LANG_ITALIAN = 2
-
 strip_symbols = '.,!?;-/()'
 strip_symbols += u'\N{INVERTED QUESTION MARK}'
+
 
 ###############################################################
 
@@ -51,15 +48,11 @@ class LipsyncWord:
 		self.phonemes = []
 		try:
 			text = self.text.strip(strip_symbols)
-			if language == LANG_SPANISH:
-				pronunciation = breakdowns.spanish_breakdown.breakdownSpanishWord(text)
-				for i in range(len(pronunciation)):
-					try:
-						pronunciation[i] = phoneme_conversion[pronunciation[i]]
-					except:
-						print "Unknown phoneme:", pronunciation[i], "in word:", text
-			elif language == LANG_ITALIAN:
-				pronunciation = breakdowns.italian_breakdown.breakdownItalianWord(text)
+			details = languageTable[language]
+			print details
+			if details["type"] == "breakdown":
+				exec("import breakdowns.italian_breakdown as breakdown")
+				pronunciation = breakdown.breakdownWord(text)
 				for i in range(len(pronunciation)):
 					try:
 						pronunciation[i] = phoneme_conversion[pronunciation[i]]
@@ -164,7 +157,7 @@ class LipsyncVoice:
 		self.text = ""
 		self.phrases = []
 
-	def RunBreakdown(self, frameDuration, parentWindow, language = LANG_ENGLISH):
+	def RunBreakdown(self, frameDuration, parentWindow, language = "English"):
 		# make sure there is a space after all punctuation marks
 		repeatLoop = True
 		while repeatLoop:
@@ -464,3 +457,36 @@ def LoadDictionaries():
 	if len(phonemeDictionary) > 0:
 		return # if the dictionaries are already loaded, skip this process
 	os.path.walk(os.path.join(os.getcwd(), "rsrc/dictionaries"), BuildPhonemeDictionary, phonemeDictionary)
+
+###############################################################
+
+languageTable = {}
+
+def LanguageDetails(languageTable, dirname, names):
+	if "language.ini" in names:
+		print dirname
+		config = ConfigParser.ConfigParser()
+		config.read(os.path.join(dirname,"language.ini"))
+		print config.sections()
+		label = config.get("configuration","label")
+		ltype = config.get("configuration","type")
+		details = {}
+		details["type"] = ltype
+		if ltype == "breakdown":
+			details["breakdown_class"] = config.get("configuration","breakdown_class")
+			languageTable[label] = details
+		elif ltype == "dictionary":
+			print "add handler for dictionary based languages"
+			languageTable[label] = details
+		else:
+			print "unknown type ignored language not added to table"
+			
+
+def LoadLanguages():
+	if len(languageTable) > 0:
+		return
+	os.path.walk(os.path.join(os.getcwd(), "rsrc/languages"), LanguageDetails, languageTable)
+	
+if __name__ == "__main__":
+	LoadLanguages()
+	print languageTable

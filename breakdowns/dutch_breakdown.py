@@ -103,7 +103,7 @@ def stressWord(phonemes):
         index += 1
     return phonemes
 
-def breakdownDutchWord(word):
+def breakdownWord(word):
     sc = getSyllableCount(word)
     suffix, prefix = False, False
     if sc > 1:
@@ -384,4 +384,4 @@ if __name__ == "__main__":
                     'boot', 'boten', 'ogen', 'muur', 'fuut', 'duren', 'mooi', 'ce', 'ci', 'hec', 'på', 'hänsyn']
     for word in testwords:
         # print word, wordToSyllables(word), syllablesToPhonemes(wordToSyllables(word)), breakdownWord(word)
-        print word, wordToSyllables(word), breakdownDutchWord(unicode(word, input_encoding))
+        print word, wordToSyllables(word), breakdownWord(unicode(word, input_encoding))

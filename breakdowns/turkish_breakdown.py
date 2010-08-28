@@ -37,7 +37,7 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 # input_encoding = 'iso-8859-1'
 
 
-def breakdownTurkishWord(word, recursive=False):
+def breakdownWord(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys(u'aeiou\N{LATIN SMALL LETTER DOTLESS I}'
 u'\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH DIAERESIS}'
@@ -155,7 +155,7 @@ u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLE
         elif len(hammer(letter)) == 1:
             # print "hammer"
             if not recursive:
-                phon = " ".join(breakdownTurkishWord(hammer(letter), True))
+                phon = " ".join(breakdownWord(hammer(letter), True))
                 if phon:
                     phonemes.append(phon.split()[0])
         #~ else:
@@ -182,5 +182,5 @@ if __name__ == "__main__":
                         'på', 'hänsyn'
                         ]
     for eachword in testwords:
-        print eachword, ':', breakdownTurkishWord(unicode(eachword, input_encoding)), '--', breakdownTurkishWord(unicode(eachword, input_encoding))
+        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(unicode(eachword, input_encoding))
 

@@ -37,7 +37,7 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 # input_encoding = 'iso-8859-1'
 
 
-def breakdownHungarianWord(word, recursive=False):
+def breakdownWord(word, recursive=False):
     word = word.lower()
     phonemes = []
     simple_convert = {
@@ -182,7 +182,7 @@ def breakdownHungarianWord(word, recursive=False):
         elif len(hammer(letter)) == 1:
             # print "hammer"
             if not recursive:
-                phon = " ".join(breakdownHungarianWord(hammer(letter), True))
+                phon = " ".join(breakdownWord(hammer(letter), True))
                 if phon:
                     phonemes.append(phon.split()[0])
         #~ else:
@@ -219,5 +219,5 @@ if __name__ == "__main__":
 
                         ]
     for eachword in testwords:
-        print eachword, ':', breakdownHungarianWord(unicode(eachword, input_encoding)), '--', breakdownHungarianWord(unicode(eachword, input_encoding))
+        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(unicode(eachword, input_encoding))
 
