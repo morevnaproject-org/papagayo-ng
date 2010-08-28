@@ -1,8 +1,13 @@
 #!/usr/local/bin/python
 # -*- coding: cp1252 -*-
 
+# this language module is written to be part of
 # Papagayo, a lip-sync tool for use with Lost Marble's Moho
-# Copyright (C) 2005 Myles Strous
+#
+# Papagayo is Copyright (C) 2005 Mike Clifton
+# Contact information at http://www.lostmarble.com
+#
+# this module Copyright (C) 2005 Myles Strous
 # Contact information at http://www-personal.monash.edu.au/~myless/catnap/index.html
 #
 # This program is free software; you can redistribute it and/or
@@ -28,7 +33,7 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 # input_encoding = 'latin-1'  # common in English GUIs
 # input_encoding = 'iso-8859-1'  # common in English GUIs
 # input_encoding = 'utf-8'  # common
-
+from unicode_hammer import latin1_to_ascii as hammer
 
 def stressSpanishWord(breakdown_word):
     """takes a "word" in phonemes and adds primary stress if necessary
@@ -80,7 +85,7 @@ unconditional_conversions = {
     u'w':'V',
     u'z':'S' }  # South American, Castilian Spanish uses ''TH'
 
-def breakdownSpanishWord(input_word):
+def breakdownSpanishWord(input_word,  recursive=False):
     """breaks down a word into phonemes
     """
     # word = input_word.decode(input_encoding)  # decode input into Python default internal format (utf-16) from the GUI input format
@@ -205,17 +210,29 @@ def breakdownSpanishWord(input_word):
                 breakdown_word.append('IY0')
             else :
                 breakdown_word.append('Y')
-        else :
+        elif letter in unconditional_conversions.keys() :
             breakdown_word.append(unconditional_conversions[letter])
+        elif len(hammer(letter)) == 1:
+            if not recursive:
+                phon = breakdownSpanishWord(hammer(letter), True)
+                if phon:
+                    breakdown_word.append(phon[0])
         previous = letter
         word_index = word_index + 1
     breakdown_word = stressSpanishWord(breakdown_word)
-    return breakdown_word
+    # return breakdown_word
+    temp_phonemes = []
+    previous_phoneme = " "
+    for phoneme in breakdown_word:
+        if phoneme != previous_phoneme:
+            temp_phonemes.append(phoneme)
+        previous_phoneme = phoneme
+    return temp_phonemes
 
 
 if __name__ == '__main__' :
     # test the function
-    test_words = ['Holas', 'amigos', 'si', 'español', 'padré', 'Selecciones', 'de', 'la', 'semana', 'Los', 'mejores', 'sitios', 'los', 'derechos', 'humanos', 'en', 'américa', 'latina', 'y']
-    for word in test_words:
-        print word, breakdownSpanishWord(word), " ".join(breakdownSpanishWord(word))
+    test_words = ['Holas', 'amigos', 'si', 'español', 'padré', 'Selecciones', 'de', 'la', 'semana', 'Los', 'mejores', 'sitios', 'los', 'derechos', 'humanos', 'en', 'américa', 'latina', 'y', 'färger', 'på', 'hänsyn']
+    for eachword in test_words:
+        print eachword, breakdownSpanishWord(unicode(eachword, input_encoding)), " ".join(breakdownSpanishWord(unicode(eachword, input_encoding)))
 

@@ -20,8 +20,7 @@ import os
 import codecs
 import wx
 from phonemes import *
-import spanish_breakdown
-import italian_breakdown
+import breakdowns
 from PronunciationDialog import PronunciationDialog
 import SoundPlayer
 
@@ -53,14 +52,14 @@ class LipsyncWord:
 		try:
 			text = self.text.strip(strip_symbols)
 			if language == LANG_SPANISH:
-				pronunciation = spanish_breakdown.breakdownSpanishWord(text)
+				pronunciation = breakdowns.spanish_breakdown.breakdownSpanishWord(text)
 				for i in range(len(pronunciation)):
 					try:
 						pronunciation[i] = phoneme_conversion[pronunciation[i]]
 					except:
 						print "Unknown phoneme:", pronunciation[i], "in word:", text
 			elif language == LANG_ITALIAN:
-				pronunciation = italian_breakdown.breakdownItalianWord(text)
+				pronunciation = breakdowns.italian_breakdown.breakdownItalianWord(text)
 				for i in range(len(pronunciation)):
 					try:
 						pronunciation[i] = phoneme_conversion[pronunciation[i]]
