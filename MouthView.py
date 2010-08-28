@@ -114,7 +114,7 @@ class MouthView(wx.Panel):
 		self.DrawMe()
 
 	def LoadMouths(self):
-		os.path.walk(os.path.join(os.getcwd(), "mouths"), ProcessMouthDir, self)
+		os.path.walk(os.path.join(os.getcwd(), "rsrc/mouths"), ProcessMouthDir, self)
 
 	def AddMouth(self, dirname, names):
 		bitmaps = {}
