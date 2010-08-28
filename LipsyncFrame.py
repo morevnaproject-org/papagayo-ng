@@ -90,7 +90,7 @@ class LipsyncFrame(wx.Frame):
 		self.mainFrame_menubar.Append(wxglade_tmp_menu, "&File")
 		wxglade_tmp_menu = wx.Menu()
 		wxglade_tmp_menu.Append(wx.ID_UNDO, "&Undo\tCtrl+Z", "", wx.ITEM_NORMAL)
-		wxglade_tmp_menu.Append(wx.ID_CUT, "Cut&t\tCtrl+X", "", wx.ITEM_NORMAL)
+		wxglade_tmp_menu.Append(wx.ID_CUT, "Cu&t\tCtrl+X", "", wx.ITEM_NORMAL)
 		wxglade_tmp_menu.Append(wx.ID_COPY, "&Copy\tCtrl+C", "", wx.ITEM_NORMAL)
 		wxglade_tmp_menu.Append(wx.ID_PASTE, "&Paste\tCtrl+V", "", wx.ITEM_NORMAL)
 		self.mainFrame_menubar.Append(wxglade_tmp_menu, "&Edit")
