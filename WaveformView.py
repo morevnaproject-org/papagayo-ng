@@ -22,7 +22,6 @@
 
 import math
 import wx
-import lm
 
 # begin wxGlade: dependencies
 # end wxGlade
@@ -519,7 +518,7 @@ class WaveformView(wx.ScrolledWindow):
 		textWidth, topBorder = dc.GetTextExtent("Ojyg")
 		x = firstSample * self.sampleWidth
 		frame = firstSample / self.samplesPerFrame
-		fps = int(lm.Round(self.doc.fps))
+		fps = int(round(self.doc.fps))
 		sample = firstSample
 		lastHeight = -1
 		lastHalfHeight = 1
@@ -538,7 +537,7 @@ class WaveformView(wx.ScrolledWindow):
 				dc.SetBrush(wx.Brush(fillColor))
 				dc.SetPen(wx.Pen(lineColor))
 			amp = self.amp[i]
-			height = lm.Round(cs.height * amp)
+			height = round(cs.height * amp)
 			halfHeight = height / 2
 			if drawPlayMarker and (frame == curFrame):
 				dc.SetBrush(wx.Brush(playForeCol))
@@ -631,7 +630,7 @@ class WaveformView(wx.ScrolledWindow):
 		if drawPlayMarker:
 			x = curFrame * self.frameWidth
 			# foreground
-			height = lm.Round(cs.height * amp)
+			height = round(cs.height * amp)
 			# outline
 			dc.SetBrush(wx.TRANSPARENT_BRUSH)
 			dc.SetPen(wx.Pen(playOutlineCol))

@@ -23,7 +23,6 @@ import os
 import string
 import math
 import wx
-import lm
 import webbrowser
 
 # begin wxGlade: dependencies
@@ -111,15 +110,15 @@ class LipsyncFrame(wx.Frame):
 		global ID_ZOOMIN; ID_ZOOMIN = wx.NewId()
 		global ID_ZOOMOUT; ID_ZOOMOUT = wx.NewId()
 		global ID_ZOOM1; ID_ZOOM1 = wx.NewId()
-		self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, "Open", (lm.RsrcBMP("open.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Open", "Open a sound file or Papagayo project")
-		self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, "Save", (lm.RsrcBMP("save.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Save", "Save this Papagayo project")
+		self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, "Open", wx.Bitmap(os.path.join(os.getcwd(),"rsrc/open.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Open", "Open a sound file or Papagayo project")
+		self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, "Save", wx.Bitmap(os.path.join(os.getcwd(),"rsrc/save.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Save", "Save this Papagayo project")
 		self.mainFrame_toolbar.AddSeparator()
-		self.mainFrame_toolbar.AddLabelTool(ID_PLAY, "Play", (lm.RsrcBMP("play.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Play", "Play the sound clip")
-		self.mainFrame_toolbar.AddLabelTool(ID_STOP, "Stop", (lm.RsrcBMP("stop.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Stop", "Stop playing audio")
+		self.mainFrame_toolbar.AddLabelTool(ID_PLAY, "Play", wx.Bitmap(os.path.join(os.getcwd(),"rsrc/play.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Play", "Play the sound clip")
+		self.mainFrame_toolbar.AddLabelTool(ID_STOP, "Stop", wx.Bitmap(os.path.join(os.getcwd(),"rsrc/stop.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Stop", "Stop playing audio")
 		self.mainFrame_toolbar.AddSeparator()
-		self.mainFrame_toolbar.AddLabelTool(ID_ZOOMIN, "Zoom In", (lm.RsrcBMP("zoom_in.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Zoom In", "Zoom in on the waveform")
-		self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, "Zoom Out", (lm.RsrcBMP("zoom_out.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Zoom Out", "Zoom out of the waveform")
-		self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, "Reset Zoom", (lm.RsrcBMP("zoom_1.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Reset Zoom", "Reset the zoomed view of the waveform")
+		self.mainFrame_toolbar.AddLabelTool(ID_ZOOMIN, "Zoom In", wx.Bitmap(os.path.join(os.getcwd(),"rsrc/zoom_in.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Zoom In", "Zoom in on the waveform")
+		self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, "Zoom Out", wx.Bitmap(os.path.join(os.getcwd(),"rsrc/zoom_out.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Zoom Out", "Zoom out of the waveform")
+		self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, "Reset Zoom", wx.Bitmap(os.path.join(os.getcwd(),"rsrc/zoom_1.png")), wx.NullBitmap, wx.ITEM_NORMAL, "Reset Zoom", "Reset the zoomed view of the waveform")
 		# Tool Bar end
 		self.waveformView = WaveformView(self.panel_2, -1)
 		self.label_2 = wx.StaticText(self.panel_2, -1, "Voice name:")
@@ -207,7 +206,7 @@ class LipsyncFrame(wx.Frame):
 		# begin wxGlade: LipsyncFrame.__set_properties
 		self.SetTitle("Papagayo")
 		_icon = wx.EmptyIcon()
-		_icon.CopyFromBitmap(lm.RsrcBMP("window_icon.bmp"))
+		_icon.CopyFromBitmap(wx.Bitmap(os.path.join(os.getcwd(),"rsrc/window_icon.bmp")))
 		self.SetIcon(_icon)
 		self.SetSize((848, 566))
 		self.mainFrame_statusbar.SetStatusWidths([-1, 96])
@@ -423,7 +422,7 @@ class LipsyncFrame(wx.Frame):
 		self.Close(True)
 
 	def OnHelp(self, event = None):
-		webbrowser.open("file://%s" % os.path.join(lm.AppDir(), "help/index.html"))
+		webbrowser.open("file://%s" % os.path.join(os.getcwd(), "help/index.html"))
 
 	def OnAbout(self, event = None):
 		dlg = AboutBox(self)

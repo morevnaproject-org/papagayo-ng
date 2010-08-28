@@ -19,11 +19,11 @@
 import os
 import codecs
 import wx
-import lm
 from phonemes import *
 import spanish_breakdown
 import italian_breakdown
 from PronunciationDialog import PronunciationDialog
+import SoundPlayer
 
 LANG_ENGLISH = 0
 LANG_SPANISH = 1
@@ -152,7 +152,7 @@ class LipsyncPhrase:
 		# finally, assign frames based on phoneme durations
 		curFrame = word.startFrame
 		for phoneme in word.phonemes:
-			phoneme.frame = int(lm.Round(curFrame))
+			phoneme.frame = int(round(curFrame))
 			curFrame = curFrame + framesPerPhoneme
 		for phoneme in word.phonemes:
 			word.RepositionPhoneme(phoneme)
@@ -256,7 +256,7 @@ class LipsyncVoice:
 		curFrame = phrase.startFrame
 		for word in phrase.words:
 			for phoneme in word.phonemes:
-				phoneme.frame = int(lm.Round(curFrame))
+				phoneme.frame = int(round(curFrame))
 				curFrame = curFrame + framesPerPhoneme
 			if len(word.phonemes) == 0: # deal with unknown words
 				word.startFrame = curFrame
@@ -264,7 +264,7 @@ class LipsyncVoice:
 				curFrame = curFrame + 4
 			else:
 				word.startFrame = word.phonemes[0].frame
-				word.endFrame = word.phonemes[-1].frame + int(lm.Round(framesPerPhoneme)) - 1
+				word.endFrame = word.phonemes[-1].frame + int(round(framesPerPhoneme)) - 1
 			phrase.RepositionWord(word)
 
 	def Open(self, inFile):
@@ -395,7 +395,7 @@ class LipsyncDoc:
 			self.sound = None
 		#self.soundPath = path.encode("utf-8")
 		self.soundPath = path.encode('latin-1', 'replace')
-		self.sound = lm.LM_SoundPlayer(self.soundPath)
+		self.sound = SoundPlayer.SoundPlayer(self.soundPath)
 		if self.sound.IsValid():
 			self.soundDuration = int(self.sound.Duration() * self.fps)
 			if self.soundDuration < self.sound.Duration() * self.fps:
@@ -464,4 +464,4 @@ def LoadDictionaries():
 	# loads and processes all files in the rsrc/dictionaries folder
 	if len(phonemeDictionary) > 0:
 		return # if the dictionaries are already loaded, skip this process
-	os.path.walk(os.path.join(lm.AppDir(), "rsrc/dictionaries"), BuildPhonemeDictionary, phonemeDictionary)
+	os.path.walk(os.path.join(os.getcwd(), "rsrc/dictionaries"), BuildPhonemeDictionary, phonemeDictionary)
