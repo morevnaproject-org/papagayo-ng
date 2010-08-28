@@ -47,13 +47,9 @@ class SoundPlayer():
         return self.time
 
     def _play(self, start, length):
-        print "start: %f" % start
-        print "length: %f" % length
         self.isplaying = True
         startframe = int(round(start * self.wave_reference.getframerate()))
         samplelen = int(round(length * self.wave_reference.getframerate()))
-        print startframe
-        print samplelen
         remaining = samplelen
         chunk = 1024
         try:
@@ -79,7 +75,6 @@ class SoundPlayer():
         while data != '' and self.isplaying==True:
             stream.write(data)
             self.time = float(self.wave_reference.tell()) / float(self.wave_reference.getframerate())
-            print self.time
             if remaining >= 1024:
                 data = self.wave_reference.readframes(chunk)
                 remaining -= chunk
