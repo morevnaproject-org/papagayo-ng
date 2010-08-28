@@ -119,6 +119,8 @@ class MouthView(wx.Panel):
 	def AddMouth(self, dirname, names):
 		bitmaps = {}
 		for file in names:
+			if ".svn" in file:
+				continue
 			path = os.path.normpath(os.path.join(dirname, file))
 			bitmaps[file.split('.')[0]] = wx.Bitmap(path, wx.BITMAP_TYPE_ANY)
 		self.mouths[os.path.basename(dirname)] = bitmaps
