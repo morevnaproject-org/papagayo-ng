@@ -58,7 +58,7 @@ class DigitOnlyValidator(wx.PyValidator):
 		return True
 
 	def OnChar(self, event):
-		key = event.KeyCode()
+		key = event.GetKeyCode()
 
 		if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
 			event.Skip()
