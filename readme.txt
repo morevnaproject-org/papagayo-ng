@@ -23,21 +23,20 @@ gpl.txt - the user license for Papagayo
 papagayo.py - the main program file
 phonemes.py - a list if phonemes used by Papagayo (by default, the Preston Blair phoneme set)
 LipsyncDoc.py - the document structure, including voices, phoneme breakdown, etc.
-spanish_breakdown.py - code to break down words using Spanish pronunciation rules
+breakdowns/*.py - code to break down words using language specific pronunciations
 LipsyncFrame.py - the main Papagayo window
 WaveformView.py - the waveform view in the main window
 MouthView.py - the mouth view in the main window
 PronunciationDialog.py - a dialog to provide manual phoneme breakdown
 AboutBox.py - about box
 
-_lm.dll - a library written in C++ that provides audio support
-lm.py - Python interface to the about library, generated automatically
 
 lipsync.wxg - a wxGlade file defining the user interface layout for Papagayo
 
-mouths/ - a folder containing the mouth pictures
-rsrc/ - various resources for Papagayo, including button pictures and dictionary files
 
+rsrc/ - various resources for Papagayo, including button pictures, mouths, and language configuraion/data
+rsrc/mouths/ - a folder containing the mouth pictures
+rsrc/languages/ - a folder containing the configuration and data for different languages
 papagayo.ico - Windows icons
 papagayo.icns - MacOS X icons
 
@@ -50,7 +49,7 @@ Here are a couple tips for source code that you may want to modify:
 
 To change the set of phonemes used by Papagayo, edit the file phonemes.py. By default, Papagayo uses the Preston Blair phoneme set. By modifying this file, you can change the set of mouth shapes used to whatever you want. Further instructions can be found in the phonemes.py file itself.
 
-To add breakdowns for other languages, look in the LipsyncDoc.py file. Search for the strings "english" and "spanish" to see how those languages are implemented. Other languages can be added in a similar way.
+To add breakdowns for other languages create a new language configuration in rsrc/languages/<language> inside you need to place a configuration file (see italian for an example of how to configure a breakdown)  You will also need to create a breakdown class.  These live in breakdowns.  The naming convention is <language>_breakdown.py. Just examine one of the existing ones for how to make it work.  Make sure the function to call your breakdown processing is called breakdownWord.
 
 Papagayo now only works with Moho, but support could be added for other animation software, 2D or 3D. To add support for other export formats, look in the LipsyncDoc.py file for the function LipsyncVoice:Export - this is where Papagayo exports switch data for Moho. You will also need to modify the file LipsyncFrame.py to add a user interface for exporting the new format.
 
@@ -59,3 +58,7 @@ Papagayo now only works with Moho, but support could be added for other animatio
 Copyright (C) 2005 Mike Clifton
 Contact:
 http://www.lostmarble.com
+
+Modifications (C) 2010 Benjamin Lau
+Contact:
+http://code.google.com/p/papagayo/
