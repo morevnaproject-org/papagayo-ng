@@ -94,10 +94,8 @@ class PronunciationDialog(wx.Dialog):
 		sizer_12.Add((20, 20), 0, wx.FIXED_MINSIZE, 0)
 		sizer_12.Add(self.button_2, 0, wx.FIXED_MINSIZE, 0)
 		sizer_11.Add(sizer_12, 0, wx.ALL|wx.ALIGN_RIGHT, 4)
-		self.SetAutoLayout(True)
 		self.SetSizer(sizer_11)
 		sizer_11.Fit(self)
-		sizer_11.SetSizeHints(self)
 		self.Layout()
 		self.Centre()
 		# end wxGlade

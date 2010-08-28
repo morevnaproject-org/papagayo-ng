@@ -55,7 +55,7 @@ class AboutBox(wx.Dialog):
 	def __set_properties(self):
 		# begin wxGlade: AboutBox.__set_properties
 		self.SetTitle("About Papagayo")
-		self.htmlView.SetSize((400, 350))
+		self.htmlView.SetMinSize((400, 350))
 		# end wxGlade
 
 	def __do_layout(self):
@@ -63,10 +63,8 @@ class AboutBox(wx.Dialog):
 		sizer_13 = wx.BoxSizer(wx.VERTICAL)
 		sizer_13.Add(self.htmlView, 0, wx.ALL|wx.EXPAND|wx.FIXED_MINSIZE, 8)
 		sizer_13.Add(self.button_12, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_HORIZONTAL|wx.FIXED_MINSIZE, 8)
-		self.SetAutoLayout(True)
 		self.SetSizer(sizer_13)
 		sizer_13.Fit(self)
-		sizer_13.SetSizeHints(self)
 		self.Layout()
 		self.Centre()
 		# end wxGlade

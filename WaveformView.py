@@ -81,7 +81,7 @@ class WaveformView(wx.ScrolledWindow):
 
 	def __set_properties(self):
 		# begin wxGlade: WaveformView.__set_properties
-		self.SetSize((200,200))
+		self.SetMinSize((200,200))
 		self.SetBackgroundColour(wx.Colour(255, 255, 255))
 		self.SetScrollRate(10, 0)
 		# end wxGlade

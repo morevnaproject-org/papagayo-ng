@@ -60,7 +60,7 @@ class MouthView(wx.Panel):
 
 	def __set_properties(self):
 		# begin wxGlade: MouthView.__set_properties
-		self.SetSize((200,200))
+		self.SetMinSize((200, 200))
 		self.SetBackgroundColour(wx.Colour(255, 255, 255))
 		# end wxGlade
 
