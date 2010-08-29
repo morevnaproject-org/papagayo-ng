@@ -165,8 +165,9 @@ class LipsyncFrame(wx.Frame):
 		self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
 		
 		# setup language initialisation here
-		LoadLanguages()
-		languageList = languageTable.keys()
+		langman = LanguageManager()
+		langman.InitLanguages()
+		languageList = langman.language_table.keys()
 		languageList.sort()
 		c = 0
 		select = 0
@@ -486,7 +487,7 @@ class LipsyncFrame(wx.Frame):
 		if (self.doc is not None) and (self.doc.currentVoice is not None):
 			language = self.languageChoice.GetStringSelection()
 			self.doc.dirty = True
-			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language)
+			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language, self.doc.language_manager)
 			self.waveformView.UpdateDrawing()
 			self.ignoreTextChanges = True
 			self.voiceText.SetValue(self.doc.currentVoice.text)
