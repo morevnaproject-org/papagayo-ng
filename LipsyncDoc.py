@@ -63,7 +63,12 @@ class LipsyncWord:
 				if languagemanager.current_language != language:
 					languagemanager.LoadLanguage(details)
 					languagemanager.current_language = language
-				pronunciation = languagemanager.phoneme_dictionary[text.upper()]
+				if details["case"] == "upper":
+					pronunciation = languagemanager.phoneme_dictionary[text.upper()]
+				elif details["case"] == "lower":
+					pronunciation = languagemanager.phoneme_dictionary[text.lower()]
+				else:
+					pronunciation = languagemanager.phoneme_dictionary[text]					
 			else:
 				pronunciation = phonemeDictionary[text.upper()]
 			for p in pronunciation:
@@ -430,10 +435,13 @@ class LanguageManager:
 		self.language_table = {}
 		self.phoneme_dictionary = {}
 		self.current_language = ""
+		self.phoneme_set = []
+		self.phoneme_conversion = {}
 		
 	def LoadDictionary(self,path):
-		inFile = open(path, 'r')
-		if inFile is None:
+		try:
+			inFile = open(path, 'r')
+		except:
 			print "Unable to open phoneme dictionary!:", path
 			return
 		# process dictioary entries
@@ -442,6 +450,8 @@ class LanguageManager:
 				continue # skip comments in the dictionary
 			# strip out leading/trailing whitespace
 			line.strip()
+			line = line.rstrip('\r\n')
+			
 			# split into components
 			entry = line.split()
 			if len(entry) == 0:
@@ -455,7 +465,7 @@ class LanguageManager:
 					self.phoneme_dictionary[entry[0]] = []
 				else:
 					try:
-						entry[i] = phoneme_conversion[entry[i]]
+						entry[i] = self.phoneme_conversion[entry[i]]
 					except:
 						print "Unknown phoneme:", entry[i], "in word:", entry[0]
 					self.phoneme_dictionary[entry[0]].append(entry[i])
@@ -466,6 +476,34 @@ class LanguageManager:
 		if self.current_language == language_config["label"]:
 			return
 		self.current_language = language_config["label"]
+		#PHONEME SET
+		inFile = open(os.path.join(language_config["location"],language_config["phonemes"]), 'r')
+		for line in inFile.readlines():
+			if line[0] == '#':
+				continue # skip comments in the dictionary
+			# strip out leading/trailing whitespace
+			line.strip()			
+			line = line.rstrip('\r\n')
+			self.phoneme_set.append(line)
+		inFile.close()
+		inFile = None
+		#MAPPING TABLE
+		if language_config["mappings"] != "none":
+			inFile = open(os.path.join(language_config["location"],language_config["mappings"]), 'r')
+			for line in inFile.readlines():
+				if line[0] == '#':
+					continue # skip comments in the dictionary
+				# strip out leading/trailing whitespace
+				line.strip()
+				line = line.rstrip('\r\n')
+				entry = line.split(":")
+				self.phoneme_conversion[entry[0]] = entry[1]
+			inFile.close()
+			inFile = None
+		else:
+			for phon in self.phoneme_set:
+				self.phoneme_conversion[phon] = phon
+			
 		for dictionary in language_config["dictionaries"]:
 			self.LoadDictionary(os.path.join(language_config["location"],language_config["dictionaries"][dictionary]))
 		
@@ -485,7 +523,12 @@ class LanguageManager:
 			elif ltype == "dictionary":
 				details["phonemes"] = config.get("configuration","phonemes")
 				details["mappings"] = config.get("configuration","mappings")
+				try:
+					details["case"] = config.get("configuration","case")
+				except:
+					details["case"] = "upper"
 				details["dictionaries"] = {}
+
 				if config.has_section('dictionaries'):
 					for key, value in config.items('dictionaries'):
 						details["dictionaries"][key] = value
