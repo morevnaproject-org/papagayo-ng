@@ -23,6 +23,7 @@ import wx
 from phonemes import *
 from PronunciationDialog import PronunciationDialog
 import SoundPlayer
+import traceback
 
 strip_symbols = '.,!?;-/()'
 strip_symbols += u'\N{INVERTED QUESTION MARK}'
@@ -43,13 +44,14 @@ class LipsyncWord:
 		self.startFrame = 0
 		self.endFrame = 0
 		self.phonemes = []
+		self.last_language = ""
+		self.phonemeDictionary = {}
 
 	def RunBreakdown(self, parentWindow, language):
 		self.phonemes = []
 		try:
 			text = self.text.strip(strip_symbols)
 			details = languageTable[language]
-			print details
 			if details["type"] == "breakdown":
 				exec("import breakdowns.italian_breakdown as breakdown")
 				pronunciation = breakdown.breakdownWord(text)
@@ -58,6 +60,11 @@ class LipsyncWord:
 						pronunciation[i] = phoneme_conversion[pronunciation[i]]
 					except:
 						print "Unknown phoneme:", pronunciation[i], "in word:", text
+			elif details["type"] == "dictionary":
+				if self.last_language != language:
+					phonemeDictionary = LoadLanguage(details)
+					self.last_language = language
+				pronunciation = phonemeDictionary[text.upper()]
 			else:
 				pronunciation = phonemeDictionary[text.upper()]
 			for p in pronunciation:
@@ -67,6 +74,7 @@ class LipsyncWord:
 				phoneme.text = p
 				self.phonemes.append(phoneme)
 		except:
+			traceback.print_exc()
 			# this word was not found in the phoneme dictionary
 			dlg = PronunciationDialog(parentWindow)
 			dlg.wordLabel.SetLabel(dlg.wordLabel.GetLabel() + ' ' + self.text)
@@ -417,70 +425,69 @@ class LipsyncDoc:
 
 phonemeDictionary = {}
 
-def BuildPhonemeDictionary(phonemeDictionary, dirname, names):
-	# load the phoneme dictionaries in a diven folder and process them into an in-memory structure
-	for fileName in names:
-		path = os.path.normpath(os.path.join(dirname, fileName))
-		inFile = open(path, 'r')
-		if inFile is None:
-			print "Unable to open phoneme dictionary!:", path
-			sys.exit()
-		# process dictioary entries
-		for line in inFile.readlines():
-			if line[0] == '#':
-				continue # skip comments in the dictionary
-			# strip out leading/trailing whitespace
-			line.strip()
-			# split into components
-			entry = line.split()
-			if len(entry) == 0:
-				continue
-			# check if this is a duplicate word (alternate transcriptions end with a number in parentheses) - if so, throw it out
-			if entry[0].endswith(')'):
-				continue
-			# add this entry to the in-memory dictionary
-			for i in range(len(entry)):
-				if i == 0:
-					phonemeDictionary[entry[0]] = []
-				else:
-					try:
-						entry[i] = phoneme_conversion[entry[i]]
-					except:
-						print "Unknown phoneme:", entry[i], "in word:", entry[0]
-					phonemeDictionary[entry[0]].append(entry[i])
+def LoadDictionary(path,phonemeDictionary):
+	inFile = open(path, 'r')
+	if inFile is None:
+		print "Unable to open phoneme dictionary!:", path
+		sys.exit()
+	# process dictioary entries
+	for line in inFile.readlines():
+		if line[0] == '#':
+			continue # skip comments in the dictionary
+		# strip out leading/trailing whitespace
+		line.strip()
+		# split into components
+		entry = line.split()
+		if len(entry) == 0:
+			continue
+		# check if this is a duplicate word (alternate transcriptions end with a number in parentheses) - if so, throw it out
+		if entry[0].endswith(')'):
+			continue
+		# add this entry to the in-memory dictionary
+		for i in range(len(entry)):
+			if i == 0:
+				phonemeDictionary[entry[0]] = []
+			else:
+				try:
+					entry[i] = phoneme_conversion[entry[i]]
+				except:
+					print "Unknown phoneme:", entry[i], "in word:", entry[0]
+				phonemeDictionary[entry[0]].append(entry[i])
+	inFile.close()
+	inFile = None
 
-		inFile.close()
-		inFile = None
-
-def LoadDictionaries():
-	# loads and processes all files in the rsrc/dictionaries folder
-	if len(phonemeDictionary) > 0:
-		return # if the dictionaries are already loaded, skip this process
-	os.path.walk(os.path.join(os.getcwd(), "rsrc/dictionaries"), BuildPhonemeDictionary, phonemeDictionary)
-
+def LoadLanguage(language_config):
+	phonemeDictionary = {}
+	for dictionary in language_config["dictionaries"]:
+		LoadDictionary(os.path.join(language_config["location"],language_config["dictionaries"][dictionary]),phonemeDictionary)
+	return phonemeDictionary
 ###############################################################
 
 languageTable = {}
 
 def LanguageDetails(languageTable, dirname, names):
 	if "language.ini" in names:
-		print dirname
 		config = ConfigParser.ConfigParser()
 		config.read(os.path.join(dirname,"language.ini"))
-		print config.sections()
 		label = config.get("configuration","label")
 		ltype = config.get("configuration","type")
 		details = {}
+		details["label"] = label
 		details["type"] = ltype
+		details["location"] = dirname		
 		if ltype == "breakdown":
 			details["breakdown_class"] = config.get("configuration","breakdown_class")
 			languageTable[label] = details
 		elif ltype == "dictionary":
-			print "add handler for dictionary based languages"
+			details["phonemes"] = config.get("configuration","phonemes")
+			details["mappings"] = config.get("configuration","mappings")
+			details["dictionaries"] = {}
+			if config.has_section('dictionaries'):
+				for key, value in config.items('dictionaries'):
+					details["dictionaries"][key] = value
 			languageTable[label] = details
 		else:
 			print "unknown type ignored language not added to table"
-			
 
 def LoadLanguages():
 	if len(languageTable) > 0:
