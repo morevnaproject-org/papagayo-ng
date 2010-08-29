@@ -496,7 +496,11 @@ class LanguageManager:
 				# strip out leading/trailing whitespace
 				line.strip()
 				line = line.rstrip('\r\n')
+				if len(line) == 0:
+					continue
 				entry = line.split(":")
+				if len(entry) == 0:
+					continue
 				self.phoneme_conversion[entry[0]] = entry[1]
 			inFile.close()
 			inFile = None
