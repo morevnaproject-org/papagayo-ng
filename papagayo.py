@@ -31,7 +31,8 @@ class LipsyncApp(wx.App):
 		self.SetTopWindow(self.mainFrame)
 		self.mainFrame.Show()
 		self.mainFrame.SetSize((848, 566))
-		self.mainFrame.CenterOnScreen()		
+		self.mainFrame.SetSize((848, 565))
+		self.mainFrame.SetSize((848, 566))
 		return 1
 
 # end of class LipsyncApp
