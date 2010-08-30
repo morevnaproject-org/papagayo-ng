@@ -21,6 +21,7 @@ import codecs
 import ConfigParser
 import wx
 from phonemes import *
+from utilities import *
 from PronunciationDialog import PronunciationDialog
 import SoundPlayer
 import traceback
@@ -543,7 +544,7 @@ class LanguageManager:
 	def InitLanguages(self):
 		if len(self.language_table) > 0:
 			return
-		for path, dirs, files in os.walk(os.path.join(sys.path[0], "rsrc/languages")):
+		for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc/languages")):
 			if "language.ini" in files:
 				self.LanguageDetails(path, files)
 	

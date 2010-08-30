@@ -24,7 +24,7 @@ import os
 import wx
 import wx.html
 import webbrowser
-
+from utilities import *
 # begin wxGlade: dependencies
 # end wxGlade
 
@@ -50,7 +50,7 @@ class AboutBox(wx.Dialog):
 		self.__do_layout()
 		# end wxGlade
 		
-		self.htmlView.LoadPage(os.path.join(os.getcwd(), "rsrc/about.html"))
+		self.htmlView.LoadPage(os.path.join(get_main_dir(), "rsrc/about.html"))
 
 	def __set_properties(self):
 		# begin wxGlade: AboutBox.__set_properties

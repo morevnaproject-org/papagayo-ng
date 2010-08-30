@@ -38,7 +38,6 @@ class LipsyncApp(wx.App):
 # end of class LipsyncApp
 
 if __name__ == "__main__":
-	os.chdir(os.path.dirname(sys.path[0]+"/"))
 	papagayo = LipsyncApp(0)
 	papagayo.mainFrame.TheApp = papagayo
 	papagayo.mainFrame.waveformView.TheApp = papagayo

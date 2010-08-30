@@ -21,7 +21,7 @@
 
 import os
 import wx
-
+from utilities import *
 # begin wxGlade: dependencies
 # end wxGlade
 
@@ -114,7 +114,7 @@ class MouthView(wx.Panel):
 		self.DrawMe()
 
 	def LoadMouths(self):
-		os.path.walk(os.path.join(os.getcwd(), "rsrc/mouths"), ProcessMouthDir, self)
+		os.path.walk(os.path.join(get_main_dir(), "rsrc/mouths"), ProcessMouthDir, self)
 
 	def AddMouth(self, dirname, names):
 		bitmaps = {}
