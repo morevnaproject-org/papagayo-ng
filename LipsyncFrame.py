@@ -132,6 +132,8 @@ class LipsyncFrame(wx.Frame):
 		self.languageChoice = wx.Choice(self.panel_2, ID_LANGUAGECHOICE, choices=[])
 		global ID_BREAKDOWN; ID_BREAKDOWN = wx.NewId()
 		self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, "Breakdown")
+		global ID_EXPORTCHOICE; ID_EXPORTCHOICE = wx.NewId()
+		self.exportChoice = wx.Choice(self.panel_2, ID_EXPORTCHOICE, choices=[])
 		global ID_EXPORT; ID_EXPORT = wx.NewId()
 		self.exportBut = wx.Button(self.panel_2, ID_EXPORT, "Export Voice...")
 		self.label_3 = wx.StaticText(self.panel_2, -1, "Fps:")
@@ -177,7 +179,19 @@ class LipsyncFrame(wx.Frame):
 				select = c
 			c += 1
 		self.languageChoice.SetSelection(select)
-			
+		
+		#setup export intialization here
+		exporterList = ["MOHO"]
+		c = 0
+		select = 0
+		for exporter in exporterList:
+			self.exportChoice.Append(exporter)
+			if exporter == "MOHO":
+				select = c
+			c += 1
+		self.exportChoice.SetSelection(select)
+		self.exportChoice.Append("MOHO")
+		
 		self.ignoreTextChanges = False
 		self.config = wx.Config("Papagayo", "Lost Marble")
 
@@ -219,7 +233,7 @@ class LipsyncFrame(wx.Frame):
 		_icon = wx.EmptyIcon()
 		_icon.CopyFromBitmap(wx.Bitmap(os.path.join(get_main_dir(),"rsrc/window_icon.bmp")))
 		self.SetIcon(_icon)
-		self.SetSize((848, 566))
+		self.SetSize((1064, 760))
 		self.mainFrame_statusbar.SetStatusWidths([-1, 96])
 		# statusbar fields
 		mainFrame_statusbar_fields = ["Papagayo", "Stopped"]
@@ -255,6 +269,8 @@ class LipsyncFrame(wx.Frame):
 		sizer_9.Add((20, 20), 0, 0, 0)
 		sizer_9.Add(self.breakdownBut, 0, wx.FIXED_MINSIZE, 0)
 		sizer_9.Add((8, 8), 1, wx.FIXED_MINSIZE, 0)
+		sizer_9.Add(self.exportChoice, 0, 0, 0)
+		sizer_9.Add((20, 20), 0, 0, 0)
 		sizer_9.Add(self.exportBut, 0, wx.FIXED_MINSIZE, 0)
 		sizer_7.Add(sizer_9, 0, wx.ALL|wx.EXPAND, 4)
 		sizer_3.Add(sizer_7, 0, wx.ALL|wx.EXPAND, 4)
@@ -365,6 +381,7 @@ class LipsyncFrame(wx.Frame):
 				self.voiceText.SetValue(self.doc.currentVoice.text)
 				self.languageChoice.Enable(True)
 				self.breakdownBut.Enable(True)
+				self.exportChoice.Enable(True)
 				self.exportBut.Enable(True)
 		dlg.Destroy()
 
@@ -411,6 +428,7 @@ class LipsyncFrame(wx.Frame):
 		self.voiceText.Enable(False)
 		self.languageChoice.Enable(False)
 		self.breakdownBut.Enable(False)
+		self.exportChoice.Enable(False)
 		self.exportBut.Enable(False)
 		# voice list
 		self.fpsCtrl.Clear()
