@@ -26,6 +26,7 @@ from PronunciationDialog import PronunciationDialog
 import SoundPlayer
 import traceback
 import sys
+import breakdowns
 
 strip_symbols = '.,!?;-/()'
 strip_symbols += u'\N{INVERTED QUESTION MARK}'
@@ -53,7 +54,7 @@ class LipsyncWord:
 			text = self.text.strip(strip_symbols)
 			details = languagemanager.language_table[language]
 			if details["type"] == "breakdown":
-				exec("import breakdowns.italian_breakdown as breakdown")
+				exec("import %s as breakdown" % details["breakdown_class"])
 				pronunciation = breakdown.breakdownWord(text)
 				for i in range(len(pronunciation)):
 					try:
