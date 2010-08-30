@@ -167,9 +167,9 @@ class LipsyncFrame(wx.Frame):
 		self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
 		
 		# setup language initialisation here
-		langman = LanguageManager()
-		langman.InitLanguages()
-		languageList = langman.language_table.keys()
+		self.langman = LanguageManager()
+		self.langman.InitLanguages()
+		languageList = self.langman.language_table.keys()
 		languageList.sort()
 		c = 0
 		select = 0
@@ -338,7 +338,7 @@ class LipsyncFrame(wx.Frame):
 			self.OnClose()
 			self.config.Write("WorkingDir", dlg.GetDirectory())
 			paths = dlg.GetPaths()
-			self.doc = LipsyncDoc()
+			self.doc = LipsyncDoc(self.langman)
 			if paths[0].endswith(lipsyncExtension):
 				# open a lipsync project
 				self.doc.Open(paths[0])

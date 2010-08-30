@@ -355,7 +355,7 @@ class LipsyncVoice:
 ###############################################################
 
 class LipsyncDoc:
-	def __init__(self):
+	def __init__(self,langman):
 		self.dirty = False
 		self.name = "Untitled"
 		self.path = None
@@ -365,8 +365,7 @@ class LipsyncDoc:
 		self.sound = None
 		self.voices = []
 		self.currentVoice = None
-		self.language_manager = LanguageManager()
-		self.language_manager.InitLanguages()
+		self.language_manager = langman
 
 	def __del__(self):
 		# Properly close down the sound object
@@ -439,6 +438,7 @@ class LanguageManager:
 		self.current_language = ""
 		self.phoneme_set = []
 		self.phoneme_conversion = {}
+		self.InitLanguages()
 		
 	def LoadDictionary(self,path):
 		try:
@@ -479,7 +479,7 @@ class LanguageManager:
 			return
 		self.current_language = language_config["label"]
 		#PHONEME SET
-		inFile = open(os.path.join(language_config["location"],language_config["phonemes"]), 'r')
+		inFile = open(os.path.join(get_main_dir(),language_config["location"],language_config["phonemes"]), 'r')
 		for line in inFile.readlines():
 			if line[0] == '#':
 				continue # skip comments in the dictionary
@@ -491,7 +491,7 @@ class LanguageManager:
 		inFile = None
 		#MAPPING TABLE
 		if language_config["mappings"] != "none":
-			inFile = open(os.path.join(language_config["location"],language_config["mappings"]), 'r')
+			inFile = open(os.path.join(get_main_dir(),language_config["location"],language_config["mappings"]), 'r')
 			for line in inFile.readlines():
 				if line[0] == '#':
 					continue # skip comments in the dictionary
@@ -511,7 +511,7 @@ class LanguageManager:
 				self.phoneme_conversion[phon] = phon
 			
 		for dictionary in language_config["dictionaries"]:
-			self.LoadDictionary(os.path.join(language_config["location"],language_config["dictionaries"][dictionary]))
+			self.LoadDictionary(os.path.join(get_main_dir(),language_config["location"],language_config["dictionaries"][dictionary]))
 		
 	def LanguageDetails(self, dirname, names):
 		if "language.ini" in names:			
@@ -545,7 +545,7 @@ class LanguageManager:
 	def InitLanguages(self):
 		if len(self.language_table) > 0:
 			return
-		for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc/languages")):
+		for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc/languages")):			
 			if "language.ini" in files:
 				self.LanguageDetails(path, files)
 	
