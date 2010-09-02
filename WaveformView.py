@@ -191,7 +191,7 @@ class WaveformView(wx.ScrolledWindow):
 			if (self.selectedPhrase is None) and (self.selectedWord is None) and (self.selectedPhoneme is None):
 				self.basicScrubbing = True
 				self.oldFrame = 0
-				self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 1.0 / self.doc.fps, 1.0)
+				self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 10.0 / self.doc.fps, 1.0)
 				self.mouthView.SetFrame(self.scrubFrame)
 				self.UpdateDrawing(False)
 			elif event.RightDown() and self.selectedWord:

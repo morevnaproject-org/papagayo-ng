@@ -181,7 +181,7 @@ class LipsyncFrame(wx.Frame):
 		self.languageChoice.SetSelection(select)
 		
 		#setup export intialization here
-		exporterList = ["MOHO"]
+		exporterList = ["MOHO", "ALELO"]
 		c = 0
 		select = 0
 		for exporter in exporterList:
@@ -338,7 +338,7 @@ class LipsyncFrame(wx.Frame):
 			self.OnClose()
 			self.config.Write("WorkingDir", dlg.GetDirectory())
 			paths = dlg.GetPaths()
-			self.doc = LipsyncDoc(self.langman)
+			self.doc = LipsyncDoc(self.langman, self)
 			if paths[0].endswith(lipsyncExtension):
 				# open a lipsync project
 				self.doc.Open(paths[0])
@@ -505,21 +505,42 @@ class LipsyncFrame(wx.Frame):
 		if (self.doc is not None) and (self.doc.currentVoice is not None):
 			language = self.languageChoice.GetStringSelection()
 			self.doc.dirty = True
-			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language, self.doc.language_manager)
+			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language, self.langman)
 			self.waveformView.UpdateDrawing()
 			self.ignoreTextChanges = True
 			self.voiceText.SetValue(self.doc.currentVoice.text)
 			self.ignoreTextChanges = False
 
 	def OnVoiceExport(self, event):
+		language = self.languageChoice.GetStringSelection()
 		if (self.doc is not None) and (self.doc.currentVoice is not None):
-			dlg = wx.FileDialog(
-				self, message = "Export Lipsync Data", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
+			exporter = self.exportChoice.GetStringSelection()
+			if exporter == "MOHO":
+				dlg = wx.FileDialog(
+				self, message = "Export Lipsync Data (MOHO)", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
 				defaultFile = "", wildcard = "Moho switch files (*.dat)|*.dat", style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
-			if dlg.ShowModal() == wx.ID_OK:
-				self.config.Write("WorkingDir", dlg.GetDirectory())
-				self.doc.currentVoice.Export(dlg.GetPaths()[0])
-			dlg.Destroy()
+				if dlg.ShowModal() == wx.ID_OK:
+					self.config.Write("WorkingDir", dlg.GetDirectory())
+					self.doc.currentVoice.Export(dlg.GetPaths()[0])
+				dlg.Destroy()
+			elif exporter == "ALELO":
+				fps = int(self.fpsCtrl.GetValue())
+				if fps != 100:
+					dlg = wx.MessageDialog(self, 'FPS is NOT 100 continue? (You will have issues downstream.)', appTitle,
+					wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_WARNING)
+					result = dlg.ShowModal()
+					dlg.Destroy()
+				else:
+					result = wx.ID_YES
+				if result == wx.ID_YES:
+					dlg = wx.FileDialog(
+					self, message = "Export Lipsync Data (ALELO)", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
+					defaultFile = "", wildcard = "Alelo timing files (*.timing)|*.timing", style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
+					if dlg.ShowModal() == wx.ID_OK:
+						self.config.Write("WorkingDir", dlg.GetDirectory())
+						self.doc.currentVoice.ExportAlelo(dlg.GetPaths()[0], language, self.langman)
+					dlg.Destroy()
+				
 
 	def OnFps(self, event):
 		if self.doc is None:

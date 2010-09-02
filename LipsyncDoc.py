@@ -352,10 +352,39 @@ class LipsyncVoice:
 				outFile.write("%d %s\n" % (frame + 1, phoneme))
 		outFile.close()
 
+	def ExportAlelo(self, path, language, languagemanager):
+		outFile = open(path, 'w')
+		for phrase in self.phrases:
+			for word in phrase.words:
+				text = word.text.strip(strip_symbols)
+				details = languagemanager.language_table[language]
+				if languagemanager.current_language != language:
+					languagemanager.LoadLanguage(details)
+					languagemanager.current_language = language
+				if details["case"] == "upper":
+					pronunciation = languagemanager.raw_dictionary[text.upper()]
+				elif details["case"] == "lower":
+					pronunciation = languagemanager.raw_dictionary[text.lower()]
+				else:
+					pronunciation = languagemanager.raw_dictionary[text]
+				first = True
+				position = -1
+				for phoneme in word.phonemes:
+					if first == True:
+						first = False
+					else:
+						outFile.write("%s %d %d\n" % (lastPhoneme_text, lastPhoneme.frame, phoneme.frame-1))
+					position += 1
+					lastPhoneme_text = pronunciation[position]
+					lastPhoneme = phoneme
+				outFile.write("%s %d %d\n" % (lastPhoneme_text, lastPhoneme.frame, word.endFrame))
+		outFile.close()
+
+
 ###############################################################
 
 class LipsyncDoc:
-	def __init__(self,langman):
+	def __init__(self,langman,parent):
 		self.dirty = False
 		self.name = "Untitled"
 		self.path = None
@@ -366,6 +395,7 @@ class LipsyncDoc:
 		self.voices = []
 		self.currentVoice = None
 		self.language_manager = langman
+		self.parent = parent
 
 	def __del__(self):
 		# Properly close down the sound object
@@ -402,7 +432,7 @@ class LipsyncDoc:
 			self.sound = None
 		#self.soundPath = path.encode("utf-8")
 		self.soundPath = path.encode('latin-1', 'replace')
-		self.sound = SoundPlayer.SoundPlayer(self.soundPath)
+		self.sound = SoundPlayer.SoundPlayer(self.soundPath, self.parent)
 		if self.sound.IsValid():
 			self.soundDuration = int(self.sound.Duration() * self.fps)
 			if self.soundDuration < self.sound.Duration() * self.fps:
@@ -435,6 +465,7 @@ class LanguageManager:
 		self.__dict__ = self.__shared_state
 		self.language_table = {}
 		self.phoneme_dictionary = {}
+		self.raw_dictionary = {}
 		self.current_language = ""
 		self.phoneme_set = []
 		self.phoneme_conversion = {}
@@ -465,12 +496,15 @@ class LanguageManager:
 			for i in range(len(entry)):
 				if i == 0:
 					self.phoneme_dictionary[entry[0]] = []
+					self.raw_dictionary[entry[0]] = []
 				else:
+					rawentry = entry[i]
 					try:
 						entry[i] = self.phoneme_conversion[entry[i]]
 					except:
 						print "Unknown phoneme:", entry[i], "in word:", entry[0]
 					self.phoneme_dictionary[entry[0]].append(entry[i])
+					self.raw_dictionary[entry[0]].append(rawentry)
 		inFile.close()
 		inFile = None
 

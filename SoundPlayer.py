@@ -6,7 +6,7 @@ import pyaudio
 import thread
 
 class SoundPlayer():
-    def __init__(self, soundfile):
+    def __init__(self, soundfile, parent):
         self.soundfile = soundfile
         self.isplaying = False
         self.time = 0 # current audio position in frames
