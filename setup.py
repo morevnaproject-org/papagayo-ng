@@ -22,11 +22,28 @@
 # To run in GUI mode: setup(windows=["app.py"])
 # To run in command-line mode: setup(console=["app.py"])
 from distutils.core import setup
-import glob
 import py2exe
+import os
+import sys
 
+resources = [("",["papagayo.nsi","papagayo.ico","gpl.txt"])]
+for root, dirs, files in os.walk('rsrc'):
+	if ".svn" in root:
+		continue
+	dirdata = (root,[])
+	for file in files:
+		if "~" in file:
+			continue
+		dirdata[1].append(os.path.join(root,file))
+	resources.append(dirdata)
+		
+for root, dirs, files in os.walk('dlls'):
+	dirdata = ("",[])
+	for file in files:
+		dirdata[1].append(os.path.join(root,file))
+	resources.append(dirdata)
+	
 setup(
-	#console = ["papagayo.py"],
 	windows = [{
 		"script": "papagayo.py",
 		"icon_resources": [(1, "papagayo.ico")],
@@ -38,16 +55,7 @@ setup(
 	}},
 	name = "Papagayo",
 	version = "1.2",
-	#data_files = [
-	#	("rsrc",
-	#		glob.glob("rsrc/*")),
-	#	("mouths/1 - Mouth 1",
-	#		glob.glob("mouths/1 - Mouth 1/*")),
-	#	("mouths/2 - Mouth 2",
-	#		glob.glob("mouths/2 - Mouth 2/*")),
-	#	("mouths/3 - Gary C Martin",
-	#		glob.glob("mouths/3 - Gary C Martin/*")),
-	#	("help",
-	#		glob.glob("help/*.*"))
-	#]
+	data_files = resources
 )
+
+os.system(r"C:\Program Files\NSIS\makensis.exe output\papagayo.nsi")
