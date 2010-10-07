@@ -373,11 +373,11 @@ class LipsyncVoice:
 					if first == True:
 						first = False
 					else:
-						outFile.write("%s %d %d\n" % (lastPhoneme_text, lastPhoneme.frame, phoneme.frame-1))
+						outFile.write("%d %d %s\n" % (lastPhoneme.frame, phoneme.frame-1, lastPhoneme_text))
 					position += 1
 					lastPhoneme_text = pronunciation[position]
 					lastPhoneme = phoneme
-				outFile.write("%s %d %d\n" % (lastPhoneme_text, lastPhoneme.frame, word.endFrame))
+				outFile.write("%d %d %s\n" % (lastPhoneme.frame, word.endFrame, lastPhoneme_text))
 		outFile.close()
 
 
