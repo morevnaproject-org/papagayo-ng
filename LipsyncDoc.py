@@ -373,11 +373,11 @@ class LipsyncVoice:
 					if first == True:
 						first = False
 					else:
-						outFile.write("%d %d %s\n" % (lastPhoneme.frame, phoneme.frame-1, lastPhoneme_text))
+						outFile.write("%d %d %s\n" % (lastPhoneme.frame, phoneme.frame-1, languagemanager.export_conversion[lastPhoneme_text]))
 					position += 1
 					lastPhoneme_text = pronunciation[position]
 					lastPhoneme = phoneme
-				outFile.write("%d %d %s\n" % (lastPhoneme.frame, word.endFrame, lastPhoneme_text))
+				outFile.write("%d %d %s\n" % (lastPhoneme.frame, word.endFrame, languagemanager.export_conversion[lastPhoneme_text]))
 		outFile.close()
 
 
@@ -469,6 +469,7 @@ class LanguageManager:
 		self.current_language = ""
 		self.phoneme_set = []
 		self.phoneme_conversion = {}
+		self.export_conversion = {}
 		self.InitLanguages()
 		
 	def LoadDictionary(self,path):
@@ -538,6 +539,11 @@ class LanguageManager:
 				if len(entry) == 0:
 					continue
 				self.phoneme_conversion[entry[0]] = entry[1]
+			        if len(entry) == 3:
+					self.export_conversion[entry[0]] = entry[2]
+				else:
+					self.export_conversion[entry[0]] = entry[0]
+
 			inFile.close()
 			inFile = None
 		else:
