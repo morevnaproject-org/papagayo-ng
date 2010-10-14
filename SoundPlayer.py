@@ -10,6 +10,7 @@ class SoundPlayer():
         self.soundfile = soundfile
         self.isplaying = False
         self.time = 0 # current audio position in frames
+        self.audio = pyaudio.PyAudio()
         
         try:
             self.wave_reference = wave.open(self.soundfile)
@@ -50,14 +51,12 @@ class SoundPlayer():
         startframe = int(round(start * self.wave_reference.getframerate()))
         samplelen = int(round(length * self.wave_reference.getframerate()))
         remaining = samplelen
-        chunk = 256
-        print "_play %d %d" % (startframe, samplelen)
+        chunk = 1024
         try:
             self.wave_reference.setpos(startframe)
         except wave.Error:
             self.isplaying = False
             return
-        self.audio = pyaudio.PyAudio()
         stream = self.audio.open(format =
           self.audio.get_format_from_width(self.wave_reference.getsampwidth()),
           channels = self.wave_reference.getnchannels(),
@@ -65,7 +64,7 @@ class SoundPlayer():
           output = True)
         # read data
         
-        if remaining >= chunk:
+        if remaining >= 1024:
             data = self.wave_reference.readframes(chunk)
             remaining -= chunk
         else:
@@ -74,10 +73,9 @@ class SoundPlayer():
         
         # play stream
         while data != '' and self.isplaying==True:
-            print "writing data"
             stream.write(data)
             self.time = float(self.wave_reference.tell()) / float(self.wave_reference.getframerate())
-            if remaining >= chunk:
+            if remaining >= 1024:
                 data = self.wave_reference.readframes(chunk)
                 remaining -= chunk
             else:

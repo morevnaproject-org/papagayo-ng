@@ -191,8 +191,7 @@ class WaveformView(wx.ScrolledWindow):
 			if (self.selectedPhrase is None) and (self.selectedWord is None) and (self.selectedPhoneme is None):
 				self.basicScrubbing = True
 				self.oldFrame = 0
-				print "NO WORDPHRASEPHON playsegment %f %f %f %f" % (float(self.scrubFrame), float(self.doc.fps), float(self.scrubFrame) / float(self.doc.fps), 1.0 / self.doc.fps) 
-				self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 1.0 / self.doc.fps, 1.0)
+				self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
 				self.mouthView.SetFrame(self.scrubFrame)
 				self.UpdateDrawing(False)
 			elif event.RightDown() and self.selectedWord:
@@ -225,19 +224,16 @@ class WaveformView(wx.ScrolledWindow):
 				playSegment = False
 				if self.selectedPhrase is not None:
 					playSegment = True
-					print "PHRASE playsegment %f %f %f %f" % (float(self.selectedPhrase.startFrame), float(self.doc.fps), float(self.selectedPhrase.startFrame) / float(self.doc.fps), float(self.selectedPhrase.endFrame - self.selectedPhrase.startFrame + 1) / self.doc.fps) 
 					self.doc.sound.PlaySegment(float(self.selectedPhrase.startFrame) / float(self.doc.fps),
 							float(self.selectedPhrase.endFrame - self.selectedPhrase.startFrame + 1) / self.doc.fps,
 							1.0)
 				elif self.selectedWord is not None:
 					playSegment = True
-					print "WORD playsegment %f %f %f %f" % (float(self.selectedWord.startFrame), float(self.doc.fps), float(self.selectedWord.startFrame) / float(self.doc.fps), float(self.selectedWord.endFrame - self.selectedWord.startFrame + 1) / self.doc.fps) 
 					self.doc.sound.PlaySegment(float(self.selectedWord.startFrame) / float(self.doc.fps),
 							float(self.selectedWord.endFrame - self.selectedWord.startFrame + 1) / self.doc.fps,
 							1.0)
 				elif self.selectedPhoneme is not None:
 					playSegment = True
-					print "PHON playsegment %f %f %f %f" % (float(self.selectedPhoneme.frame), float(self.doc.fps), float(self.selectedPhoneme.frame) / float(self.doc.fps), 1.0 / self.doc.fps) 
 					self.doc.sound.PlaySegment(float(self.selectedPhoneme.frame) / float(self.doc.fps),
 							1.0 / self.doc.fps,
 							1.0)
@@ -347,7 +343,7 @@ class WaveformView(wx.ScrolledWindow):
 			if (frame != self.scrubFrame) and (self.doc is not None) and (self.doc.sound is not None): # and (not self.doc.sound.IsPlaying()):
 				self.oldFrame = self.scrubFrame
 				self.scrubFrame = frame
-				self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 1.0 / self.doc.fps, 1.0)
+				self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
 				self.mouthView.SetFrame(self.scrubFrame)
 				self.UpdateDrawing(not self.basicScrubbing)
 				self.lastFrame = self.scrubFrame
