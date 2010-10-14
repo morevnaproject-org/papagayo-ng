@@ -351,6 +351,14 @@ class LipsyncFrame(wx.Frame):
 					self.doc.voices.append(LipsyncVoice("Voice 1"))
 					self.doc.currentVoice = self.doc.voices[0]
 					self.doc.fps = int(self.config.Read("LastFPS", `24`))
+					# check for a .trans file with the same name as the doc
+					try:
+						txtFile = file(paths[0].rsplit('.', 1)[0]+".trans", 'r')
+						for line in txtFile:
+							self.voiceText.AppendText(line)
+					except:
+						pass
+						
 			if self.doc is not None:
 				self.SetTitle("%s - %s" % (self.doc.name, appTitle))
 				self.waveformView.SetDocument(self.doc)
