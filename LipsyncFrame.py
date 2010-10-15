@@ -190,7 +190,6 @@ class LipsyncFrame(wx.Frame):
 				select = c
 			c += 1
 		self.exportChoice.SetSelection(select)
-		self.exportChoice.Append("MOHO")
 		
 		self.ignoreTextChanges = False
 		self.config = wx.Config("Papagayo", "Lost Marble")
@@ -360,7 +359,7 @@ class LipsyncFrame(wx.Frame):
 						pass
 						
 			if self.doc is not None:
-				self.SetTitle("%s - %s" % (self.doc.name, appTitle))
+				self.SetTitle("%s [%s] - %s" % (self.doc.name, paths[0], appTitle))
 				self.waveformView.SetDocument(self.doc)
 				self.mouthView.SetDocument(self.doc)
 				# menus
@@ -406,11 +405,11 @@ class LipsyncFrame(wx.Frame):
 			return
 		dlg = wx.FileDialog(
 			self, message = "Save %s File" % appTitle, defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-			defaultFile = "", wildcard = saveWildcard, style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
+			defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0]+".pgo", wildcard = saveWildcard, style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
 		if dlg.ShowModal() == wx.ID_OK:
 			self.config.Write("WorkingDir", dlg.GetDirectory())
 			self.doc.Save(dlg.GetPaths()[0])
-			self.SetTitle("%s - %s" % (self.doc.name, appTitle))
+			self.SetTitle("%s [%s] - %s" % (self.doc.name, dlg.GetPaths()[0], appTitle))
 		dlg.Destroy()
 
 	def OnClose(self):
@@ -526,7 +525,7 @@ class LipsyncFrame(wx.Frame):
 			if exporter == "MOHO":
 				dlg = wx.FileDialog(
 				self, message = "Export Lipsync Data (MOHO)", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-				defaultFile = "", wildcard = "Moho switch files (*.dat)|*.dat", style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
+				defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0]+".dat", wildcard = "Moho switch files (*.dat)|*.dat", style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
 				if dlg.ShowModal() == wx.ID_OK:
 					self.config.Write("WorkingDir", dlg.GetDirectory())
 					self.doc.currentVoice.Export(dlg.GetPaths()[0])
@@ -543,7 +542,7 @@ class LipsyncFrame(wx.Frame):
 				if result == wx.ID_YES:
 					dlg = wx.FileDialog(
 					self, message = "Export Lipsync Data (ALELO)", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-					defaultFile = "", wildcard = "Alelo timing files (*.timing)|*.timing", style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
+					defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0]+".txt", wildcard = "Alelo timing files (*.txt)|*.txt", style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
 					if dlg.ShowModal() == wx.ID_OK:
 						self.config.Write("WorkingDir", dlg.GetDirectory())
 						self.doc.currentVoice.ExportAlelo(dlg.GetPaths()[0], language, self.langman)
