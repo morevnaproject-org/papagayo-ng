@@ -415,7 +415,9 @@ class LipsyncDoc:
 		if not os.path.isabs(self.soundPath):
 			self.soundPath = os.path.normpath(os.path.dirname(self.path) + '/' + self.soundPath)
 		self.fps = int(inFile.readline())
+		print "self.path: %s" % self.path
 		self.soundDuration = int(inFile.readline())
+		print "self.soundDuration: %d" % self.soundDuration
 		numVoices = int(inFile.readline())
 		for i in range(numVoices):
 			voice = LipsyncVoice()
@@ -434,9 +436,14 @@ class LipsyncDoc:
 		self.soundPath = path.encode('latin-1', 'replace')
 		self.sound = SoundPlayer.SoundPlayer(self.soundPath, self.parent)
 		if self.sound.IsValid():
+			print "valid sound"
 			self.soundDuration = int(self.sound.Duration() * self.fps)
+			print "self.sound.Duration(): %d" % int(self.sound.Duration())
+			print "frameRate: %d" % int(self.fps)
+			print "soundDuration1: %d" % self.soundDuration
 			if self.soundDuration < self.sound.Duration() * self.fps:
 				self.soundDuration += 1
+				print "soundDuration2: %d" % self.soundDuration
 		else:
 			self.sound = None
 
@@ -509,8 +516,8 @@ class LanguageManager:
 		inFile.close()
 		inFile = None
 
-	def LoadLanguage(self,language_config):
-		if self.current_language == language_config["label"]:
+	def LoadLanguage(self,language_config, force=False):
+		if self.current_language == language_config["label"] and not force:
 			return
 		self.current_language = language_config["label"]
 		#PHONEME SET

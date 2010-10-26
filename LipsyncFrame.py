@@ -132,6 +132,8 @@ class LipsyncFrame(wx.Frame):
 		self.languageChoice = wx.Choice(self.panel_2, ID_LANGUAGECHOICE, choices=[])
 		global ID_BREAKDOWN; ID_BREAKDOWN = wx.NewId()
 		self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, "Breakdown")
+		global ID_RELOADDICT; ID_RELOADDICT = wx.NewId()
+		self.reloaddictBut = wx.Button(self.panel_2, ID_RELOADDICT, "Reload Dictionary")
 		global ID_EXPORTCHOICE; ID_EXPORTCHOICE = wx.NewId()
 		self.exportChoice = wx.Choice(self.panel_2, ID_EXPORTCHOICE, choices=[])
 		global ID_EXPORT; ID_EXPORT = wx.NewId()
@@ -217,6 +219,7 @@ class LipsyncFrame(wx.Frame):
 		wx.EVT_TEXT(self, ID_VOICENAME, self.OnVoiceName)
 		wx.EVT_TEXT(self, ID_VOICETEXT, self.OnVoiceText)
 		wx.EVT_BUTTON(self, ID_BREAKDOWN, self.OnVoiceBreakdown)
+		wx.EVT_BUTTON(self, ID_RELOADDICT, self.OnReloadDictionary)
 		wx.EVT_BUTTON(self, ID_EXPORT, self.OnVoiceExport)
 		wx.EVT_TEXT(self, ID_FPS, self.OnFps)
 		wx.EVT_LISTBOX(self, ID_VOICELIST, self.OnSelVoice)
@@ -232,7 +235,7 @@ class LipsyncFrame(wx.Frame):
 		_icon = wx.EmptyIcon()
 		_icon.CopyFromBitmap(wx.Bitmap(os.path.join(get_main_dir(),"rsrc/window_icon.bmp")))
 		self.SetIcon(_icon)
-		self.SetSize((1064, 760))
+		self.SetSize((848, 566))
 		self.mainFrame_statusbar.SetStatusWidths([-1, 96])
 		# statusbar fields
 		mainFrame_statusbar_fields = ["Papagayo", "Stopped"]
@@ -267,6 +270,7 @@ class LipsyncFrame(wx.Frame):
 		sizer_9.Add(self.languageChoice, 0, 0, 0)
 		sizer_9.Add((20, 20), 0, 0, 0)
 		sizer_9.Add(self.breakdownBut, 0, wx.FIXED_MINSIZE, 0)
+		sizer_9.Add(self.reloaddictBut, 0, 0, 0)
 		sizer_9.Add((8, 8), 1, wx.FIXED_MINSIZE, 0)
 		sizer_9.Add(self.exportChoice, 0, 0, 0)
 		sizer_9.Add((20, 20), 0, 0, 0)
@@ -388,6 +392,7 @@ class LipsyncFrame(wx.Frame):
 				self.voiceText.SetValue(self.doc.currentVoice.text)
 				self.languageChoice.Enable(True)
 				self.breakdownBut.Enable(True)
+				self.reloaddictBut.Enable(True)
 				self.exportChoice.Enable(True)
 				self.exportBut.Enable(True)
 		dlg.Destroy()
@@ -435,6 +440,7 @@ class LipsyncFrame(wx.Frame):
 		self.voiceText.Enable(False)
 		self.languageChoice.Enable(False)
 		self.breakdownBut.Enable(False)
+		self.reloaddictBut.Enable(False)
 		self.exportChoice.Enable(False)
 		self.exportBut.Enable(False)
 		# voice list
@@ -615,6 +621,12 @@ class LipsyncFrame(wx.Frame):
 		self.voiceText.SetValue(self.doc.currentVoice.text)
 		self.waveformView.UpdateDrawing()
 		self.mouthView.DrawMe()
+		
+	def OnReloadDictionary(self, event):
+		print "reload the dictionary"
+		lang_config = self.doc.language_manager.language_table[self.languageChoice.GetStringSelection()]
+		self.doc.language_manager.LoadLanguage(lang_config,force=True)
+		
 
 # end of class LipsyncFrame
 
