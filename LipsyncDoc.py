@@ -369,11 +369,17 @@ class LipsyncVoice:
 					pronunciation = languagemanager.raw_dictionary[text]
 				first = True
 				position = -1
+#				print word.text
 				for phoneme in word.phonemes:
+#					print phoneme.text
 					if first == True:
 						first = False
 					else:
 						outFile.write("%d %d %s\n" % (lastPhoneme.frame, phoneme.frame-1, languagemanager.export_conversion[lastPhoneme_text]))
+					if phoneme.text.lower() == "sil":
+						position += 1
+						outFile.write("%d %d sil\n" % (phoneme.frame, phoneme.frame))
+						continue
 					position += 1
 					lastPhoneme_text = pronunciation[position]
 					lastPhoneme = phoneme
