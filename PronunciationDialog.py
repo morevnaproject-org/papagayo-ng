@@ -25,29 +25,19 @@ import wx
 # end wxGlade
 
 class PronunciationDialog(wx.Dialog):
-	def __init__(self, *args, **kwds):
+	def __init__(self, parent, phoneme_set):
 		# begin wxGlade: PronunciationDialog.__init__
-		kwds["style"] = wx.DEFAULT_DIALOG_STYLE
-		wx.Dialog.__init__(self, *args, **kwds)
+		wx.Dialog.__init__(self, None, -1, "", style=wx.DEFAULT_DIALOG_STYLE )            
+       
 		self.wordLabel = wx.StaticText(self, -1, "Break down the word:", style=wx.ALIGN_CENTRE)
-		global ID_AI; ID_AI = wx.NewId()
-		self.button_3 = wx.Button(self, ID_AI, "AI")
-		global ID_O; ID_O = wx.NewId()
-		self.button_4 = wx.Button(self, ID_O, "O")
-		global ID_E; ID_E = wx.NewId()
-		self.button_5 = wx.Button(self, ID_E, "E")
-		global ID_U; ID_U = wx.NewId()
-		self.button_6 = wx.Button(self, ID_U, "U")
-		global ID_ETC; ID_ETC = wx.NewId()
-		self.button_7 = wx.Button(self, ID_ETC, "etc")
-		global ID_L; ID_L = wx.NewId()
-		self.button_8 = wx.Button(self, ID_L, "L")
-		global ID_WQ; ID_WQ = wx.NewId()
-		self.button_9 = wx.Button(self, ID_WQ, "WQ")
-		global ID_MBP; ID_MBP = wx.NewId()
-		self.button_10 = wx.Button(self, ID_MBP, "MBP")
-		global ID_FV; ID_FV = wx.NewId()
-		self.button_11 = wx.Button(self, ID_FV, "FV")
+		
+		phoneme_ids = {}
+		self.phoneme_buttons = {}
+		for phoneme in phoneme_set:
+			if phoneme != 'rest':
+				phoneme_ids[phoneme] = wx.NewId()
+				self.phoneme_buttons[phoneme] = wx.Button(self, phoneme_ids[phoneme], phoneme)
+				
 		self.phonemeCtrl = wx.TextCtrl(self, -1, "")
 		self.button_1 = wx.Button(self, wx.ID_OK, "OK")
 		self.button_2 = wx.Button(self, wx.ID_CANCEL, "Cancel")
@@ -57,15 +47,9 @@ class PronunciationDialog(wx.Dialog):
 		# end wxGlade
 
 		# Connect event handlers
-		wx.EVT_BUTTON(self, ID_AI, self.OnAI)
-		wx.EVT_BUTTON(self, ID_O, self.OnO)
-		wx.EVT_BUTTON(self, ID_E, self.OnE)
-		wx.EVT_BUTTON(self, ID_U, self.OnU)
-		wx.EVT_BUTTON(self, ID_ETC, self.OnEtc)
-		wx.EVT_BUTTON(self, ID_L, self.OnL)
-		wx.EVT_BUTTON(self, ID_WQ, self.OnWQ)
-		wx.EVT_BUTTON(self, ID_MBP, self.OnMBP)
-		wx.EVT_BUTTON(self, ID_FV, self.OnFV)
+		for phoneme in phoneme_set:
+			if phoneme != 'rest':
+				wx.EVT_BUTTON(self, phoneme_ids[phoneme], self.OnPhonemeClick)
 
 	def __set_properties(self):
 		# begin wxGlade: PronunciationDialog.__set_properties
@@ -79,15 +63,8 @@ class PronunciationDialog(wx.Dialog):
 		sizer_12 = wx.BoxSizer(wx.HORIZONTAL)
 		grid_sizer_1 = wx.GridSizer(3, 3, 4, 4)
 		sizer_11.Add(self.wordLabel, 0, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 4)
-		grid_sizer_1.Add(self.button_3, 0, wx.FIXED_MINSIZE, 0)
-		grid_sizer_1.Add(self.button_4, 0, wx.FIXED_MINSIZE, 0)
-		grid_sizer_1.Add(self.button_5, 0, wx.FIXED_MINSIZE, 0)
-		grid_sizer_1.Add(self.button_6, 0, wx.FIXED_MINSIZE, 0)
-		grid_sizer_1.Add(self.button_7, 0, wx.FIXED_MINSIZE, 0)
-		grid_sizer_1.Add(self.button_8, 0, wx.FIXED_MINSIZE, 0)
-		grid_sizer_1.Add(self.button_9, 0, wx.FIXED_MINSIZE, 0)
-		grid_sizer_1.Add(self.button_10, 0, wx.FIXED_MINSIZE, 0)
-		grid_sizer_1.Add(self.button_11, 0, wx.FIXED_MINSIZE, 0)
+		for phoneme in self.phoneme_buttons.keys():
+			grid_sizer_1.Add(self.phoneme_buttons[phoneme], 0, wx.FIXED_MINSIZE, 0)
 		sizer_11.Add(grid_sizer_1, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 4)
 		sizer_11.Add(self.phonemeCtrl, 0, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 4)
 		sizer_12.Add(self.button_1, 0, wx.FIXED_MINSIZE, 0)
@@ -104,32 +81,10 @@ class PronunciationDialog(wx.Dialog):
 		text = "%s %s" % (self.phonemeCtrl.GetValue().strip(), phoneme)
 		self.phonemeCtrl.SetValue(text.strip())
 
-	def OnAI(self, event):
-		self.AddPhoneme('AI')
-
-	def OnO(self, event):
-		self.AddPhoneme('O')
-
-	def OnE(self, event):
-		self.AddPhoneme('E')
-
-	def OnU(self, event):
-		self.AddPhoneme('U')
-
-	def OnEtc(self, event):
-		self.AddPhoneme('etc')
-
-	def OnL(self, event):
-		self.AddPhoneme('L')
-
-	def OnWQ(self, event):
-		self.AddPhoneme('WQ')
-
-	def OnMBP(self, event):
-		self.AddPhoneme('MBP')
-
-	def OnFV(self, event):
-		self.AddPhoneme('FV')
+	def OnPhonemeClick(self, event):
+		phoneme = event.GetEventObject().GetLabel()
+		text = "%s %s" % (self.phonemeCtrl.GetValue().strip(), phoneme)
+		self.phonemeCtrl.SetValue(text.strip())
 
 # end of class PronunciationDialog
 

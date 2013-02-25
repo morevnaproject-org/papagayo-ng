@@ -197,7 +197,7 @@ class WaveformView(wx.ScrolledWindow):
 			elif event.RightDown() and self.selectedWord:
 				self.isDragging = False
 				# manually enter the pronunciation for this word
-				dlg = PronunciationDialog(self)
+				dlg = PronunciationDialog(self, phoneme_set)
 				dlg.wordLabel.SetLabel(dlg.wordLabel.GetLabel() + ' ' + self.selectedWord.text)
 				phonemeString = ""
 				for p in self.selectedWord.phonemes:

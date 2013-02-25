@@ -82,7 +82,7 @@ class LipsyncWord:
 		except:
 			traceback.print_exc()
 			# this word was not found in the phoneme dictionary
-			dlg = PronunciationDialog(parentWindow)
+			dlg = PronunciationDialog(parentWindow, phoneme_set)
 			dlg.wordLabel.SetLabel(dlg.wordLabel.GetLabel() + ' ' + self.text)
 			if dlg.ShowModal() == wx.ID_OK:
 				for p in dlg.phonemeCtrl.GetValue().split():
