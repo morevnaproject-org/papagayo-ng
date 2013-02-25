@@ -266,6 +266,7 @@ class LipsyncFrame(wx.Frame):
 		sizer_7.Add(sizer_8, 0, wx.LEFT|wx.RIGHT|wx.TOP|wx.EXPAND, 4)
 		sizer_7.Add(self.label_1, 0, wx.LEFT|wx.TOP|wx.FIXED_MINSIZE, 4)
 		sizer_7.Add(self.voiceText, 1, wx.LEFT|wx.RIGHT|wx.TOP|wx.EXPAND|wx.FIXED_MINSIZE, 4)
+		sizer_7.SetItemMinSize(2, (120,120))  # Workaround bug for Ubuntu 11.10 and above
 		sizer_7.Add(self.label_4, 0, wx.LEFT|wx.TOP|wx.FIXED_MINSIZE, 4)
 		sizer_9.Add(self.languageChoice, 0, 0, 0)
 		sizer_9.Add((20, 20), 0, 0, 0)
