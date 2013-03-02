@@ -415,7 +415,7 @@ class LipsyncDoc:
 		self.sound = None
 		self.voices = []
 		self.currentVoice = None
-		inFile = codecs.open(self.path, 'r', 'latin-1', 'replace')
+		inFile = codecs.open(self.path, 'r', 'utf-8', 'replace')
 		inFile.readline() # discard the header
 		self.soundPath = inFile.readline().strip()
 		if not os.path.isabs(self.soundPath):
@@ -460,7 +460,7 @@ class LipsyncDoc:
 			savedSoundPath = os.path.basename(self.soundPath)
 		else:
 			savedSoundPath = self.soundPath
-		outFile = codecs.open(self.path, 'w', 'latin-1', 'replace')
+		outFile = codecs.open(self.path, 'w', 'utf-8', 'replace')
 		outFile.write("lipsync version 1\n")
 		outFile.write("%s\n" % savedSoundPath)
 		outFile.write("%d\n" % self.fps)
