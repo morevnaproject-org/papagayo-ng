@@ -37,7 +37,7 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 # input_encoding = 'cp1252'
 # input_encoding = 'utf-8'
 # input_encoding = 'utf-16'
-input_encoding = 'koi8-r'  # cyrillic
+# input_encoding = 'koi8-r'  # cyrillic
 # input_encoding = 'latin-1'
 # input_encoding = 'iso-8859-1'
 
@@ -153,9 +153,6 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('EH0')
         elif letter =='^':
             pass
-        elif letter in [u'\N{LATIN SMALL LETTER E WITH DIAERESIS}', u'\N{CYRILLIC SMALL LETTER IO}']:
-            phonemes.append('Y')
-            phonemes.append('AO0')
         elif letter == 'g':
             if len(word) == pos+1:
                 phonemes.append('K')
@@ -188,30 +185,24 @@ def breakdownWord(word, recursive=False):
                     phonemes.append('S')
                 else:
                     phonemes.append('Z')
-        elif letter == u'\N{CYRILLIC SMALL LETTER SHCHA}':
+        elif letter in [ u'\N{CYRILLIC CAPITAL LETTER SHCHA}', u'\N{CYRILLIC SMALL LETTER SHCHA}' ]:
             phonemes.append('SH')
-            phonemes.append('CH')
-        elif letter == u'\N{CYRILLIC SMALL LETTER TSE}':
+            #phonemes.append('CH')
+        elif letter in [ u'\N{CYRILLIC CAPITAL LETTER TSE}' , u'\N{CYRILLIC SMALL LETTER TSE}' ]:
             phonemes.append('T')
             phonemes.append('S')
-        elif letter == u'\N{CYRILLIC SMALL LETTER YA}':
-            phonemes.append('IY0')
-            phonemes.append('AO0') # not if unstressed - drop this line ?
-        elif letter == u'\N{CYRILLIC SMALL LETTER YU}':
-            phonemes.append('Y')
-            phonemes.append('UW0')
-        elif letter == u'\N{CYRILLIC CAPITAL LETTER SHCHA}':
-            phonemes.append('SH')
-            phonemes.append('CH')
-        elif letter == u'\N{CYRILLIC CAPITAL LETTER TSE}':
-            phonemes.append('T')
-            phonemes.append('S')
-        elif letter == u'\N{CYRILLIC CAPITAL LETTER YA}':
-            phonemes.append('IY0')
-            phonemes.append('AO0') # not if unstressed - drop this line ?
-        elif letter == u'\N{CYRILLIC CAPITAL LETTER YU}':
-            phonemes.append('Y')
-            phonemes.append('UW0')
+        elif letter == u'\N{CYRILLIC CAPITAL LETTER YA}' or letter == u'\N{CYRILLIC SMALL LETTER YA}':
+			if pos==0:
+				phonemes.append('IY0')
+			phonemes.append('AA1')
+        elif letter == u'\N{CYRILLIC CAPITAL LETTER YU}' or letter == u'\N{CYRILLIC SMALL LETTER YU}':
+			if pos==0:
+				phonemes.append('Y')
+			phonemes.append('UW0')
+        elif letter in [u'\N{LATIN SMALL LETTER E WITH DIAERESIS}', u'\N{CYRILLIC SMALL LETTER IO}']:
+			if pos==0:
+				phonemes.append('Y')
+			phonemes.append('AO0')
         elif letter in easy_consonants:
             phonemes.append(simple_convert[letter])
         elif letter == ' ':
