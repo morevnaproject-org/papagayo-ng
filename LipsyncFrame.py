@@ -352,13 +352,17 @@ class LipsyncFrame(wx.Frame):
 			self.OnClose()
 			self.config.Write("WorkingDir", dlg.GetDirectory())
 			paths = dlg.GetPaths()
+			self.Open(paths[0])
+		dlg.Destroy()
+	
+	def Open(self, path):
 			self.doc = LipsyncDoc(self.langman, self)
-			if paths[0].endswith(lipsyncExtension):
+			if path.endswith(lipsyncExtension):
 				# open a lipsync project
-				self.doc.Open(paths[0])
+				self.doc.Open(path)
 			else:
 				# open an audio file
-				self.doc.OpenAudio(paths[0])
+				self.doc.OpenAudio(path)
 				if self.doc.sound is None:
 					self.doc = None
 				else:
@@ -374,7 +378,7 @@ class LipsyncFrame(wx.Frame):
 						pass
 						
 			if self.doc is not None:
-				self.SetTitle("%s [%s] - %s" % (self.doc.name, paths[0], appTitle))
+				self.SetTitle("%s [%s] - %s" % (self.doc.name, path, appTitle))
 				self.waveformView.SetDocument(self.doc)
 				self.mouthView.SetDocument(self.doc)
 				# menus
@@ -407,7 +411,6 @@ class LipsyncFrame(wx.Frame):
 				self.reloaddictBut.Enable(True)
 				self.exportChoice.Enable(True)
 				self.exportBut.Enable(True)
-		dlg.Destroy()
 
 	def OnSave(self, event = None):
 		if self.doc is None:

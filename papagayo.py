@@ -41,4 +41,6 @@ if __name__ == "__main__":
 	papagayo = LipsyncApp(0)
 	papagayo.mainFrame.TheApp = papagayo
 	papagayo.mainFrame.waveformView.TheApp = papagayo
+	if len(sys.argv) > 1:
+		papagayo.mainFrame.Open(os.path.abspath(sys.argv[1]))
 	papagayo.MainLoop()
