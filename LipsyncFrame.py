@@ -35,7 +35,9 @@ from LipsyncDoc import *
 
 appTitle = "Papagayo"
 lipsyncExtension = ".pgo"
-openWildcard = "%s and sound files|*%s;*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a" % (appTitle, lipsyncExtension)
+audioExtensions = "*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a"
+openWildcard = "%s and sound files|*%s;%s" % (appTitle, lipsyncExtension, audioExtensions)
+openAudioWildcard = "Sound files|%s" % (audioExtensions)
 saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
 
 class DigitOnlyValidator(wx.PyValidator):
@@ -360,6 +362,20 @@ class LipsyncFrame(wx.Frame):
 			if path.endswith(lipsyncExtension):
 				# open a lipsync project
 				self.doc.Open(path)
+				while self.doc.sound is None:
+					# if no sound file found, then ask user to specify one
+					dlg = wx.MessageDialog(self, 'Please load correct audio file', appTitle,
+					wx.OK | wx.ICON_WARNING)
+					result = dlg.ShowModal()
+					dlg.Destroy()
+					dlg = wx.FileDialog(
+						self, message = "Open Audio", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
+						defaultFile = "", wildcard = openAudioWildcard, style = wx.OPEN | wx.CHANGE_DIR | wx.FILE_MUST_EXIST)
+					if dlg.ShowModal() == wx.ID_OK:
+						self.config.Write("WorkingDir", dlg.GetDirectory())
+						paths = dlg.GetPaths()
+						self.doc.OpenAudio(paths[0])
+					dlg.Destroy()
 			else:
 				# open an audio file
 				self.doc.OpenAudio(path)
