@@ -20,7 +20,7 @@ import os
 import codecs
 import ConfigParser
 import wx
-from phonemes import *
+
 from utilities import *
 from PronunciationDialog import PronunciationDialog
 import SoundPlayer
@@ -48,7 +48,7 @@ class LipsyncWord:
 		self.endFrame = 0
 		self.phonemes = []
 
-	def RunBreakdown(self, parentWindow, language, languagemanager):
+	def RunBreakdown(self, parentWindow, language, languagemanager, phonemeset):
 		self.phonemes = []
 		try:
 			text = self.text.strip(strip_symbols)
@@ -58,7 +58,7 @@ class LipsyncWord:
 				pronunciation = breakdown.breakdownWord(text)
 				for i in range(len(pronunciation)):
 					try:
-						pronunciation[i] = phoneme_conversion[pronunciation[i]]
+						pronunciation[i] = phonemeset.conversion[pronunciation[i]]
 					except:
 						print "Unknown phoneme:", pronunciation[i], "in word:", text
 			elif details["type"] == "dictionary":
@@ -82,7 +82,7 @@ class LipsyncWord:
 		except:
 			traceback.print_exc()
 			# this word was not found in the phoneme dictionary
-			dlg = PronunciationDialog(parentWindow, phoneme_set)
+			dlg = PronunciationDialog(parentWindow, phonemeset.set)
 			dlg.wordLabel.SetLabel(dlg.wordLabel.GetLabel() + ' ' + self.text)
 			if dlg.ShowModal() == wx.ID_OK:
 				for p in dlg.phonemeCtrl.GetValue().split():
@@ -116,7 +116,7 @@ class LipsyncPhrase:
 		self.endFrame = 0
 		self.words = []
 
-	def RunBreakdown(self, parentWindow, language, languagemanager):
+	def RunBreakdown(self, parentWindow, language, languagemanager, phonemeset):
 		self.words = []
 		for w in self.text.split():
 			if len(w) == 0:
@@ -125,7 +125,7 @@ class LipsyncPhrase:
 			word.text = w
 			self.words.append(word)
 		for word in self.words:
-			word.RunBreakdown(parentWindow, language, languagemanager)
+			word.RunBreakdown(parentWindow, language, languagemanager, phonemeset)
 
 	def RepositionWord(self, word):
 		id = 0
@@ -171,7 +171,7 @@ class LipsyncVoice:
 		self.text = ""
 		self.phrases = []
 
-	def RunBreakdown(self, frameDuration, parentWindow, language, languagemanager):
+	def RunBreakdown(self, frameDuration, parentWindow, language, languagemanager, phonemeset):
 		# make sure there is a space after all punctuation marks
 		repeatLoop = True
 		while repeatLoop:
@@ -191,7 +191,7 @@ class LipsyncVoice:
 			self.phrases.append(phrase)
 		# now break down the phrases
 		for phrase in self.phrases:
-			phrase.RunBreakdown(parentWindow, language, languagemanager)
+			phrase.RunBreakdown(parentWindow, language, languagemanager, phonemeset)
 		# for first-guess frame alignment, count how many phonemes we have
 		phonemeCount = 0
 		for phrase in self.phrases:
@@ -471,6 +471,28 @@ class LipsyncDoc:
 		outFile.close()
 		self.dirty = False
 
+from phonemes import *
+
+class PhonemeSet:
+	__shared_state = {}
+
+	def __init__(self):
+		self.__dict__ = self.__shared_state
+		self.set = []
+		self.conversion = {}
+		self.alternatives = phoneme_sets
+		self.Load(self.alternatives[0])
+
+	def Load(self, name=''):
+		if name in self.alternatives:
+			exec("import phonemes_%s as phonemeset" % name)
+			self.set = phonemeset.phoneme_set
+			self.conversion = phonemeset.phoneme_conversion
+		else:
+			print "Can't find phonemeset! (%s)" % name
+			return
+			
+
 class LanguageManager:
 	__shared_state = {}
 
@@ -480,8 +502,12 @@ class LanguageManager:
 		self.phoneme_dictionary = {}
 		self.raw_dictionary = {}
 		self.current_language = ""
+		
+		# TODO: phoneme_set and phoneme_conversion should be removed from Language Manager
+		#       (we have phoneme set defined independently from language now)
 		self.phoneme_set = []
 		self.phoneme_conversion = {}
+		
 		self.export_conversion = {}
 		self.InitLanguages()
 		

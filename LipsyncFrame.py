@@ -130,10 +130,12 @@ class LipsyncFrame(wx.Frame):
 		self.label_4 = wx.StaticText(self.panel_2, -1, "Phonetic breakdown:")
 		global ID_LANGUAGECHOICE; ID_LANGUAGECHOICE = wx.NewId()
 		self.languageChoice = wx.Choice(self.panel_2, ID_LANGUAGECHOICE, choices=[])
+		global ID_PHONEMESETCHOICE; ID_PHONEMESETCHOICE = wx.NewId()
+		self.phonemesetChoice = wx.Choice(self.panel_2, ID_PHONEMESETCHOICE, choices=[])
 		global ID_BREAKDOWN; ID_BREAKDOWN = wx.NewId()
 		self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, "Breakdown")
 		global ID_RELOADDICT; ID_RELOADDICT = wx.NewId()
-		self.reloaddictBut = wx.Button(self.panel_2, ID_RELOADDICT, "Reload Dictionary")
+		self.reloaddictBut = wx.Button(self.panel_2, ID_RELOADDICT, "Reload Dict")
 		global ID_EXPORTCHOICE; ID_EXPORTCHOICE = wx.NewId()
 		self.exportChoice = wx.Choice(self.panel_2, ID_EXPORTCHOICE, choices=[])
 		global ID_EXPORT; ID_EXPORT = wx.NewId()
@@ -181,6 +183,12 @@ class LipsyncFrame(wx.Frame):
 				select = c
 			c += 1
 		self.languageChoice.SetSelection(select)
+		
+		# setup phonemeset initialisation here
+		self.phonemeset = PhonemeSet()
+		for name in self.phonemeset.alternatives:
+			self.phonemesetChoice.Append(name)
+		self.phonemesetChoice.SetSelection(0)
 		
 		#setup export intialization here
 		exporterList = ["MOHO", "ALELO"]
@@ -269,12 +277,14 @@ class LipsyncFrame(wx.Frame):
 		sizer_7.SetItemMinSize(2, (120,120))  # Workaround bug for Ubuntu 11.10 and above
 		sizer_7.Add(self.label_4, 0, wx.LEFT|wx.TOP|wx.FIXED_MINSIZE, 4)
 		sizer_9.Add(self.languageChoice, 0, 0, 0)
-		sizer_9.Add((20, 20), 0, 0, 0)
+		sizer_9.Add((2, 2), 0, 0, 0)
+		sizer_9.Add(self.phonemesetChoice, 0, 0, 0)
+		sizer_9.Add((5, 5), 0, 0, 0)
 		sizer_9.Add(self.breakdownBut, 0, wx.FIXED_MINSIZE, 0)
 		sizer_9.Add(self.reloaddictBut, 0, 0, 0)
-		sizer_9.Add((8, 8), 1, wx.FIXED_MINSIZE, 0)
+		sizer_9.Add((5, 5), 1, wx.FIXED_MINSIZE, 0)
 		sizer_9.Add(self.exportChoice, 0, 0, 0)
-		sizer_9.Add((20, 20), 0, 0, 0)
+		sizer_9.Add((5, 5), 0, 0, 0)
 		sizer_9.Add(self.exportBut, 0, wx.FIXED_MINSIZE, 0)
 		sizer_7.Add(sizer_9, 0, wx.ALL|wx.EXPAND, 4)
 		sizer_3.Add(sizer_7, 0, wx.ALL|wx.EXPAND, 4)
@@ -392,6 +402,7 @@ class LipsyncFrame(wx.Frame):
 				self.voiceText.Enable(True)
 				self.voiceText.SetValue(self.doc.currentVoice.text)
 				self.languageChoice.Enable(True)
+				self.phonemesetChoice.Enable(True)
 				self.breakdownBut.Enable(True)
 				self.reloaddictBut.Enable(True)
 				self.exportChoice.Enable(True)
@@ -440,6 +451,7 @@ class LipsyncFrame(wx.Frame):
 		self.voiceText.Clear()
 		self.voiceText.Enable(False)
 		self.languageChoice.Enable(False)
+		self.phonemesetChoice.Enable(False)
 		self.breakdownBut.Enable(False)
 		self.reloaddictBut.Enable(False)
 		self.exportChoice.Enable(False)
@@ -518,8 +530,10 @@ class LipsyncFrame(wx.Frame):
 	def OnVoiceBreakdown(self, event = None):
 		if (self.doc is not None) and (self.doc.currentVoice is not None):
 			language = self.languageChoice.GetStringSelection()
+			phonemeset_name = self.phonemesetChoice.GetStringSelection()
+			self.phonemeset.Load(phonemeset_name)
 			self.doc.dirty = True
-			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language, self.langman)
+			self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language, self.langman, self.phonemeset)
 			self.waveformView.UpdateDrawing()
 			self.ignoreTextChanges = True
 			self.voiceText.SetValue(self.doc.currentVoice.text)

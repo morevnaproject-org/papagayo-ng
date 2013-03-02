@@ -21,7 +21,9 @@ readme.txt - this file
 gpl.txt - the user license for Papagayo
 
 papagayo.py - the main program file
-phonemes.py - a list if phonemes used by Papagayo (by default, the Preston Blair phoneme set)
+phonemes.py - a list if phoneme sets available in Papagayo
+phonemes_preston_blair.py - Preston Blair phoneme set (default)
+phonemes_fleming_dobbs.py - Fleming & Dobbs phoneme set
 LipsyncDoc.py - the document structure, including voices, phoneme breakdown, etc.
 breakdowns/*.py - code to break down words using language specific pronunciations
 LipsyncFrame.py - the main Papagayo window
@@ -47,7 +49,7 @@ setup_mac.py - a script to build Papagayo as a standalone MacOS X application
 
 Here are a couple tips for source code that you may want to modify:
 
-To change the set of phonemes used by Papagayo, edit the file phonemes.py. By default, Papagayo uses the Preston Blair phoneme set. By modifying this file, you can change the set of mouth shapes used to whatever you want. Further instructions can be found in the phonemes.py file itself.
+By default, Papagayo uses the Preston Blair phoneme set. There is also Fleming & Dobbs phoneme set available. The phoneme sets are stored in the phonemes_*.py files. If you want to add a different set of phonemes, you can use existsing sets as examples. Also, take a look at the instructions in the phonemes.py file.
 
 To add breakdowns for other languages create a new language configuration in rsrc/languages/<language> inside you need to place a configuration file (see italian for an example of how to configure a breakdown)  You will also need to create a breakdown class.  These live in breakdowns.  The naming convention is <language>_breakdown.py. Just examine one of the existing ones for how to make it work.  Make sure the function to call your breakdown processing is called breakdownWord.
 
