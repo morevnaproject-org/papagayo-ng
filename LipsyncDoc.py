@@ -55,24 +55,27 @@ class LipsyncWord:
 			details = languagemanager.language_table[language]
 			if details["type"] == "breakdown":
 				exec("import %s as breakdown" % details["breakdown_class"])
-				pronunciation = breakdown.breakdownWord(text)
-				for i in range(len(pronunciation)):
-					try:
-						pronunciation[i] = phonemeset.conversion[pronunciation[i]]
-					except:
-						print "Unknown phoneme:", pronunciation[i], "in word:", text
+				pronunciation_raw = breakdown.breakdownWord(text)
 			elif details["type"] == "dictionary":
 				if languagemanager.current_language != language:
 					languagemanager.LoadLanguage(details)
 					languagemanager.current_language = language
 				if details["case"] == "upper":
-					pronunciation = languagemanager.phoneme_dictionary[text.upper()]
+					pronunciation_raw = languagemanager.raw_dictionary[text.upper()]
 				elif details["case"] == "lower":
-					pronunciation = languagemanager.phoneme_dictionary[text.lower()]
+					pronunciation_raw = languagemanager.raw_dictionary[text.lower()]
 				else:
-					pronunciation = languagemanager.phoneme_dictionary[text]					
+					pronunciation_raw = languagemanager.raw_dictionary[text]
 			else:
-				pronunciation = phonemeDictionary[text.upper()]
+				pronunciation_raw = phonemeDictionary[text.upper()]
+
+			pronunciation = []
+			for i in range(len(pronunciation_raw)):
+				try:
+					pronunciation.append(phonemeset.conversion[pronunciation_raw[i]])
+				except:
+					print "Unknown phoneme:", pronunciation_raw[i], "in word:", text
+			
 			for p in pronunciation:
 				if len(p) == 0:
 					continue
@@ -503,11 +506,6 @@ class LanguageManager:
 		self.raw_dictionary = {}
 		self.current_language = ""
 		
-		# TODO: phoneme_set and phoneme_conversion should be removed from Language Manager
-		#       (we have phoneme set defined independently from language now)
-		self.phoneme_set = []
-		self.phoneme_conversion = {}
-		
 		self.export_conversion = {}
 		self.InitLanguages()
 		
@@ -517,7 +515,7 @@ class LanguageManager:
 		except:
 			print "Unable to open phoneme dictionary!:", path
 			return
-		# process dictioary entries
+		# process dictionary entries
 		for line in inFile.readlines():
 			if line[0] == '#':
 				continue # skip comments in the dictionary
@@ -535,15 +533,9 @@ class LanguageManager:
 			# add this entry to the in-memory dictionary
 			for i in range(len(entry)):
 				if i == 0:
-					self.phoneme_dictionary[entry[0]] = []
 					self.raw_dictionary[entry[0]] = []
 				else:
 					rawentry = entry[i]
-					try:
-						entry[i] = self.phoneme_conversion[entry[i]]
-					except:
-						print "Unknown phoneme:", entry[i], "in word:", entry[0]
-					self.phoneme_dictionary[entry[0]].append(entry[i])
 					self.raw_dictionary[entry[0]].append(rawentry)
 		inFile.close()
 		inFile = None
@@ -552,42 +544,6 @@ class LanguageManager:
 		if self.current_language == language_config["label"] and not force:
 			return
 		self.current_language = language_config["label"]
-		#PHONEME SET
-		inFile = open(os.path.join(get_main_dir(),language_config["location"],language_config["phonemes"]), 'r')
-		for line in inFile.readlines():
-			if line[0] == '#':
-				continue # skip comments in the dictionary
-			# strip out leading/trailing whitespace
-			line.strip()			
-			line = line.rstrip('\r\n')
-			self.phoneme_set.append(line)
-		inFile.close()
-		inFile = None
-		#MAPPING TABLE
-		if language_config["mappings"] != "none":
-			inFile = open(os.path.join(get_main_dir(),language_config["location"],language_config["mappings"]), 'r')
-			for line in inFile.readlines():
-				if line[0] == '#':
-					continue # skip comments in the dictionary
-				# strip out leading/trailing whitespace
-				line.strip()
-				line = line.rstrip('\r\n')
-				if len(line) == 0:
-					continue
-				entry = line.split(":")
-				if len(entry) == 0:
-					continue
-				self.phoneme_conversion[entry[0]] = entry[1]
-			        if len(entry) == 3:
-					self.export_conversion[entry[0]] = entry[2]
-				else:
-					self.export_conversion[entry[0]] = entry[0]
-
-			inFile.close()
-			inFile = None
-		else:
-			for phon in self.phoneme_set:
-				self.phoneme_conversion[phon] = phon
 			
 		for dictionary in language_config["dictionaries"]:
 			self.LoadDictionary(os.path.join(get_main_dir(),language_config["location"],language_config["dictionaries"][dictionary]))
@@ -606,8 +562,6 @@ class LanguageManager:
 				details["breakdown_class"] = config.get("configuration","breakdown_class")
 				self.language_table[label] = details
 			elif ltype == "dictionary":
-				details["phonemes"] = config.get("configuration","phonemes")
-				details["mappings"] = config.get("configuration","mappings")
 				try:
 					details["case"] = config.get("configuration","case")
 				except:
