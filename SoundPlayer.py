@@ -2,7 +2,7 @@ import wave
 import audioop
 import sys
 import traceback
-import pyaudio
+import openal
 import thread
 
 class SoundPlayer():
@@ -10,7 +10,16 @@ class SoundPlayer():
         self.soundfile = soundfile
         self.isplaying = False
         self.time = 0 # current audio position in frames
-        self.audio = pyaudio.PyAudio()
+        self.device = openal.Device()
+        self.contextlistener = self.device.ContextListener()
+        self.contextlistener.position = 0, 0, 0
+        self.contextlistener.velocity = 0, 0, 0
+        self.contextlistener.orientation = 0, 1, 0, 0, 0, 1
+        self.source = self.contextlistener.get_source()
+        self.source.buffer = openal.Buffer(self.soundfile)
+        self.source.looping = False
+        self.source.gain = .5
+        self.source.position = 3, 3, -3
         
         try:
             self.wave_reference = wave.open(self.soundfile)
@@ -47,42 +56,29 @@ class SoundPlayer():
         return self.time
 
     def _play(self, start, length):
-        self.isplaying = True
-        startframe = int(round(start * self.wave_reference.getframerate()))
-        samplelen = int(round(length * self.wave_reference.getframerate()))
-        remaining = samplelen
-        chunk = 1024
+        self.source.pause()
+#        if self.source.state != openal._al.INITIAL:
+#            try:
+#                self.source.rewindy()
+#            except:
+#                traceback.print_exc()
+#                print dir(self.source)
+        self.source.play()
         try:
-            self.wave_reference.setpos(startframe)
-        except wave.Error:
-            self.isplaying = False
-            return
-        stream = self.audio.open(format =
-          self.audio.get_format_from_width(self.wave_reference.getsampwidth()),
-          channels = self.wave_reference.getnchannels(),
-          rate = self.wave_reference.getframerate(),
-          output = True)
-        # read data
-        
-        if remaining >= 1024:
-            data = self.wave_reference.readframes(chunk)
-            remaining -= chunk
-        else:
-            data = self.wave_reference.readframes(remaining)
-            remaining = 0
-        
-        # play stream
-        while data != '' and self.isplaying==True:
-            stream.write(data)
-            self.time = float(self.wave_reference.tell()) / float(self.wave_reference.getframerate())
-            if remaining >= 1024:
-                data = self.wave_reference.readframes(chunk)
-                remaining -= chunk
-            else:
-                data = self.wave_reference.readframes(remaining)
-                remaining = 0
-            
-        stream.close()
+            if start > self.Duration():
+                start = self.Duration()
+            elif start < 0:
+                start = 0
+            self.source.sec_offset = start
+        except:
+            print start
+            print length
+            print self.source.sec_offset
+            return        
+        self.isplaying = True
+        while self.source.state == openal._al.PLAYING and self.isplaying == True and self.source.sec_offset <= (start + length):
+            self.time = self.source.sec_offset
+        self.source.stop()
         self.isplaying = False
     
     def Play(self, arg):
