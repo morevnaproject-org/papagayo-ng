@@ -23,6 +23,15 @@
 import math
 import wx
 
+
+# [BAL 03/07/2013] Monkey Patch to deal with change to API without
+# breaking compatibility with old API
+ 
+try:
+	s = wx.Color(162, 205, 242)
+except AttributeError:
+	wx.Color = wx.Colour
+
 # begin wxGlade: dependencies
 # end wxGlade
 
