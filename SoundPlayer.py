@@ -4,17 +4,29 @@ import sys
 import traceback
 import openal
 import thread
+import Singleton
+
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 class SoundPlayer():
-    def __init__(self, soundfile, parent):
-        self.soundfile = soundfile
-        self.isplaying = False
-        self.time = 0 # current audio position in frames
+    __metaclass__ = Singleton
+    
+    def __init__(self):
         self.device = openal.Device()
         self.contextlistener = self.device.ContextListener()
         self.contextlistener.position = 0, 0, 0
         self.contextlistener.velocity = 0, 0, 0
         self.contextlistener.orientation = 0, 1, 0, 0, 0, 1
+    
+    def initialize(self, soundfile, parent):
+        self.soundfile = soundfile
+        self.isplaying = False
+        self.time = 0 # current audio position in frames
         self.source = self.contextlistener.get_source()
         self.source.buffer = openal.Buffer(self.soundfile)
         self.source.looping = False

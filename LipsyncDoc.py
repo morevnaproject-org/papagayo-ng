@@ -443,7 +443,8 @@ class LipsyncDoc:
 			self.sound = None
 		#self.soundPath = path.encode("utf-8")
 		self.soundPath = path.encode('latin-1', 'replace')
-		self.sound = SoundPlayer.SoundPlayer(self.soundPath, self.parent)
+                self.sound = SoundPlayer.SoundPlayer()
+                self.sound.initialize(self.soundPath, self.parent)
 		if self.sound.IsValid():
 			print "valid sound"
 			self.soundDuration = int(self.sound.Duration() * self.fps)
