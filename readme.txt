@@ -6,8 +6,12 @@ http://www.python.org/
 wxPython - a cross-platform user interface library for Python, based on wxWidgets.
 http://www.wxpython.org/
 
+OpenAL - a cross platform audio library. This provides a more cross-platform way of providing audio playback capabilities and replaces an earlier version using pyaudio and before that a custom library produced by Lost Marble.
+http://openal.org (OpenAL ships with OS X and should be easily available for most Linux Distributions)
+
 wxGlade - a user interface builder for wxWidgets. This program is not strictly necessary, but is helpful if you want to modify the user interface of Papagayo.
 http://wxglade.sourceforge.net/
+
 
 Papagayo is written in Python, and requires no special tools to work with the source - a basic text editor is good enough. To run Papagayo, double-click the papagayo.py file, or run the following command:
 
