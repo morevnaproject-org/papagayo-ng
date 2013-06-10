@@ -4,7 +4,6 @@ import sys
 import traceback
 import openal
 import thread
-import Singleton
 
 class Singleton(type):
     _instances = {}
