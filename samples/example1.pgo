@@ -1,0 +1,44 @@
+lipsync version 1
+example1.wav
+24
+71
+1
+	Voice 1
+	Short term treasury bills fell slightly.
+	1
+		Short term treasury bills fell slightly.
+		1
+		70
+		6
+			Short 1 7 4
+				1 etc
+				3 O
+				5 etc
+				6 etc
+			term 9 18 3
+				9 etc
+				12 E
+				16 MBP
+			treasury 19 33 6
+				19 etc
+				22 etc
+				24 E
+				27 etc
+				29 E
+				32 E
+			bills 34 43 4
+				34 MBP
+				37 AI
+				39 L
+				42 etc
+			fell 44 50 3
+				44 FV
+				46 E
+				49 L
+			slightly. 51 69 6
+				51 etc
+				54 L
+				57 AI
+				60 etc
+				64 L
+				67 E
