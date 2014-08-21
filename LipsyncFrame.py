@@ -333,10 +333,12 @@ class LipsyncFrame(wx.Frame):
 			if result == wx.ID_YES:
 				self.OnSave()
 				if not self.doc.dirty:
+					self.config.Write("LastFPS", `self.doc.fps`)
 					return True
 				else:
 					return False
 			elif result == wx.ID_NO:
+				self.config.Write("LastFPS", `self.doc.fps`)
 				return True
 			elif result == wx.ID_CANCEL:
 				return False
@@ -378,13 +380,13 @@ class LipsyncFrame(wx.Frame):
 					dlg.Destroy()
 			else:
 				# open an audio file
+				self.doc.fps = int(self.config.Read("LastFPS", `24`))
 				self.doc.OpenAudio(path)
 				if self.doc.sound is None:
 					self.doc = None
 				else:
 					self.doc.voices.append(LipsyncVoice("Voice 1"))
 					self.doc.currentVoice = self.doc.voices[0]
-					self.doc.fps = int(self.config.Read("LastFPS", `24`))
 					# check for a .trans file with the same name as the doc
 					try:
 						txtFile = file(paths[0].rsplit('.', 1)[0]+".trans", 'r')
