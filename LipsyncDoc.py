@@ -336,15 +336,21 @@ class LipsyncVoice:
 		return "rest"
 
 	def Export(self, path):
-		if len(self.phrases) > 0:
-			startFrame = self.phrases[0].startFrame
-			endFrame = self.phrases[-1].endFrame
-		else:
-			startFrame = 0
-			endFrame = 1
+
 		outFile = open(path, 'w')
 		outFile.write("MohoSwitch1\n")
 		phoneme = ""
+		if len(self.phrases) > 0:
+			startFrame = self.phrases[0].startFrame
+			endFrame = self.phrases[-1].endFrame
+			if startFrame !=0:
+				phoneme = "rest"
+				outFile.write("%d %s\n" % (1, phoneme))
+		else:
+			startFrame = 0
+			endFrame = 1
+
+
 		for frame in range(startFrame, endFrame + 1):
 			nextPhoneme = self.GetPhonemeAtFrame(frame)
 			if nextPhoneme != phoneme:
@@ -353,6 +359,7 @@ class LipsyncVoice:
 					outFile.write("%d %s\n" % (frame, phoneme))
 				phoneme = nextPhoneme
 				outFile.write("%d %s\n" % (frame + 1, phoneme))
+		outFile.write("%d %s\n" % (endFrame + 2, "rest"))
 		outFile.close()
 
 	def ExportAlelo(self, path, language, languagemanager):
