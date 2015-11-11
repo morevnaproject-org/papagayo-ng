@@ -23,6 +23,11 @@
 import math
 import wx
 
+if hasattr(wx, "Color"):
+    wx.Colour = wx.Color
+else:
+    wx.Color = wx.Colour
+
 # begin wxGlade: dependencies
 # end wxGlade
 
@@ -445,20 +450,20 @@ class WaveformView(wx.ScrolledWindow):
 			dc.Clear()
 			dc.EndDrawing()
 			return
-		fillColor = wx.Color(162, 205, 242)
-		lineColor = wx.Color(30, 121, 198)
-		frameCol = wx.Color(192, 192, 192)
-		frameTextCol = wx.Color(64, 64, 64)
-		playBackCol = wx.Color(255, 127, 127)
-		playForeCol = wx.Color(209, 102, 121)
-		playOutlineCol = wx.Color(128, 0, 0)
-		textCol = wx.Color(64, 64, 64)
-		phraseFillCol = wx.Color(205, 242, 162)
-		phraseOutlineCol = wx.Color(121, 198, 30)
-		wordFillCol = wx.Color(242, 205, 162)
-		wordOutlineCol = wx.Color(198, 121, 30)
-		phonemeFillCol = wx.Color(231, 185, 210)
-		phonemeOutlineCol = wx.Color(173, 114, 146)
+		fillColor = wx.Colour(162, 205, 242)
+		lineColor = wx.Colour(30, 121, 198)
+		frameCol = wx.Colour(192, 192, 192)
+		frameTextCol = wx.Colour(64, 64, 64)
+		playBackCol = wx.Colour(255, 127, 127)
+		playForeCol = wx.Colour(209, 102, 121)
+		playOutlineCol = wx.Colour(128, 0, 0)
+		textCol = wx.Colour(64, 64, 64)
+		phraseFillCol = wx.Colour(205, 242, 162)
+		phraseOutlineCol = wx.Colour(121, 198, 30)
+		wordFillCol = wx.Colour(242, 205, 162)
+		wordOutlineCol = wx.Colour(198, 121, 30)
+		phonemeFillCol = wx.Colour(231, 185, 210)
+		phonemeOutlineCol = wx.Colour(173, 114, 146)
 		font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL)
 		drawPlayMarker = False
 		curFrame = self.curFrame
