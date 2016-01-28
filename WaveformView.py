@@ -642,10 +642,12 @@ class WaveformView(wx.ScrolledWindow):
 			dc.SetPen(wx.Pen(playOutlineCol))
 			dc.DrawRectangle(x, 0, self.frameWidth + 1, cs.height)
 			# Draw Big Fat Frame Marker
-			#font.SetPointSize(12)
-			#font.SetWeight(wx.BOLD)
-			#dc.SetFont(font)
-			#dc.DrawLabel(str((curFrame + 1)%10), wx.Rect(x, cs.height*0.8, 128, 128))
+			if self.isDragging:
+				  dc.DestroyClippingRegion()
+				  font.SetPointSize(16)
+				  font.SetWeight(wx.BOLD)
+				  dc.SetFont(font)
+				  dc.DrawLabel(str(curFrame + 1), wx.Rect(x-50, cs.height*0.4, 100,125),wx.ALIGN_CENTER)
 
 
 		dc.EndDrawing()
