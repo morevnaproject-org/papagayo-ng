@@ -17,6 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
+import shutil
 import codecs
 import ConfigParser
 import wx
@@ -361,6 +362,22 @@ class LipsyncVoice:
 				outFile.write("%d %s\n" % (frame + 1, phoneme))
 		outFile.write("%d %s\n" % (endFrame + 2, "rest"))
 		outFile.close()
+
+
+	def ExportImages(self,path):
+		phoneme = ""
+		if len(self.phrases) > 0:
+			startFrame = self.phrases[0].startFrame
+			endFrame = self.phrases[-1].endFrame
+		else:
+			startFrame=0
+			endFrame=1
+		
+		
+		for frame in range(startFrame, endFrame + 1):
+			phoneme = self.GetPhonemeAtFrame(frame)
+			shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/2 - Mouth 2/")+phoneme+".jpg",path + str(frame).rjust(6,'0') + ".jpg")
+
 
 	def ExportAlelo(self, path, language, languagemanager):
 		outFile = open(path, 'w')

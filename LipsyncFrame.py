@@ -193,7 +193,7 @@ class LipsyncFrame(wx.Frame):
 		self.phonemesetChoice.SetSelection(0)
 		
 		#setup export intialization here
-		exporterList = ["MOHO", "ALELO"]
+		exporterList = ["MOHO", "ALELO", "Images"]
 		c = 0
 		select = 0
 		for exporter in exporterList:
@@ -589,6 +589,15 @@ class LipsyncFrame(wx.Frame):
 						self.config.Write("WorkingDir", dlg.GetDirectory())
 						self.doc.currentVoice.ExportAlelo(dlg.GetPaths()[0], language, self.langman)
 					dlg.Destroy()
+			elif exporter == "Images":
+				dlg = wx.FileDialog(
+				self, message = "Export Image Strip", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
+				defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0], style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
+				if dlg.ShowModal() ==wx.ID_OK:
+					self.config.Write("WorkingDir", dlg.GetDirectory())
+					self.doc.currentVoice.ExportImages(dlg.GetPaths()[0])
+				dlg.Destroy()
+					
 				
 
 	def OnFps(self, event):
