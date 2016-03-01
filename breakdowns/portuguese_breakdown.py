@@ -80,12 +80,6 @@ def breakdownWord(word, recursive=False):
     easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
-#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# Special rule to digraphs consonant:
-# qu and gu (followed by e or i):  aquilo, guerra, águia,  questão, quilo, querido  
-# ?need fix exceptions when vowel u is pronounced : cinquenta, frequente, tranquilo, linguiça, aguentar
-#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    word=word.replace('que','q').replace('qui','q').replace('gue','g').replace('gui','g') 
     for letter in word:
         # if letter == previous and not isvowel(letter):  # double consonants
         #     pass
@@ -111,8 +105,23 @@ def breakdownWord(word, recursive=False):
             phonemes.append('AW0')
 	# U 
         elif letter in ['u', u'\N{LATIN SMALL LETTER U WITH ACUTE}']:            
-            phonemes.append('UW0') 
-
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Special rule to digraphs consonant:
+# qu and gu (followed by e or i):  aquilo, questão, quilo, querida, guerra, águia  
+# ?need fix exceptions when vowel u is pronounced : cinquenta, frequente, tranquilo, linguiça, aguentar
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
+            if previous == 'q': # check digraphs consonant Qu
+                # ['e', 'i', 'é', 'í', 'ê', 'î'] 
+                if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
+                    phonemes.append('K')
+                else:    
+                    phonemes.append('UW0')
+            if previous == 'g': # check digraphs consonant Gu
+                # ['e', 'i', 'é', 'í', 'ê', 'î'] 
+                if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
+                    phonemes.append('G')
+                else:        
+                    phonemes.append('UW0')  
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # consonants with combinations
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
