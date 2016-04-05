@@ -364,7 +364,7 @@ class LipsyncVoice:
 		outFile.close()
 
 
-	def ExportImages(self,path):
+	def ExportImages(self,path, currentmouth):
 		phoneme = ""
 		if len(self.phrases) > 0:
 			startFrame = self.phrases[0].startFrame
@@ -376,7 +376,7 @@ class LipsyncVoice:
 		
 		for frame in range(startFrame, endFrame + 1):
 			phoneme = self.GetPhonemeAtFrame(frame)
-			shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/2 - Mouth 2/")+phoneme+".jpg",path + str(frame).rjust(6,'0') + ".jpg")
+			shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currentmouth+"/"+phoneme+".jpg",path + str(frame).rjust(6,'0') + ".jpg")
 
 
 	def ExportAlelo(self, path, language, languagemanager):
