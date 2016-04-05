@@ -595,7 +595,7 @@ class LipsyncFrame(wx.Frame):
 				defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0], style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
 				if dlg.ShowModal() ==wx.ID_OK:
 					self.config.Write("WorkingDir", dlg.GetDirectory())
-					self.doc.currentVoice.ExportImages(dlg.GetPaths()[0])
+					self.doc.currentVoice.ExportImages(dlg.GetPaths()[0],self.mouthChoice.GetStringSelection())
 				dlg.Destroy()
 					
 				
