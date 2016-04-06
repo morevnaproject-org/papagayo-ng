@@ -21,15 +21,19 @@
 
 import os
 import wx
+import re
 from utilities import *
 # begin wxGlade: dependencies
 # end wxGlade
 
 def ProcessMouthDir(mouthView, dirname, names):
 	hasImages = False
+	#wx gives us a string instead of a list of filetypes
+	full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
+	supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
 	for file in names:
 		file = file.lower()
-		if file.endswith(".jpg") or file.endswith(".jpeg") or file.endswith("png"):
+		if file.split(".")[-1] in supportedimagetypes:
 			hasImages = True
 	if not hasImages:
 		return
