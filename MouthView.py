@@ -29,7 +29,7 @@ def ProcessMouthDir(mouthView, dirname, names):
 	hasImages = False
 	for file in names:
 		file = file.lower()
-		if file.endswith(".jpg") or file.endswith(".jpeg"):
+		if file.endswith(".jpg") or file.endswith(".jpeg") or file.endswith("png"):
 			hasImages = True
 	if not hasImages:
 		return
@@ -96,6 +96,8 @@ class MouthView(wx.Panel):
 		try:
 			bitmap = self.mouths[self.currentMouth][self.currentPhoneme]
 			width, height = self.GetClientSizeTuple()
+			dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
+			dc.Clear()
 			dc.DrawBitmap(bitmap, width / 2 - bitmap.GetWidth() / 2, height / 2 - bitmap.GetHeight() / 2)
 		except:
 			dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
