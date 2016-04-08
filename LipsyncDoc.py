@@ -374,7 +374,7 @@ class LipsyncVoice:
 			endFrame=1
 		
 		phonemedict = {}
-		for file in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currmouth):
+		for file in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currentmouth):
 			phonemedict[os.path.splitext(file)[0]] = os.path.splitext(file)[1]
 		for frame in range(startFrame, endFrame + 1):
 			phoneme = self.GetPhonemeAtFrame(frame)
