@@ -141,7 +141,7 @@ class LipsyncFrame(wx.Frame):
 		global ID_EXPORTCHOICE; ID_EXPORTCHOICE = wx.NewId()
 		self.exportChoice = wx.Choice(self.panel_2, ID_EXPORTCHOICE, choices=[])
 		global ID_EXPORT; ID_EXPORT = wx.NewId()
-		self.exportBut = wx.Button(self.panel_2, ID_EXPORT, "Export Voice...")
+		self.exportBut = wx.Button(self.panel_2, ID_EXPORT, "Export...")
 		global ID_VOICEIMAGE; ID_VOICEIMAGE = wx.NewId()
 		self.voiceimageBut = wx.Button(self.panel_2,ID_VOICEIMAGE,"Image to Export")
 		self.label_3 = wx.StaticText(self.panel_2, -1, "Fps:")
