@@ -610,10 +610,12 @@ class LipsyncFrame(wx.Frame):
 		language = self.languageChoice.GetStringSelection()
 		if (self.doc is not None) and (self.doc.currentVoice is not None):
 			voiceimagepath = wx.DirDialog(
-			self, message = "Choose Path for Images", defaultPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/"),
+			self, message = "Choose Path for Images", defaultPath = self.config.Read("MouthDir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")),
 			style = wx.OPEN | wx.CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
 			if voiceimagepath.ShowModal() ==wx.ID_OK:
+				self.config.Write("MouthDir",voiceimagepath.GetPath())
 				print(voiceimagepath.GetPath())
+			voiceimagepath.Destroy()
 
 	def OnFps(self, event):
 		if self.doc is None:
