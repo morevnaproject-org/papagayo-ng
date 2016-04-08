@@ -142,6 +142,8 @@ class LipsyncFrame(wx.Frame):
 		self.exportChoice = wx.Choice(self.panel_2, ID_EXPORTCHOICE, choices=[])
 		global ID_EXPORT; ID_EXPORT = wx.NewId()
 		self.exportBut = wx.Button(self.panel_2, ID_EXPORT, "Export Voice...")
+		global ID_VOICEIMAGE; ID_VOICEIMAGE = wx.NewId()
+		self.voiceimageBut = wx.Button(self.panel_2,ID_VOICEIMAGE,"Image to Export")
 		self.label_3 = wx.StaticText(self.panel_2, -1, "Fps:")
 		global ID_FPS; ID_FPS = wx.NewId()
 		self.fpsCtrl = wx.TextCtrl(self.panel_2, ID_FPS, "")
@@ -231,6 +233,7 @@ class LipsyncFrame(wx.Frame):
 		wx.EVT_BUTTON(self, ID_BREAKDOWN, self.OnVoiceBreakdown)
 		wx.EVT_BUTTON(self, ID_RELOADDICT, self.OnReloadDictionary)
 		wx.EVT_BUTTON(self, ID_EXPORT, self.OnVoiceExport)
+		wx.EVT_BUTTON(self, ID_VOICEIMAGE, self.OnVoiceimagechoose)
 		wx.EVT_TEXT(self, ID_FPS, self.OnFps)
 		wx.EVT_LISTBOX(self, ID_VOICELIST, self.OnSelVoice)
 		wx.EVT_BUTTON(self, ID_NEWVOICE, self.OnNewVoice)
@@ -288,6 +291,8 @@ class LipsyncFrame(wx.Frame):
 		sizer_9.Add(self.exportChoice, 0, 0, 0)
 		sizer_9.Add((5, 5), 0, 0, 0)
 		sizer_9.Add(self.exportBut, 0, wx.FIXED_MINSIZE, 0)
+		sizer_9.Add((5,5),0,0,0)
+		sizer_9.Add(self.voiceimageBut, 0,wx.FIXED_MINSIZE, 0)
 		sizer_7.Add(sizer_9, 0, wx.ALL|wx.EXPAND, 4)
 		sizer_3.Add(sizer_7, 0, wx.ALL|wx.EXPAND, 4)
 		sizer_2.Add(sizer_3, 1, wx.EXPAND, 0)
@@ -429,6 +434,7 @@ class LipsyncFrame(wx.Frame):
 				self.reloaddictBut.Enable(True)
 				self.exportChoice.Enable(True)
 				self.exportBut.Enable(True)
+				self.voiceimageBut.Enable(True)
 
 	def OnSave(self, event = None):
 		if self.doc is None:
@@ -477,6 +483,7 @@ class LipsyncFrame(wx.Frame):
 		self.reloaddictBut.Enable(False)
 		self.exportChoice.Enable(False)
 		self.exportBut.Enable(False)
+		self.voiceimageBut.Enable(False)
 		# voice list
 		self.fpsCtrl.Clear()
 		self.fpsCtrl.Enable(False)
@@ -599,6 +606,14 @@ class LipsyncFrame(wx.Frame):
 				dlg.Destroy()
 					
 				
+	def OnVoiceimagechoose(self, event):
+		language = self.languageChoice.GetStringSelection()
+		if (self.doc is not None) and (self.doc.currentVoice is not None):
+			voiceimagepath = wx.DirDialog(
+			self, message = "Choose Path for Images", defaultPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/"),
+			style = wx.OPEN | wx.CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
+			if voiceimagepath.ShowModal() ==wx.ID_OK:
+				print(voiceimagepath.GetPath())
 
 	def OnFps(self, event):
 		if self.doc is None:
