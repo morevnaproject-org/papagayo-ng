@@ -327,7 +327,7 @@ class WaveformView(wx.ScrolledWindow):
 						self.dragChange = True
 						self.doc.dirty = True
 						self.selectedWord.endFrame = frame
-						if self.selectedWord.endFrame < self.selectedWord.startFrame + 1:
+						if self.selectedWord.endFrame < self.selectedWord.startFrame:
 							self.selectedWord.endFrame = self.selectedWord.startFrame + 1
 						self.parentPhrase.RepositionWord(self.selectedWord)
 				elif self.draggingEnd == 2:
@@ -464,7 +464,7 @@ class WaveformView(wx.ScrolledWindow):
 		wordOutlineCol = wx.Colour(198, 121, 30)
 		phonemeFillCol = wx.Colour(231, 185, 210)
 		phonemeOutlineCol = wx.Colour(173, 114, 146)
-		font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL)
+		font = wx.Font(6, wx.SWISS, wx.NORMAL, wx.NORMAL)
 		drawPlayMarker = False
 		curFrame = self.curFrame
 		cs = self.GetClientSize()
@@ -536,9 +536,10 @@ class WaveformView(wx.ScrolledWindow):
 				if (self.frameWidth > 2) or ((frame + 2) % fps == 0):
 					dc.DrawLine(frameX, topBorder, frameX, cs.height)
 				# draw frame label
-				if (self.frameWidth > 30) or ((frame + 2) % fps == 0):
+				if (self.frameWidth > 30) or ((frame + 2) % 5 == 0):
 					dc.DrawLine(frameX, 0, frameX, topBorder)
-					dc.DrawLabel(str(frame + 2), wx.Rect(frameX + 2, 0, 128, 128))
+					dc.DrawLine(frameX+1,0,frameX+1, cs.height)
+					dc.DrawLabel(str(frame + 2), wx.Rect(frameX + 1, 0, 128, 128))
 				dc.SetBrush(wx.Brush(fillColor))
 				dc.SetPen(wx.Pen(lineColor))
 			amp = self.amp[i]
@@ -578,7 +579,7 @@ class WaveformView(wx.ScrolledWindow):
 		# draw the phrases/words/phonemes
 		if self.doc.currentVoice is not None:
 			topBorder = topBorder + 4
-			font.SetPointSize(10)
+			font.SetPointSize(8)
 			font.SetWeight(wx.BOLD)
 			dc.SetFont(font)
 			textWidth, textHeight = dc.GetTextExtent("Ojyg")
@@ -640,6 +641,15 @@ class WaveformView(wx.ScrolledWindow):
 			dc.SetBrush(wx.TRANSPARENT_BRUSH)
 			dc.SetPen(wx.Pen(playOutlineCol))
 			dc.DrawRectangle(x, 0, self.frameWidth + 1, cs.height)
+			# Draw Big Fat Frame Marker
+			if self.isDragging:
+				  dc.DestroyClippingRegion()
+				  font.SetPointSize(16)
+				  font.SetWeight(wx.BOLD)
+				  dc.SetFont(font)
+				  dc.DrawLabel(str(curFrame + 1), wx.Rect(x-50, cs.height*0.4, 100,125),wx.ALIGN_CENTER)
+
+
 		dc.EndDrawing()
 
 	def OnZoomIn(self, event):

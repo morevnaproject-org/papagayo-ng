@@ -21,15 +21,19 @@
 
 import os
 import wx
+import re
 from utilities import *
 # begin wxGlade: dependencies
 # end wxGlade
 
 def ProcessMouthDir(mouthView, dirname, names):
 	hasImages = False
+	#wx gives us a string instead of a list of filetypes
+	full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
+	supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
 	for file in names:
 		file = file.lower()
-		if file.endswith(".jpg") or file.endswith(".jpeg"):
+		if file.split(".")[-1] in supportedimagetypes:
 			hasImages = True
 	if not hasImages:
 		return
@@ -96,6 +100,8 @@ class MouthView(wx.Panel):
 		try:
 			bitmap = self.mouths[self.currentMouth][self.currentPhoneme]
 			width, height = self.GetClientSizeTuple()
+			dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
+			dc.Clear()
 			dc.DrawBitmap(bitmap, width / 2 - bitmap.GetWidth() / 2, height / 2 - bitmap.GetHeight() / 2)
 		except:
 			dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
