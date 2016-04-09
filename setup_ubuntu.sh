@@ -1,1 +1,1 @@
-apt-get install python-pyaudio python-wxGlade
+apt-get install python-pyaudio python-wxgtk2.8

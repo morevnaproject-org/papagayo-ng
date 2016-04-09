@@ -378,7 +378,7 @@ class LipsyncVoice:
 			phonemedict[os.path.splitext(file)[0]] = os.path.splitext(file)[1]
 		for frame in range(startFrame, endFrame + 1):
 			phoneme = self.GetPhonemeAtFrame(frame)
-			shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currentmouth+"/"+phoneme+phoneme+phonemedict[phoneme],path + str(frame).rjust(6,'0') + phoneme+phonemedict[phoneme])
+			shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currentmouth+"/"+phoneme+phonemedict[phoneme],path + str(frame).rjust(6,'0') + phoneme+phonemedict[phoneme])
 
 
 	def ExportAlelo(self, path, language, languagemanager):
