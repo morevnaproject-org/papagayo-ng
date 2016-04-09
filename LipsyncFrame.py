@@ -78,6 +78,8 @@ class LipsyncFrame(wx.Frame):
 		# begin wxGlade: LipsyncFrame.__init__
 		kwds["style"] = wx.DEFAULT_FRAME_STYLE
 		wx.Frame.__init__(self, *args, **kwds)
+
+		#Voice List Box
 		self.panel_2 = wx.Panel(self, -1)
 		self.sizer_5_staticbox = wx.StaticBox(self.panel_2, -1, "Voice List")
 		self.sizer_7_staticbox = wx.StaticBox(self.panel_2, -1, "Current Voice")
@@ -122,6 +124,9 @@ class LipsyncFrame(wx.Frame):
 		self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, "Zoom Out", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_out.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Zoom Out", "Zoom out of the waveform")
 		self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, "Reset Zoom", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_1.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Reset Zoom", "Reset the zoomed view of the waveform")
 		# Tool Bar end
+		
+		
+		
 		self.waveformView = WaveformView(self.panel_2, -1)
 		self.label_2 = wx.StaticText(self.panel_2, -1, "Voice name:")
 		global ID_VOICENAME; ID_VOICENAME = wx.NewId()

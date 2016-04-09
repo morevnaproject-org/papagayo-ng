@@ -80,6 +80,7 @@ class WaveformView(wx.ScrolledWindow):
 		wx.EVT_LEFT_UP(self, self.OnMouseUp)
 		wx.EVT_RIGHT_UP(self, self.OnMouseUp)
 		wx.EVT_MOTION(self, self.OnMouseMove)
+		wx.EVT_MOUSEWHEEL(self, self.OnMouseWheel)
 
 		# Force an update
 		self.OnSize()
@@ -279,6 +280,14 @@ class WaveformView(wx.ScrolledWindow):
 				while self.doc.sound.IsPlaying():
 					pass # don't redraw until the playback for the last frame is done
 			self.UpdateDrawing()
+			
+	def OnMouseWheel(self,event):
+		if self.doc is not None:
+			if event.ControlDown():
+				if event.GetWheelRotation() > 0:
+					self.OnZoomIn(event)
+				else:
+					self.OnZoomOut(event)
 
 	def OnMouseMove(self, event):
 		if self.isDragging:
