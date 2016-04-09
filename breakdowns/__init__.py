@@ -1,13 +1,13 @@
-import dutch_breakdown
-import finnish_breakdown
-import german_breakdown
-import hungarian_breakdown
-import italian_breakdown_AloRom
-import italian_breakdown
-import norwegian_breakdown
-import portuguese_breakdown
-import russian_breakdown
-import spanish_breakdown
-import swedish_breakdown
-import turkish_breakdown
-import ukrainian_breakdown
+from . import dutch_breakdown
+from . import finnish_breakdown
+from . import german_breakdown
+from . import hungarian_breakdown
+from . import italian_breakdown_AloRom
+from . import italian_breakdown
+from . import norwegian_breakdown
+from . import portuguese_breakdown
+from . import russian_breakdown
+from . import spanish_breakdown
+from . import swedish_breakdown
+from . import turkish_breakdown
+from . import ukrainian_breakdown

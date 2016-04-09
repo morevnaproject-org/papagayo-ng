@@ -26,7 +26,7 @@
 
 """functions to take a Swedish word and return a list of phonemes
 """
-from unicode_hammer import latin1_to_ascii as hammer
+from .unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -39,23 +39,23 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 def suffixen(word):
     suffix = False
     suffix_pronunciation = {
-        u"erna": ["AE0", "R", "N", "AH0"],
-        u"ernas": ["AE0", "R", "N", "AH0", "S"],
-        u"erner": ["AE0", "R", "N", "AE0", "R"],
-        u"age": ["AH0", "SH"],
-        u"ege": ["EH0", "SH"],
-        u"tion": ["CH", "UH0", "N"],
-        u"fon": ["F", "AO0", "N"],
-        u"for": ["F", "AO0", "R"]
+        "erna": ["AE0", "R", "N", "AH0"],
+        "ernas": ["AE0", "R", "N", "AH0", "S"],
+        "erner": ["AE0", "R", "N", "AE0", "R"],
+        "age": ["AH0", "SH"],
+        "ege": ["EH0", "SH"],
+        "tion": ["CH", "UH0", "N"],
+        "fon": ["F", "AO0", "N"],
+        "for": ["F", "AO0", "R"]
     }
-    suffixes = suffix_pronunciation.keys()
+    suffixes = list(suffix_pronunciation.keys())
     for each_suffix in suffixes:
         if word.endswith(each_suffix) and len(word) > len(each_suffix):
             word = word[:-len(each_suffix)]
             suffix = suffix_pronunciation[each_suffix]
             break
     if not suffix:
-        if word.endswith(u"er") and len(word) > 4:
+        if word.endswith("er") and len(word) > 4:
             suffix = ["AE0", "R"]
             word = word[:-2]
     return word, suffix
@@ -64,44 +64,44 @@ def suffixen(word):
 def prefixen(word):
     prefix = False
     prefix_pronunciation = {
-        u"an": ["AH0", "N"],
-        u"anti": ["AH0", "N", "T", "IY0"],
-        u"av": ["AH0", "V"],
-        u"be": ["B", "EH0"],
-        u"er": ["AE0", "R"],
-        u"efter": ["EH0", "F", "T", "AE0", "R"],
-        u'f\N{LATIN SMALL LETTER O WITH DIAERESIS}re': ["F", "ER0", "R", "EH0"],   # före
-        u'f\N{LATIN SMALL LETTER O WITH DIAERESIS}r': ["F", "ER0", "R"],  # "för"
-        u"fram": ["F", "R", "AH0", "M"],
-        u"fr\N{LATIN SMALL LETTER A WITH RING ABOVE}": ["F", "R", "AO0", "N"],
-        u"ill": ["IY0", "L"],
+        "an": ["AH0", "N"],
+        "anti": ["AH0", "N", "T", "IY0"],
+        "av": ["AH0", "V"],
+        "be": ["B", "EH0"],
+        "er": ["AE0", "R"],
+        "efter": ["EH0", "F", "T", "AE0", "R"],
+        'f\N{LATIN SMALL LETTER O WITH DIAERESIS}re': ["F", "ER0", "R", "EH0"],   # före
+        'f\N{LATIN SMALL LETTER O WITH DIAERESIS}r': ["F", "ER0", "R"],  # "för"
+        "fram": ["F", "R", "AH0", "M"],
+        "fr\N{LATIN SMALL LETTER A WITH RING ABOVE}": ["F", "R", "AO0", "N"],
+        "ill": ["IY0", "L"],
         # u"miss": ["M IY0 S"],
-        u'p\N{LATIN SMALL LETTER A WITH RING ABOVE}': ["P", "AO0"],  # "på"
-        u"re": ["R", "EH0"],
-        u"upp": ["UW0", "P"],
-        u"ut": ["UW0", "T"],
-        u'\N{LATIN SMALL LETTER A WITH RING ABOVE}ter': ["AO0", "T", "AE0", "R"],  # "åter"
-        u'\N{LATIN SMALL LETTER O WITH DIAERESIS}ver': ["ER0", "V", "AE0", "R"],  # "över"
-        u"ad": ["AH0", "D"],
-        u"dis": ["D", "IY0", "S"],
-        u"fri": ["F", "R", "IY0"],
-        u"fast": ["F", "AH0", "S", "T"],
-        u"bio": ["B", "IY0", "UH0"],
-        u"inter": ["IY0", "N", "T", "EH0", "R"],
-        u"kron": ["K", "R", "UH0", "N"],
-        u"samman": ["S", "AH0", "M", "AH0", "N"],
-        u"s\N{LATIN SMALL LETTER O WITH DIAERESIS}nder": ["S", "ER0", "N", "D", "EH0", "R"],
-        u"super": ["S", "UW0", "P", "EH0", "R"],
-        u"kom": ["K", "AO0", "M"],
-        u"korr": ["K", "AO0", "R"],
-        u"koll": ["K", "AO0", "L"],
-        u"astro": ["AH0", "S", "T", "R", "AO0"],
-        u"auto": ["AH0", "UW0", "T", "AO0"],
-        u"mono": ["M", "AO0", "N", "AO0"],
-        u"poly": ["P", "AO0", "L", "UW0"],
-        u"post": ["P", "AO0", "S", "T"],
+        'p\N{LATIN SMALL LETTER A WITH RING ABOVE}': ["P", "AO0"],  # "på"
+        "re": ["R", "EH0"],
+        "upp": ["UW0", "P"],
+        "ut": ["UW0", "T"],
+        '\N{LATIN SMALL LETTER A WITH RING ABOVE}ter': ["AO0", "T", "AE0", "R"],  # "åter"
+        '\N{LATIN SMALL LETTER O WITH DIAERESIS}ver': ["ER0", "V", "AE0", "R"],  # "över"
+        "ad": ["AH0", "D"],
+        "dis": ["D", "IY0", "S"],
+        "fri": ["F", "R", "IY0"],
+        "fast": ["F", "AH0", "S", "T"],
+        "bio": ["B", "IY0", "UH0"],
+        "inter": ["IY0", "N", "T", "EH0", "R"],
+        "kron": ["K", "R", "UH0", "N"],
+        "samman": ["S", "AH0", "M", "AH0", "N"],
+        "s\N{LATIN SMALL LETTER O WITH DIAERESIS}nder": ["S", "ER0", "N", "D", "EH0", "R"],
+        "super": ["S", "UW0", "P", "EH0", "R"],
+        "kom": ["K", "AO0", "M"],
+        "korr": ["K", "AO0", "R"],
+        "koll": ["K", "AO0", "L"],
+        "astro": ["AH0", "S", "T", "R", "AO0"],
+        "auto": ["AH0", "UW0", "T", "AO0"],
+        "mono": ["M", "AO0", "N", "AO0"],
+        "poly": ["P", "AO0", "L", "UW0"],
+        "post": ["P", "AO0", "S", "T"],
     }
-    prefixes = prefix_pronunciation.keys()
+    prefixes = list(prefix_pronunciation.keys())
     prefixes.sort()
     for each_prefix in prefixes:
         if len(word) >= len(each_prefix)+2 and word.startswith(each_prefix):
@@ -111,17 +111,17 @@ def prefixen(word):
             break
     #  "hän" but not "häng"
     if not prefix:
-        if len(word) >= 5 and word.startswith(u'h\N{LATIN SMALL LETTER A WITH DIAERESIS}n') and not word.startswith(u'h\N{LATIN SMALL LETTER A WITH DIAERESIS}ng'):
+        if len(word) >= 5 and word.startswith('h\N{LATIN SMALL LETTER A WITH DIAERESIS}n') and not word.startswith('h\N{LATIN SMALL LETTER A WITH DIAERESIS}ng'):
             prefix = ['HH", "EH0", "N']  # u'h\N{LATIN SMALL LETTER A WITH DIAERESIS}n'
             word = word[3:]
         # "in" but not "ing"
-        elif len(word) >= 4 and word.startswith(u'in') and not word.startswith(u'ing'):
+        elif len(word) >= 4 and word.startswith('in') and not word.startswith('ing'):
             prefix = ["IY0", "N"]  #  u'i\N{LATIN SMALL LETTER A WITH DIAERESIS}n'
             word = word[2:]
-        elif  word.startswith(u"sam"):
+        elif  word.startswith("sam"):
             prefix = ["S", "AH0", "M"]
             word = word[3:]
-        elif  word.startswith(u"o"):
+        elif  word.startswith("o"):
             prefix = ["UH0"]
             word = word[1:]
     return prefix, word
@@ -136,7 +136,7 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
     phonemes = []
     simple_convert = {
 #    u'\N{LATIN SMALL LETTER A WITH ACUTE}': 'AH0',
-    u'\N{LATIN SMALL LETTER E WITH ACUTE}': 'EY0',
+    '\N{LATIN SMALL LETTER E WITH ACUTE}': 'EY0',
 #    u'\N{LATIN SMALL LETTER I WITH ACUTE}': 'IY0',
 #    u'\N{LATIN SMALL LETTER O WITH ACUTE}': 'UH0',
 #    u'\N{LATIN SMALL LETTER O WITH ACUTE}': 'UW0',
@@ -150,20 +150,20 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
     'v': 'V',
     'w': 'V',
     'z': 'S',
-    u'\N{LATIN SMALL LETTER A WITH RING ABOVE}': 'AO0',  # not exact
-    u'\N{LATIN SMALL LETTER O WITH DIAERESIS}':  'ER0',
+    '\N{LATIN SMALL LETTER A WITH RING ABOVE}': 'AO0',  # not exact
+    '\N{LATIN SMALL LETTER O WITH DIAERESIS}':  'ER0',
     }
-    easy_consonants = simple_convert.keys()
+    easy_consonants = list(simple_convert.keys())
     pos = 0
     previous = ' '
     for letter in word:
         if letter == 'c':
             if len(word) > pos+1 and word[pos+1] == 'c':
                 pass # cc, handle on next case
-            elif previous == 'c' and len(word) > pos+1 and word[pos+1] in ['e', 'i', 'y', u'\N{LATIN SMALL LETTER A WITH DIAERESIS}', u'\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
+            elif previous == 'c' and len(word) > pos+1 and word[pos+1] in ['e', 'i', 'y', '\N{LATIN SMALL LETTER A WITH DIAERESIS}', '\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
                 phonemes.append('K')
                 phonemes.append('S')
-            elif len(word) > pos+1 and word[pos+1] in ['e', 'i', 'y', u'\N{LATIN SMALL LETTER A WITH DIAERESIS}', u'\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
+            elif len(word) > pos+1 and word[pos+1] in ['e', 'i', 'y', '\N{LATIN SMALL LETTER A WITH DIAERESIS}', '\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
                 phonemes.append('S')
             elif len(word) > pos+1 and word[pos+1] == 'h':
                 phonemes.append('SH')
@@ -188,9 +188,9 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
         elif letter == 'g':
             if previous in ['l', 'r']:
                 phonemes.append('Y')
-            elif len(word) > pos+2 and word[pos+1] == 'i' and word[pos+2] == u'\N{LATIN SMALL LETTER O WITH DIAERESIS}':
+            elif len(word) > pos+2 and word[pos+1] == 'i' and word[pos+2] == '\N{LATIN SMALL LETTER O WITH DIAERESIS}':
                 phonemes.append('SH')
-            elif len(word) > pos+1 and word[pos+1] == 'n' and previous in ['a', 'o', 'u', 'e', 'i', 'y', u'\N{LATIN SMALL LETTER A WITH DIAERESIS}', u'\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
+            elif len(word) > pos+1 and word[pos+1] == 'n' and previous in ['a', 'o', 'u', 'e', 'i', 'y', '\N{LATIN SMALL LETTER A WITH DIAERESIS}', '\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
                 phonemes.append('NG')
             elif previous == 'n':  # ng
                 phonemes.append('NG')
@@ -198,10 +198,10 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
                 pass  # same as 'j' alone
             elif len(word) == pos+2 and word[pos+1] == 'e':  # ends in 'ge' - French loan-word such as garage ?
                 phonemes.append('SH')
-            elif pos==0 and len(word) > pos+1 and word[pos+1] in ['e', 'i', 'y', u'\N{LATIN SMALL LETTER A WITH DIAERESIS}', u'\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
+            elif pos==0 and len(word) > pos+1 and word[pos+1] in ['e', 'i', 'y', '\N{LATIN SMALL LETTER A WITH DIAERESIS}', '\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
             # ??? if e is unstressed (how to tell?), pronounce as 'G'
                 phonemes.append('Y')
-            elif pos==0 and len(word) > pos+1 and word[pos+1] in ['a', 'o', 'u', u'\N{LATIN SMALL LETTER A WITH RING ABOVE}']:
+            elif pos==0 and len(word) > pos+1 and word[pos+1] in ['a', 'o', 'u', '\N{LATIN SMALL LETTER A WITH RING ABOVE}']:
                 phonemes.append('G')
             elif previous == 'g':
                 pass
@@ -217,20 +217,20 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
             else:
                 phonemes.append('HH')
         elif letter == 'i':
-            if previous == 'g' and len(word) > pos+1 and word[pos+1] == u'\N{LATIN SMALL LETTER O WITH DIAERESIS}':
+            if previous == 'g' and len(word) > pos+1 and word[pos+1] == '\N{LATIN SMALL LETTER O WITH DIAERESIS}':
                 pass
             elif previous == 's' and len(word) > pos+1 and word[pos+1] == 'o': # sio e.g mission
                 phonemes.append('UH0')
             else:
                 phonemes.append('IY0')  # sometimes 'IH0'
         elif letter == 'k': # needs to be handled before j to handle skj sound
-            if pos == 0 and word in [u'kefir', u'kex', u'kille', u'kis', u'kissa', u'kisse']:
+            if pos == 0 and word in ['kefir', 'kex', 'kille', 'kis', 'kissa', 'kisse']:
                 phonemes.append('K')
-            elif pos == 0 and len(word) > pos+1 and word[pos+1] in ['e', 'i', 'y', u'\N{LATIN SMALL LETTER A WITH DIAERESIS}', u'\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
+            elif pos == 0 and len(word) > pos+1 and word[pos+1] in ['e', 'i', 'y', '\N{LATIN SMALL LETTER A WITH DIAERESIS}', '\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
                 phonemes.append('CH')
-            elif word == unicode('människa', input_encoding):
+            elif word == str('människa', input_encoding):
                 phonemes.append('SH')
-            elif word == unicode('människor', input_encoding):
+            elif word == str('människor', input_encoding):
                 phonemes.append('SH')
             elif len(word) == pos+1 and previous == 's': # ends in SK
                 phonemes.append('S')
@@ -240,7 +240,7 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
                 phonemes.append('CH')  # more Finnish-Swedish than Swedish ???
             elif len(word) == pos+1 and previous == 'c':
                 pass
-            elif previous == 's' and len(word) > pos+1 and word[pos+1] in ['a', 'o', 'u', u'\N{LATIN SMALL LETTER A WITH RING ABOVE}']:
+            elif previous == 's' and len(word) > pos+1 and word[pos+1] in ['a', 'o', 'u', '\N{LATIN SMALL LETTER A WITH RING ABOVE}']:
                 phonemes.append('S')
                 phonemes.append('K')
             elif previous == 's' and pos == 1: # sk at beginning of word
@@ -318,13 +318,13 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
             phonemes.append('K')
             phonemes.append('S')
         elif letter == 'y':
-            if word in [u'yoga', u'yoghurt']:
+            if word in ['yoga', 'yoghurt']:
                 phonemes.append('Y')
-            elif word == u'fyrtio':
+            elif word == 'fyrtio':
                 phonemes.append('ER0')
             else:
                 phonemes.append('UW0')    # not exact
-        elif letter == u'\N{LATIN SMALL LETTER A WITH DIAERESIS}':
+        elif letter == '\N{LATIN SMALL LETTER A WITH DIAERESIS}':
             if phonetic:
                 phonemes.append('AE0')
             elif len(word) > pos+1 and word[pos+1] == 'r':
@@ -353,8 +353,8 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
     return temp_phonemes
 
 def splitWord(word):
-    if word == u"idka":
-        return [u"idka"]
+    if word == "idka":
+        return ["idka"]
     pieces = [word]
     splitflags = ['kk', 'kb', 'bk', 'dk', 'gk', 'pk',
                         'pg', 'bg', 'kg', 'mg', 'vg', 'sg', 'tg',
@@ -376,22 +376,22 @@ def splitWord(word):
 
 def breakdownWord(word, phonetic=False):
     specialcase_words = {
-        u"mage" : ["M", "AH0", "G", "EH0"],
-        u"krage": ["K", "R", "AH0", "G", "EH0"],
-        u"hage": ["HH", "AH0", "G", "EH0"],
-        u"stege": ["S", "T", "EH0", "G", "EH0"],
-        u"och": ["AO0", "K"],
-        u"som": ["S", "AO0", "M"],
-        u"dom": ["D", "AO0", "M"],
-        u"djonk": ["D", "Y", "AO0", "NG", "K"],
-        u"jour": ["SH", "UH0", "R"],
-        u"projekt": ["P", "R", "AO0", "SH", "EH0", "K", "T"],
-        u"champagne": ["SH", "AH0", "M", "P", "AH0", "N", "Y"],
-        u"komik": ["K", "UH0", "M", "IY0", "K"],
-        u"komisk": ["K UH0 M IY0 S K"],
-        u"komiker": ["K", "UH0", "M", "IY0", "CH", "EH0", "R"],
+        "mage" : ["M", "AH0", "G", "EH0"],
+        "krage": ["K", "R", "AH0", "G", "EH0"],
+        "hage": ["HH", "AH0", "G", "EH0"],
+        "stege": ["S", "T", "EH0", "G", "EH0"],
+        "och": ["AO0", "K"],
+        "som": ["S", "AO0", "M"],
+        "dom": ["D", "AO0", "M"],
+        "djonk": ["D", "Y", "AO0", "NG", "K"],
+        "jour": ["SH", "UH0", "R"],
+        "projekt": ["P", "R", "AO0", "SH", "EH0", "K", "T"],
+        "champagne": ["SH", "AH0", "M", "P", "AH0", "N", "Y"],
+        "komik": ["K", "UH0", "M", "IY0", "K"],
+        "komisk": ["K UH0 M IY0 S K"],
+        "komiker": ["K", "UH0", "M", "IY0", "CH", "EH0", "R"],
     }
-    if word in specialcase_words.keys():
+    if word in list(specialcase_words.keys()):
         return specialcase_words[word]
     phonemes = []
     word = word.lower()
@@ -469,4 +469,4 @@ if __name__ == "__main__":
                         'meñe', 'êtres', 'français', 'égaux'
                         ]
     for eachword in testwords:
-        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownSwedishWordPhonetic(unicode(eachword, input_encoding))
+        print(eachword, ':', breakdownWord(str(eachword, input_encoding)), '--', breakdownSwedishWordPhonetic(str(eachword, input_encoding)))

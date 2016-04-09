@@ -26,7 +26,7 @@
 
 """functions to take a Norwegian word and return a list of phonemes
 """
-from unicode_hammer import latin1_to_ascii as hammer
+from .unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -39,7 +39,7 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys(u'aeiouy\N{LATIN SMALL LETTER A WITH RING ABOVE}\N{LATIN SMALL LETTER AE}\N{LATIN SMALL LETTER O WITH STROKE}').has_key
+    isvowel = dict.fromkeys('aeiouy\N{LATIN SMALL LETTER A WITH RING ABOVE}\N{LATIN SMALL LETTER AE}\N{LATIN SMALL LETTER O WITH STROKE}').has_key
     phonemes = []
     simple_convert = {
     'b': 'B',
@@ -54,28 +54,28 @@ def breakdownWord(word, recursive=False):
     'z': 'S',
     }
     short_vowels = {
-        u'a': 'AA0',
-        u'e': 'EH0',
-        u'i': 'IH0',
-        u'o': 'UH0',
-        u'u': 'UH0',
-        u'y': 'IH0',
-        u'\N{LATIN SMALL LETTER AE}': 'AE0',
-        u'\N{LATIN SMALL LETTER O WITH STROKE}': 'AH0',
-        u'\N{LATIN SMALL LETTER A WITH RING ABOVE}': 'AA0'
+        'a': 'AA0',
+        'e': 'EH0',
+        'i': 'IH0',
+        'o': 'UH0',
+        'u': 'UH0',
+        'y': 'IH0',
+        '\N{LATIN SMALL LETTER AE}': 'AE0',
+        '\N{LATIN SMALL LETTER O WITH STROKE}': 'AH0',
+        '\N{LATIN SMALL LETTER A WITH RING ABOVE}': 'AA0'
     }
     long_vowels = {
-        u'a': 'AA0',
-        u'e': 'EY0',
-        u'i': 'IY0',
-        u'o': 'OW0',
-        u'u': 'UW0',
-        u'y': 'IY0',
-        u'\N{LATIN SMALL LETTER AE}': 'AE0',
-        u'\N{LATIN SMALL LETTER O WITH STROKE}': 'ER0',
-        u'\N{LATIN SMALL LETTER A WITH RING ABOVE}': 'AO0'
+        'a': 'AA0',
+        'e': 'EY0',
+        'i': 'IY0',
+        'o': 'OW0',
+        'u': 'UW0',
+        'y': 'IY0',
+        '\N{LATIN SMALL LETTER AE}': 'AE0',
+        '\N{LATIN SMALL LETTER O WITH STROKE}': 'ER0',
+        '\N{LATIN SMALL LETTER A WITH RING ABOVE}': 'AO0'
     }
-    easy_consonants = simple_convert.keys()
+    easy_consonants = list(simple_convert.keys())
     pos = 0
     previous = ' '
     for letter in word:
@@ -95,7 +95,7 @@ def breakdownWord(word, recursive=False):
             elif letter == 'o'and len(word) > pos+1 and word[pos+1] == 'i':
                     phonemes.append('UW0')
                     phonemes.append('IY0')
-            elif letter == u'\N{LATIN SMALL LETTER O WITH STROKE}'and len(word) > pos+1 and word[pos+1] == 'y':
+            elif letter == '\N{LATIN SMALL LETTER O WITH STROKE}'and len(word) > pos+1 and word[pos+1] == 'y':
                     phonemes.append('OW0')
                     phonemes.append('IY0')
             elif len(word) == pos+2 and word[pos+1] == 'm':
@@ -145,12 +145,12 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('Y')
         elif letter == 'k':
-            if previous == 's' and len(word) > pos+1 and word[pos+1] in [u'j', u'i', u'y', u'\N{LATIN SMALL LETTER O WITH STROKE}']:
+            if previous == 's' and len(word) > pos+1 and word[pos+1] in ['j', 'i', 'y', '\N{LATIN SMALL LETTER O WITH STROKE}']:
                 phonemes.append('SH')  # sjkære, ski, skøyter
             elif previous == 's':
                 phonemes.append('S')
                 phonemes.append('K')
-            elif len(word) > pos+1 and word[pos+1] in [u'i', u'y']:  # kirke, kyss
+            elif len(word) > pos+1 and word[pos+1] in ['i', 'y']:  # kirke, kyss
                 phonemes.append('HH')
             elif len(word) > pos+1 and word[pos+1] == 'j': # kjønn
                 phonemes.append('HH')
@@ -218,4 +218,4 @@ if __name__ == "__main__":
                         'êtres', 'français', 'égaux'
                         ]
     for eachword in testwords:
-        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(unicode(eachword, input_encoding))
+        print(eachword, ':', breakdownWord(str(eachword, input_encoding)), '--', breakdownWord(str(eachword, input_encoding)))

@@ -3,7 +3,10 @@ import audioop
 import sys
 import traceback
 import pyaudio
-import thread
+try:
+    import thread
+except ImportError:
+    import _thread as thread
 
 class SoundPlayer():
     def __init__(self, soundfile, parent):
