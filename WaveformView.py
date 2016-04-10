@@ -288,6 +288,9 @@ class WaveformView(wx.ScrolledWindow):
 					self.OnZoomIn(event)
 				else:
 					self.OnZoomOut(event)
+			else:
+				x=self.GetScrollPos(wx.HORIZONTAL)
+				self.Scroll(x-(event.GetWheelRotation()/10), 0)
 
 	def OnMouseMove(self, event):
 		if self.isDragging:
