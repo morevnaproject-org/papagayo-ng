@@ -176,13 +176,20 @@ class WaveformView(wx.ScrolledWindow):
 				elif (self.selectedWord is not None) and (y > self.selectedWord.top) and (y < self.selectedWord.bottom):
 					self.selectedPhrase = None
 					self.selectedPhoneme = None
-					self.draggingEnd = 0 # beginning of word
-					dist = self.scrubFrame - self.selectedWord.startFrame
-					if (self.selectedWord.endFrame - self.scrubFrame) < dist:
-						self.draggingEnd = 1 # end of word
-						dist = self.selectedWord.endFrame - self.scrubFrame
-					if (self.selectedWord.endFrame - self.selectedWord.startFrame > 1) and (math.fabs((self.selectedWord.endFrame + self.selectedWord.startFrame) / 2 - self.scrubFrame) < dist):
-						self.draggingEnd = 2 # middle of word
+					self.draggingEnd = 2 # middle of word
+					if (self.selectedWord.endFrame - self.selectedWord.startFrame > 2):
+						dist = self.scrubFrame - self.selectedWord.startFrame
+						if (self.selectedWord.endFrame == self.scrubFrame):
+							self.draggingEnd = 1 # end of word
+						if (self.selectedWord.startFrame == self.scrubFrame):
+							self.draggingEnd = 0 # start of word
+					else:
+						dist = float(x - (self.selectedWord.startFrame * self.frameWidth))
+						wordsize = float((1 + self.selectedWord.endFrame - self.selectedWord.startFrame) * self.frameWidth)
+						if (dist/wordsize > 0.66):
+							self.draggingEnd = 1 # end of word
+						if (dist/wordsize < 0.33):
+							self.draggingEnd = 0 # start of word
 				elif (self.selectedPhoneme is not None) and (y > self.selectedPhoneme.top) and (y < self.selectedPhoneme.bottom):
 					self.selectedPhrase = None
 					self.selectedWord = None
@@ -331,8 +338,8 @@ class WaveformView(wx.ScrolledWindow):
 						self.dragChange = True
 						self.doc.dirty = True
 						self.selectedWord.startFrame = frame
-						if self.selectedWord.startFrame > self.selectedWord.endFrame - 1:
-							self.selectedWord.startFrame = self.selectedWord.endFrame - 1
+						if self.selectedWord.startFrame > self.selectedWord.endFrame:
+							self.selectedWord.startFrame = self.selectedWord.endFrame
 						self.parentPhrase.RepositionWord(self.selectedWord)
 				elif self.draggingEnd == 1:
 					if frame != self.selectedWord.endFrame:
@@ -340,7 +347,7 @@ class WaveformView(wx.ScrolledWindow):
 						self.doc.dirty = True
 						self.selectedWord.endFrame = frame
 						if self.selectedWord.endFrame < self.selectedWord.startFrame:
-							self.selectedWord.endFrame = self.selectedWord.startFrame + 1
+							self.selectedWord.endFrame = self.selectedWord.startFrame
 						self.parentPhrase.RepositionWord(self.selectedWord)
 				elif self.draggingEnd == 2:
 					if frame != self.lastFrame:
