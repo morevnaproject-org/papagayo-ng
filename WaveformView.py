@@ -68,6 +68,7 @@ class WaveformView(wx.ScrolledWindow):
 		self.phraseBottom = 16
 		self.wordBottom = 32
 		self.phonemeTop = 128
+		self.abbreviateMode = False
 
 		# Connect event handlers
 		# window events
@@ -197,7 +198,10 @@ class WaveformView(wx.ScrolledWindow):
 			if (self.selectedPhrase is None) and (self.selectedWord is None) and (self.selectedPhoneme is None):
 				self.basicScrubbing = True
 				self.oldFrame = 0
-				self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
+				if self.abbreviateMode:
+					self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 3.0 / self.doc.fps, 1.0)
+				else:
+					self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
 				self.mouthView.SetFrame(self.scrubFrame)
 				self.UpdateDrawing(False)
 			elif event.RightDown() and self.selectedWord:
@@ -266,6 +270,9 @@ class WaveformView(wx.ScrolledWindow):
 			self.selectedPhoneme = None
 		if self.isDragging:
 			self.CaptureMouse()
+
+	def ToggleAbbreviate(self, event):
+		self.abbreviateMode = ~self.abbreviateMode
 
 	def OnMouseUp(self, event):
 		if self.isDragging:
@@ -360,7 +367,10 @@ class WaveformView(wx.ScrolledWindow):
 			if (frame != self.scrubFrame) and (self.doc is not None) and (self.doc.sound is not None): # and (not self.doc.sound.IsPlaying()):
 				self.oldFrame = self.scrubFrame
 				self.scrubFrame = frame
-				self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
+				if self.abbreviateMode:
+					self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 3.0 / self.doc.fps, 1.0)
+				else:
+					self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
 				self.mouthView.SetFrame(self.scrubFrame)
 				self.UpdateDrawing(not self.basicScrubbing)
 				self.lastFrame = self.scrubFrame

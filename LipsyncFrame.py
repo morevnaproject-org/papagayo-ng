@@ -115,6 +115,7 @@ class LipsyncFrame(wx.Frame):
 		global ID_ZOOMOUT; ID_ZOOMOUT = wx.NewId()
 		global ID_ZOOM1; ID_ZOOM1 = wx.NewId()
 		global ID_CHORUS; ID_CHORUS = wx.NewId()
+		global ID_ABBREVIATE; ID_ABBREVIATE = wx.NewId()
 		self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, "Open", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/open.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Open", "Open a sound file or Papagayo project")
 		self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, "Save", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/save.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Save", "Save this Papagayo project")
 		self.mainFrame_toolbar.AddSeparator()
@@ -126,6 +127,7 @@ class LipsyncFrame(wx.Frame):
 		self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, "Reset Zoom", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_1.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Reset Zoom", "Reset the zoomed view of the waveform")
 		self.mainFrame_toolbar.AddSeparator()
 		self.mainFrame_toolbar.AddCheckTool(ID_CHORUS, (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/chorus.png"))),wx.NullBitmap, "Chorus Mode","Toggle Playing All Voices")
+		self.mainFrame_toolbar.AddCheckTool(ID_ABBREVIATE, (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/abbreviate.png"))),wx.NullBitmap, "Abbreviate Mode","Toggle Shorter Scrub Playback")
 		# Tool Bar end
 		
 		
@@ -236,6 +238,7 @@ class LipsyncFrame(wx.Frame):
 		wx.EVT_TOOL(self, ID_ZOOMOUT, self.waveformView.OnZoomOut)
 		wx.EVT_TOOL(self, ID_ZOOM1, self.waveformView.OnZoom1)
 		wx.EVT_TOOL(self, ID_CHORUS, self.mouthView.ToggleChorus)
+		wx.EVT_TOOL(self, ID_ABBREVIATE, self.waveformView.ToggleAbbreviate)
 		# voice settings
 		wx.EVT_CHOICE(self, ID_MOUTHCHOICE, self.OnMouthChoice)
 		wx.EVT_TEXT(self, ID_VOICENAME, self.OnVoiceName)
