@@ -177,19 +177,12 @@ class WaveformView(wx.ScrolledWindow):
 					self.selectedPhrase = None
 					self.selectedPhoneme = None
 					self.draggingEnd = 2 # middle of word
-					if (self.selectedWord.endFrame - self.selectedWord.startFrame > 2):
-						dist = self.scrubFrame - self.selectedWord.startFrame
-						if (self.selectedWord.endFrame == self.scrubFrame):
-							self.draggingEnd = 1 # end of word
-						if (self.selectedWord.startFrame == self.scrubFrame):
-							self.draggingEnd = 0 # start of word
-					else:
-						dist = float(x - (self.selectedWord.startFrame * self.frameWidth))
-						wordsize = float((1 + self.selectedWord.endFrame - self.selectedWord.startFrame) * self.frameWidth)
-						if (dist/wordsize > 0.66):
-							self.draggingEnd = 1 # end of word
-						if (dist/wordsize < 0.33):
-							self.draggingEnd = 0 # start of word
+					dist = float(x - (self.selectedWord.startFrame * self.frameWidth))
+					wordsize = float((1 + self.selectedWord.endFrame - self.selectedWord.startFrame) * self.frameWidth)
+					if (dist/wordsize > 0.66):
+						self.draggingEnd = 1 # end of word
+					if (dist/wordsize < 0.33):
+						self.draggingEnd = 0 # start of word
 				elif (self.selectedPhoneme is not None) and (y > self.selectedPhoneme.top) and (y < self.selectedPhoneme.bottom):
 					self.selectedPhrase = None
 					self.selectedWord = None
