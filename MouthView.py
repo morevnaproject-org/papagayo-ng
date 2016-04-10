@@ -84,7 +84,6 @@ class MouthView(wx.Panel):
 		if (self.doc is not None) and (self.doc.sound is not None) and (self.doc.sound.IsPlaying()):
 			if self.doc.currentVoice is not None:
 				phoneme = self.doc.currentVoice.GetPhonemeAtFrame(self.curFrame)
-				#Show Other Voices. Need config file/checkbox to make optional.
 				if self.chorusMode:
 					for voice in self.doc.voices:
 						if voice.GetPhonemeAtFrame(self.curFrame) != "rest":
