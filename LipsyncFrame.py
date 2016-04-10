@@ -114,6 +114,7 @@ class LipsyncFrame(wx.Frame):
 		global ID_ZOOMIN; ID_ZOOMIN = wx.NewId()
 		global ID_ZOOMOUT; ID_ZOOMOUT = wx.NewId()
 		global ID_ZOOM1; ID_ZOOM1 = wx.NewId()
+		global ID_CHORUS; ID_CHORUS = wx.NewId()
 		self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, "Open", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/open.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Open", "Open a sound file or Papagayo project")
 		self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, "Save", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/save.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Save", "Save this Papagayo project")
 		self.mainFrame_toolbar.AddSeparator()
@@ -123,6 +124,8 @@ class LipsyncFrame(wx.Frame):
 		self.mainFrame_toolbar.AddLabelTool(ID_ZOOMIN, "Zoom In", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_in.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Zoom In", "Zoom in on the waveform")
 		self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, "Zoom Out", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_out.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Zoom Out", "Zoom out of the waveform")
 		self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, "Reset Zoom", (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_1.png"))), wx.NullBitmap, wx.ITEM_NORMAL, "Reset Zoom", "Reset the zoomed view of the waveform")
+		self.mainFrame_toolbar.AddSeparator()
+		self.mainFrame_toolbar.AddCheckTool(ID_CHORUS, (wx.Bitmap(os.path.join(get_main_dir(),"rsrc/chorus.png"))),wx.NullBitmap, "Chorus Mode","Toggle Playing All Voices")
 		# Tool Bar end
 		
 		
@@ -161,6 +164,7 @@ class LipsyncFrame(wx.Frame):
 		self.newVoiceBut = wx.Button(self.panel_2, ID_NEWVOICE, "New")
 		global ID_DELVOICE; ID_DELVOICE = wx.NewId()
 		self.delVoiceBut = wx.Button(self.panel_2, ID_DELVOICE, "Delete")
+		
 
 		self.__set_properties()
 		self.__do_layout()
@@ -231,6 +235,7 @@ class LipsyncFrame(wx.Frame):
 		wx.EVT_TOOL(self, ID_ZOOMIN, self.waveformView.OnZoomIn)
 		wx.EVT_TOOL(self, ID_ZOOMOUT, self.waveformView.OnZoomOut)
 		wx.EVT_TOOL(self, ID_ZOOM1, self.waveformView.OnZoom1)
+		wx.EVT_TOOL(self, ID_CHORUS, self.mouthView.ToggleChorus)
 		# voice settings
 		wx.EVT_CHOICE(self, ID_MOUTHCHOICE, self.OnMouthChoice)
 		wx.EVT_TEXT(self, ID_VOICENAME, self.OnVoiceName)

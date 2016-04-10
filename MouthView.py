@@ -53,6 +53,7 @@ class MouthView(wx.Panel):
 		self.doc = None
 		self.curFrame = 0
 		self.oldFrame = 0
+		self.chorusMode = False
 		self.currentPhoneme = "rest"
 		self.currentMouth = None
 		self.mouths = {}
@@ -84,9 +85,10 @@ class MouthView(wx.Panel):
 			if self.doc.currentVoice is not None:
 				phoneme = self.doc.currentVoice.GetPhonemeAtFrame(self.curFrame)
 				#Show Other Voices. Need config file/checkbox to make optional.
-				for voice in self.doc.voices:
-					if voice.GetPhonemeAtFrame(self.curFrame) != "rest":
-						phoneme = voice.GetPhonemeAtFrame(self.curFrame)
+				if self.chorusMode:
+					for voice in self.doc.voices:
+						if voice.GetPhonemeAtFrame(self.curFrame) != "rest":
+							phoneme = voice.GetPhonemeAtFrame(self.curFrame)
 						
 			else:
 				phoneme = "rest"
@@ -123,6 +125,9 @@ class MouthView(wx.Panel):
 	def SetDocument(self, doc):
 		self.doc = doc
 		self.DrawMe()
+
+	def ToggleChorus(self, event):
+		self.chorusMode = ~self.chorusMode
 
 	def LoadMouths(self):
 		os.path.walk(os.path.join(get_main_dir(), "rsrc/mouths"), ProcessMouthDir, self)
