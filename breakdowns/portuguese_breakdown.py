@@ -104,7 +104,7 @@ def breakdownWord(word, recursive=False):
         elif letter == u'\N{LATIN SMALL LETTER O WITH TILDE}':
             phonemes.append('AW0')
 	# U 
-        elif letter in ['u', u'\N{LATIN SMALL LETTER U WITH ACUTE}']:        
+        elif letter in ['u', u'\N{LATIN SMALL LETTER U WITH ACUTE}']:
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Special rule to digraphs consonant:
 # qu and gu (followed by e or i):  aquilo, questão, quilo, querida, guerra, águia  
@@ -114,15 +114,15 @@ def breakdownWord(word, recursive=False):
                 # ['e', 'i', 'é', 'í', 'ê', 'î'] 
                 if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
                     phonemes.append('K')
-                else:    
+                else:
                     phonemes.append('UW0')
-            if previous == 'g': # digraph consonant Gu
+            elif previous == 'g': # digraph consonant Gu
                 # ['e', 'i', 'é', 'í', 'ê', 'î'] 
                 if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
                     phonemes.append('G')
-                else:        
+                else:
                     phonemes.append('UW0')
-            else:        
+            else:
                     phonemes.append('UW0')
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # consonants with combinations
@@ -167,7 +167,7 @@ def breakdownWord(word, recursive=False):
         elif letter == 'm':
             # ['i', 'o', 'u', 'í', 'ó', 'ú', 'î', 'ô', õ]
             if previous in ['i', 'o', 'u', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER O WITH ACUTE}', u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}',  u'\N{LATIN SMALL LETTER O WITH TILDE}'] and word[-1]==('m') or len(word) > pos+1 and not isvowel(word[pos+1]):
-                pass	# digraphs vowel am em im om um            
+                pass	# digraphs vowel am em im om um    
             else: 
                 phonemes.append('M')
 
@@ -176,7 +176,7 @@ def breakdownWord(word, recursive=False):
             if len(word) > pos+1 and word[pos+1] == 'h': 
                 pass	 #Nh handled under #H
             elif isvowel(previous)  and word[-1]==('n') or len(word) > pos+1 and not isvowel(word[pos+1]):
-                pass	# digraphs vowel an en in on un                
+                pass	# digraphs vowel an en in on un
             else:
                 phonemes.append('N')
         #S
