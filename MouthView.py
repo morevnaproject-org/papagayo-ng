@@ -143,7 +143,6 @@ class MouthView(wx.Panel):
         self.mouths[os.path.basename(dirname)] = bitmaps
         if self.currentMouth is None:
             self.currentMouth = os.path.basename(dirname)
-
 # end of class MouthView
 
 

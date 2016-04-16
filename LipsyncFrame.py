@@ -696,7 +696,7 @@ class LipsyncFrame(wx.Frame):
         print("reload the dictionary")
         lang_config = self.doc.language_manager.language_table[self.languageChoice.GetStringSelection()]
         self.doc.language_manager.LoadLanguage(lang_config,force=True)
-        
+  
 
 # end of class LipsyncFrame
 
