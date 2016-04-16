@@ -8,7 +8,11 @@
 # Manual changes will be overwritten without warning!
 
 import wxversion
-wxversion.select('2.8')
+import warnings
+try:
+    wxversion.select('2.8')
+except wxversion.VersionError:
+    warnings.warn("You are running an unsupported Version of wx. Please test this with wx Version 2.8 before reporting errors!")
 import wx
 import gettext
 import os, sys
