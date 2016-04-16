@@ -44,7 +44,7 @@ defaultSamplesPerFrame = 2
 class WaveformView(wx.ScrolledWindow):
     def __init__(self, *args, **kwds):
         # begin wxGlade: WaveformView.__init__
-        kwds["style"] = wx.SUNKEN_BORDER|wx.TAB_TRAVERSAL
+        kwds["style"] = wx.BORDER_SUNKEN | wx.TAB_TRAVERSAL
         wx.ScrolledWindow.__init__(self, *args, **kwds)
 
         self.__set_properties()
@@ -99,7 +99,7 @@ class WaveformView(wx.ScrolledWindow):
 
     def __do_layout(self):
         # begin wxGlade: WaveformView.__do_layout
-        pass
+        self.Layout()
         # end wxGlade
 
     def OnPaint(self, event):

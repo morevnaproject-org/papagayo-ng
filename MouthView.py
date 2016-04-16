@@ -40,7 +40,7 @@ def ProcessMouthDir(mouthView, dirname, names, supportedimagetypes):
 class MouthView(wx.Panel):
     def __init__(self, *args, **kwds):
         # begin wxGlade: MouthView.__init__
-        kwds["style"] = wx.SUNKEN_BORDER|wx.TAB_TRAVERSAL
+        kwds["style"] = wx.BORDER_SUNKEN | wx.TAB_TRAVERSAL
         wx.Panel.__init__(self, *args, **kwds)
 
         self.__set_properties()
@@ -68,7 +68,7 @@ class MouthView(wx.Panel):
 
     def __do_layout(self):
         # begin wxGlade: MouthView.__do_layout
-        pass
+        self.Layout()
         # end wxGlade
 
     def OnPaint(self, event):
