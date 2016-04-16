@@ -26,124 +26,123 @@ from utilities import *
 # begin wxGlade: dependencies
 # end wxGlade
 
-def ProcessMouthDir(mouthView, dirname, names):
-	hasImages = False
-	#wx gives us a string instead of a list of filetypes
-	full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
-	supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
-	for file in names:
-		file = file.lower()
-		if file.split(".")[-1] in supportedimagetypes:
-			hasImages = True
-	if not hasImages:
-		return
-	mouthView.AddMouth(os.path.normpath(dirname), names)
+def ProcessMouthDir(mouthView, dirname, names, supportedimagetypes):
+    hasImages = False
+    for file in names:
+        file = file.lower()
+        if file.split(".")[-1] in supportedimagetypes:
+            hasImages = True
+    if not hasImages:
+        return
+    print(os.path.normpath(dirname),names)
+    mouthView.AddMouth(os.path.normpath(dirname), names)
 
 class MouthView(wx.Panel):
-	def __init__(self, *args, **kwds):
-		# begin wxGlade: MouthView.__init__
-		kwds["style"] = wx.SUNKEN_BORDER|wx.TAB_TRAVERSAL
-		wx.Panel.__init__(self, *args, **kwds)
+    def __init__(self, *args, **kwds):
+        # begin wxGlade: MouthView.__init__
+        kwds["style"] = wx.BORDER_SUNKEN | wx.TAB_TRAVERSAL
+        wx.Panel.__init__(self, *args, **kwds)
 
-		self.__set_properties()
-		self.__do_layout()
-		# end wxGlade
+        self.__set_properties()
+        self.__do_layout()
+        # end wxGlade
 
-		# Other initialization
-		self.doc = None
-		self.curFrame = 0
-		self.oldFrame = 0
-		self.chorusMode = False
-		self.currentPhoneme = "rest"
-		self.currentMouth = None
-		self.mouths = {}
-		self.LoadMouths()
+        # Other initialization
+        self.doc = None
+        self.curFrame = 0
+        self.oldFrame = 0
+        self.currentPhoneme = "rest"
+        self.currentMouth = None
+        self.mouths = {}
+        self.LoadMouths()
 
-		# Connect event handlers
-		# window events
-		wx.EVT_PAINT(self, self.OnPaint)
+        # Connect event handlers
+        # window events
+        wx.EVT_PAINT(self, self.OnPaint)
 
-	def __set_properties(self):
-		# begin wxGlade: MouthView.__set_properties
-		self.SetMinSize((200, 200))
-		self.SetBackgroundColour(wx.Colour(255, 255, 255))
-		# end wxGlade
+    def __set_properties(self):
+        # begin wxGlade: MouthView.__set_properties
+        self.SetMinSize((200, 200))
+        self.SetBackgroundColour(wx.Colour(255, 255, 255))
+        # end wxGlade
 
-	def __do_layout(self):
-		# begin wxGlade: MouthView.__do_layout
-		pass
-		# end wxGlade
+    def __do_layout(self):
+        # begin wxGlade: MouthView.__do_layout
+        self.Layout()
+        # end wxGlade
 
-	def OnPaint(self, event):
-		dc = wx.PaintDC(self)
-		dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-		dc.Clear()
-		self.DrawMe(dc)
+    def OnPaint(self, event):
+        dc = wx.PaintDC(self)
+        dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
+        dc.Clear()
+        self.DrawMe(dc)
 
-	def DrawMe(self, dc = None):
-		if (self.doc is not None) and (self.doc.sound is not None) and (self.doc.sound.IsPlaying()):
-			if self.doc.currentVoice is not None:
-				phoneme = self.doc.currentVoice.GetPhonemeAtFrame(self.curFrame)
-				if self.chorusMode:
-					for voice in self.doc.voices:
-						if voice.GetPhonemeAtFrame(self.curFrame) != "rest":
-							phoneme = voice.GetPhonemeAtFrame(self.curFrame)
-						
-			else:
-				phoneme = "rest"
-			if phoneme == self.currentPhoneme:
-				return
-			else:
-				self.currentPhoneme = phoneme
-		else:
-			self.currentPhoneme = "rest"
-		if dc is None:
-			dc = wx.ClientDC(self)
-			freeDC = True
-		else:
-			freeDC = False
-		dc.BeginDrawing()
-		try:
-			bitmap = self.mouths[self.currentMouth][self.currentPhoneme]
-			width, height = self.GetClientSizeTuple()
-			dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-			dc.Clear()
-			dc.DrawBitmap(bitmap, width / 2 - bitmap.GetWidth() / 2, height / 2 - bitmap.GetHeight() / 2)
-		except:
-			dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-			dc.Clear()
-		dc.EndDrawing()
-		if freeDC:
-			del dc
+    def DrawMe(self, dc = None):
+        if (self.doc is not None) and (self.doc.sound is not None) and (self.doc.sound.IsPlaying()):
+            if self.doc.currentVoice is not None:
+                phoneme = self.doc.currentVoice.GetPhonemeAtFrame(self.curFrame)
+            else:
+                phoneme = "rest"
+            if phoneme == self.currentPhoneme:
+                return
+            else:
+                self.currentPhoneme = phoneme
+        else:
+            self.currentPhoneme = "rest"
+        if dc is None:
+            dc = wx.ClientDC(self)
+            freeDC = True
+        else:
+            freeDC = False
+        #dc.BeginDrawing()
+        if 1:
+            bitmap = self.mouths[self.currentMouth][self.currentPhoneme]
+            width, height = self.GetClientSize()
+            dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
+            dc.Clear()
+            dc.DrawBitmap(bitmap, width / 2 - bitmap.GetWidth() / 2, height / 2 - bitmap.GetHeight() / 2)
+        else:
+            dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
+            dc.Clear()
+        #dc.EndDrawing()
+        if freeDC:
+            del dc
 
-	def SetFrame(self, frame):
-		self.oldFrame = self.curFrame
-		self.curFrame = frame
-		self.DrawMe()
+    def SetFrame(self, frame):
+        self.oldFrame = self.curFrame
+        self.curFrame = frame
+        self.DrawMe()
 
-	def SetDocument(self, doc):
-		self.doc = doc
-		self.DrawMe()
+    def SetDocument(self, doc):
+        self.doc = doc
+        self.DrawMe()
 
-	def ToggleChorus(self, event):
-		self.chorusMode = ~self.chorusMode
+    def LoadMouths(self):
+        print(os.path.join(get_main_dir(), "rsrc","mouths"))
+        
+        #testresult = os.walk(os.path.join(get_main_dir(), "rsrc\\mouths\\"), ProcessMouthDir, self)
+        #ProcessMouthDir(testresult)
+        #wx gives us a string instead of a list of filetypes
+        full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
+        supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
+        print(supportedimagetypes)
+        for directory, dirnames, filenames in os.walk(os.path.join(get_main_dir(), "rsrc","mouths")):
+            ProcessMouthDir(self, directory, filenames, supportedimagetypes)
+        #for i in testresult:
+            #print(i)
 
-	def LoadMouths(self):
-		os.path.walk(os.path.join(get_main_dir(), "rsrc/mouths"), ProcessMouthDir, self)
-
-	def AddMouth(self, dirname, names):
-		bitmaps = {}
-		for file in names:
-			if ".svn" in file:
-				continue
-			path = os.path.normpath(os.path.join(dirname, file))
-			nolog = wx.LogNull()
-			bitmaps[file.split('.')[0]] = wx.Bitmap(path, wx.BITMAP_TYPE_ANY)
-			del nolog
-		self.mouths[os.path.basename(dirname)] = bitmaps
-		if self.currentMouth is None:
-			self.currentMouth = os.path.basename(dirname)
-
+    def AddMouth(self, dirname, names):
+        bitmaps = {}
+        for file in names:
+            if ".svn" in file:
+                continue
+            path = os.path.normpath(os.path.join(dirname, file))
+            nolog = wx.LogNull()
+            bitmaps[file.split('.')[0]] = wx.Bitmap(path, wx.BITMAP_TYPE_ANY)
+            del nolog
+        self.mouths[os.path.basename(dirname)] = bitmaps
+        if self.currentMouth is None:
+            self.currentMouth = os.path.basename(dirname)
 # end of class MouthView
 
 

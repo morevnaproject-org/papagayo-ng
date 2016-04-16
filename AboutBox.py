@@ -43,8 +43,8 @@ class AboutBox(wx.Dialog):
 		# begin wxGlade: AboutBox.__init__
 		kwds["style"] = wx.DEFAULT_DIALOG_STYLE
 		wx.Dialog.__init__(self, *args, **kwds)
-		self.htmlView = MyHtmlWindow(self, -1, style = wx.SUNKEN_BORDER)
-		self.button_12 = wx.Button(self, wx.ID_OK, "OK")
+		self.htmlView = MyHtmlWindow(self, wx.ID_ANY, style = wx.SUNKEN_BORDER)
+		self.button_12 = wx.Button(self, wx.ID_OK, _("OK"))
 
 		self.__set_properties()
 		self.__do_layout()
@@ -54,15 +54,15 @@ class AboutBox(wx.Dialog):
 
 	def __set_properties(self):
 		# begin wxGlade: AboutBox.__set_properties
-		self.SetTitle("About Papagayo")
+		self.SetTitle(_("About Papagayo"))
 		self.htmlView.SetMinSize((400, 350))
 		# end wxGlade
 
 	def __do_layout(self):
 		# begin wxGlade: AboutBox.__do_layout
 		sizer_13 = wx.BoxSizer(wx.VERTICAL)
-		sizer_13.Add(self.htmlView, 0, wx.ALL|wx.EXPAND, 8)
-		sizer_13.Add(self.button_12, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_HORIZONTAL|wx.FIXED_MINSIZE, 8)
+		sizer_13.Add(self.htmlView, 0, wx.ALL | wx.EXPAND, 8)
+		sizer_13.Add(self.button_12, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM | wx.FIXED_MINSIZE | wx.TOP, 8)
 		self.SetSizer(sizer_13)
 		sizer_13.Fit(self)
 		self.Layout()

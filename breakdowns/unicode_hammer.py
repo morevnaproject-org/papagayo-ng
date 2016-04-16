@@ -84,7 +84,7 @@ def latin1_to_ascii (unicrap):
 
     r = ''
     for i in unicrap:
-        if xlate.has_key(ord(i)):
+        if ord(i) in xlate:
             r += xlate[ord(i)]
         elif ord(i) >= 0x80:
             pass
@@ -93,16 +93,16 @@ def latin1_to_ascii (unicrap):
     return r
 
 if __name__ == '__main__':
-    s = unicode('','latin-1')
+    s = str('','latin-1')
     for c in range(32,256):
         if c != 0x7f:
-            s = s + unicode(chr(c),'latin-1')
+            s = s + str(chr(c),'latin-1')
     plain_ascii = latin1_to_ascii(s)
 
-    print 'INPUT type:', type(s)
-    print 'INPUT:'
-    print s.encode('latin-1')
-    print
-    print 'OUTPUT type:', type(plain_ascii)
-    print 'OUTPUT:'
-    print plain_ascii
+    print('INPUT type:', type(s))
+    print('INPUT:')
+    print(s.encode('latin-1'))
+    print()
+    print('OUTPUT type:', type(plain_ascii))
+    print('OUTPUT:')
+    print(plain_ascii)

@@ -24,7 +24,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from unicode_hammer import latin1_to_ascii as hammer
+from .unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -47,31 +47,31 @@ import string
 # b d f k m n p q s t v w x y z
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 unconditional_conversions = {
-    u'a':'AA0',
-    u'\N{LATIN SMALL LETTER A WITH GRAVE}':'AA1',
-    u'b':'B',
-    u'd':'D',
-    u'e':'IH0',
-    u'\N{LATIN SMALL LETTER E WITH ACUTE}':'IH1',
-    u'\N{LATIN SMALL LETTER E WITH GRAVE}':'IH1',
-    u'f':'F',
-    u'k':'K',
-    u'm':'M',
-    u'n':'N',
-    u'o':'OW0',
-    u'\N{LATIN SMALL LETTER O WITH GRAVE}':'OW1',
-    u'p':'P',
-    u'q':'K',
-    u'r':'R',
-    u's':'S',
-    u't':'T',
-    u'u':'UH0',
-    u'\N{LATIN SMALL LETTER U WITH GRAVE}':'UH1',
-    u'v':'V',
-    u'w':'V',
-    u'x':'EH0',
-    u'y':'EH0',
-    u'z':'Z' }
+    'a':'AA0',
+    '\N{LATIN SMALL LETTER A WITH GRAVE}':'AA1',
+    'b':'B',
+    'd':'D',
+    'e':'IH0',
+    '\N{LATIN SMALL LETTER E WITH ACUTE}':'IH1',
+    '\N{LATIN SMALL LETTER E WITH GRAVE}':'IH1',
+    'f':'F',
+    'k':'K',
+    'm':'M',
+    'n':'N',
+    'o':'OW0',
+    '\N{LATIN SMALL LETTER O WITH GRAVE}':'OW1',
+    'p':'P',
+    'q':'K',
+    'r':'R',
+    's':'S',
+    't':'T',
+    'u':'UH0',
+    '\N{LATIN SMALL LETTER U WITH GRAVE}':'UH1',
+    'v':'V',
+    'w':'V',
+    'x':'EH0',
+    'y':'EH0',
+    'z':'Z' }
 
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -87,77 +87,77 @@ unconditional_conversions = {
 def breakdownWord(input_word, recursive=False):
     word = input_word
     word = word.lower()  # trasformando tutte le parole in minuscolo si diminuiscono le combinazioni da gestire
-    previous = u''
+    previous = ''
     word_index = 0
     breakdown_word = []
     for letter in word :
-        if letter == u'c' :
+        if letter == 'c' :
             #ci
-            if word_index < len(word) and word[word_index+1]==u'i' :
+            if word_index < len(word) and word[word_index+1]=='i' :
                 breakdown_word.append('EH0')
             #ce
-            elif word_index < len(word) and word[word_index+1]==u'e' :
+            elif word_index < len(word) and word[word_index+1]=='e' :
                 breakdown_word.append('EH0')
             #cci
-            elif word_index < len(word)-1 and word[word_index+1]==u'c' and word[word_index+2]==u'i' :
+            elif word_index < len(word)-1 and word[word_index+1]=='c' and word[word_index+2]=='i' :
                 breakdown_word.append('EH0')
             else :
                 breakdown_word.append('K')
-        elif letter == u'g' :
+        elif letter == 'g' :
         	#gi
-            if word_index < len(word) and word[word_index+1]==u'i' :
+            if word_index < len(word) and word[word_index+1]=='i' :
                 breakdown_word.append('JH')
             #gli
-            elif word_index < len(word)-1 and word[word_index+1]==u'l' and word[word_index+2]==u'i' :
+            elif word_index < len(word)-1 and word[word_index+1]=='l' and word[word_index+2]=='i' :
                 breakdown_word.append('JH')
             else :
                 breakdown_word.append('G')
-        elif letter == u'i' :
+        elif letter == 'i' :
             #ci, #gi
-            if previous == u'c' or previous == u'g' :
+            if previous == 'c' or previous == 'g' :
                 previous = letter
                 word_index = word_index + 1
                 continue
             else :
                 breakdown_word.append('EH0')
-        elif letter == u'\N{LATIN SMALL LETTER I WITH ACUTE}' :
+        elif letter == '\N{LATIN SMALL LETTER I WITH ACUTE}' :
             #cí, #gí
-            if previous == u'c' or previous == u'g' :
+            if previous == 'c' or previous == 'g' :
                 previous = letter
                 word_index = word_index + 1
                 continue
             else :
                 breakdown_word.append('EH1')
-        elif letter == u'\N{LATIN SMALL LETTER I WITH GRAVE}' :
+        elif letter == '\N{LATIN SMALL LETTER I WITH GRAVE}' :
             #cì, #gì
-            if previous == u'c' or previous == u'g' :
+            if previous == 'c' or previous == 'g' :
                 previous = letter
                 word_index = word_index + 1
                 continue
             else :
                 breakdown_word.append('EH1')
-        elif letter == u'h' :
+        elif letter == 'h' :
             #ch
-            if previous == u'c':
+            if previous == 'c':
                 previous = letter
                 word_index = word_index + 1
                 continue
             else :
                 breakdown_word.append('HH')
-        elif letter == u'j' :
+        elif letter == 'j' :
             if word_index > 0 and word_index <len(word) :
                 breakdown_word.append('JH')
             else :
                 breakdown_word.append('EH0')
-        elif letter == u'l' :
+        elif letter == 'l' :
             #gli
-            if word_index < len(word) and previous == u'g' and word[word_index+1] == u'i' :
+            if word_index < len(word) and previous == 'g' and word[word_index+1] == 'i' :
                 previous = letter
                 word_index = word_index + 1
                 continue
             else :
                 breakdown_word.append('L')
-        elif letter in unconditional_conversions.keys():
+        elif letter in list(unconditional_conversions.keys()):
             breakdown_word.append(unconditional_conversions[letter])
         elif letter == " ":
             pass
@@ -184,5 +184,5 @@ if __name__ == '__main__' :
                   'HO', 'HAi', 'CHE', 'CHIuso', 'anCHE','BanJo','marGIne',
                   'RAdio', 'ROnco', 'RUbino', 'REsto', 'ramaRRo', 'cROsta', 'på', 'hänsyn']
     for word in test_words:
-        print word," --> ", breakdownWord(unicode(word, input_encoding))
+        print(word," --> ", breakdownWord(str(word, input_encoding)))
 
