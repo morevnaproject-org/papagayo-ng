@@ -436,17 +436,29 @@ class WaveformView(wx.ScrolledWindow):
             self.PrepareDC(cdc)
             #print(self.clipRect)
             if self.clipRect is not None:
-                cdc.SetClippingRegion(self.clipRect)
+                if "SetClippingRect" in dir(cdc):
+                    cdc.SetClippingRect(self.clipRect)
+                else:
+                     # WxWidgets - Phoenix
+                    cdc.SetClippingRegion(self.clipRect)
             dc = wx.BufferedDC(cdc, self.buffer)
             if self.clipRect is not None:
-                dc.SetClippingRegion(self.clipRect)
+                if "SetClippingRect" in dir(dc):
+                    dc.SetClippingRect(self.clipRect)
+                else:
+                     # WxWidgets - Phoenix
+                    dc.SetClippingRegion(self.clipRect)
             self.Draw(dc)
             self.Draw(cdc)
         else:
             dc = wx.ClientDC(self)
             self.PrepareDC(dc)
             if self.clipRect is not None:
-                dc.SetClippingRegion(self.clipRect)
+                if "SetClippingRect" in dir(dc):
+                    dc.SetClippingRect(self.clipRect)
+                else:
+                     # WxWidgets - Phoenix
+                    dc.SetClippingRegion(self.clipRect)
             self.Draw(dc)
 
     def Draw(self, dc):
@@ -607,11 +619,20 @@ class WaveformView(wx.ScrolledWindow):
                 phrase.bottom = r.y + r.height
                 dc.DrawRectangle(r.x, r.y, r.width, r.height)
                 r.Inflate(-4, 0)
-                dc.SetClippingRegion(r)
+                if "SetClippingRect" in dir(dc):
+                    dc.SetClippingRect(r)
+                else:
+                     # WxWidgets - Phoenix
+                    dc.SetClippingRegion(r)
                 dc.DrawLabel(phrase.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
                 dc.DestroyClippingRegion()
                 if self.clipRect is not None:
-                    dc.SetClippingRegion(self.clipRect)
+                    if "SetClippingRect" in dir(dc):
+                        dc.SetClippingRect(self.clipRect)
+                    else:
+                        # WxWidgets - Phoenix
+                        dc.SetClippingRegion(self.clipRect)
+                        
                 wordCount = 0
                 for word in phrase.words:
                     dc.SetBrush(wx.Brush(wordFillCol))
@@ -623,11 +644,19 @@ class WaveformView(wx.ScrolledWindow):
                     word.bottom = r.y + r.height
                     dc.DrawRectangle(r.x, r.y, r.width, r.height)
                     r.Inflate(-4, 0)
-                    dc.SetClippingRegion(r)
+                    if "SetClippingRect" in dir(dc):
+                        dc.SetClippingRect(r)
+                    else:
+                         # WxWidgets - Phoenix
+                        dc.SetClippingRegion(r)
                     dc.DrawLabel(word.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
                     dc.DestroyClippingRegion()
                     if self.clipRect is not None:
-                        dc.SetClippingRegion(self.clipRect)
+                        if "SetClippingRect" in dir(dc):
+                            dc.SetClippingRect(self.clipRect)
+                        else:
+                             # WxWidgets - Phoenix
+                            dc.SetClippingRegion(self.clipRect)
                     dc.SetBrush(wx.Brush(phonemeFillCol))
                     dc.SetPen(wx.Pen(phonemeOutlineCol))
                     phonemeCount = 0

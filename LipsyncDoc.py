@@ -23,7 +23,7 @@ import importlib
 try:
     import configparser
 except ImportError:
-    import configparser as ConfigParser
+    import ConfigParser as configparser
 import wx
 
 from utilities import *

@@ -118,8 +118,7 @@ class MouthView(wx.Panel):
         self.DrawMe()
 
     def LoadMouths(self):
-        print("here")
-        print(os.path.join(get_main_dir(), "rsrc\\mouths\\"))
+        print(os.path.join(get_main_dir(), "rsrc","mouths"))
         
         #testresult = os.walk(os.path.join(get_main_dir(), "rsrc\\mouths\\"), ProcessMouthDir, self)
         #ProcessMouthDir(testresult)
@@ -127,7 +126,7 @@ class MouthView(wx.Panel):
         full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
         supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
         print(supportedimagetypes)
-        for directory, dirnames, filenames in os.walk(os.path.join(get_main_dir(), "rsrc\\mouths\\")):
+        for directory, dirnames, filenames in os.walk(os.path.join(get_main_dir(), "rsrc","mouths")):
             ProcessMouthDir(self, directory, filenames, supportedimagetypes)
         #for i in testresult:
             #print(i)

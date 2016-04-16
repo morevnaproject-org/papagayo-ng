@@ -102,7 +102,11 @@ class LipsyncFrame(wx.Frame):
         self.mainFrame_menubar.Append(wxglade_tmp_menu, "&Help")
         self.SetMenuBar(self.mainFrame_menubar)
         # Menu Bar end
-        self.mainFrame_statusbar = self.CreateStatusBar(2, wx.STB_SIZEGRIP)
+        if "STB_SIZEGRIP" in dir(wx):
+                # WxWidgets Phoenix
+                self.mainFrame_statusbar = self.CreateStatusBar(2, wx.STB_SIZEGRIP)
+        else:
+                self.mainFrame_statusbar = self.CreateStatusBar(2)
         
         # Tool Bar
         self.mainFrame_toolbar = wx.ToolBar(self, -1, style=wx.TB_HORIZONTAL|wx.TB_FLAT)
