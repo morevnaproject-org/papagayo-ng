@@ -50,6 +50,12 @@ class WaveformView(wx.ScrolledWindow):
         self.__set_properties()
         self.__do_layout()
         # end wxGlade
+        
+        # test for wxPython type
+        cdc = wx.ClientDC(self)
+        self.isWxPhoenix = False
+        if not "SetClippingRect" in dir(cdc):
+            self.isWxPhoenix = True
 
         # Other initialization
         self.doc = None
@@ -436,17 +442,17 @@ class WaveformView(wx.ScrolledWindow):
             self.PrepareDC(cdc)
             #print(self.clipRect)
             if self.clipRect is not None:
-                if "SetClippingRect" in dir(cdc):
+                if not self.isWxPhoenix:
                     cdc.SetClippingRect(self.clipRect)
                 else:
-                     # WxWidgets - Phoenix
+                    # WxWidgets - Phoenix
                     cdc.SetClippingRegion(self.clipRect)
             dc = wx.BufferedDC(cdc, self.buffer)
             if self.clipRect is not None:
-                if "SetClippingRect" in dir(dc):
+                if not self.isWxPhoenix:
                     dc.SetClippingRect(self.clipRect)
                 else:
-                     # WxWidgets - Phoenix
+                    # WxWidgets - Phoenix
                     dc.SetClippingRegion(self.clipRect)
             self.Draw(dc)
             self.Draw(cdc)
@@ -454,7 +460,7 @@ class WaveformView(wx.ScrolledWindow):
             dc = wx.ClientDC(self)
             self.PrepareDC(dc)
             if self.clipRect is not None:
-                if "SetClippingRect" in dir(dc):
+                if not self.isWxPhoenix:
                     dc.SetClippingRect(self.clipRect)
                 else:
                      # WxWidgets - Phoenix
@@ -619,7 +625,7 @@ class WaveformView(wx.ScrolledWindow):
                 phrase.bottom = r.y + r.height
                 dc.DrawRectangle(r.x, r.y, r.width, r.height)
                 r.Inflate(-4, 0)
-                if "SetClippingRect" in dir(dc):
+                if not self.isWxPhoenix:
                     dc.SetClippingRect(r)
                 else:
                      # WxWidgets - Phoenix
@@ -627,7 +633,7 @@ class WaveformView(wx.ScrolledWindow):
                 dc.DrawLabel(phrase.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
                 dc.DestroyClippingRegion()
                 if self.clipRect is not None:
-                    if "SetClippingRect" in dir(dc):
+                    if not self.isWxPhoenix:
                         dc.SetClippingRect(self.clipRect)
                     else:
                         # WxWidgets - Phoenix
@@ -644,7 +650,7 @@ class WaveformView(wx.ScrolledWindow):
                     word.bottom = r.y + r.height
                     dc.DrawRectangle(r.x, r.y, r.width, r.height)
                     r.Inflate(-4, 0)
-                    if "SetClippingRect" in dir(dc):
+                    if not self.isWxPhoenix:
                         dc.SetClippingRect(r)
                     else:
                          # WxWidgets - Phoenix
@@ -652,7 +658,7 @@ class WaveformView(wx.ScrolledWindow):
                     dc.DrawLabel(word.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
                     dc.DestroyClippingRegion()
                     if self.clipRect is not None:
-                        if "SetClippingRect" in dir(dc):
+                        if not self.isWxPhoenix:
                             dc.SetClippingRect(self.clipRect)
                         else:
                              # WxWidgets - Phoenix
