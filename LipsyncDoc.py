@@ -369,6 +369,10 @@ class LipsyncVoice:
 
 
     def ExportImages(self,path, currentmouth):
+        try:
+            self.config
+        except AttributeError:
+            self.config = wx.Config("Papagayo", "Lost Marble")
         phoneme = ""
         if len(self.phrases) > 0:
             startFrame = self.phrases[0].startFrame
@@ -376,14 +380,29 @@ class LipsyncVoice:
         else:
             startFrame=0
             endFrame=1
-        
-        phonemedict = {}
-        for file in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currentmouth):
-            phonemedict[os.path.splitext(file)[0]] = os.path.splitext(file)[1]
-        for frame in range(startFrame, endFrame + 1):
-            phoneme = self.GetPhonemeAtFrame(frame)
-            shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currentmouth+"/"+phoneme+phonemedict[phoneme],path + str(frame).rjust(6,'0') + phoneme+phonemedict[phoneme])
-
+        if not self.config.Read("MouthDir"):
+            print("Use normal procedure.\n")
+            phonemedict = {}
+            for file in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currentmouth):
+                phonemedict[os.path.splitext(file)[0]] = os.path.splitext(file)[1]
+            for frame in range(startFrame, endFrame + 1):
+                phoneme = self.GetPhonemeAtFrame(frame)
+                try:
+                    shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")+currentmouth+"/"+phoneme+phonemedict[phoneme],path + str(frame).rjust(6,'0') + phoneme+phonemedict[phoneme])
+                except KeyError:
+                    print("Phoneme '"+phoneme+"' does not exist in chosen directory.")
+                    
+        else:
+            print("Use this dir:" + self.config.Read("MouthDir")+"\n")
+            phonemedict = {}
+            for file in os.listdir(self.config.Read("MouthDir")):
+                phonemedict[os.path.splitext(file)[0]] = os.path.splitext(file)[1]
+            for frame in range(startFrame, endFrame +1):
+                phoneme = self.GetPhonemeAtFrame(frame)
+                try:
+                    shutil.copy(self.config.Read("MouthDir") + "/" + phoneme + phonemedict[phoneme],path + str(frame).rjust(6,'0') + phoneme+phonemedict[phoneme])
+                except KeyError:
+                    print("Phoneme '"+phoneme+"' does not exist in chosen directory.")
 
     def ExportAlelo(self, path, language, languagemanager):
         outFile = open(path, 'w')
