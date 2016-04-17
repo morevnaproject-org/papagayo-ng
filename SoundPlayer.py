@@ -3,6 +3,10 @@ import audioop
 import sys
 import traceback
 import pyaudio
+import os, platform
+from pydub import AudioSegment
+
+
 try:
     import thread
 except ImportError:
@@ -14,10 +18,20 @@ class SoundPlayer():
         self.isplaying = False
         self.time = 0 # current audio position in frames
         self.audio = pyaudio.PyAudio()
-        
+        if platform.system() == "Windows":
+            AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
+        else:
+            pass #might do something different for linux or so here
+
         try:
-            self.wave_reference = wave.open(self.soundfile)
+            tempsound = AudioSegment.from_file(self.soundfile, format = os.path.splitext(self.soundfile)[1][1:])
+            tempsound.export(os.path.dirname(os.path.realpath(__file__)) +"\\temp.wav", format = "wav")
+            self.wave_reference = wave.open(os.path.dirname(os.path.realpath(__file__)) + "\\temp.wav")
             self.isvalid = True
+        
+        #try:
+            #self.wave_reference = wave.open(self.soundfile)
+            #self.isvalid = True
         except:
             traceback.print_exc()
             self.wave_reference = None
