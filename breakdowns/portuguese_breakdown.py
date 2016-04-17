@@ -74,7 +74,7 @@ def breakdownWord(word, recursive=False):
         'w': 'W',
         'y': 'IY0',
         'z': 'Z',
-        '\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S',  	# ç      
+        '\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S',   # ç      
     }
 
     easy_consonants = list(simple_convert.keys())
@@ -83,27 +83,27 @@ def breakdownWord(word, recursive=False):
     for letter in word:
         # if letter == previous and not isvowel(letter):  # double consonants
         #     pass
-	#A
+    #A
         if  letter in ['a', '\N{LATIN SMALL LETTER A WITH ACUTE}', '\N{LATIN SMALL LETTER A WITH GRAVE}', '\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}']:
             phonemes.append('AA0')
         elif letter == '\N{LATIN SMALL LETTER A WITH TILDE}':
             phonemes.append('AE0')
-	#E
+    #E
         elif letter in ['e', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}']:
             phonemes.append('EY0')
         elif letter == '\N{LATIN SMALL LETTER E WITH ACUTE}':
             phonemes.append('EH0')
-	#I
+    #I
         elif letter in ['i', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
             phonemes.append('IY0')
-	#O
+    #O
         elif letter in ['o', '\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}']:
             phonemes.append('OW0')
         elif letter == '\N{LATIN SMALL LETTER O WITH ACUTE}':
             phonemes.append('OY0')
         elif letter == '\N{LATIN SMALL LETTER O WITH TILDE}':
             phonemes.append('AW0')
-	# U 
+    # U 
         elif letter in ['u', u'\N{LATIN SMALL LETTER U WITH ACUTE}']:        
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Special rule to digraphs consonant:
@@ -127,7 +127,7 @@ def breakdownWord(word, recursive=False):
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # consonants with combinations
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	#C 
+    #C 
         elif letter == 'c':
             if previous == 's': # digraph consonant sC #asCender
                 # ['e', 'i', 'é', 'í', 'ê', 'î'] 
@@ -148,7 +148,7 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('S')
             else:
                 phonemes.append('K')
-	#G
+    #G
         elif letter == 'g':
             #ge #gi
             if len(word) > pos+1 and word[pos+1] in ['e', 'i', '\N{LATIN SMALL LETTER E WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']: 
@@ -157,9 +157,9 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('G')
 
         #H
-        elif letter == 'h':	# silent letter
+        elif letter == 'h': # silent letter
             if previous == 'n': 
-              phonemes.append('N')	# digraph consonant Nh
+              phonemes.append('N')  # digraph consonant Nh
             else:
                pass
 
@@ -167,30 +167,30 @@ def breakdownWord(word, recursive=False):
         elif letter == 'm':
             # ['i', 'o', 'u', 'í', 'ó', 'ú', 'î', 'ô', õ]
             if previous in ['i', 'o', 'u', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER O WITH ACUTE}', u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}',  u'\N{LATIN SMALL LETTER O WITH TILDE}'] and word[-1]==('m') or len(word) > pos+1 and not isvowel(word[pos+1]):
-                pass	# digraphs vowel am em im om um            
+                pass    # digraphs vowel am em im om um            
             else: 
                 phonemes.append('M')
 
         #N
-        elif letter == 'n':	
+        elif letter == 'n': 
             if len(word) > pos+1 and word[pos+1] == 'h': 
-                pass	 #Nh handled under #H
+                pass     #Nh handled under #H
             elif isvowel(previous)  and word[-1]==('n') or len(word) > pos+1 and not isvowel(word[pos+1]):
-                pass	# digraphs vowel an en in on un
+                pass    # digraphs vowel an en in on un
             else:
                 phonemes.append('N')
         #S
         elif letter == 's':
             if len(word) > pos+1 and word[pos+1] == 'c':  
-                pass 	 #sC handled under #C
+                pass     #sC handled under #C
             elif isvowel(previous) and len(word) > pos+1 and isvowel(word[pos+1]): # check if have vowel before and after S #caSa 
-                phonemes.append('Z')		
+                phonemes.append('Z')        
             else:
                 phonemes.append('S')
         #X 
         elif letter == 'x':
             if len(word) > pos+1 and word[pos+1] == 'c': 
-                pass 	 #xC handled under #C 
+                pass     #xC handled under #C 
             else:
                 phonemes.append('SH') # There are some exceptions where X have phoneme "KS" like táxi = T A K S I 
 #

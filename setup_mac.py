@@ -23,17 +23,17 @@ import glob
 import py2app
 
 py2app_options = dict(
-	# This is a shortcut that will place MyApplication.icns
-	# in the Contents/Resources folder of the application bundle,
-	# and make sure the CFBundleIcon plist key is set appropriately.
-	iconfile="papagayo.icns",
+    # This is a shortcut that will place MyApplication.icns
+    # in the Contents/Resources folder of the application bundle,
+    # and make sure the CFBundleIcon plist key is set appropriately.
+    iconfile="papagayo.icns",
 ),
 
 setup(
-	app = ["papagayo.py"],
-	options = {"py2app": {
-		"iconfile": "papagayo.icns",
-	}},
-	name = "Papagayo",
-	version = "1.1"
+    app = ["papagayo.py"],
+    options = {"py2app": {
+        "iconfile": "papagayo.icns",
+    }},
+    name = "Papagayo",
+    version = "1.1"
 )

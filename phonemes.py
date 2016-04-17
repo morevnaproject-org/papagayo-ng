@@ -25,6 +25,6 @@
 #     for 'fleming_dobbs' there is a 'phoneme_fleming_dobbs.py' file
 
 phoneme_sets = [
-	'preston_blair',
-	'fleming_dobbs'
+    'preston_blair',
+    'fleming_dobbs'
 ]
