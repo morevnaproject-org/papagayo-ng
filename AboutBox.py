@@ -29,45 +29,45 @@ from utilities import *
 # end wxGlade
 
 class MyHtmlWindow(wx.html.HtmlWindow):
-	def __init__(self, *args, **kwds):
-		wx.html.HtmlWindow.__init__(self, *args, **kwds)
+    def __init__(self, *args, **kwds):
+        wx.html.HtmlWindow.__init__(self, *args, **kwds)
 
-	def OnLinkClicked(self, linkinfo):
-		if linkinfo.GetHref().startswith("http:"):
-			webbrowser.open(linkinfo.GetHref())
-		else:
-			self.base_OnLinkClicked(linkinfo)
+    def OnLinkClicked(self, linkinfo):
+        if linkinfo.GetHref().startswith("http:"):
+            webbrowser.open(linkinfo.GetHref())
+        else:
+            self.base_OnLinkClicked(linkinfo)
 
 class AboutBox(wx.Dialog):
-	def __init__(self, *args, **kwds):
-		# begin wxGlade: AboutBox.__init__
-		kwds["style"] = wx.DEFAULT_DIALOG_STYLE
-		wx.Dialog.__init__(self, *args, **kwds)
-		self.htmlView = MyHtmlWindow(self, wx.ID_ANY, style = wx.SUNKEN_BORDER)
-		self.button_12 = wx.Button(self, wx.ID_OK, _("OK"))
+    def __init__(self, *args, **kwds):
+        # begin wxGlade: AboutBox.__init__
+        kwds["style"] = wx.DEFAULT_DIALOG_STYLE
+        wx.Dialog.__init__(self, *args, **kwds)
+        self.htmlView = MyHtmlWindow(self, wx.ID_ANY, style = wx.SUNKEN_BORDER)
+        self.button_12 = wx.Button(self, wx.ID_OK, _("OK"))
 
-		self.__set_properties()
-		self.__do_layout()
-		# end wxGlade
-		
-		self.htmlView.LoadPage(os.path.join(get_main_dir(), "rsrc/about.html"))
+        self.__set_properties()
+        self.__do_layout()
+        # end wxGlade
+        
+        self.htmlView.LoadPage(os.path.join(get_main_dir(), "rsrc/about.html"))
 
-	def __set_properties(self):
-		# begin wxGlade: AboutBox.__set_properties
-		self.SetTitle(_("About Papagayo"))
-		self.htmlView.SetMinSize((400, 350))
-		# end wxGlade
+    def __set_properties(self):
+        # begin wxGlade: AboutBox.__set_properties
+        self.SetTitle(_("About Papagayo"))
+        self.htmlView.SetMinSize((400, 350))
+        # end wxGlade
 
-	def __do_layout(self):
-		# begin wxGlade: AboutBox.__do_layout
-		sizer_13 = wx.BoxSizer(wx.VERTICAL)
-		sizer_13.Add(self.htmlView, 0, wx.ALL | wx.EXPAND, 8)
-		sizer_13.Add(self.button_12, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM | wx.FIXED_MINSIZE | wx.TOP, 8)
-		self.SetSizer(sizer_13)
-		sizer_13.Fit(self)
-		self.Layout()
-		self.Centre()
-		# end wxGlade
+    def __do_layout(self):
+        # begin wxGlade: AboutBox.__do_layout
+        sizer_13 = wx.BoxSizer(wx.VERTICAL)
+        sizer_13.Add(self.htmlView, 0, wx.ALL | wx.EXPAND, 8)
+        sizer_13.Add(self.button_12, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM | wx.FIXED_MINSIZE | wx.TOP, 8)
+        self.SetSizer(sizer_13)
+        sizer_13.Fit(self)
+        self.Layout()
+        self.Centre()
+        # end wxGlade
 
 # end of class AboutBox
 
