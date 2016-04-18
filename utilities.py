@@ -8,4 +8,4 @@ def main_is_frozen():
 def get_main_dir():
    if main_is_frozen():
        return os.path.abspath(os.path.dirname(sys.executable))
-   return os.path.abspath(os.path.dirname(sys.argv[0]))
+   return os.path.dirname(os.path.abspath(__file__))

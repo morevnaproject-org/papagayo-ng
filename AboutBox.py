@@ -49,10 +49,7 @@ class AboutBox(wx.Dialog):
         self.__set_properties()
         self.__do_layout()
         # end wxGlade
-        if main_is_frozen():
-            self.htmlView.LoadPage(os.path.join(get_main_dir(), "rsrc/about.html"))
-        else:
-            self.htmlView.LoadPage(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/about.html"))
+        self.htmlView.LoadPage(os.path.join(get_main_dir(), "rsrc/about.html"))
 
     def __set_properties(self):
         # begin wxGlade: AboutBox.__set_properties
