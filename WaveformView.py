@@ -286,7 +286,7 @@ class WaveformView(wx.ScrolledWindow):
                 while self.doc.sound.IsPlaying():
                     pass # don't redraw until the playback for the last frame is done
             self.UpdateDrawing()
-
+			
     def OnMouseWheel(self,event):
         if self.doc is not None:
             if event.ControlDown():
@@ -294,6 +294,9 @@ class WaveformView(wx.ScrolledWindow):
                     self.OnZoomIn(event)
                 else:
                     self.OnZoomOut(event)
+            else:
+                x=self.GetScrollPos(wx.HORIZONTAL)
+                self.Scroll(x-(event.GetWheelRotation()/10), 0)
 
     def OnMouseMove(self, event):
         if self.isDragging:
