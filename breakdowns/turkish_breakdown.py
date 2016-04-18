@@ -26,7 +26,7 @@
 
 """functions to take a Hungarian word and return a list of phonemes
 """
-from .unicode_hammer import latin1_to_ascii as hammer
+from unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -39,36 +39,36 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys('aeiou\N{LATIN SMALL LETTER DOTLESS I}'
-'\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH DIAERESIS}'
-'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}').has_key
+    isvowel = dict.fromkeys(u'aeiou\N{LATIN SMALL LETTER DOTLESS I}'
+u'\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH DIAERESIS}'
+u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}').has_key
     phonemes = []
     simple_convert = {
     'b': 'B',
     'c': 'JH',
-    '\N{LATIN SMALL LETTER C WITH CEDILLA}': 'CH',
+    u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'CH',
     'd': 'D',
     'f': 'F',
     'g': 'G',
     'h': 'HH',
-    '\N{LATIN SMALL LETTER DOTLESS I}': 'AH0',
+    u'\N{LATIN SMALL LETTER DOTLESS I}': 'AH0',
     'i': 'IY0',
     'j': 'ZH',
     'k': 'K',
     'l': 'L',
     'm': 'M',
     'n': 'N',
-    '\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0',
+    u'\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0',
     'p': 'P',
     'r': 'R',
     's': 'S',
-    '\N{LATIN SMALL LETTER S WITH CEDILLA}': 'SH',
+    u'\N{LATIN SMALL LETTER S WITH CEDILLA}': 'SH',
     't': 'T',
-    '\N{LATIN SMALL LETTER U WITH DIAERESIS}': 'UW0', # IH0?
+    u'\N{LATIN SMALL LETTER U WITH DIAERESIS}': 'UW0', # IH0?
     'w': 'V',  # loan-words
     'z': 'Z',
     }
-    easy_consonants = list(simple_convert.keys())
+    easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
     for letter in word:
@@ -77,7 +77,7 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('AY0')
             else:
                 phonemes.append('AA0')
-        elif letter == '\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}':
+        elif letter == u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}':
             if previous in ['g', 'k', 'l']:
                 phonemes.append('IY0')
                 phonemes.append('AA0')
@@ -88,7 +88,7 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('EY0')
             else:
                 phonemes.append('EH0')
-        elif letter == '\N{LATIN SMALL LETTER G WITH BREVE}':
+        elif letter == u'\N{LATIN SMALL LETTER G WITH BREVE}':
             pass
             #~ if len(word) > pos+1 and word[pos+1] in ['e', 'i',
                             #~ u'\N{LATIN SMALL LETTER O WITH DIAERESIS}',
@@ -124,7 +124,7 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('OW0')
         elif letter == 'q':  # loan-words
             phonemes.append('K')
-        elif letter == '\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}':
+        elif letter == u'\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}':
             if previous in ['g', 'k', 'l']:
                 phonemes.append('IY0')
                 phonemes.append('UW0')
@@ -144,7 +144,7 @@ def breakdownWord(word, recursive=False):
             phonemes.append('K')
             phonemes.append('S')
         elif letter == 'y':
-            if previous in ['a', 'e', 'o', 'u', '\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
+            if previous in ['a', 'e', 'o', 'u', u'\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
                 pass
             else:
                 phonemes.append('Y')
@@ -182,5 +182,5 @@ if __name__ == "__main__":
                         'på', 'hänsyn'
                         ]
     for eachword in testwords:
-        print(eachword, ':', breakdownWord(str(eachword, input_encoding)), '--', breakdownWord(str(eachword, input_encoding)))
+        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(unicode(eachword, input_encoding))
 

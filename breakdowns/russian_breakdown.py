@@ -27,7 +27,7 @@
 """functions to take an Russian word and return a list of phonemes
 """
 
-from .unicode_hammer import latin1_to_ascii as hammer
+from unicode_hammer import latin1_to_ascii as hammer
 
 import locale, re
 
@@ -63,68 +63,68 @@ def breakdownWord(word, recursive=False):
         'u': 'UW0',
         'v': 'V',
         'x': 'HH',  # use 'Y' ?? 'K'??
-        '\N{LATIN SMALL LETTER S WITH CARON}': 'SH',  # š
-        '\N{LATIN SMALL LETTER Z WITH CARON}': 'ZH',  # ž
-        '\N{LATIN CAPITAL LETTER S WITH CARON}': 'SH',  # Š
-        '\N{LATIN CAPITAL LETTER Z WITH CARON}': 'ZH',  # Ž
+        u'\N{LATIN SMALL LETTER S WITH CARON}': 'SH',  # š
+        u'\N{LATIN SMALL LETTER Z WITH CARON}': 'ZH',  # ž
+        u'\N{LATIN CAPITAL LETTER S WITH CARON}': 'SH',  # Š
+        u'\N{LATIN CAPITAL LETTER Z WITH CARON}': 'ZH',  # Ž
         # Cyrillic
-        '\N{CYRILLIC SMALL LETTER A}': 'AA0',
-        '\N{CYRILLIC SMALL LETTER BE}': 'B',
-        '\N{CYRILLIC SMALL LETTER VE}': 'V',
-        '\N{CYRILLIC SMALL LETTER CHE}': 'CH',
-        '\N{CYRILLIC SMALL LETTER DE}': 'D',
-        '\N{CYRILLIC SMALL LETTER E}': 'EH0',
-        '\N{CYRILLIC SMALL LETTER EF}': 'F',
-        '\N{CYRILLIC SMALL LETTER GHE}': 'G',
-        '\N{CYRILLIC SMALL LETTER I}': 'IY0',
-        '\N{CYRILLIC SMALL LETTER HA}': 'HH', #  'Y'?? 'K'??
-        '\N{CYRILLIC SMALL LETTER SHORT I}': 'IY0',
-        '\N{CYRILLIC SMALL LETTER KA}': 'K',
-        '\N{CYRILLIC SMALL LETTER EL}': 'L',
-        '\N{CYRILLIC SMALL LETTER EM}': 'M',
-        '\N{CYRILLIC SMALL LETTER EN}': 'N',
-        '\N{CYRILLIC SMALL LETTER O}': 'AO0',
-        '\N{CYRILLIC SMALL LETTER PE}': 'P',
-        '\N{CYRILLIC SMALL LETTER ER}': 'R',
-        '\N{CYRILLIC SMALL LETTER ES}': 'S',
-        '\N{CYRILLIC SMALL LETTER SHA}': 'SH',
-        '\N{CYRILLIC SMALL LETTER TE}': 'T',
-        '\N{CYRILLIC SMALL LETTER U}': 'UW0',
-        '\N{CYRILLIC SMALL LETTER HARD SIGN}': '',
-        '\N{CYRILLIC SMALL LETTER SOFT SIGN}': '',
-        '\N{CYRILLIC SMALL LETTER YERU}': 'IH0',
-        '\N{CYRILLIC SMALL LETTER ZHE}': 'ZH',
-        '\N{CYRILLIC SMALL LETTER ZE}': 'Z',
+        u'\N{CYRILLIC SMALL LETTER A}': 'AA0',
+        u'\N{CYRILLIC SMALL LETTER BE}': 'B',
+        u'\N{CYRILLIC SMALL LETTER VE}': 'V',
+        u'\N{CYRILLIC SMALL LETTER CHE}': 'CH',
+        u'\N{CYRILLIC SMALL LETTER DE}': 'D',
+        u'\N{CYRILLIC SMALL LETTER E}': 'EH0',
+        u'\N{CYRILLIC SMALL LETTER EF}': 'F',
+        u'\N{CYRILLIC SMALL LETTER GHE}': 'G',
+        u'\N{CYRILLIC SMALL LETTER I}': 'IY0',
+        u'\N{CYRILLIC SMALL LETTER HA}': 'HH', #  'Y'?? 'K'??
+        u'\N{CYRILLIC SMALL LETTER SHORT I}': 'IY0',
+        u'\N{CYRILLIC SMALL LETTER KA}': 'K',
+        u'\N{CYRILLIC SMALL LETTER EL}': 'L',
+        u'\N{CYRILLIC SMALL LETTER EM}': 'M',
+        u'\N{CYRILLIC SMALL LETTER EN}': 'N',
+        u'\N{CYRILLIC SMALL LETTER O}': 'AO0',
+        u'\N{CYRILLIC SMALL LETTER PE}': 'P',
+        u'\N{CYRILLIC SMALL LETTER ER}': 'R',
+        u'\N{CYRILLIC SMALL LETTER ES}': 'S',
+        u'\N{CYRILLIC SMALL LETTER SHA}': 'SH',
+        u'\N{CYRILLIC SMALL LETTER TE}': 'T',
+        u'\N{CYRILLIC SMALL LETTER U}': 'UW0',
+        u'\N{CYRILLIC SMALL LETTER HARD SIGN}': '',
+        u'\N{CYRILLIC SMALL LETTER SOFT SIGN}': '',
+        u'\N{CYRILLIC SMALL LETTER YERU}': 'IH0',
+        u'\N{CYRILLIC SMALL LETTER ZHE}': 'ZH',
+        u'\N{CYRILLIC SMALL LETTER ZE}': 'Z',
 
-        '\N{CYRILLIC CAPITAL LETTER A}': 'AA0',
-        '\N{CYRILLIC CAPITAL LETTER BE}': 'B',
-        '\N{CYRILLIC CAPITAL LETTER VE}': 'V',
-        '\N{CYRILLIC CAPITAL LETTER CHE}': 'CH',
-        '\N{CYRILLIC CAPITAL LETTER DE}': 'D',
-        '\N{CYRILLIC CAPITAL LETTER E}': 'EH0',
-        '\N{CYRILLIC CAPITAL LETTER EF}': 'F',
-        '\N{CYRILLIC CAPITAL LETTER GHE}': 'G',
-        '\N{CYRILLIC CAPITAL LETTER I}': 'IY0',
-        '\N{CYRILLIC CAPITAL LETTER HA}': 'HH', #  'Y'?? 'K'??
-        '\N{CYRILLIC CAPITAL LETTER SHORT I}': 'IY0',
-        '\N{CYRILLIC CAPITAL LETTER KA}': 'K',
-        '\N{CYRILLIC CAPITAL LETTER EL}': 'L',
-        '\N{CYRILLIC CAPITAL LETTER EM}': 'M',
-        '\N{CYRILLIC CAPITAL LETTER EN}': 'N',
-        '\N{CYRILLIC CAPITAL LETTER O}': 'AO0',
-        '\N{CYRILLIC CAPITAL LETTER PE}': 'P',
-        '\N{CYRILLIC CAPITAL LETTER ER}': 'R',
-        '\N{CYRILLIC CAPITAL LETTER ES}': 'S',
-        '\N{CYRILLIC CAPITAL LETTER SHA}': 'SH',
-        '\N{CYRILLIC CAPITAL LETTER TE}': 'T',
-        '\N{CYRILLIC CAPITAL LETTER U}': 'UW0',
-        '\N{CYRILLIC CAPITAL LETTER HARD SIGN}': '',
-        '\N{CYRILLIC CAPITAL LETTER SOFT SIGN}': '',
-        '\N{CYRILLIC CAPITAL LETTER YERU}': 'IH0',
-        '\N{CYRILLIC CAPITAL LETTER ZHE}': 'ZH',
-        '\N{CYRILLIC CAPITAL LETTER ZE}': 'Z',
+        u'\N{CYRILLIC CAPITAL LETTER A}': 'AA0',
+        u'\N{CYRILLIC CAPITAL LETTER BE}': 'B',
+        u'\N{CYRILLIC CAPITAL LETTER VE}': 'V',
+        u'\N{CYRILLIC CAPITAL LETTER CHE}': 'CH',
+        u'\N{CYRILLIC CAPITAL LETTER DE}': 'D',
+        u'\N{CYRILLIC CAPITAL LETTER E}': 'EH0',
+        u'\N{CYRILLIC CAPITAL LETTER EF}': 'F',
+        u'\N{CYRILLIC CAPITAL LETTER GHE}': 'G',
+        u'\N{CYRILLIC CAPITAL LETTER I}': 'IY0',
+        u'\N{CYRILLIC CAPITAL LETTER HA}': 'HH', #  'Y'?? 'K'??
+        u'\N{CYRILLIC CAPITAL LETTER SHORT I}': 'IY0',
+        u'\N{CYRILLIC CAPITAL LETTER KA}': 'K',
+        u'\N{CYRILLIC CAPITAL LETTER EL}': 'L',
+        u'\N{CYRILLIC CAPITAL LETTER EM}': 'M',
+        u'\N{CYRILLIC CAPITAL LETTER EN}': 'N',
+        u'\N{CYRILLIC CAPITAL LETTER O}': 'AO0',
+        u'\N{CYRILLIC CAPITAL LETTER PE}': 'P',
+        u'\N{CYRILLIC CAPITAL LETTER ER}': 'R',
+        u'\N{CYRILLIC CAPITAL LETTER ES}': 'S',
+        u'\N{CYRILLIC CAPITAL LETTER SHA}': 'SH',
+        u'\N{CYRILLIC CAPITAL LETTER TE}': 'T',
+        u'\N{CYRILLIC CAPITAL LETTER U}': 'UW0',
+        u'\N{CYRILLIC CAPITAL LETTER HARD SIGN}': '',
+        u'\N{CYRILLIC CAPITAL LETTER SOFT SIGN}': '',
+        u'\N{CYRILLIC CAPITAL LETTER YERU}': 'IH0',
+        u'\N{CYRILLIC CAPITAL LETTER ZHE}': 'ZH',
+        u'\N{CYRILLIC CAPITAL LETTER ZE}': 'Z',
     }
-    easy_consonants = list(simple_convert.keys())
+    easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
     for letter in word:
@@ -143,7 +143,7 @@ def breakdownWord(word, recursive=False):
             phonemes.append('P')
         elif letter == 'd' and len(word) == pos+1:
             phonemes.append('T')
-        elif letter in  ['e', '\N{CYRILLIC SMALL LETTER IE}']:
+        elif letter in  ['e', u'\N{CYRILLIC SMALL LETTER IE}']:
             if pos == 0:
                 phonemes.append('Y')
                 phonemes.append('EH0')
@@ -185,24 +185,24 @@ def breakdownWord(word, recursive=False):
                     phonemes.append('S')
                 else:
                     phonemes.append('Z')
-        elif letter in [ '\N{CYRILLIC CAPITAL LETTER SHCHA}', '\N{CYRILLIC SMALL LETTER SHCHA}' ]:
+        elif letter in [ u'\N{CYRILLIC CAPITAL LETTER SHCHA}', u'\N{CYRILLIC SMALL LETTER SHCHA}' ]:
             phonemes.append('SH')
             #phonemes.append('CH')
-        elif letter in [ '\N{CYRILLIC CAPITAL LETTER TSE}' , '\N{CYRILLIC SMALL LETTER TSE}' ]:
+        elif letter in [ u'\N{CYRILLIC CAPITAL LETTER TSE}' , u'\N{CYRILLIC SMALL LETTER TSE}' ]:
             phonemes.append('T')
             phonemes.append('S')
-        elif letter == '\N{CYRILLIC CAPITAL LETTER YA}' or letter == '\N{CYRILLIC SMALL LETTER YA}':
-            if pos==0:
-                phonemes.append('IY0')
-            phonemes.append('AA1')
-        elif letter == '\N{CYRILLIC CAPITAL LETTER YU}' or letter == '\N{CYRILLIC SMALL LETTER YU}':
-            if pos==0:
-                phonemes.append('Y')
-            phonemes.append('UW0')
-        elif letter in ['\N{LATIN SMALL LETTER E WITH DIAERESIS}', '\N{CYRILLIC SMALL LETTER IO}']:
-            if pos==0:
-                phonemes.append('Y')
-            phonemes.append('AO0')
+        elif letter == u'\N{CYRILLIC CAPITAL LETTER YA}' or letter == u'\N{CYRILLIC SMALL LETTER YA}':
+			if pos==0:
+				phonemes.append('IY0')
+			phonemes.append('AA1')
+        elif letter == u'\N{CYRILLIC CAPITAL LETTER YU}' or letter == u'\N{CYRILLIC SMALL LETTER YU}':
+			if pos==0:
+				phonemes.append('Y')
+			phonemes.append('UW0')
+        elif letter in [u'\N{LATIN SMALL LETTER E WITH DIAERESIS}', u'\N{CYRILLIC SMALL LETTER IO}']:
+			if pos==0:
+				phonemes.append('Y')
+			phonemes.append('AO0')
         elif letter in easy_consonants:
             phonemes.append(simple_convert[letter])
         elif letter == ' ':
@@ -229,164 +229,164 @@ def breakdownWord(word, recursive=False):
 
 if __name__ == "__main__":
     testwords = "égaux Vse ljudi roždajutsya svobodnymi i ravnymi v svoem dostoinstve i pravah Oni nadeleny razumom i sovest'ju i dolžny postupat' v otnošenii drug druga v duhe bratstva".split()
-    testwordsC = "\N{CYRILLIC CAPITAL LETTER VE}"
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER IE}"
-    " "
-    "\N{CYRILLIC SMALL LETTER EL}"
-    "\N{CYRILLIC SMALL LETTER YU}"
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER ER}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER ZHE}"
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    "\N{CYRILLIC SMALL LETTER YU}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER YA}"
-    " "
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER VE}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER BE}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER YERU}"
-    "\N{CYRILLIC SMALL LETTER EM}"
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER ER}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    "\N{CYRILLIC SMALL LETTER VE}"
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER YERU}"
-    "\N{CYRILLIC SMALL LETTER EM}"
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER VE}"
-    " "
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER VE}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER IE}"
-    "\N{CYRILLIC SMALL LETTER EM}"
-    " "
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER I}"
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER VE}"
-    "\N{CYRILLIC SMALL LETTER IE}"
-    " "
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER PE}"
-    "\N{CYRILLIC SMALL LETTER ER}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    "\N{CYRILLIC SMALL LETTER VE}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    "\N{CYRILLIC SMALL LETTER HA}"
-    " "
-    "\N{CYRILLIC CAPITAL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER IE}"
-    "\N{CYRILLIC SMALL LETTER EL}"
-    "\N{CYRILLIC SMALL LETTER IE}"
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER YERU}"
-    " "
-    "\N{CYRILLIC SMALL LETTER ER}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    "\N{CYRILLIC SMALL LETTER ZE}"
-    "\N{CYRILLIC SMALL LETTER U}"
-    "\N{CYRILLIC SMALL LETTER EM}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER EM}"
-    " "
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER VE}"
-    "\N{CYRILLIC SMALL LETTER IE}"
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER SOFT SIGN}"
-    "\N{CYRILLIC SMALL LETTER YU}"
-    " "
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER EL}"
-    "\N{CYRILLIC SMALL LETTER ZHE}"
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER YERU}"
-    " "
-    "\N{CYRILLIC SMALL LETTER PE}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER U}"
-    "\N{CYRILLIC SMALL LETTER PE}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER SOFT SIGN}"
-    " "
-    "\N{CYRILLIC SMALL LETTER VE}"
-    " "
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER O}"
-    "\N{CYRILLIC SMALL LETTER SHA}"
-    "\N{CYRILLIC SMALL LETTER IE}"
-    "\N{CYRILLIC SMALL LETTER EN}"
-    "\N{CYRILLIC SMALL LETTER I}"
-    "\N{CYRILLIC SMALL LETTER I}"
-    " "
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER ER}"
-    "\N{CYRILLIC SMALL LETTER U}"
-    "\N{CYRILLIC SMALL LETTER GHE}"
-    " "
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER ER}"
-    "\N{CYRILLIC SMALL LETTER U}"
-    "\N{CYRILLIC SMALL LETTER GHE}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    " "
-    "\N{CYRILLIC SMALL LETTER VE}"
-    " "
-    "\N{CYRILLIC SMALL LETTER DE}"
-    "\N{CYRILLIC SMALL LETTER U}"
-    "\N{CYRILLIC SMALL LETTER HA}"
-    "\N{CYRILLIC SMALL LETTER IE}"
-    " "
-    "\N{CYRILLIC SMALL LETTER BE}"
-    "\N{CYRILLIC SMALL LETTER ER}"
-    "\N{CYRILLIC SMALL LETTER A}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER ES}"
-    "\N{CYRILLIC SMALL LETTER TE}"
-    "\N{CYRILLIC SMALL LETTER VE}"
-    "\N{CYRILLIC SMALL LETTER A}".split()
+    testwordsC = u"\N{CYRILLIC CAPITAL LETTER VE}"
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER IE}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER EL}"
+    u"\N{CYRILLIC SMALL LETTER YU}"
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER ER}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER ZHE}"
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u"\N{CYRILLIC SMALL LETTER YU}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER YA}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER BE}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER YERU}"
+    u"\N{CYRILLIC SMALL LETTER EM}"
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER ER}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER YERU}"
+    u"\N{CYRILLIC SMALL LETTER EM}"
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER IE}"
+    u"\N{CYRILLIC SMALL LETTER EM}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u"\N{CYRILLIC SMALL LETTER IE}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER PE}"
+    u"\N{CYRILLIC SMALL LETTER ER}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u"\N{CYRILLIC SMALL LETTER HA}"
+    u" "
+    u"\N{CYRILLIC CAPITAL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER IE}"
+    u"\N{CYRILLIC SMALL LETTER EL}"
+    u"\N{CYRILLIC SMALL LETTER IE}"
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER YERU}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER ER}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u"\N{CYRILLIC SMALL LETTER ZE}"
+    u"\N{CYRILLIC SMALL LETTER U}"
+    u"\N{CYRILLIC SMALL LETTER EM}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER EM}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u"\N{CYRILLIC SMALL LETTER IE}"
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER SOFT SIGN}"
+    u"\N{CYRILLIC SMALL LETTER YU}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER EL}"
+    u"\N{CYRILLIC SMALL LETTER ZHE}"
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER YERU}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER PE}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER U}"
+    u"\N{CYRILLIC SMALL LETTER PE}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER SOFT SIGN}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER O}"
+    u"\N{CYRILLIC SMALL LETTER SHA}"
+    u"\N{CYRILLIC SMALL LETTER IE}"
+    u"\N{CYRILLIC SMALL LETTER EN}"
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u"\N{CYRILLIC SMALL LETTER I}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER ER}"
+    u"\N{CYRILLIC SMALL LETTER U}"
+    u"\N{CYRILLIC SMALL LETTER GHE}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER ER}"
+    u"\N{CYRILLIC SMALL LETTER U}"
+    u"\N{CYRILLIC SMALL LETTER GHE}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER DE}"
+    u"\N{CYRILLIC SMALL LETTER U}"
+    u"\N{CYRILLIC SMALL LETTER HA}"
+    u"\N{CYRILLIC SMALL LETTER IE}"
+    u" "
+    u"\N{CYRILLIC SMALL LETTER BE}"
+    u"\N{CYRILLIC SMALL LETTER ER}"
+    u"\N{CYRILLIC SMALL LETTER A}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER ES}"
+    u"\N{CYRILLIC SMALL LETTER TE}"
+    u"\N{CYRILLIC SMALL LETTER VE}"
+    u"\N{CYRILLIC SMALL LETTER A}".split()
     #~ for word in testwordsC:
         #~ print word, breakdownWord(unicode(word, input_encoding))
     #~ for word in testwords:

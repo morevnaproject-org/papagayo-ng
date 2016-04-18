@@ -26,7 +26,7 @@
 
 """functions to take a Hungarian word and return a list of phonemes
 """
-from .unicode_hammer import latin1_to_ascii as hammer
+from unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -42,27 +42,27 @@ def breakdownWord(word, recursive=False):
     phonemes = []
     simple_convert = {
     'b': 'B',
-    '\N{LATIN SMALL LETTER E WITH ACUTE}': 'EY0',
+    u'\N{LATIN SMALL LETTER E WITH ACUTE}': 'EY0',
     'f': 'F',
     'h': 'HH',
-    '\N{LATIN SMALL LETTER I WITH ACUTE}': 'IY0',
+    u'\N{LATIN SMALL LETTER I WITH ACUTE}': 'IY0',
     'k': 'K',
     'm': 'M',
     'n': 'N',
-    '\N{LATIN SMALL LETTER O WITH ACUTE}': 'OW0', # ER0 ? AO0 ?
+    u'\N{LATIN SMALL LETTER O WITH ACUTE}': 'OW0', # ER0 ? AO0 ?
     'p': 'P',
     'r': 'R',
     't': 'T',
     'u': 'UW0',
-    '\N{LATIN SMALL LETTER U WITH ACUTE}': 'UW0',
-    '\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0',
-    '\N{LATIN SMALL LETTER O WITH DOUBLE ACUTE}': 'ER0',
-    '\N{LATIN SMALL LETTER U WITH DIAERESIS}': 'UW0', # IH0?
-    '\N{LATIN SMALL LETTER U WITH DOUBLE ACUTE}': 'UW0',
+    u'\N{LATIN SMALL LETTER U WITH ACUTE}': 'UW0',
+    u'\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0',
+    u'\N{LATIN SMALL LETTER O WITH DOUBLE ACUTE}': 'ER0',
+    u'\N{LATIN SMALL LETTER U WITH DIAERESIS}': 'UW0', # IH0?
+    u'\N{LATIN SMALL LETTER U WITH DOUBLE ACUTE}': 'UW0',
     'v': 'V',
     'w': 'V',
     }
-    easy_consonants = list(simple_convert.keys())
+    easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
     for letter in word:
@@ -73,7 +73,7 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('OY0')
             else:
                 phonemes.append('AO0')
-        elif letter == '\N{LATIN SMALL LETTER A WITH ACUTE}':
+        elif letter == u'\N{LATIN SMALL LETTER A WITH ACUTE}':
             if len(word) > pos+1 and word[pos+1] in ['i', 'j', 'y']:
                 phonemes.append('AY0')
             elif len(word) > pos+2 and word[pos+1]  == 'l' and word[pos+2]  == 'y':
@@ -106,12 +106,12 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('G')
         elif letter == 'i':
-            if previous in ['a', 'o', '\N{LATIN SMALL LETTER A WITH ACUTE}']:
+            if previous in ['a', 'o', u'\N{LATIN SMALL LETTER A WITH ACUTE}']:
                 pass
             else:
                 phonemes.append('IH0')  # IY0?
         elif letter == 'j':
-            if previous in ['a', 'o', '\N{LATIN SMALL LETTER A WITH ACUTE}']:
+            if previous in ['a', 'o', u'\N{LATIN SMALL LETTER A WITH ACUTE}']:
                 pass
             else:
                 phonemes.append('Y')
@@ -146,7 +146,7 @@ def breakdownWord(word, recursive=False):
             phonemes.append('K')
             phonemes.append('S')
         elif letter == 'y':
-            if previous in ['a', 'o', '\N{LATIN SMALL LETTER A WITH ACUTE}']:
+            if previous in ['a', 'o', u'\N{LATIN SMALL LETTER A WITH ACUTE}']:
                 pass
             elif previous == 'g':
                 pass  # handled under g
@@ -219,5 +219,5 @@ if __name__ == "__main__":
 
                         ]
     for eachword in testwords:
-        print(eachword, ':', breakdownWord(str(eachword, input_encoding)), '--', breakdownWord(str(eachword, input_encoding)))
+        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(unicode(eachword, input_encoding))
 

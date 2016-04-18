@@ -29,7 +29,7 @@
 """functions to take an Portuguese word and return a list of phonemes
 """
 
-from .unicode_hammer import latin1_to_ascii as hammer
+from unicode_hammer import latin1_to_ascii as hammer
 
 import locale, re
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -45,12 +45,12 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 # à â ã é ê í i ó ô õ ú
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-setvowels = 'aeiou' + \
-'\N{LATIN SMALL LETTER A WITH ACUTE}\N{LATIN SMALL LETTER A WITH GRAVE}\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}' +\
-'\N{LATIN SMALL LETTER E WITH ACUTE}\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}' +\
-'\N{LATIN SMALL LETTER I WITH ACUTE}\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}' +\
-'\N{LATIN SMALL LETTER O WITH ACUTE}\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}\N{LATIN SMALL LETTER O WITH TILDE}' +\
-'\N{LATIN SMALL LETTER U WITH ACUTE}'
+setvowels = u'aeiou' + \
+u'\N{LATIN SMALL LETTER A WITH ACUTE}\N{LATIN SMALL LETTER A WITH GRAVE}\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}' +\
+u'\N{LATIN SMALL LETTER E WITH ACUTE}\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}' +\
+u'\N{LATIN SMALL LETTER I WITH ACUTE}\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}' +\
+u'\N{LATIN SMALL LETTER O WITH ACUTE}\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}\N{LATIN SMALL LETTER O WITH TILDE}' +\
+u'\N{LATIN SMALL LETTER U WITH ACUTE}'
 
 
 def breakdownWord(word, recursive=False):
@@ -74,36 +74,36 @@ def breakdownWord(word, recursive=False):
         'w': 'W',
         'y': 'IY0',
         'z': 'Z',
-        '\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S',   # ç      
+        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S',  	# ç      
     }
 
-    easy_consonants = list(simple_convert.keys())
+    easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
     for letter in word:
         # if letter == previous and not isvowel(letter):  # double consonants
         #     pass
-    #A
-        if  letter in ['a', '\N{LATIN SMALL LETTER A WITH ACUTE}', '\N{LATIN SMALL LETTER A WITH GRAVE}', '\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}']:
+	#A
+        if  letter in ['a', u'\N{LATIN SMALL LETTER A WITH ACUTE}', u'\N{LATIN SMALL LETTER A WITH GRAVE}', u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}']:
             phonemes.append('AA0')
-        elif letter == '\N{LATIN SMALL LETTER A WITH TILDE}':
+        elif letter == u'\N{LATIN SMALL LETTER A WITH TILDE}':
             phonemes.append('AE0')
-    #E
-        elif letter in ['e', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}']:
+	#E
+        elif letter in ['e', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}']:
             phonemes.append('EY0')
-        elif letter == '\N{LATIN SMALL LETTER E WITH ACUTE}':
+        elif letter == u'\N{LATIN SMALL LETTER E WITH ACUTE}':
             phonemes.append('EH0')
-    #I
-        elif letter in ['i', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
+	#I
+        elif letter in ['i', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
             phonemes.append('IY0')
-    #O
-        elif letter in ['o', '\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}']:
+	#O
+        elif letter in ['o', u'\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}']:
             phonemes.append('OW0')
-        elif letter == '\N{LATIN SMALL LETTER O WITH ACUTE}':
+        elif letter == u'\N{LATIN SMALL LETTER O WITH ACUTE}':
             phonemes.append('OY0')
-        elif letter == '\N{LATIN SMALL LETTER O WITH TILDE}':
+        elif letter == u'\N{LATIN SMALL LETTER O WITH TILDE}':
             phonemes.append('AW0')
-    # U 
+	# U 
         elif letter in ['u', u'\N{LATIN SMALL LETTER U WITH ACUTE}']:        
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Special rule to digraphs consonant:
@@ -112,54 +112,54 @@ def breakdownWord(word, recursive=False):
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
             if previous == 'q': # digraph consonant Qu
                 # ['e', 'i', 'é', 'í', 'ê', 'î'] 
-                if len(word) > pos+1 and word[pos+1] in ['e', 'i', '\N{LATIN SMALL LETTER E WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
+                if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
                     phonemes.append('K')
-                else:
+                else:    
                     phonemes.append('UW0')
-            elif previous == 'g': # digraph consonant Gu
+            if previous == 'g': # digraph consonant Gu
                 # ['e', 'i', 'é', 'í', 'ê', 'î'] 
-                if len(word) > pos+1 and word[pos+1] in ['e', 'i', '\N{LATIN SMALL LETTER E WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
+                if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
                     phonemes.append('G')
-                else:
+                else:        
                     phonemes.append('UW0')
-            else:
+            else:        
                     phonemes.append('UW0')
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # consonants with combinations
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    #C 
+	#C 
         elif letter == 'c':
             if previous == 's': # digraph consonant sC #asCender
                 # ['e', 'i', 'é', 'í', 'ê', 'î'] 
-                if len(word) > pos+1 and word[pos+1] in ['e', 'i', '\N{LATIN SMALL LETTER E WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
+                if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
                     phonemes.append('S')
                 else:
                     phonemes.append('S')
                     phonemes.append('K')
             if previous == 'x':  # digraph consonant xC #exCelente
                 # ['e', 'i', 'é', 'í', 'ê', 'î'] 
-                if len(word) > pos+1 and word[pos+1] in ['e', 'i', '\N{LATIN SMALL LETTER E WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
+                if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
                     phonemes.append('S')
                 else:
                     phonemes.append('S')
                     phonemes.append('K')
             #ce #ci
-            elif len(word) > pos+1 and word[pos+1] in ['e', 'i', '\N{LATIN SMALL LETTER E WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']: 
+            elif len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']: 
                 phonemes.append('S')
             else:
                 phonemes.append('K')
-    #G
+	#G
         elif letter == 'g':
             #ge #gi
-            if len(word) > pos+1 and word[pos+1] in ['e', 'i', '\N{LATIN SMALL LETTER E WITH ACUTE}', '\N{LATIN SMALL LETTER I WITH ACUTE}', '\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', '\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']: 
+            if len(word) > pos+1 and word[pos+1] in ['e', 'i', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']: 
                 phonemes.append('ZH')
             else:
                 phonemes.append('G')
 
         #H
-        elif letter == 'h': # silent letter
+        elif letter == 'h':	# silent letter
             if previous == 'n': 
-              phonemes.append('N')  # digraph consonant Nh
+              phonemes.append('N')	# digraph consonant Nh
             else:
                pass
 
@@ -167,30 +167,30 @@ def breakdownWord(word, recursive=False):
         elif letter == 'm':
             # ['i', 'o', 'u', 'í', 'ó', 'ú', 'î', 'ô', õ]
             if previous in ['i', 'o', 'u', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER O WITH ACUTE}', u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}',  u'\N{LATIN SMALL LETTER O WITH TILDE}'] and word[-1]==('m') or len(word) > pos+1 and not isvowel(word[pos+1]):
-                pass    # digraphs vowel am em im om um            
+                pass	# digraphs vowel am em im om um            
             else: 
                 phonemes.append('M')
 
         #N
-        elif letter == 'n': 
+        elif letter == 'n':	
             if len(word) > pos+1 and word[pos+1] == 'h': 
-                pass     #Nh handled under #H
+                pass	 #Nh handled under #H
             elif isvowel(previous)  and word[-1]==('n') or len(word) > pos+1 and not isvowel(word[pos+1]):
-                pass    # digraphs vowel an en in on un
+                pass	# digraphs vowel an en in on un                
             else:
                 phonemes.append('N')
         #S
         elif letter == 's':
             if len(word) > pos+1 and word[pos+1] == 'c':  
-                pass     #sC handled under #C
+                pass 	 #sC handled under #C
             elif isvowel(previous) and len(word) > pos+1 and isvowel(word[pos+1]): # check if have vowel before and after S #caSa 
-                phonemes.append('Z')        
+                phonemes.append('Z')		
             else:
                 phonemes.append('S')
         #X 
         elif letter == 'x':
             if len(word) > pos+1 and word[pos+1] == 'c': 
-                pass     #xC handled under #C 
+                pass 	 #xC handled under #C 
             else:
                 phonemes.append('SH') # There are some exceptions where X have phoneme "KS" like táxi = T A K S I 
 #
@@ -226,4 +226,4 @@ if __name__ == "__main__":
                         'gorila', 'escada', 'mecânico'
                         ]
     for word in testwords:
-        print(word, breakdownWord(str(word, input_encoding)))
+        print word, breakdownWord(unicode(word, input_encoding))
