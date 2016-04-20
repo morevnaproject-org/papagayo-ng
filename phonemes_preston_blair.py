@@ -94,8 +94,8 @@ phoneme_conversion = {
     'K': 'etc', # key   K IY
     'L': 'L', # lee L IY
     'M': 'MBP', # me    M IY
-    'N': 'etc', # knee  N IY
-    'NG': 'etc', # ping P IH NG
+    'N': 'L', # knee  N IY
+    'NG': 'L', # ping P IH NG
     'OW0': 'O', # oat   OW T
     'OW1': 'O',
     'OW2': 'O',
