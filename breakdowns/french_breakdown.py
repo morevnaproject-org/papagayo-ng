@@ -97,7 +97,7 @@ def breakdownWord(word, recursive=False):
         elif letter in ['i',accented_i]:
              if  previous in ['e',accented_e] and ((len(word) > pos+2 and word[pos+1] in ['m','n'] and word[pos+2] in ['b','c','d','f','g','j','k','l','m','n','p','q','r','s','t','v','w','x','z']) or (len(word) == pos+2)):  
                  pass
-             elif letter==word[-2] and previous in ['f','t','v','s'] and  word[-1] == 'n':
+             elif previous in ['f','t','v','s'] and word[-1] == 'n' and len(word)>1 and letter==word[-2]:
                  phonemes.append('EH0')
              elif len(word) > pos+2 and word[pos+1] == 'm' and word[pos+2] in ['b','p']:
                  phonemes.append('EH0')
