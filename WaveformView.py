@@ -50,7 +50,7 @@ class WaveformView(wx.ScrolledWindow):
         self.__set_properties()
         self.__do_layout()
         # end wxGlade
-        
+
         # test for wxPython type
         cdc = wx.ClientDC(self)
         self.isWxPhoenix = False
@@ -86,6 +86,7 @@ class WaveformView(wx.ScrolledWindow):
         wx.EVT_LEFT_UP(self, self.OnMouseUp)
         wx.EVT_RIGHT_UP(self, self.OnMouseUp)
         wx.EVT_MOTION(self, self.OnMouseMove)
+        wx.EVT_MOUSEWHEEL(self, self.OnMouseWheel)
 
         # Force an update
         self.OnSize()
@@ -285,6 +286,17 @@ class WaveformView(wx.ScrolledWindow):
                 while self.doc.sound.IsPlaying():
                     pass # don't redraw until the playback for the last frame is done
             self.UpdateDrawing()
+			
+    def OnMouseWheel(self,event):
+        if self.doc is not None:
+            if event.ControlDown():
+                if event.GetWheelRotation() > 0:
+                    self.OnZoomIn(event)
+                else:
+                    self.OnZoomOut(event)
+            else:
+                x=self.GetScrollPos(wx.HORIZONTAL)
+                self.Scroll(x-(event.GetWheelRotation()/10), 0)
 
     def OnMouseMove(self, event):
         if self.isDragging:
@@ -638,7 +650,7 @@ class WaveformView(wx.ScrolledWindow):
                     else:
                         # WxWidgets - Phoenix
                         dc.SetClippingRegion(self.clipRect)
-                        
+
                 wordCount = 0
                 for word in phrase.words:
                     dc.SetBrush(wx.Brush(wordFillCol))
@@ -694,7 +706,7 @@ class WaveformView(wx.ScrolledWindow):
                   dc.DrawLabel(str(curFrame + 1), wx.Rect(x-50, cs.height*0.4, 100,125),wx.ALIGN_CENTER)
 
 
-        #dc.EndDrawing()
+        dc.EndDrawing()
 
     def OnZoomIn(self, event):
         if (self.doc is not None) and (self.samplesPerFrame < 16):

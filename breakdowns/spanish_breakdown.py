@@ -33,7 +33,7 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 # input_encoding = 'latin-1'  # common in English GUIs
 # input_encoding = 'iso-8859-1'  # common in English GUIs
 # input_encoding = 'utf-8'  # common
-from .unicode_hammer import latin1_to_ascii as hammer
+from unicode_hammer import latin1_to_ascii as hammer
 
 def stressSpanishWord(breakdown_word):
     """takes a "word" in phonemes and adds primary stress if necessary
@@ -72,18 +72,18 @@ def stressSpanishWord(breakdown_word):
 
 
 unconditional_conversions = {
-    'a':'AA0',
-    '\N{LATIN SMALL LETTER A WITH ACUTE}':'AA1',
-    'f':'F',
-    'i':'IY0',
-    '\N{LATIN SMALL LETTER I WITH ACUTE}':'IY1',
-    'j':'HH',
-    'k':'K',
-    'm':'M',
-    'q':'K',
-    't':'T',
-    'w':'V',
-    'z':'S' }  # South American, Castilian Spanish uses ''TH'
+    u'a':'AA0',
+    u'\N{LATIN SMALL LETTER A WITH ACUTE}':'AA1',
+    u'f':'F',
+    u'i':'IY0',
+    u'\N{LATIN SMALL LETTER I WITH ACUTE}':'IY1',
+    u'j':'HH',
+    u'k':'K',
+    u'm':'M',
+    u'q':'K',
+    u't':'T',
+    u'w':'V',
+    u'z':'S' }  # South American, Castilian Spanish uses ''TH'
 
 def breakdownWord(input_word,  recursive=False):
     """breaks down a word into phonemes
@@ -91,126 +91,126 @@ def breakdownWord(input_word,  recursive=False):
     # word = input_word.decode(input_encoding)  # decode input into Python default internal format (utf-16) from the GUI input format
     word = input_word
     word = word.lower()
-    previous = ''
+    previous = u''
     word_index = 0
     breakdown_word = []
     for letter in word :
-        if letter == 'b' :
-            if word_index == 0 or previous in ['m', 'n']:
+        if letter == u'b' :
+            if word_index == 0 or previous in [u'm', u'n']:
                 breakdown_word.append('B')
             else :
                 breakdown_word.append('V')
-        elif letter == 'c' :
-            if word_index < len(word)-1 and word[word_index+1]=='h' :
+        elif letter == u'c' :
+            if word_index < len(word)-1 and word[word_index+1]==u'h' :
                 breakdown_word.append('CH')
-            elif previous == 'c' :
+            elif previous == u'c' :
                 breakdown_word.append('S')
-            elif word_index < len(word)-1 and word[word_index+1]=='s' :
+            elif word_index < len(word)-1 and word[word_index+1]==u's' :
                 pass
-            elif word_index < len(word)-1 and word[word_index+1] in ['e', 'i'] :
+            elif word_index < len(word)-1 and word[word_index+1] in [u'e', u'i'] :
                 # should this be SH before 'e', S before 'i' ??
                 breakdown_word.append('S')  # South American, Castilian Spanish uses 'TH'
             else :
                 breakdown_word.append('K')
-        elif letter == 'd' :
-            if word_index == 0 or previous in ['l', 'n']:
+        elif letter == u'd' :
+            if word_index == 0 or previous in [u'l', u'n']:
                 breakdown_word.append('D')
             else :
                 breakdown_word.append('DH')
-        elif letter == 'e' :
-            if word_index == len(word)-1 or word[word_index+1] in ['a','e','i','o','u'] :
+        elif letter == u'e' :
+            if word_index == len(word)-1 or word[word_index+1] in [u'a',u'e',u'i',u'o',u'u'] :
                 breakdown_word.append('EY0')
             else :
                 breakdown_word.append('EH0')
-        elif letter == '\N{LATIN SMALL LETTER E WITH ACUTE}' :
-            if word_index == len(word)-1 or word[word_index+1] in ['a','e','i','o','u'] :
+        elif letter == u'\N{LATIN SMALL LETTER E WITH ACUTE}' :
+            if word_index == len(word)-1 or word[word_index+1] in [u'a',u'e',u'i',u'o',u'u'] :
                 breakdown_word.append('EY1')
             else :
                 breakdown_word.append('EH1')
-        elif letter == 'g' :
-            if word_index < len(word)-1 and word[word_index+1] == '\N{LATIN SMALL LETTER U WITH DIAERESIS}':
+        elif letter == u'g' :
+            if word_index < len(word)-1 and word[word_index+1] == u'\N{LATIN SMALL LETTER U WITH DIAERESIS}':
                 breakdown_word.append('V')
-            elif word_index < len(word)-1 and word[word_index+1] in ['e', 'i'] :
+            elif word_index < len(word)-1 and word[word_index+1] in [u'e', u'i'] :
                 breakdown_word.append('HH')
             else :
                 breakdown_word.append('G')
-        elif letter == 'h' :
+        elif letter == u'h' :
             pass
-        elif letter == 'l' :
-            if word_index < len(word)-1 and word[word_index+1] == 'l' :
+        elif letter == u'l' :
+            if word_index < len(word)-1 and word[word_index+1] == u'l' :
                 pass
-            elif previous == 'l' :
+            elif previous == u'l' :
                 breakdown_word.append('Y')
             else :
                 breakdown_word.append('L')
-        elif letter == 'n' :
-            if word_index < len(word)-1 and word[word_index+1] == 'v' :
+        elif letter == u'n' :
+            if word_index < len(word)-1 and word[word_index+1] == u'v' :
                 breakdown_word.append('M')
             else :
                 breakdown_word.append('N')
-        elif letter == '\N{LATIN SMALL LETTER N WITH TILDE}':
+        elif letter == u'\N{LATIN SMALL LETTER N WITH TILDE}':
             breakdown_word.append('N')
             breakdown_word.append('Y')
-        elif letter == 'o' :
-            if word_index < len(word)-1 and word[word_index+1] not in ['a','e','i','o','u']:  # last bit necessary ?
+        elif letter == u'o' :
+            if word_index < len(word)-1 and word[word_index+1] not in [u'a',u'e',u'i',u'o',u'u']:  # last bit necessary ?
                 breakdown_word.append('AO0')
             else :
                 breakdown_word.append('OW0')
-        elif letter == '\N{LATIN SMALL LETTER O WITH ACUTE}':
-            if word_index < len(word)-1 and word[word_index+1] not in ['a','e','i','o','u']:  # last bit necessary ?
+        elif letter == u'\N{LATIN SMALL LETTER O WITH ACUTE}':
+            if word_index < len(word)-1 and word[word_index+1] not in [u'a',u'e',u'i',u'o',u'u']:  # last bit necessary ?
                 breakdown_word.append('AO1')
             else :
                 breakdown_word.append('OW1')
-        elif letter == 'p' :
+        elif letter == u'p' :
             if word_index == len(word)-1 :
                 pass
             else :
                 breakdown_word.append('P')
-        elif letter == 'r' :
-            if previous == 'r' :
+        elif letter == u'r' :
+            if previous == u'r' :
                 pass
-            elif word_index < len(word)-1 and word[word_index+1] == 'r' :
+            elif word_index < len(word)-1 and word[word_index+1] == u'r' :
                 breakdown_word.append('R') # RR - trilled a lot
             else :
                 breakdown_word.append('R') # only a little trilled
-        elif letter == 's' :
-            if word_index < len(word)-1 and word[word_index+1] in ['d','g','l','m','n'] :
+        elif letter == u's' :
+            if word_index < len(word)-1 and word[word_index+1] in [u'd',u'g',u'l',u'm',u'n'] :
                 breakdown_word.append('Z')
             else:
                 breakdown_word.append('S')
-        elif letter == 'u' :
-            if previous == 'q' :
+        elif letter == u'u' :
+            if previous == u'q' :
                 pass
-            elif previous == 'g' and word_index < len(word)-1 and word[word_index+1] in ['u','i'] :
+            elif previous == u'g' and word_index < len(word)-1 and word[word_index+1] in [u'u',u'i'] :
                 pass
             else :
                 breakdown_word.append('UW0')
-        elif letter == '\N{LATIN SMALL LETTER U WITH ACUTE}':
-            if previous == 'q' :
+        elif letter == u'\N{LATIN SMALL LETTER U WITH ACUTE}':
+            if previous == u'q' :
                 pass
-            elif previous == 'g' and word_index < len(word)-1 and word[word_index+1] in ['u','i'] :
+            elif previous == u'g' and word_index < len(word)-1 and word[word_index+1] in [u'u',u'i'] :
                 pass
             else :
                 breakdown_word.append('UW1')
-        elif letter == 'v' :
-            if word_index == 0 or previous in ['m', 'n']:
+        elif letter == u'v' :
+            if word_index == 0 or previous in [u'm', u'n']:
                 breakdown_word.append('B')
             else :
                 breakdown_word.append('V')
-        elif letter == 'x' :
-            if previous in ['a','e','i','o','u'] and word_index < len(word)-1 and word[word_index+1] in ['a','e','i','o','u'] :
+        elif letter == u'x' :
+            if previous in [u'a',u'e',u'i',u'o',u'u'] and word_index < len(word)-1 and word[word_index+1] in [u'a',u'e',u'i',u'o',u'u'] :
                 breakdown_word.append('K')
                 breakdown_word.append('S')
             else :
                 breakdown_word.append('S')
-        elif letter == 'y' :
+        elif letter == u'y' :
             if len(word) == 1 :
                 breakdown_word.append('IY1')
             elif word_index == len(word)-1 :
                 breakdown_word.append('IY0')
             else :
                 breakdown_word.append('Y')
-        elif letter in list(unconditional_conversions.keys()) :
+        elif letter in unconditional_conversions.keys() :
             breakdown_word.append(unconditional_conversions[letter])
         elif len(hammer(letter)) == 1:
             if not recursive:
@@ -234,5 +234,5 @@ if __name__ == '__main__' :
     # test the function
     test_words = ['Holas', 'amigos', 'si', 'español', 'padré', 'Selecciones', 'de', 'la', 'semana', 'Los', 'mejores', 'sitios', 'los', 'derechos', 'humanos', 'en', 'américa', 'latina', 'y', 'färger', 'på', 'hänsyn']
     for eachword in test_words:
-        print(eachword, breakdownWord(str(eachword, input_encoding)), " ".join(breakdownWord(str(eachword, input_encoding))))
+        print eachword, breakdownWord(unicode(eachword, input_encoding)), " ".join(breakdownWord(unicode(eachword, input_encoding)))
 

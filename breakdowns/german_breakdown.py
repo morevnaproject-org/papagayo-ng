@@ -26,7 +26,7 @@
 
 """functions to take a German word and return a list of phonemes
 """
-from .unicode_hammer import latin1_to_ascii as hammer
+from unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -49,13 +49,13 @@ def breakdownWord(word, recursive=False):
         'p': 'P',
         'q': 'K',
         'r': 'R',  # use AH0 or ER0 for final letter in word ??
-        '\N{LATIN SMALL LETTER SHARP S}': 'S',
+        u'\N{LATIN SMALL LETTER SHARP S}': 'S',
         't': 'T',
         'v': 'F',  # non-native loan-words, 'V'
         'w': 'V',
         'y': 'IH0', # actual pronunciation varies with word origin
     }
-    easy_consonants = list(simple_convert.keys())
+    easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
     for letter in word:
@@ -70,18 +70,18 @@ def breakdownWord(word, recursive=False):
                 pass
             elif len(word) > pos+2 and word[pos+1] == word[pos+2] and not isvowel(word[pos+1]):
                 phonemes.append('AH0')
-            elif len(word) > pos+1 and word[pos+1] == '\N{LATIN SMALL LETTER SHARP S}':
+            elif len(word) > pos+1 and word[pos+1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('AH0')
             elif len(word) == pos+1 and not isvowel(previous):
                 phonemes.append('AA0')
             else:
                 phonemes.append('AA0')
-        elif letter == '\N{LATIN SMALL LETTER A WITH DIAERESIS}':
+        elif letter == u'\N{LATIN SMALL LETTER A WITH DIAERESIS}':
             if len(word) > pos+1 and word[pos+1] == 'u': # äu
                 phonemes.append('OY0')
             elif len(word) > pos+2 and word[pos+1] == word[pos+2] and not isvowel(word[pos+1]):
                 phonemes.append('EH0')
-            elif len(word) > pos+1 and word[pos+1] == '\N{LATIN SMALL LETTER SHARP S}':
+            elif len(word) > pos+1 and word[pos+1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('EH0')
             elif len(word) == pos+1:
                 phonemes.append('EY0')
@@ -123,7 +123,7 @@ def breakdownWord(word, recursive=False):
                 pass
             elif len(word) > pos+2 and word[pos+1] == word[pos+2] and not isvowel(word[pos+1]):
                 phonemes.append('EH0')
-            elif len(word) > pos+1 and word[pos+1] == '\N{LATIN SMALL LETTER SHARP S}':
+            elif len(word) > pos+1 and word[pos+1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('EH0')
             elif len(word) == pos+1 and not isvowel(previous):
                 phonemes.append('EH0')
@@ -154,7 +154,7 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('IY0')
             elif len(word) > pos+2 and word[pos+1] == word[pos+2] and not isvowel(word[pos+1]):
                 phonemes.append('IH0')
-            elif len(word) > pos+1 and word[pos+1] == '\N{LATIN SMALL LETTER SHARP S}':
+            elif len(word) > pos+1 and word[pos+1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('IH0')
             elif len(word) == pos+1 and not isvowel(previous):
                 phonemes.append('IY0')  # also use IH0 here instead?
@@ -174,7 +174,7 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('AO0')
             else:
                 phonemes.append('AO0')  # somtimes o in on, not covered in CMU/USA
-        elif letter ==  '\N{LATIN SMALL LETTER O WITH DIAERESIS}':
+        elif letter ==  u'\N{LATIN SMALL LETTER O WITH DIAERESIS}':
             phonemes.append('ER0')
         elif letter == 's':
             if pos == 0 and len(word) > pos+1 and word[pos+1] in ['p', 't']:
@@ -188,19 +188,19 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('S')  # default sound - or 'Z' ??
         elif letter == 'u':
-            if previous in ['a', '\N{LATIN SMALL LETTER A WITH DIAERESIS}', 'e']:
+            if previous in ['a', u'\N{LATIN SMALL LETTER A WITH DIAERESIS}', 'e']:
                 pass
             elif previous == 'q':
                 phonemes.append('V')
             elif len(word) > pos+2 and word[pos+1] == word[pos+2] and not isvowel(word[pos+1]):
                 phonemes.append('UH0')
-            elif len(word) > pos+1 and word[pos+1] == '\N{LATIN SMALL LETTER SHARP S}':
+            elif len(word) > pos+1 and word[pos+1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('UH0')
             elif len(word) == pos+1 and not isvowel(previous):
                 phonemes.append('UW0')
             else:
                 phonemes.append('UW0')
-        elif letter ==  '\N{LATIN SMALL LETTER U WITH DIAERESIS}':
+        elif letter ==  u'\N{LATIN SMALL LETTER U WITH DIAERESIS}':
             phonemes.append('UW0')
         elif letter == 'x':
             phonemes.append('K')
@@ -243,4 +243,4 @@ if __name__ == "__main__":
                         'meñe', 'på', 'hänsyn'
                         ]
     for word in testwords:
-        print(word, breakdownWord(str(word, input_encoding)))
+        print word, breakdownWord(unicode(word, input_encoding))

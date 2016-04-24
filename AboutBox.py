@@ -49,7 +49,6 @@ class AboutBox(wx.Dialog):
         self.__set_properties()
         self.__do_layout()
         # end wxGlade
-        
         self.htmlView.LoadPage(os.path.join(get_main_dir(), "rsrc/about.html"))
 
     def __set_properties(self):

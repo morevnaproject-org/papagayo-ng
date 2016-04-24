@@ -1,5 +1,6 @@
 from . import dutch_breakdown
 from . import finnish_breakdown
+from . import french_breakdown
 from . import german_breakdown
 from . import hungarian_breakdown
 from . import italian_breakdown_AloRom

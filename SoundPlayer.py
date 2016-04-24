@@ -3,6 +3,14 @@ import audioop
 import sys
 import traceback
 import pyaudio
+import os, platform
+from utilities import which
+
+try:
+    from pydub import AudioSegment
+except ImportError:
+    AudioSegment = None
+
 try:
     import thread
 except ImportError:
@@ -14,14 +22,34 @@ class SoundPlayer():
         self.isplaying = False
         self.time = 0 # current audio position in frames
         self.audio = pyaudio.PyAudio()
-        
+        if AudioSegment:
+            if which("ffmpeg") != None:
+                AudioSegment.converter = which("ffmpeg")
+            elif which("avconv") != None:
+                AudioSegment.converter = which("avconv")
+            else:
+                if platform.system() == "Windows":
+                    AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
+                else:
+                    # TODO: Check if we have ffmpeg or avconv installed
+                    AudioSegment.converter = "ffmpeg"
+
         try:
-            self.wave_reference = wave.open(self.soundfile)
+            if AudioSegment:
+                tempsound = AudioSegment.from_file(self.soundfile, format = os.path.splitext(self.soundfile)[1][1:])
+                tempsound.export(os.path.dirname(os.path.realpath(__file__)) +"\\temp.wav", format = "wav")
+                self.wave_reference = wave.open(os.path.dirname(os.path.realpath(__file__)) + "\\temp.wav")
+            else:
+                self.wave_reference = wave.open(self.soundfile)
+
             self.isvalid = True
+
         except:
             traceback.print_exc()
             self.wave_reference = None
             self.isvalid = False
+
+
 
     def IsValid(self):
         return self.isvalid

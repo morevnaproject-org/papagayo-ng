@@ -27,7 +27,7 @@
 """functions to take an Finnish word and return a list of phonemes
 """
 
-from .unicode_hammer import latin1_to_ascii as hammer
+from unicode_hammer import latin1_to_ascii as hammer
 
 import locale, re
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -54,36 +54,36 @@ def breakdownWord(word, recursive=False):
         't': 'T',
         'v': 'V',
         # in foreign and borrowed words and names
-        '\N{LATIN SMALL LETTER S WITH CARON}': 'SH',  # š
-        '\N{LATIN SMALL LETTER Z WITH CARON}': 'ZH',  # ž
-        '\N{LATIN SMALL LETTER A WITH ACUTE}': 'AA0', # ??? # á
-        '\N{LATIN SMALL LETTER A WITH GRAVE}': 'AA0',  # à
-        '\N{LATIN SMALL LETTER AE}': 'AE0',  # æ - Norwegian / Danish
+        u'\N{LATIN SMALL LETTER S WITH CARON}': 'SH',  # š
+        u'\N{LATIN SMALL LETTER Z WITH CARON}': 'ZH',  # ž
+        u'\N{LATIN SMALL LETTER A WITH ACUTE}': 'AA0', # ??? # á
+        u'\N{LATIN SMALL LETTER A WITH GRAVE}': 'AA0',  # à
+        u'\N{LATIN SMALL LETTER AE}': 'AE0',  # æ - Norwegian / Danish
         'b': 'B',
         'c': 'K',  # S ???
-        '\N{LATIN SMALL LETTER C WITH CEDILLA}': 'SH',  # ç - French, etc
-        '\N{LATIN SMALL LETTER C WITH CARON}': 'S',  # ??? - Northern Sámi
-        '\N{LATIN SMALL LETTER D WITH STROKE}': 'D',  # ??? - Northern Sámi
-        '\N{LATIN SMALL LETTER ETH}': 'DH',  # ð - Icelandic
-        '\N{LATIN SMALL LETTER E WITH ACUTE}': 'EY0',  # é
-        '\N{LATIN SMALL LETTER E WITH DIAERESIS}': 'EH0',  # ??? # ë - scientific names
+        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'SH',  # ç - French, etc
+        u'\N{LATIN SMALL LETTER C WITH CARON}': 'S',  # ??? - Northern Sámi
+        u'\N{LATIN SMALL LETTER D WITH STROKE}': 'D',  # ??? - Northern Sámi
+        u'\N{LATIN SMALL LETTER ETH}': 'DH',  # ð - Icelandic
+        u'\N{LATIN SMALL LETTER E WITH ACUTE}': 'EY0',  # é
+        u'\N{LATIN SMALL LETTER E WITH DIAERESIS}': 'EH0',  # ??? # ë - scientific names
         'f': 'F',
-        '\N{LATIN SMALL LETTER G WITH STROKE}': 'G',  # ??? - other Sámi
-        '\N{LATIN SMALL LETTER G WITH BREVE}': 'G',  # ??? - other Sámi
-        '\N{LATIN SMALL LETTER N WITH TILDE}': 'N Y',  # ñ - Spanish
-        '\N{LATIN SMALL LETTER ENG}': 'N',  #  - Northern Sámi
-        '\N{LATIN SMALL LETTER O WITH STROKE}': 'ER0',  # ??? # ø - Norwegian / Danish
-        '\N{LATIN SMALL LETTER O WITH TILDE}': 'ER0',  # ??? # õ - Estonian
+        u'\N{LATIN SMALL LETTER G WITH STROKE}': 'G',  # ??? - other Sámi
+        u'\N{LATIN SMALL LETTER G WITH BREVE}': 'G',  # ??? - other Sámi
+        u'\N{LATIN SMALL LETTER N WITH TILDE}': 'N Y',  # ñ - Spanish
+        u'\N{LATIN SMALL LETTER ENG}': 'N',  #  - Northern Sámi
+        u'\N{LATIN SMALL LETTER O WITH STROKE}': 'ER0',  # ??? # ø - Norwegian / Danish
+        u'\N{LATIN SMALL LETTER O WITH TILDE}': 'ER0',  # ??? # õ - Estonian
         'q': 'K',
-        '\N{LATIN SMALL LETTER SHARP S}': 'S',  # ß - German
-        '\N{LATIN SMALL LETTER T WITH STROKE}': 'T',  #  - Northern Sámi
-        '\N{LATIN SMALL LETTER THORN}': 'TH',  # Þ - Icelandic
-        '\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0', # ??? # ü - German / Estonian
+        u'\N{LATIN SMALL LETTER SHARP S}': 'S',  # ß - German
+        u'\N{LATIN SMALL LETTER T WITH STROKE}': 'T',  #  - Northern Sámi
+        u'\N{LATIN SMALL LETTER THORN}': 'TH',  # Þ - Icelandic
+        u'\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0', # ??? # ü - German / Estonian
         'w': 'V',
         'z': 'Z'
 
     }
-    easy_consonants = list(simple_convert.keys())
+    easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
     for letter in word:
@@ -142,9 +142,9 @@ def breakdownWord(word, recursive=False):
                 pass  # handled under following letter
             else:
                 phonemes.append('UW0')  # ???
-        elif letter == '\N{LATIN SMALL LETTER A WITH DIAERESIS}':  # ä
+        elif letter == u'\N{LATIN SMALL LETTER A WITH DIAERESIS}':  # ä
             phonemes.append('AE0')
-        elif letter == '\N{LATIN SMALL LETTER O WITH DIAERESIS}':  # ö
+        elif letter == u'\N{LATIN SMALL LETTER O WITH DIAERESIS}':  # ö
             # yö ???
             phonemes.append('ER0')  # ???
         elif letter == 'g':
@@ -184,4 +184,4 @@ if __name__ == "__main__":
     testwords = splitter.split(teststring)
     testwords.append('på')
     for word in testwords:
-        print(word, breakdownWord(str(word, input_encoding)))
+        print word, breakdownWord(unicode(word, input_encoding))

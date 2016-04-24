@@ -393,7 +393,7 @@ class LipsyncFrame(wx.Frame):
                     dlg.Destroy()
             else:
                 # open an audio file
-                self.doc.fps = int(self.config.Read("LastFPS", 24))
+                self.doc.fps = int(self.config.Read("LastFPS", "24"))
                 self.doc.OpenAudio(path)
                 if self.doc.sound is None:
                     self.doc = None

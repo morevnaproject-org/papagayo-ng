@@ -27,7 +27,7 @@
 """functions to take a Dutch word and return a list of phonemes
 """
 
-from .unicode_hammer import latin1_to_ascii as hammer
+from unicode_hammer import latin1_to_ascii as hammer
 
 import locale, re
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -70,8 +70,8 @@ def prefixen(word):
         'aan' : ['AA0', 'N'],
         'af': ['AH0', 'F'],
         'bij': ['B', 'AY0'],
-        'b\N{LATIN SMALL LETTER Y WITH ACUTE}': ['B', 'AY0'],  # bý
-        'b\N{LATIN SMALL LETTER Y WITH DIAERESIS}': ['B', 'AY0'],  # bÿ
+        u'b\N{LATIN SMALL LETTER Y WITH ACUTE}': ['B', 'AY0'],  # bý
+        u'b\N{LATIN SMALL LETTER Y WITH DIAERESIS}': ['B', 'AY0'],  # bÿ
         'hard': ['HH', 'AH0', 'R', 'D'],
         'los': ['L', 'AO0', 'S'],
         'mee': ['M', 'EY0'],
@@ -86,7 +86,7 @@ def prefixen(word):
         'vast': ['F', 'AH0', 'S', 'T'],
         'weg': ['V', 'EY0', 'G'],
         }
-    for each_prefix in list(prefix_pronunciation.keys()):
+    for each_prefix in prefix_pronunciation.keys():
         if len(word) > len(each_prefix)+2 and word.startswith(each_prefix):
             # if each_prefix[-1] in ['a', 'e', 'i', 'o', 'u', 'j', 'ÿ', ý']:
             word = word[len(each_prefix):]
@@ -207,7 +207,7 @@ def syllablesToPhonemes(syllables,  recursive=False):
     'w': 'V', # closer to soft English V than the English W - pronounced back in mouth, not with pursed lips
     'z': 'Z'
     }
-    easy_consonants = list(simple_convert.keys())
+    easy_consonants = simple_convert.keys()
     syllable_pos, letter_pos = 0,1
     pos = [1,1] # syllable 1, letter 1
     previous_letter = ' '
@@ -344,17 +344,17 @@ def syllablesToPhonemes(syllables,  recursive=False):
                 else:
                     phonemes.append('ER0')  # - not accurate but the nearest phoneme in CMU? (use AH instead?)
             # ------------ TREMA (looks like German Umlaut, but different meaning) -------------------------------
-            elif letter == '\N{LATIN SMALL LETTER A WITH DIAERESIS}':  # ä
+            elif letter == u'\N{LATIN SMALL LETTER A WITH DIAERESIS}':  # ä
                 phonemes.append('AH0')  # like English short u (cut, hut)
-            elif letter == '\N{LATIN SMALL LETTER E WITH DIAERESIS}':  # ë
+            elif letter == u'\N{LATIN SMALL LETTER E WITH DIAERESIS}':  # ë
                 phonemes.append('EH0')  # closer to a (bad B AH D) than English short EH0 (bed = B EH D)
-            elif letter == '\N{LATIN SMALL LETTER I WITH DIAERESIS}':  # ï
+            elif letter == u'\N{LATIN SMALL LETTER I WITH DIAERESIS}':  # ï
                 phonemes.append('IH0')
-            elif letter == '\N{LATIN SMALL LETTER O WITH DIAERESIS}':  # ö
+            elif letter == u'\N{LATIN SMALL LETTER O WITH DIAERESIS}':  # ö
                 phonemes.append('AO0')
-            elif letter == '\N{LATIN SMALL LETTER U WITH DIAERESIS}':  # ü
+            elif letter == u'\N{LATIN SMALL LETTER U WITH DIAERESIS}':  # ü
                 phonemes.append('ER0')  # - not accurate but the nearest phoneme in CMU? (use AH instead?)
-            elif letter == '\N{LATIN SMALL LETTER Y WITH DIAERESIS}' or letter == '\N{LATIN SMALL LETTER Y WITH ACUTE}':  # 'ÿ' or 'ý'
+            elif letter == u'\N{LATIN SMALL LETTER Y WITH DIAERESIS}' or letter == u'\N{LATIN SMALL LETTER Y WITH ACUTE}':  # 'ÿ' or 'ý'
                 # LATIN SMALL LETTER Y WITH DIAERESIS
                 # LATIN SMALL LETTER Y WITH ACUTE
                 phonemes.append("AY0")
@@ -384,4 +384,4 @@ if __name__ == "__main__":
                     'boot', 'boten', 'ogen', 'muur', 'fuut', 'duren', 'mooi', 'ce', 'ci', 'hec', 'på', 'hänsyn']
     for word in testwords:
         # print word, wordToSyllables(word), syllablesToPhonemes(wordToSyllables(word)), breakdownWord(word)
-        print(word, wordToSyllables(word), breakdownWord(str(word, input_encoding)))
+        print word, wordToSyllables(word), breakdownWord(unicode(word, input_encoding))
