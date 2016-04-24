@@ -23,6 +23,8 @@ import os
 import wx
 import re
 from utilities import *
+
+
 # begin wxGlade: dependencies
 # end wxGlade
 
@@ -67,7 +69,7 @@ class MouthView(wx.Panel):
         dc.Clear()
         self.DrawMe(dc)
 
-    def DrawMe(self, dc = None):
+    def DrawMe(self, dc=None):
         if (self.doc is not None) and (self.doc.sound is not None) and (self.doc.sound.IsPlaying()):
             if self.doc.currentVoice is not None:
                 phoneme = self.doc.currentVoice.GetPhonemeAtFrame(self.curFrame)
@@ -84,7 +86,7 @@ class MouthView(wx.Panel):
             freeDC = True
         else:
             freeDC = False
-        #dc.BeginDrawing()
+        # dc.BeginDrawing()
         if 1:
             bitmap = self.mouths[self.currentMouth][self.currentPhoneme]
             width, height = self.GetClientSize()
@@ -94,7 +96,7 @@ class MouthView(wx.Panel):
         else:
             dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
             dc.Clear()
-        #dc.EndDrawing()
+        # dc.EndDrawing()
         if freeDC:
             del dc
 
@@ -109,9 +111,9 @@ class MouthView(wx.Panel):
 
     def ProcessMouthDir(self, dirname, names, supportedimagetypes):
         hasImages = False
-        for file in names:
-            file = file.lower()
-            if file.split(".")[-1] in supportedimagetypes:
+        for files in names:
+            files = files.lower()
+            if files.split(".")[-1] in supportedimagetypes:
                 hasImages = True
         if not hasImages:
             return
@@ -119,26 +121,24 @@ class MouthView(wx.Panel):
         self.AddMouth(os.path.normpath(dirname), names)
 
     def LoadMouths(self):
-        print(os.path.join(get_main_dir(), "rsrc","mouths"))
-        #wx gives us a string instead of a list of filetypes
+        print(os.path.join(get_main_dir(), "rsrc", "mouths"))
+        # wx gives us a string instead of a list of filetypes
         full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
         supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
-        for directory, dirnames, filenames in os.walk(os.path.join(get_main_dir(), "rsrc","mouths")):
+        for directory, dirnames, filenames in os.walk(os.path.join(get_main_dir(), "rsrc", "mouths")):
             self.ProcessMouthDir(directory, filenames, supportedimagetypes)
 
     def AddMouth(self, dirname, names):
         bitmaps = {}
-        for file in names:
-            if ".svn" in file:
+        for files in names:
+            if ".svn" in files:
                 continue
-            path = os.path.normpath(os.path.join(dirname, file))
+            path = os.path.normpath(os.path.join(dirname, files))
             nolog = wx.LogNull()
-            bitmaps[file.split('.')[0]] = wx.Bitmap(path, wx.BITMAP_TYPE_ANY)
+            bitmaps[files.split('.')[0]] = wx.Bitmap(path, wx.BITMAP_TYPE_ANY)
             del nolog
         self.mouths[os.path.basename(dirname)] = bitmaps
         if self.currentMouth is None:
             self.currentMouth = os.path.basename(dirname)
 
 # end of class MouthView
-
-
