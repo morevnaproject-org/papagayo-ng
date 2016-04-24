@@ -27,10 +27,14 @@
 """functions to take an Finnish word and return a list of phonemes
 """
 
+import locale
+import re
+
 from unicode_hammer import latin1_to_ascii as hammer
 
-import locale, re
-input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
+input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
+
+
 # input_encoding = 'cp1252'
 # input_encoding = 'utf-8'
 # input_encoding = 'utf-16'
@@ -56,7 +60,7 @@ def breakdownWord(word, recursive=False):
         # in foreign and borrowed words and names
         u'\N{LATIN SMALL LETTER S WITH CARON}': 'SH',  # š
         u'\N{LATIN SMALL LETTER Z WITH CARON}': 'ZH',  # ž
-        u'\N{LATIN SMALL LETTER A WITH ACUTE}': 'AA0', # ??? # á
+        u'\N{LATIN SMALL LETTER A WITH ACUTE}': 'AA0',  # ??? # á
         u'\N{LATIN SMALL LETTER A WITH GRAVE}': 'AA0',  # à
         u'\N{LATIN SMALL LETTER AE}': 'AE0',  # æ - Norwegian / Danish
         'b': 'B',
@@ -71,14 +75,14 @@ def breakdownWord(word, recursive=False):
         u'\N{LATIN SMALL LETTER G WITH STROKE}': 'G',  # ??? - other Sámi
         u'\N{LATIN SMALL LETTER G WITH BREVE}': 'G',  # ??? - other Sámi
         u'\N{LATIN SMALL LETTER N WITH TILDE}': 'N Y',  # ñ - Spanish
-        u'\N{LATIN SMALL LETTER ENG}': 'N',  #  - Northern Sámi
+        u'\N{LATIN SMALL LETTER ENG}': 'N',  # - Northern Sámi
         u'\N{LATIN SMALL LETTER O WITH STROKE}': 'ER0',  # ??? # ø - Norwegian / Danish
         u'\N{LATIN SMALL LETTER O WITH TILDE}': 'ER0',  # ??? # õ - Estonian
         'q': 'K',
         u'\N{LATIN SMALL LETTER SHARP S}': 'S',  # ß - German
-        u'\N{LATIN SMALL LETTER T WITH STROKE}': 'T',  #  - Northern Sámi
+        u'\N{LATIN SMALL LETTER T WITH STROKE}': 'T',  # - Northern Sámi
         u'\N{LATIN SMALL LETTER THORN}': 'TH',  # Þ - Icelandic
-        u'\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0', # ??? # ü - German / Estonian
+        u'\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0',  # ??? # ü - German / Estonian
         'w': 'V',
         'z': 'Z'
 
@@ -87,15 +91,15 @@ def breakdownWord(word, recursive=False):
     pos = 0
     previous = ' '
     for letter in word:
-        #~ if letter == previous:
-            #~ pass
+        # ~ if letter == previous:
+        # ~ pass
         if letter == 'a':
-            if len(word) > pos+1 and word[pos+1] in ['i', 'u', ]:
+            if len(word) > pos + 1 and word[pos + 1] in ['i', 'u', ]:
                 pass  # handled under following letter
             else:
                 phonemes.append('AA0')
         elif letter == 'e':
-            if len(word) > pos+1 and word[pos+1] in ['i',]:
+            if len(word) > pos + 1 and word[pos + 1] in ['i', ]:
                 pass  # handled under following letter
             elif previous == 'i':  # ie
                 phonemes.append('IY0')  # ???
@@ -116,7 +120,7 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('IH0')
         elif letter == 'o':
-            if len(word) > pos+1 and word[pos+1] in ['i', 'u']:
+            if len(word) > pos + 1 and word[pos + 1] in ['i', 'u']:
                 pass  # handled under following letter
             elif previous == 'u':  # uo
                 phonemes.append('OW0')  # ???
@@ -129,7 +133,7 @@ def breakdownWord(word, recursive=False):
                 # eu ???
                 # iu ???
             }
-            if len(word) > pos+1 and word[pos+1] in ['i',]:
+            if len(word) > pos + 1 and word[pos + 1] in ['i', ]:
                 pass  # handled under following letter
             elif previous in prev_match_u:
                 phonemes.append(prev_match_u[previous])
@@ -138,7 +142,7 @@ def breakdownWord(word, recursive=False):
         elif letter == 'y':
             # äy ???
             # öy ???
-            if len(word) > pos+1 and word[pos+1] in ['i',]:
+            if len(word) > pos + 1 and word[pos + 1] in ['i', ]:
                 pass  # handled under following letter
             else:
                 phonemes.append('UW0')  # ???
@@ -153,8 +157,8 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('G')
         elif letter == 'n':
-            if len(word) > pos+1 and word[pos+1] == 'g':
-                pass # handled under g
+            if len(word) > pos + 1 and word[pos + 1] == 'g':
+                pass  # handled under g
             else:
                 phonemes.append('N')
         elif letter in simple_convert:
@@ -164,8 +168,8 @@ def breakdownWord(word, recursive=False):
                 phon = breakdownWord(hammer(letter), True)
                 if phon:
                     phonemes.append(phon[0])
-        #~ else:
-            #~ print "not handled", letter, word
+                    # ~ else:
+                    # ~ print "not handled", letter, word
         pos += 1
         previous = letter
     # return " ".join(phonemes)
@@ -177,6 +181,7 @@ def breakdownWord(word, recursive=False):
             temp_phonemes.append(phoneme)
         previous_phoneme = phoneme
     return temp_phonemes
+
 
 if __name__ == "__main__":
     teststring = "Kaikki ihmiset syntyvät vapaina ja tasavertaisina arvoltaan ja oikeuksiltaan. Heille on annettu järki ja omatunto, ja heidän on toimittava toisiaan kohtaan veljeyden hengessä"

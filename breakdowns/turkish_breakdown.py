@@ -29,7 +29,10 @@
 from unicode_hammer import latin1_to_ascii as hammer
 
 import locale
-input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
+
+input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
+
+
 # input_encoding = 'cp1252'
 # input_encoding = 'utf-8'
 # input_encoding = 'utf-16'
@@ -40,40 +43,40 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 def breakdownWord(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys(u'aeiou\N{LATIN SMALL LETTER DOTLESS I}'
-u'\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH DIAERESIS}'
-u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}').has_key
+                            u'\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH DIAERESIS}'
+                            u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}').has_key
     phonemes = []
     simple_convert = {
-    'b': 'B',
-    'c': 'JH',
-    u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'CH',
-    'd': 'D',
-    'f': 'F',
-    'g': 'G',
-    'h': 'HH',
-    u'\N{LATIN SMALL LETTER DOTLESS I}': 'AH0',
-    'i': 'IY0',
-    'j': 'ZH',
-    'k': 'K',
-    'l': 'L',
-    'm': 'M',
-    'n': 'N',
-    u'\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0',
-    'p': 'P',
-    'r': 'R',
-    's': 'S',
-    u'\N{LATIN SMALL LETTER S WITH CEDILLA}': 'SH',
-    't': 'T',
-    u'\N{LATIN SMALL LETTER U WITH DIAERESIS}': 'UW0', # IH0?
-    'w': 'V',  # loan-words
-    'z': 'Z',
+        'b': 'B',
+        'c': 'JH',
+        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'CH',
+        'd': 'D',
+        'f': 'F',
+        'g': 'G',
+        'h': 'HH',
+        u'\N{LATIN SMALL LETTER DOTLESS I}': 'AH0',
+        'i': 'IY0',
+        'j': 'ZH',
+        'k': 'K',
+        'l': 'L',
+        'm': 'M',
+        'n': 'N',
+        u'\N{LATIN SMALL LETTER O WITH DIAERESIS}': 'ER0',
+        'p': 'P',
+        'r': 'R',
+        's': 'S',
+        u'\N{LATIN SMALL LETTER S WITH CEDILLA}': 'SH',
+        't': 'T',
+        u'\N{LATIN SMALL LETTER U WITH DIAERESIS}': 'UW0',  # IH0?
+        'w': 'V',  # loan-words
+        'z': 'Z',
     }
     easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
     for letter in word:
         if letter == 'a':
-            if len(word) > pos+1 and word[pos+1] == 'y':
+            if len(word) > pos + 1 and word[pos + 1] == 'y':
                 phonemes.append('AY0')
             else:
                 phonemes.append('AA0')
@@ -84,41 +87,41 @@ u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLE
             else:
                 phonemes.append('AA0')
         elif letter == 'e':
-            if len(word) > pos+1 and word[pos+1] == 'y':
+            if len(word) > pos + 1 and word[pos + 1] == 'y':
                 phonemes.append('EY0')
             else:
                 phonemes.append('EH0')
         elif letter == u'\N{LATIN SMALL LETTER G WITH BREVE}':
             pass
-            #~ if len(word) > pos+1 and word[pos+1] in ['e', 'i',
-                            #~ u'\N{LATIN SMALL LETTER O WITH DIAERESIS}',
-                            #~ u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']:
-                #~ phonemes.append('Y')
-            #~ else:
-                #~ pass
-        #~ elif letter == 'g':
-            #~ if len(word) > pos+1 and word[pos+1] in ['e', 'i',
-                            #~ u'\N{LATIN SMALL LETTER O WITH DIAERESIS}',
-                            #~ u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']:
-                #~ phonemes.append('L')
-                #~ phonemes.append('Y')
-            #~ else:
-                #~ phonemes.append('L')
-        #~ elif letter == 'l':
-            #~ if len(word) > pos+1 and word[pos+1] in ['e', 'i',
-                            #~ u'\N{LATIN SMALL LETTER O WITH DIAERESIS}',
-                            #~ u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']:
-                #~ phonemes.append('L')
-                #~ phonemes.append('Y')
-            #~ else:
-                #~ phonemes.append('L')
-        elif letter =='n':
-            if len(word) > pos+1 and word[pos+1] == 'b':
+            # ~ if len(word) > pos+1 and word[pos+1] in ['e', 'i',
+            # ~ u'\N{LATIN SMALL LETTER O WITH DIAERESIS}',
+            # ~ u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']:
+            # ~ phonemes.append('Y')
+            # ~ else:
+            # ~ pass
+            # ~ elif letter == 'g':
+            # ~ if len(word) > pos+1 and word[pos+1] in ['e', 'i',
+            # ~ u'\N{LATIN SMALL LETTER O WITH DIAERESIS}',
+            # ~ u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']:
+            # ~ phonemes.append('L')
+            # ~ phonemes.append('Y')
+            # ~ else:
+            # ~ phonemes.append('L')
+            # ~ elif letter == 'l':
+            # ~ if len(word) > pos+1 and word[pos+1] in ['e', 'i',
+            # ~ u'\N{LATIN SMALL LETTER O WITH DIAERESIS}',
+            # ~ u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']:
+            # ~ phonemes.append('L')
+            # ~ phonemes.append('Y')
+            # ~ else:
+            # ~ phonemes.append('L')
+        elif letter == 'n':
+            if len(word) > pos + 1 and word[pos + 1] == 'b':
                 phonemes.append('M')
             else:
                 phonemes.append('N')
         elif letter == 'o':
-            if len(word) > pos+1 and word[pos+1] == 'y':
+            if len(word) > pos + 1 and word[pos + 1] == 'y':
                 phonemes.append('OY0')
             else:
                 phonemes.append('OW0')
@@ -131,7 +134,7 @@ u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLE
             else:
                 phonemes.append('UW0')
         elif letter == 'u':
-            if len(word) > pos+1 and word[pos+1] == 'y':
+            if len(word) > pos + 1 and word[pos + 1] == 'y':
                 phonemes.append('IY0')
             else:
                 phonemes.append('UH0')
@@ -158,8 +161,8 @@ u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLE
                 phon = " ".join(breakdownWord(hammer(letter), True))
                 if phon:
                     phonemes.append(phon.split()[0])
-        #~ else:
-            #~ print "not handled", letter, word
+                    # ~ else:
+                    # ~ print "not handled", letter, word
         pos += 1
         previous = letter
     # return phonemes
@@ -172,15 +175,14 @@ u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLE
     return temp_phonemes
 
 
-
 if __name__ == "__main__":
-    testwords = [ 'merhaba', 'Iyi', 'geceler', 'allaha',
-                        'ismarladik', 'güle', 'evet', 'hayir',
-                        'lütfen', 'anlamiyorum', 'afiyet', 'olsun',
-                        'saatler', 'elinize', 'ithal', 'Mithat', 'meshut',
-                        'cem', 'Ahmet', 'rehber', 'müphem', 'ithal',
-                        'på', 'hänsyn'
-                        ]
+    testwords = ['merhaba', 'Iyi', 'geceler', 'allaha',
+                 'ismarladik', 'güle', 'evet', 'hayir',
+                 'lütfen', 'anlamiyorum', 'afiyet', 'olsun',
+                 'saatler', 'elinize', 'ithal', 'Mithat', 'meshut',
+                 'cem', 'Ahmet', 'rehber', 'müphem', 'ithal',
+                 'på', 'hänsyn'
+                 ]
     for eachword in testwords:
-        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(unicode(eachword, input_encoding))
-
+        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(
+            unicode(eachword, input_encoding))

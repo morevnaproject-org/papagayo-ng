@@ -29,7 +29,10 @@
 from unicode_hammer import latin1_to_ascii as hammer
 
 import locale
-input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
+
+input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
+
+
 # input_encoding = 'cp1252'
 # input_encoding = 'utf-8'
 # input_encoding = 'utf-16'
@@ -39,19 +42,20 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys(u'aeiouy\N{LATIN SMALL LETTER A WITH RING ABOVE}\N{LATIN SMALL LETTER AE}\N{LATIN SMALL LETTER O WITH STROKE}').has_key
+    isvowel = dict.fromkeys(
+        u'aeiouy\N{LATIN SMALL LETTER A WITH RING ABOVE}\N{LATIN SMALL LETTER AE}\N{LATIN SMALL LETTER O WITH STROKE}').has_key
     phonemes = []
     simple_convert = {
-    'b': 'B',
-    'c': 'S',
-    'f': 'F',
-    'm': 'M',
-    'p': 'P',
-    'r': 'R',
-    't': 'T',
-    'v': 'V',
-    'w': 'V',
-    'z': 'S',
+        'b': 'B',
+        'c': 'S',
+        'f': 'F',
+        'm': 'M',
+        'p': 'P',
+        'r': 'R',
+        't': 'T',
+        'v': 'V',
+        'w': 'V',
+        'z': 'S',
     }
     short_vowels = {
         u'a': 'AA0',
@@ -80,60 +84,60 @@ def breakdownWord(word, recursive=False):
     previous = ' '
     for letter in word:
         if isvowel(letter):
-            if len(word) == pos+3 and word[pos+1] == 'r' and word[pos+1] == 'd':
+            if len(word) == pos + 3 and word[pos + 1] == 'r' and word[pos + 1] == 'd':
                 phonemes.append(long_vowels[letter])
-            elif letter == 'a'and len(word) > pos+1 and word[pos+1] == 'i':
-                    phonemes.append('AY0')
-            elif letter == 'a'and len(word) > pos+1 and word[pos+1] == 'u':
-                    phonemes.append('AW0')
-            elif letter == 'e'and len(word) > pos+1 and word[pos+1] == 'i':
-                    phonemes.append('AY0')
-            elif letter == 'e'and len(word) > pos+1 and word[pos+1] == 'r':
-                    phonemes.append('AE0')
-            elif letter == 'o'and len(word) > pos+1 and word[pos+1] == 'i':
-                    phonemes.append('OY0')
-            elif letter == 'o'and len(word) > pos+1 and word[pos+1] == 'i':
-                    phonemes.append('UW0')
-                    phonemes.append('IY0')
-            elif letter == u'\N{LATIN SMALL LETTER O WITH STROKE}'and len(word) > pos+1 and word[pos+1] == 'y':
-                    phonemes.append('OW0')
-                    phonemes.append('IY0')
-            elif len(word) == pos+2 and word[pos+1] == 'm':
+            elif letter == 'a' and len(word) > pos + 1 and word[pos + 1] == 'i':
+                phonemes.append('AY0')
+            elif letter == 'a' and len(word) > pos + 1 and word[pos + 1] == 'u':
+                phonemes.append('AW0')
+            elif letter == 'e' and len(word) > pos + 1 and word[pos + 1] == 'i':
+                phonemes.append('AY0')
+            elif letter == 'e' and len(word) > pos + 1 and word[pos + 1] == 'r':
+                phonemes.append('AE0')
+            elif letter == 'o' and len(word) > pos + 1 and word[pos + 1] == 'i':
+                phonemes.append('OY0')
+            elif letter == 'o' and len(word) > pos + 1 and word[pos + 1] == 'i':
+                phonemes.append('UW0')
+                phonemes.append('IY0')
+            elif letter == u'\N{LATIN SMALL LETTER O WITH STROKE}' and len(word) > pos + 1 and word[pos + 1] == 'y':
+                phonemes.append('OW0')
+                phonemes.append('IY0')
+            elif len(word) == pos + 2 and word[pos + 1] == 'm':
                 phonemes.append(short_vowels[letter])
-            elif len(word) > pos+2 and word[pos+1] == word[pos+2] and not isvowel(word[pos+1]):
+            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not isvowel(word[pos + 1]):
                 phonemes.append(short_vowels[letter])
-            elif len(word) == pos+3 and word[pos+1] == 'r' and word[pos+2] == 'd':
+            elif len(word) == pos + 3 and word[pos + 1] == 'r' and word[pos + 2] == 'd':
                 phonemes.append(long_vowels[letter])
-            elif len(word) > pos+2 and word[pos+1] != word[pos+2] and not isvowel(word[pos+1]):
+            elif len(word) > pos + 2 and word[pos + 1] != word[pos + 2] and not isvowel(word[pos + 1]):
                 phonemes.append(long_vowels[letter])
             else:
                 phonemes.append(long_vowels[letter])
         elif letter == 'd':
-            if len(word) == pos+1 and previous == 'r': # ends in d, e.g. jord
+            if len(word) == pos + 1 and previous == 'r':  # ends in d, e.g. jord
                 pass
-            elif len(word) == pos+1 and isvowel(previous): # ends in long vowel then d, e.g. god
+            elif len(word) == pos + 1 and isvowel(previous):  # ends in long vowel then d, e.g. god
                 pass
             elif previous in ['l', 'n']:  # holde, land
                 pass
             else:
                 phonemes.append('D')
         elif letter == 'g':
-            if len(word) > pos+1 and word[pos+1] == 'j':   # gjær
+            if len(word) > pos + 1 and word[pos + 1] == 'j':  # gjær
                 pass  # handled as a normal j
-            elif len(word) == pos+1 and previous == 'i': # ærlig
+            elif len(word) == pos + 1 and previous == 'i':  # ærlig
                 pass  # silent at end of word
             elif previous == 'n':
                 pass  # handled under n
-            elif len(word) > pos+1 and word[pos+1] in ['i', 'y']:
+            elif len(word) > pos + 1 and word[pos + 1] in ['i', 'y']:
                 phonemes.append('Y')
-            elif len(word) > pos+2 and word[pos+1] == 'e' and word[pos+2] == 'i':
+            elif len(word) > pos + 2 and word[pos + 1] == 'e' and word[pos + 2] == 'i':
                 phonemes.append('Y')
             else:
                 phonemes.append('G')
         elif letter == 'h':
-            if len(word) > pos+1 and word[pos+1] == 'j':   # hjem
+            if len(word) > pos + 1 and word[pos + 1] == 'j':  # hjem
                 pass  # handled as a normal j
-            if len(word) > pos+1 and word[pos+1] == 'v':   # hver
+            if len(word) > pos + 1 and word[pos + 1] == 'v':  # hver
                 pass  # handled as a normal v
             else:
                 phonemes.append('HH')
@@ -145,24 +149,25 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('Y')
         elif letter == 'k':
-            if previous == 's' and len(word) > pos+1 and word[pos+1] in [u'j', u'i', u'y', u'\N{LATIN SMALL LETTER O WITH STROKE}']:
+            if previous == 's' and len(word) > pos + 1 and word[pos + 1] in [u'j', u'i', u'y',
+                                                                             u'\N{LATIN SMALL LETTER O WITH STROKE}']:
                 phonemes.append('SH')  # sjkære, ski, skøyter
             elif previous == 's':
                 phonemes.append('S')
                 phonemes.append('K')
-            elif len(word) > pos+1 and word[pos+1] in [u'i', u'y']:  # kirke, kyss
+            elif len(word) > pos + 1 and word[pos + 1] in [u'i', u'y']:  # kirke, kyss
                 phonemes.append('HH')
-            elif len(word) > pos+1 and word[pos+1] == 'j': # kjønn
+            elif len(word) > pos + 1 and word[pos + 1] == 'j':  # kjønn
                 phonemes.append('HH')
             else:
                 phonemes.append('K')  # kaffe
         elif letter == 'l':
-            if len(word) > pos+1 and word[pos+1] == 'j':   # ljug
+            if len(word) > pos + 1 and word[pos + 1] == 'j':  # ljug
                 pass  # handled as a normal j
             else:
                 phonemes.append('L')
         elif letter == 'n':
-            if len(word) > pos+1 and word[pos+1] == 'g': # fang
+            if len(word) > pos + 1 and word[pos + 1] == 'g':  # fang
                 phonemes.append('NG')
             else:
                 phonemes.append('N')  # ni
@@ -171,13 +176,13 @@ def breakdownWord(word, recursive=False):
             phonemes.append('UW0')
         elif letter == 's':
             if previous == 'r':
-                phonemes.append('SH') # Eastern Norway - norsk, person, for sent
-            elif len(word) > pos+1 and word[pos+1] == 'k':
+                phonemes.append('SH')  # Eastern Norway - norsk, person, for sent
+            elif len(word) > pos + 1 and word[pos + 1] == 'k':
                 pass  # handled under k
-            elif len(word) > pos+1 and word[pos+1] == 'j': # sjø
+            elif len(word) > pos + 1 and word[pos + 1] == 'j':  # sjø
                 phonemes.append('SH')
-            elif len(word) > pos+1 and word[pos+1] == 'l':
-                phonemes.append('SH') # informal usage
+            elif len(word) > pos + 1 and word[pos + 1] == 'l':
+                phonemes.append('SH')  # informal usage
             else:
                 phonemes.append('S')  # syv
         elif letter == 'x':
@@ -193,8 +198,8 @@ def breakdownWord(word, recursive=False):
                 phon = " ".join(breakdownWord(hammer(letter), True))
                 if phon:
                     phonemes.append(phon)
-        #~ else:
-            #~ print "not handled", letter, word
+                    # ~ else:
+                    # ~ print "not handled", letter, word
         pos += 1
         previous = letter
     temp_phonemes = []
@@ -206,16 +211,16 @@ def breakdownWord(word, recursive=False):
     return temp_phonemes
 
 
-
 if __name__ == "__main__":
-    testwords = [ 'natt', 'rar', 'hai', 'tau', 'by', 'du', 'menn', 'lettes', 'tre', 'nei', 'fire',
-                        'gal', 'hatt', 'titt', 'bi', 'ja', 'kaffe', 'kjønn', 'lys', 'min', 'ni', 'fang', 'godt',
-                        'to', 'koie', 'purre', 'råd', 'syv', 'sjø', 'tusen', 'gutt', 'ku', 'uimotståelig',
-                        'vits', 'mygg', 'ny', 'lærd', 'tær', 'trøtt', 'kø', 'gøy', 'grått', 'båt',
-                        'hjem', 'rom', 'hver', 'kirke', 'kyss', 'gjær', 'ljug', 'gi', 'begynne', 'geit',
-                        'kart', 'ærlig', 'barn', 'skjære', 'ski', 'skøyter', 'norsk', 'person', 'forsent',
-                        'slå','Oslo', 'jord', 'god', 'holde', 'land', 'huset', 'sølv',
-                        'êtres', 'français', 'égaux'
-                        ]
+    testwords = ['natt', 'rar', 'hai', 'tau', 'by', 'du', 'menn', 'lettes', 'tre', 'nei', 'fire',
+                 'gal', 'hatt', 'titt', 'bi', 'ja', 'kaffe', 'kjønn', 'lys', 'min', 'ni', 'fang', 'godt',
+                 'to', 'koie', 'purre', 'råd', 'syv', 'sjø', 'tusen', 'gutt', 'ku', 'uimotståelig',
+                 'vits', 'mygg', 'ny', 'lærd', 'tær', 'trøtt', 'kø', 'gøy', 'grått', 'båt',
+                 'hjem', 'rom', 'hver', 'kirke', 'kyss', 'gjær', 'ljug', 'gi', 'begynne', 'geit',
+                 'kart', 'ærlig', 'barn', 'skjære', 'ski', 'skøyter', 'norsk', 'person', 'forsent',
+                 'slå', 'Oslo', 'jord', 'god', 'holde', 'land', 'huset', 'sølv',
+                 'êtres', 'français', 'égaux'
+                 ]
     for eachword in testwords:
-        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(unicode(eachword, input_encoding))
+        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(
+            unicode(eachword, input_encoding))

@@ -27,13 +27,15 @@
 """functions to take an Russian word and return a list of phonemes
 """
 
-from unicode_hammer import latin1_to_ascii as hammer
+import locale
 
-import locale, re
+from unicode_hammer import latin1_to_ascii as hammer
 
 output_encoding = 'utf-16'
 
-input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
+input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
+
+
 # input_encoding = 'cp1252'
 # input_encoding = 'utf-8'
 # input_encoding = 'utf-16'
@@ -77,7 +79,7 @@ def breakdownWord(word, recursive=False):
         u'\N{CYRILLIC SMALL LETTER EF}': 'F',
         u'\N{CYRILLIC SMALL LETTER GHE}': 'G',
         u'\N{CYRILLIC SMALL LETTER I}': 'IY0',
-        u'\N{CYRILLIC SMALL LETTER HA}': 'HH', #  'Y'?? 'K'??
+        u'\N{CYRILLIC SMALL LETTER HA}': 'HH',  # 'Y'?? 'K'??
         u'\N{CYRILLIC SMALL LETTER SHORT I}': 'IY0',
         u'\N{CYRILLIC SMALL LETTER KA}': 'K',
         u'\N{CYRILLIC SMALL LETTER EL}': 'L',
@@ -105,7 +107,7 @@ def breakdownWord(word, recursive=False):
         u'\N{CYRILLIC CAPITAL LETTER EF}': 'F',
         u'\N{CYRILLIC CAPITAL LETTER GHE}': 'G',
         u'\N{CYRILLIC CAPITAL LETTER I}': 'IY0',
-        u'\N{CYRILLIC CAPITAL LETTER HA}': 'HH', #  'Y'?? 'K'??
+        u'\N{CYRILLIC CAPITAL LETTER HA}': 'HH',  # 'Y'?? 'K'??
         u'\N{CYRILLIC CAPITAL LETTER SHORT I}': 'IY0',
         u'\N{CYRILLIC CAPITAL LETTER KA}': 'K',
         u'\N{CYRILLIC CAPITAL LETTER EL}': 'L',
@@ -131,78 +133,78 @@ def breakdownWord(word, recursive=False):
         # if letter == previous and not isvowel(letter):  # double consonants
         #     pass
         if letter == 'c':
-            if previous == 's' and len(word) > pos+1 and word[pos+1] == 'h':
+            if previous == 's' and len(word) > pos + 1 and word[pos + 1] == 'h':
                 phonemes.append('SH')  # as in
-                phonemes.append('CH')  #       freSH CHeese
-            elif len(word) > pos+1 and word[pos+1] == 'h':
+                phonemes.append('CH')  # freSH CHeese
+            elif len(word) > pos + 1 and word[pos + 1] == 'h':
                 phonemes.append('CH')
             else:
                 phonemes.append('T')
                 phonemes.append('S')
-        elif letter == 'b' and len(word) == pos+1:
+        elif letter == 'b' and len(word) == pos + 1:
             phonemes.append('P')
-        elif letter == 'd' and len(word) == pos+1:
+        elif letter == 'd' and len(word) == pos + 1:
             phonemes.append('T')
-        elif letter in  ['e', u'\N{CYRILLIC SMALL LETTER IE}']:
+        elif letter in ['e', u'\N{CYRILLIC SMALL LETTER IE}']:
             if pos == 0:
                 phonemes.append('Y')
                 phonemes.append('EH0')
-            if len(word) > pos+1 and word[pos+1] in ['h', '^']:
+            if len(word) > pos + 1 and word[pos + 1] in ['h', '^']:
                 phonemes.append('EH0')
             else:
                 phonemes.append('EH0')
-        elif letter =='^':
+        elif letter == '^':
             pass
         elif letter == 'g':
-            if len(word) == pos+1:
+            if len(word) == pos + 1:
                 phonemes.append('K')
-            elif previous in ['e', 'o'] and len(word) == pos+2 and word[pos+1] == 'o':
+            elif previous in ['e', 'o'] and len(word) == pos + 2 and word[pos + 1] == 'o':
                 phonemes.append('V')  # possessive endings -ogo and -ego
             else:
                 phonemes.append('G')
         elif letter == 'h':
             pass
         elif letter == 's':
-            if len(word) > pos+1 and word[pos+1] == 'h':
+            if len(word) > pos + 1 and word[pos + 1] == 'h':
                 phonemes.append('SH')
             else:
                 phonemes.append('S')
-        elif letter == 'v' and len(word) == pos+1:
+        elif letter == 'v' and len(word) == pos + 1:
             phonemes.append('F')
         elif letter == 'y':
-            if len(word) > pos+1 and word[pos+1] == 'a':
+            if len(word) > pos + 1 and word[pos + 1] == 'a':
                 phonemes.append('Y')
             else:
                 phonemes.append('IH0')
         elif letter == 'z':
-            if len(word) > pos+1 and word[pos+1] == 'h':
-                if len(word) == pos+2:
+            if len(word) > pos + 1 and word[pos + 1] == 'h':
+                if len(word) == pos + 2:
                     phonemes.append('SH')
                 else:
                     phonemes.append('ZH')
             else:
-                if len(word) == pos+1:
+                if len(word) == pos + 1:
                     phonemes.append('S')
                 else:
                     phonemes.append('Z')
-        elif letter in [ u'\N{CYRILLIC CAPITAL LETTER SHCHA}', u'\N{CYRILLIC SMALL LETTER SHCHA}' ]:
+        elif letter in [u'\N{CYRILLIC CAPITAL LETTER SHCHA}', u'\N{CYRILLIC SMALL LETTER SHCHA}']:
             phonemes.append('SH')
-            #phonemes.append('CH')
-        elif letter in [ u'\N{CYRILLIC CAPITAL LETTER TSE}' , u'\N{CYRILLIC SMALL LETTER TSE}' ]:
+            # phonemes.append('CH')
+        elif letter in [u'\N{CYRILLIC CAPITAL LETTER TSE}', u'\N{CYRILLIC SMALL LETTER TSE}']:
             phonemes.append('T')
             phonemes.append('S')
         elif letter == u'\N{CYRILLIC CAPITAL LETTER YA}' or letter == u'\N{CYRILLIC SMALL LETTER YA}':
-			if pos==0:
-				phonemes.append('IY0')
-			phonemes.append('AA1')
+            if pos == 0:
+                phonemes.append('IY0')
+            phonemes.append('AA1')
         elif letter == u'\N{CYRILLIC CAPITAL LETTER YU}' or letter == u'\N{CYRILLIC SMALL LETTER YU}':
-			if pos==0:
-				phonemes.append('Y')
-			phonemes.append('UW0')
+            if pos == 0:
+                phonemes.append('Y')
+            phonemes.append('UW0')
         elif letter in [u'\N{LATIN SMALL LETTER E WITH DIAERESIS}', u'\N{CYRILLIC SMALL LETTER IO}']:
-			if pos==0:
-				phonemes.append('Y')
-			phonemes.append('AO0')
+            if pos == 0:
+                phonemes.append('Y')
+            phonemes.append('AO0')
         elif letter in easy_consonants:
             phonemes.append(simple_convert[letter])
         elif letter == ' ':
@@ -212,8 +214,8 @@ def breakdownWord(word, recursive=False):
                 phon = breakdownWord(hammer(letter), True)
                 if phon:
                     phonemes.append(phon)
-        #~ else:
-            #~ print "not handled", letter.encode(output_encoding), word.encode(output_encoding)
+                    # ~ else:
+                    # ~ print "not handled", letter.encode(output_encoding), word.encode(output_encoding)
         pos += 1
         previous = letter
     # return " ".join(phonemes)
@@ -387,7 +389,7 @@ if __name__ == "__main__":
     u"\N{CYRILLIC SMALL LETTER TE}"
     u"\N{CYRILLIC SMALL LETTER VE}"
     u"\N{CYRILLIC SMALL LETTER A}".split()
-    #~ for word in testwordsC:
-        #~ print word, breakdownWord(unicode(word, input_encoding))
-    #~ for word in testwords:
-        #~ print word, breakdownWord(unicode(word, input_encoding))
+    # ~ for word in testwordsC:
+    # ~ print word, breakdownWord(unicode(word, input_encoding))
+    # ~ for word in testwords:
+    # ~ print word, breakdownWord(unicode(word, input_encoding))

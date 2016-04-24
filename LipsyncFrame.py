@@ -85,9 +85,11 @@ class LipsyncFrame(wx.Frame):
         # Menu Bar
         self.mainFrame_menubar = wx.MenuBar()
         wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(wx.ID_OPEN, _("&Open...\tCtrl+O"), _("Open a sound file or Papagayo project"), wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_OPEN, _("&Open...\tCtrl+O"), _("Open a sound file or Papagayo project"),
+                                wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(wx.ID_SAVE, _("&Save\tCtrl+S"), _("Save this lipsync project"), wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_SAVEAS, _("Save &As..."), _("Save this Papagayo project under a new name"), wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_SAVEAS, _("Save &As..."), _("Save this Papagayo project under a new name"),
+                                wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(wx.ID_EXIT, _("Exit"), _("Quit Papagayo"), wx.ITEM_NORMAL)
         self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&File"))
         wxglade_tmp_menu = wx.Menu()
@@ -98,7 +100,8 @@ class LipsyncFrame(wx.Frame):
         self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&Edit"))
         wxglade_tmp_menu = wx.Menu()
         wxglade_tmp_menu.Append(wx.ID_HELP, _("&Help Topics"), _("Open the user's manual"), wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_ABOUT, _("&About Papagayo..."), _("Display information about Papagayo"), wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_ABOUT, _("&About Papagayo..."), _("Display information about Papagayo"),
+                                wx.ITEM_NORMAL)
         self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&Help"))
         self.SetMenuBar(self.mainFrame_menubar)
         # Menu Bar end
@@ -107,57 +110,90 @@ class LipsyncFrame(wx.Frame):
         # Tool Bar
         self.mainFrame_toolbar = wx.ToolBar(self, -1, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
         self.SetToolBar(self.mainFrame_toolbar)
-        global ID_PLAY; ID_PLAY = wx.NewId()
-        global ID_STOP; ID_STOP = wx.NewId()
-        global ID_ZOOMIN; ID_ZOOMIN = wx.NewId()
-        global ID_ZOOMOUT; ID_ZOOMOUT = wx.NewId()
-        global ID_ZOOM1; ID_ZOOM1 = wx.NewId()
-        self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, _("Open"), wx.Bitmap(os.path.join(get_main_dir(),"rsrc/open.png")), wx.NullBitmap, wx.ITEM_NORMAL, _("Open"), _("Open a sound file or Papagayo project"))
-        self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, _("Save"), wx.Bitmap(os.path.join(get_main_dir(),"rsrc/save.png")), wx.NullBitmap, wx.ITEM_NORMAL, _("Save"), _("Save this Papagayo project"))
+        global ID_PLAY
+        ID_PLAY = wx.NewId()
+        global ID_STOP
+        ID_STOP = wx.NewId()
+        global ID_ZOOMIN
+        ID_ZOOMIN = wx.NewId()
+        global ID_ZOOMOUT
+        ID_ZOOMOUT = wx.NewId()
+        global ID_ZOOM1
+        ID_ZOOM1 = wx.NewId()
+        self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, _("Open"),
+                                            wx.Bitmap(os.path.join(get_main_dir(), "rsrc/open.png")), wx.NullBitmap,
+                                            wx.ITEM_NORMAL, _("Open"), _("Open a sound file or Papagayo project"))
+        self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, _("Save"),
+                                            wx.Bitmap(os.path.join(get_main_dir(), "rsrc/save.png")), wx.NullBitmap,
+                                            wx.ITEM_NORMAL, _("Save"), _("Save this Papagayo project"))
         self.mainFrame_toolbar.AddSeparator()
-        self.mainFrame_toolbar.AddLabelTool(ID_PLAY, _("Play"), wx.Bitmap(os.path.join(get_main_dir(),"rsrc/play.png")), wx.NullBitmap, wx.ITEM_NORMAL, _("Play"), _("Play the sound clip"))
-        self.mainFrame_toolbar.AddLabelTool(ID_STOP, _("Stop"), wx.Bitmap(os.path.join(get_main_dir(),"rsrc/stop.png")), wx.NullBitmap, wx.ITEM_NORMAL, _("Stop"), _("Stop playing audio"))
+        self.mainFrame_toolbar.AddLabelTool(ID_PLAY, _("Play"),
+                                            wx.Bitmap(os.path.join(get_main_dir(), "rsrc/play.png")), wx.NullBitmap,
+                                            wx.ITEM_NORMAL, _("Play"), _("Play the sound clip"))
+        self.mainFrame_toolbar.AddLabelTool(ID_STOP, _("Stop"),
+                                            wx.Bitmap(os.path.join(get_main_dir(), "rsrc/stop.png")), wx.NullBitmap,
+                                            wx.ITEM_NORMAL, _("Stop"), _("Stop playing audio"))
         self.mainFrame_toolbar.AddSeparator()
-        self.mainFrame_toolbar.AddLabelTool(ID_ZOOMIN, _("Zoom In"), wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_in.png")), wx.NullBitmap, wx.ITEM_NORMAL, _("Zoom In"), _("Zoom in on the waveform"))
-        self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, _("Zoom Out"), wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_out.png")), wx.NullBitmap, wx.ITEM_NORMAL, _("Zoom Out"), _("Zoom out of the waveform"))
-        self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, _("Reset Zoom"), wx.Bitmap(os.path.join(get_main_dir(),"rsrc/zoom_1.png")), wx.NullBitmap, wx.ITEM_NORMAL, _("Reset Zoom"), _("Reset the zoomed view of the waveform"))
+        self.mainFrame_toolbar.AddLabelTool(ID_ZOOMIN, _("Zoom In"),
+                                            wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_in.png")), wx.NullBitmap,
+                                            wx.ITEM_NORMAL, _("Zoom In"), _("Zoom in on the waveform"))
+        self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, _("Zoom Out"),
+                                            wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_out.png")), wx.NullBitmap,
+                                            wx.ITEM_NORMAL, _("Zoom Out"), _("Zoom out of the waveform"))
+        self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, _("Reset Zoom"),
+                                            wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_1.png")), wx.NullBitmap,
+                                            wx.ITEM_NORMAL, _("Reset Zoom"), _("Reset the zoomed view of the waveform"))
         # Tool Bar end
         self.panel_2 = wx.Panel(self, wx.ID_ANY)
         self.waveformView = WaveformView(self.panel_2, wx.ID_ANY)
         self.label_2 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Voice name:"))
-        global ID_VOICENAME; ID_VOICENAME = wx.NewId()
+        global ID_VOICENAME
+        ID_VOICENAME = wx.NewId()
         self.voiceName = wx.TextCtrl(self.panel_2, ID_VOICENAME, "")
         self.label_1 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Spoken text:"))
-        global ID_VOICETEXT; ID_VOICETEXT = wx.NewId()
+        global ID_VOICETEXT
+        ID_VOICETEXT = wx.NewId()
         self.voiceText = wx.TextCtrl(self.panel_2, ID_VOICETEXT, "", style=wx.TE_MULTILINE)
         self.label_4 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Phonetic breakdown:"))
-        global ID_LANGUAGECHOICE; ID_LANGUAGECHOICE = wx.NewId()
+        global ID_LANGUAGECHOICE
+        ID_LANGUAGECHOICE = wx.NewId()
         self.languageChoice = wx.Choice(self.panel_2, ID_LANGUAGECHOICE, choices=[])
-        global ID_PHONEMESETCHOICE; ID_PHONEMESETCHOICE = wx.NewId()
+        global ID_PHONEMESETCHOICE
+        ID_PHONEMESETCHOICE = wx.NewId()
         self.phonemesetChoice = wx.Choice(self.panel_2, ID_PHONEMESETCHOICE, choices=[])
-        global ID_BREAKDOWN; ID_BREAKDOWN = wx.NewId()
+        global ID_BREAKDOWN
+        ID_BREAKDOWN = wx.NewId()
         self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, _("Breakdown"))
-        global ID_RELOADDICT; ID_RELOADDICT = wx.NewId()
+        global ID_RELOADDICT
+        ID_RELOADDICT = wx.NewId()
         self.reloaddictBut = wx.Button(self.panel_2, ID_RELOADDICT, _("Reload Dictionary"))
         self.label_5 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Export:"))
-        global ID_EXPORTCHOICE; ID_EXPORTCHOICE = wx.NewId()
+        global ID_EXPORTCHOICE
+        ID_EXPORTCHOICE = wx.NewId()
         self.exportChoice = wx.Choice(self.panel_2, ID_EXPORTCHOICE, choices=[])
-        global ID_EXPORT; ID_EXPORT = wx.NewId()
+        global ID_EXPORT
+        ID_EXPORT = wx.NewId()
         self.exportBut = wx.Button(self.panel_2, ID_EXPORT, _("Export..."))
-        global ID_VOICEIMAGE; ID_VOICEIMAGE = wx.NewId()
+        global ID_VOICEIMAGE
+        ID_VOICEIMAGE = wx.NewId()
         self.voiceimageBut = wx.Button(self.panel_2, ID_VOICEIMAGE, _("Choose image set..."))
         self.sizer_7_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, _("Current Voice"))
         self.label_3 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Fps:"))
-        global ID_FPS; ID_FPS = wx.NewId()
+        global ID_FPS
+        ID_FPS = wx.NewId()
         self.fpsCtrl = wx.TextCtrl(self.panel_2, ID_FPS, "")
-        global ID_MOUTHCHOICE; ID_MOUTHCHOICE = wx.NewId()
+        global ID_MOUTHCHOICE
+        ID_MOUTHCHOICE = wx.NewId()
         self.mouthChoice = wx.Choice(self.panel_2, ID_MOUTHCHOICE, choices=[])
         self.mouthView = MouthView(self.panel_2, wx.ID_ANY)
-        global ID_VOICELIST; ID_VOICELIST = wx.NewId()
+        global ID_VOICELIST
+        ID_VOICELIST = wx.NewId()
         self.voiceList = wx.ListBox(self.panel_2, ID_VOICELIST, choices=[])
-        global ID_NEWVOICE; ID_NEWVOICE = wx.NewId()
+        global ID_NEWVOICE
+        ID_NEWVOICE = wx.NewId()
         self.newVoiceBut = wx.Button(self.panel_2, ID_NEWVOICE, _("New"))
-        global ID_DELVOICE; ID_DELVOICE = wx.NewId()
+        global ID_DELVOICE
+        ID_DELVOICE = wx.NewId()
         self.delVoiceBut = wx.Button(self.panel_2, ID_DELVOICE, _("Delete"))
         self.sizer_5_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, _("Voice List"))
 
@@ -216,7 +252,8 @@ class LipsyncFrame(wx.Frame):
         self.timer = None
 
         # Connect event handlers
-        global ID_PLAY_TICK; ID_PLAY_TICK = wx.NewId()
+        global ID_PLAY_TICK
+        ID_PLAY_TICK = wx.NewId()
         # window events
         wx.EVT_CLOSE(self, self.CloseOK)
         self.Bind(wx.EVT_TIMER, self.OnPlayTick)
@@ -225,7 +262,7 @@ class LipsyncFrame(wx.Frame):
         wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
         wx.EVT_MENU(self, wx.ID_SAVEAS, self.OnSaveAs)
-        wx.EVT_MENU(self, wx.ID_EXIT,  self.OnQuit)
+        wx.EVT_MENU(self, wx.ID_EXIT, self.OnQuit)
         wx.EVT_MENU(self, wx.ID_HELP, self.OnHelp)
         wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)
         # tools
@@ -257,7 +294,7 @@ class LipsyncFrame(wx.Frame):
         # begin wxGlade: LipsyncFrame.__set_properties
         self.SetTitle(_("Papagayo"))
         _icon = wx.EmptyIcon()
-        _icon.CopyFromBitmap(wx.Bitmap(os.path.join(get_main_dir(),"rsrc/window_icon.bmp")))
+        _icon.CopyFromBitmap(wx.Bitmap(os.path.join(get_main_dir(), "rsrc/window_icon.bmp")))
         self.SetIcon(_icon)
         self.SetSize((850, 630))
         self.mainFrame_statusbar.SetStatusWidths([-1, 96])
@@ -268,7 +305,7 @@ class LipsyncFrame(wx.Frame):
             self.mainFrame_statusbar.SetStatusText(mainFrame_statusbar_fields[i], i)
         self.mainFrame_toolbar.SetToolBitmapSize((16, 16))
         self.mainFrame_toolbar.Realize()
-        self.voiceText.SetMinSize((128,128))
+        self.voiceText.SetMinSize((128, 128))
         self.voiceList.SetMinSize((195, 133))
         # end wxGlade
 
@@ -345,7 +382,7 @@ class LipsyncFrame(wx.Frame):
             if not self.doc.dirty:
                 return True
             dlg = wx.MessageDialog(self, 'Save changes to this project?', appTitle,
-                wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_QUESTION)
+                                   wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_QUESTION)
             result = dlg.ShowModal()
             dlg.Destroy()
             if result == wx.ID_YES:
@@ -363,12 +400,12 @@ class LipsyncFrame(wx.Frame):
         else:
             return True
 
-    def OnOpen(self, event = None):
+    def OnOpen(self, event=None):
         if not self.CloseDocOK():
             return
         dlg = wx.FileDialog(
-            self, message = "Open Audio or %s File" % appTitle, defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-            defaultFile = "", wildcard = openWildcard, style = wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
+            self, message="Open Audio or %s File" % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+            defaultFile="", wildcard=openWildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
         if dlg.ShowModal() == wx.ID_OK:
             self.OnStop()
             self.OnClose()
@@ -378,76 +415,77 @@ class LipsyncFrame(wx.Frame):
         dlg.Destroy()
 
     def Open(self, path):
-            self.doc = LipsyncDoc(self.langman, self)
-            if path.endswith(lipsyncExtension):
-                # open a lipsync project
-                self.doc.Open(path)
-                while self.doc.sound is None:
-                    # if no sound file found, then ask user to specify one
-                    dlg = wx.MessageDialog(self, 'Please load correct audio file', appTitle,
-                                           wx.OK | wx.ICON_WARNING)
-                    result = dlg.ShowModal()
-                    dlg.Destroy()
-                    dlg = wx.FileDialog(
-                        self, message="Open Audio", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-                        defaultFile="", wildcard=openAudioWildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
-                    if dlg.ShowModal() == wx.ID_OK:
-                        self.config.Write("WorkingDir", dlg.GetDirectory())
-                        paths = dlg.GetPaths()
-                        self.doc.OpenAudio(paths[0])
-                    dlg.Destroy()
+        self.doc = LipsyncDoc(self.langman, self)
+        if path.endswith(lipsyncExtension):
+            # open a lipsync project
+            self.doc.Open(path)
+            while self.doc.sound is None:
+                # if no sound file found, then ask user to specify one
+                dlg = wx.MessageDialog(self, 'Please load correct audio file', appTitle,
+                                       wx.OK | wx.ICON_WARNING)
+                result = dlg.ShowModal()
+                dlg.Destroy()
+                dlg = wx.FileDialog(
+                    self, message="Open Audio", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+                    defaultFile="", wildcard=openAudioWildcard,
+                    style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
+                if dlg.ShowModal() == wx.ID_OK:
+                    self.config.Write("WorkingDir", dlg.GetDirectory())
+                    paths = dlg.GetPaths()
+                    self.doc.OpenAudio(paths[0])
+                dlg.Destroy()
+        else:
+            # open an audio file
+            self.doc.fps = int(self.config.Read("LastFPS", "24"))
+            self.doc.OpenAudio(path)
+            if self.doc.sound is None:
+                self.doc = None
             else:
-                # open an audio file
-                self.doc.fps = int(self.config.Read("LastFPS", "24"))
-                self.doc.OpenAudio(path)
-                if self.doc.sound is None:
-                    self.doc = None
-                else:
-                    self.doc.voices.append(LipsyncVoice("Voice 1"))
-                    self.doc.currentVoice = self.doc.voices[0]
-                    # check for a .trans file with the same name as the doc
-                    try:
-                        txtFile = file(path[0].rsplit('.', 1)[0]+".trans", 'r')  # TODO: Check if path is correct
-                        for line in txtFile:
-                            self.voiceText.AppendText(line)
-                    except:  #TODO: except is too broad
-                        pass
+                self.doc.voices.append(LipsyncVoice("Voice 1"))
+                self.doc.currentVoice = self.doc.voices[0]
+                # check for a .trans file with the same name as the doc
+                try:
+                    txtFile = file(path[0].rsplit('.', 1)[0] + ".trans", 'r')  # TODO: Check if path is correct
+                    for line in txtFile:
+                        self.voiceText.AppendText(line)
+                except:  # TODO: except is too broad
+                    pass
 
-            if self.doc is not None:
-                self.SetTitle("%s [%s] - %s" % (self.doc.name, path, appTitle))
-                self.waveformView.SetDocument(self.doc)
-                self.mouthView.SetDocument(self.doc)
-                # menus
-                self.mainFrame_menubar.Enable(wx.ID_SAVE, True)
-                self.mainFrame_menubar.Enable(wx.ID_SAVEAS, True)
-                # toolbar buttons
-                self.mainFrame_toolbar.EnableTool(wx.ID_SAVE, True)
-                if self.doc.sound is not None:
-                    self.mainFrame_toolbar.EnableTool(ID_PLAY, True)
-                    self.mainFrame_toolbar.EnableTool(ID_ZOOMIN, True)
-                    self.mainFrame_toolbar.EnableTool(ID_ZOOMOUT, True)
-                    self.mainFrame_toolbar.EnableTool(ID_ZOOM1, True)
-                # voice list
-                self.voiceList.Enable(True)
-                self.newVoiceBut.Enable(True)
-                self.delVoiceBut.Enable(True)
-                for voice in self.doc.voices:
-                    self.voiceList.Insert(voice.name, self.voiceList.GetCount())
-                self.voiceList.SetSelection(0)
-                # voice controls
-                self.fpsCtrl.Enable(True)
-                self.fpsCtrl.SetValue(str(self.doc.fps))
-                self.voiceName.Enable(True)
-                self.voiceName.SetValue(self.doc.currentVoice.name)
-                self.voiceText.Enable(True)
-                self.voiceText.SetValue(self.doc.currentVoice.text)
-                self.languageChoice.Enable(True)
-                self.phonemesetChoice.Enable(True)
-                self.breakdownBut.Enable(True)
-                self.reloaddictBut.Enable(True)
-                self.exportChoice.Enable(True)
-                self.exportBut.Enable(True)
-                self.voiceimageBut.Enable(True)
+        if self.doc is not None:
+            self.SetTitle("%s [%s] - %s" % (self.doc.name, path, appTitle))
+            self.waveformView.SetDocument(self.doc)
+            self.mouthView.SetDocument(self.doc)
+            # menus
+            self.mainFrame_menubar.Enable(wx.ID_SAVE, True)
+            self.mainFrame_menubar.Enable(wx.ID_SAVEAS, True)
+            # toolbar buttons
+            self.mainFrame_toolbar.EnableTool(wx.ID_SAVE, True)
+            if self.doc.sound is not None:
+                self.mainFrame_toolbar.EnableTool(ID_PLAY, True)
+                self.mainFrame_toolbar.EnableTool(ID_ZOOMIN, True)
+                self.mainFrame_toolbar.EnableTool(ID_ZOOMOUT, True)
+                self.mainFrame_toolbar.EnableTool(ID_ZOOM1, True)
+            # voice list
+            self.voiceList.Enable(True)
+            self.newVoiceBut.Enable(True)
+            self.delVoiceBut.Enable(True)
+            for voice in self.doc.voices:
+                self.voiceList.Insert(voice.name, self.voiceList.GetCount())
+            self.voiceList.SetSelection(0)
+            # voice controls
+            self.fpsCtrl.Enable(True)
+            self.fpsCtrl.SetValue(str(self.doc.fps))
+            self.voiceName.Enable(True)
+            self.voiceName.SetValue(self.doc.currentVoice.name)
+            self.voiceText.Enable(True)
+            self.voiceText.SetValue(self.doc.currentVoice.text)
+            self.languageChoice.Enable(True)
+            self.phonemesetChoice.Enable(True)
+            self.breakdownBut.Enable(True)
+            self.reloaddictBut.Enable(True)
+            self.exportChoice.Enable(True)
+            self.exportBut.Enable(True)
+            self.voiceimageBut.Enable(True)
 
     def OnSave(self, event=None):
         if self.doc is None:
@@ -462,7 +500,8 @@ class LipsyncFrame(wx.Frame):
             return
         dlg = wx.FileDialog(
             self, message="Save %s File" % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-            defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0]+".pgo", wildcard=saveWildcard, style=wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
+            defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".pgo", wildcard=saveWildcard,
+            style=wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
         if dlg.ShowModal() == wx.ID_OK:
             self.config.Write("WorkingDir", dlg.GetDirectory())
             self.doc.Save(dlg.GetPaths()[0])
@@ -527,7 +566,7 @@ class LipsyncFrame(wx.Frame):
             self.timer = wx.Timer(self, ID_PLAY_TICK)
             self.timer.Start(250.0 / self.doc.fps)
 
-    def OnStop(self, event = None):
+    def OnStop(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):
             self.doc.sound.Stop()
             self.doc.sound.SetCurTime(0)
@@ -586,8 +625,11 @@ class LipsyncFrame(wx.Frame):
             exporter = self.exportChoice.GetStringSelection()
             if exporter == "MOHO":
                 dlg = wx.FileDialog(
-                    self, message="Export Lipsync Data (MOHO)", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-                    defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0]+".dat", wildcard="Moho switch files (*.dat)|*.dat", style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+                    self, message="Export Lipsync Data (MOHO)",
+                    defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+                    defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".dat",
+                    wildcard="Moho switch files (*.dat)|*.dat",
+                    style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     self.config.Write("WorkingDir", dlg.GetDirectory())
                     self.doc.currentVoice.Export(dlg.GetPaths()[0])
@@ -595,7 +637,8 @@ class LipsyncFrame(wx.Frame):
             elif exporter == "ALELO":
                 fps = int(self.fpsCtrl.GetValue())
                 if fps != 100:
-                    dlg = wx.MessageDialog(self, 'FPS is NOT 100 continue? (You will have issues downstream.)', appTitle,
+                    dlg = wx.MessageDialog(self, 'FPS is NOT 100 continue? (You will have issues downstream.)',
+                                           appTitle,
                                            wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_WARNING)
                     result = dlg.ShowModal()
                     dlg.Destroy()
@@ -603,8 +646,11 @@ class LipsyncFrame(wx.Frame):
                     result = wx.ID_YES
                 if result == wx.ID_YES:
                     dlg = wx.FileDialog(
-                        self, message="Export Lipsync Data (ALELO)", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-                        defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0]+".txt", wildcard="Alelo timing files (*.txt)|*.txt", style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+                        self, message="Export Lipsync Data (ALELO)",
+                        defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+                        defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".txt",
+                        wildcard="Alelo timing files (*.txt)|*.txt",
+                        style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
                     if dlg.ShowModal() == wx.ID_OK:
                         self.config.Write("WorkingDir", dlg.GetDirectory())
                         self.doc.currentVoice.ExportAlelo(dlg.GetPaths()[0], language, self.langman)
@@ -612,7 +658,8 @@ class LipsyncFrame(wx.Frame):
             elif exporter == "Images":
                 dlg = wx.FileDialog(
                     self, message="Export Image Strip", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-                    defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0], style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+                    defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0],
+                    style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     self.config.Write("WorkingDir", dlg.GetDirectory())
                     self.doc.currentVoice.ExportImages(dlg.GetPaths()[0], self.mouthChoice.GetStringSelection())
@@ -622,7 +669,8 @@ class LipsyncFrame(wx.Frame):
         language = self.languageChoice.GetStringSelection()
         if (self.doc is not None) and (self.doc.currentVoice is not None):
             voiceimagepath = wx.DirDialog(
-                self, message="Choose Path for Images", defaultPath=self.config.Read("MouthDir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")),
+                self, message="Choose Path for Images", defaultPath=self.config.Read("MouthDir", os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")),
                 style=wx.OPEN | wx.CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
             if voiceimagepath.ShowModal() == wx.ID_OK:
                 self.config.Write("MouthDir", voiceimagepath.GetPath())
@@ -646,7 +694,7 @@ class LipsyncFrame(wx.Frame):
             return
         try:
             newFps = int(self.fpsCtrl.GetValue())
-        except: #TODO: except is too broad
+        except:  # TODO: except is too broad
             newFps = self.doc.fps
         if newFps == self.doc.fps:
             return
@@ -711,9 +759,6 @@ class LipsyncFrame(wx.Frame):
     def OnReloadDictionary(self, event):
         print("reload the dictionary")
         lang_config = self.doc.language_manager.language_table[self.languageChoice.GetStringSelection()]
-        self.doc.language_manager.LoadLanguage(lang_config,force=True)
-
+        self.doc.language_manager.LoadLanguage(lang_config, force=True)
 
 # end of class LipsyncFrame
-
-

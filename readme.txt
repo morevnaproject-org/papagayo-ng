@@ -36,7 +36,7 @@ AboutBox.py - about box
 lipsync.wxg - a wxGlade file defining the user interface layout for Papagayo
 
 
-rsrc/ - various resources for Papagayo, including button pictures, mouths, and language configuraion/data
+rsrc/ - various resources for Papagayo, including button pictures, mouths, and language configuration/data
 rsrc/mouths/ - a folder containing the mouth pictures
 rsrc/languages/ - a folder containing the configuration and data for different languages
 papagayo.ico - Windows icons
@@ -49,7 +49,7 @@ setup_mac.py - a script to build Papagayo as a standalone MacOS X application
 
 Here are a couple tips for source code that you may want to modify:
 
-By default, Papagayo uses the Preston Blair phoneme set. There is also Fleming & Dobbs phoneme set available. The phoneme sets are stored in the phonemes_*.py files. If you want to add a different set of phonemes, you can use existsing sets as examples. Also, take a look at the instructions in the phonemes.py file.
+By default, Papagayo uses the Preston Blair phoneme set. There is also Fleming & Dobbs phoneme set available. The phoneme sets are stored in the phonemes_*.py files. If you want to add a different set of phonemes, you can use existing sets as examples. Also, take a look at the instructions in the phonemes.py file.
 
 To add breakdowns for other languages create a new language configuration in rsrc/languages/<language> inside you need to place a configuration file (see italian for an example of how to configure a breakdown)  You will also need to create a breakdown class.  These live in breakdowns.  The naming convention is <language>_breakdown.py. Just examine one of the existing ones for how to make it work.  Make sure the function to call your breakdown processing is called breakdownWord.
 
