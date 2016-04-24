@@ -41,6 +41,7 @@ openWildcard = "%s and sound files|*%s;%s" % (appTitle, lipsyncExtension, audioE
 openAudioWildcard = "Sound files|%s" % (audioExtensions)
 saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
 
+
 class DigitOnlyValidator(wx.PyValidator):
     def __init__(self, flag=None, pyVar=None):
         wx.PyValidator.__init__(self)
@@ -73,6 +74,7 @@ class DigitOnlyValidator(wx.PyValidator):
         # Returning without calling even.Skip eats the event before it
         # gets to the text control
         return
+
 
 class LipsyncFrame(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -197,7 +199,7 @@ class LipsyncFrame(wx.Frame):
             self.phonemesetChoice.Append(name)
         self.phonemesetChoice.SetSelection(0)
 
-        #setup export intialization here
+        # setup export initialisation here
         exporterList = ["MOHO", "ALELO", "Images"]
         c = 0
         select = 0
@@ -210,13 +212,15 @@ class LipsyncFrame(wx.Frame):
 
         self.ignoreTextChanges = False
         self.config = wx.Config("Papagayo", "Lost Marble")
+        self.curFrame = 0
+        self.timer = None
 
         # Connect event handlers
         global ID_PLAY_TICK; ID_PLAY_TICK = wx.NewId()
         # window events
         wx.EVT_CLOSE(self, self.CloseOK)
         self.Bind(wx.EVT_TIMER, self.OnPlayTick)
-        #wx.EVT_TIMER(self, ID_PLAY_TICK, self.OnPlayTick)
+        # wx.EVT_TIMER(self, ID_PLAY_TICK, self.OnPlayTick)
         # menus
         wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -381,12 +385,12 @@ class LipsyncFrame(wx.Frame):
                 while self.doc.sound is None:
                     # if no sound file found, then ask user to specify one
                     dlg = wx.MessageDialog(self, 'Please load correct audio file', appTitle,
-                    wx.OK | wx.ICON_WARNING)
+                                           wx.OK | wx.ICON_WARNING)
                     result = dlg.ShowModal()
                     dlg.Destroy()
                     dlg = wx.FileDialog(
-                        self, message = "Open Audio", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-                        defaultFile = "", wildcard = openAudioWildcard, style = wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
+                        self, message="Open Audio", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+                        defaultFile="", wildcard=openAudioWildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
                     if dlg.ShowModal() == wx.ID_OK:
                         self.config.Write("WorkingDir", dlg.GetDirectory())
                         paths = dlg.GetPaths()
@@ -403,10 +407,10 @@ class LipsyncFrame(wx.Frame):
                     self.doc.currentVoice = self.doc.voices[0]
                     # check for a .trans file with the same name as the doc
                     try:
-                        txtFile = file(paths[0].rsplit('.', 1)[0]+".trans", 'r')
+                        txtFile = file(path[0].rsplit('.', 1)[0]+".trans", 'r')  # TODO: Check if path is correct
                         for line in txtFile:
                             self.voiceText.AppendText(line)
-                    except:
+                    except:  #TODO: except is too broad
                         pass
 
             if self.doc is not None:
@@ -445,7 +449,7 @@ class LipsyncFrame(wx.Frame):
                 self.exportBut.Enable(True)
                 self.voiceimageBut.Enable(True)
 
-    def OnSave(self, event = None):
+    def OnSave(self, event=None):
         if self.doc is None:
             return
         if self.doc.path is None:
@@ -453,12 +457,12 @@ class LipsyncFrame(wx.Frame):
             return
         self.doc.Save(self.doc.path)
 
-    def OnSaveAs(self, event = None):
+    def OnSaveAs(self, event=None):
         if self.doc is None:
             return
         dlg = wx.FileDialog(
-            self, message = "Save %s File" % appTitle, defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-            defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0]+".pgo", wildcard = saveWildcard, style = wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
+            self, message="Save %s File" % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+            defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0]+".pgo", wildcard=saveWildcard, style=wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
         if dlg.ShowModal() == wx.ID_OK:
             self.config.Write("WorkingDir", dlg.GetDirectory())
             self.doc.Save(dlg.GetPaths()[0])
@@ -501,19 +505,19 @@ class LipsyncFrame(wx.Frame):
         self.newVoiceBut.Enable(False)
         self.delVoiceBut.Enable(False)
 
-    def OnQuit(self, event = None):
+    def OnQuit(self, event=None):
         self.OnClose()
         self.Close(True)
 
-    def OnHelp(self, event = None):
+    def OnHelp(self, event=None):
         webbrowser.open("file://%s" % os.path.join(get_main_dir(), "help/index.html"))
 
-    def OnAbout(self, event = None):
+    def OnAbout(self, event=None):
         dlg = AboutBox(self)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def OnPlay(self, event = None):
+    def OnPlay(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):
             self.curFrame = -1
             self.mainFrame_toolbar.EnableTool(ID_PLAY, False)
@@ -564,7 +568,7 @@ class LipsyncFrame(wx.Frame):
             self.doc.dirty = True
             self.doc.currentVoice.text = self.voiceText.GetValue()
 
-    def OnVoiceBreakdown(self, event = None):
+    def OnVoiceBreakdown(self, event=None):
         if (self.doc is not None) and (self.doc.currentVoice is not None):
             language = self.languageChoice.GetStringSelection()
             phonemeset_name = self.phonemesetChoice.GetStringSelection()
@@ -582,8 +586,8 @@ class LipsyncFrame(wx.Frame):
             exporter = self.exportChoice.GetStringSelection()
             if exporter == "MOHO":
                 dlg = wx.FileDialog(
-                self, message = "Export Lipsync Data (MOHO)", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-                defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0]+".dat", wildcard = "Moho switch files (*.dat)|*.dat", style = wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+                    self, message="Export Lipsync Data (MOHO)", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+                    defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0]+".dat", wildcard="Moho switch files (*.dat)|*.dat", style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     self.config.Write("WorkingDir", dlg.GetDirectory())
                     self.doc.currentVoice.Export(dlg.GetPaths()[0])
@@ -592,38 +596,37 @@ class LipsyncFrame(wx.Frame):
                 fps = int(self.fpsCtrl.GetValue())
                 if fps != 100:
                     dlg = wx.MessageDialog(self, 'FPS is NOT 100 continue? (You will have issues downstream.)', appTitle,
-                    wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_WARNING)
+                                           wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_WARNING)
                     result = dlg.ShowModal()
                     dlg.Destroy()
                 else:
                     result = wx.ID_YES
                 if result == wx.ID_YES:
                     dlg = wx.FileDialog(
-                    self, message = "Export Lipsync Data (ALELO)", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-                    defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0]+".txt", wildcard = "Alelo timing files (*.txt)|*.txt", style = wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+                        self, message="Export Lipsync Data (ALELO)", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+                        defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0]+".txt", wildcard="Alelo timing files (*.txt)|*.txt", style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
                     if dlg.ShowModal() == wx.ID_OK:
                         self.config.Write("WorkingDir", dlg.GetDirectory())
                         self.doc.currentVoice.ExportAlelo(dlg.GetPaths()[0], language, self.langman)
                     dlg.Destroy()
             elif exporter == "Images":
                 dlg = wx.FileDialog(
-                self, message = "Export Image Strip", defaultDir = self.config.Read("WorkingDir", get_main_dir()),
-                defaultFile = "%s" % self.doc.soundPath.rsplit('.', 1)[0], style = wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
-                if dlg.ShowModal() ==wx.ID_OK:
+                    self, message="Export Image Strip", defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+                    defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0], style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+                if dlg.ShowModal() == wx.ID_OK:
                     self.config.Write("WorkingDir", dlg.GetDirectory())
-                    self.doc.currentVoice.ExportImages(dlg.GetPaths()[0],self.mouthChoice.GetStringSelection())
+                    self.doc.currentVoice.ExportImages(dlg.GetPaths()[0], self.mouthChoice.GetStringSelection())
                 dlg.Destroy()
-
 
     def OnVoiceimagechoose(self, event):
         language = self.languageChoice.GetStringSelection()
         if (self.doc is not None) and (self.doc.currentVoice is not None):
             voiceimagepath = wx.DirDialog(
-            self, message = "Choose Path for Images", defaultPath = self.config.Read("MouthDir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")),
-            style = wx.OPEN | wx.CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
-            if voiceimagepath.ShowModal() ==wx.ID_OK:
-                self.config.Write("MouthDir",voiceimagepath.GetPath())
-                print((voiceimagepath.GetPath()))
+                self, message="Choose Path for Images", defaultPath=self.config.Read("MouthDir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")),
+                style=wx.OPEN | wx.CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
+            if voiceimagepath.ShowModal() == wx.ID_OK:
+                self.config.Write("MouthDir", voiceimagepath.GetPath())
+                print(voiceimagepath.GetPath())
                 full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
                 supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
                 for directory, dirnames, filenames in os.walk(voiceimagepath.GetPath()):
@@ -643,7 +646,7 @@ class LipsyncFrame(wx.Frame):
             return
         try:
             newFps = int(self.fpsCtrl.GetValue())
-        except:
+        except: #TODO: except is too broad
             newFps = self.doc.fps
         if newFps == self.doc.fps:
             return
