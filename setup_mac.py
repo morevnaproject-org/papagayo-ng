@@ -30,10 +30,10 @@ py2app_options = dict(
 ),
 
 setup(
-    app = ["papagayo.py"],
-    options = {"py2app": {
+    app=["papagayo.py"],
+    options={"py2app": {
         "iconfile": "papagayo.icns",
     }},
-    name = "Papagayo",
-    version = "1.1"
+    name="Papagayo",
+    version="1.1"
 )

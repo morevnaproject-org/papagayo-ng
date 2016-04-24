@@ -7,16 +7,20 @@
 # This is an automatically generated file.
 # Manual changes will be overwritten without warning!
 
-import wxversion
 import warnings
+
+import wxversion
+
 if wxversion.checkInstalled('2.8'):
     wxversion.select('2.8')
 else:
     warnings.warn("You are running an unsupported Version of wx. Please test this with wx Version 2.8 before reporting errors!")
 import wx
 import gettext
-import os, sys
+import os
+import sys
 from LipsyncFrame import LipsyncFrame
+
 
 class LipsyncApp(wx.App):
     def OnInit(self):
@@ -29,7 +33,7 @@ class LipsyncApp(wx.App):
 # end of class LipsyncApp
 
 if __name__ == "__main__":
-    gettext.install("papagayo") # replace with the appropriate catalog name
+    gettext.install("papagayo")  # replace with the appropriate catalog name
 
     papagayo = LipsyncApp(0)
     papagayo.mainFrame.TheApp = papagayo

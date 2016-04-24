@@ -25,6 +25,8 @@ import wx
 import wx.html
 import webbrowser
 from utilities import *
+
+
 # begin wxGlade: dependencies
 # end wxGlade
 
@@ -38,12 +40,13 @@ class MyHtmlWindow(wx.html.HtmlWindow):
         else:
             self.base_OnLinkClicked(linkinfo)
 
+
 class AboutBox(wx.Dialog):
     def __init__(self, *args, **kwds):
         # begin wxGlade: AboutBox.__init__
         kwds["style"] = wx.DEFAULT_DIALOG_STYLE
         wx.Dialog.__init__(self, *args, **kwds)
-        self.htmlView = MyHtmlWindow(self, wx.ID_ANY, style = wx.SUNKEN_BORDER)
+        self.htmlView = MyHtmlWindow(self, wx.ID_ANY, style=wx.SUNKEN_BORDER)
         self.button_12 = wx.Button(self, wx.ID_OK, _("OK"))
 
         self.__set_properties()
@@ -69,5 +72,3 @@ class AboutBox(wx.Dialog):
         # end wxGlade
 
 # end of class AboutBox
-
-

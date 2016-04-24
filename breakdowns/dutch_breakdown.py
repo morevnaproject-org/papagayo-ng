@@ -27,10 +27,14 @@
 """functions to take a Dutch word and return a list of phonemes
 """
 
+import locale
+import re
+
 from unicode_hammer import latin1_to_ascii as hammer
 
-import locale, re
-input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
+input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
+
+
 # input_encoding = 'cp1252'
 # input_encoding = 'utf-8'
 # input_encoding = 'utf-16'
@@ -41,7 +45,7 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 def suffixen(word):
     suffix = False
     # if word.endswith('je'):
-        # suffix = ['Y', 'AH0']
+    # suffix = ['Y', 'AH0']
     if re.compile("[^aeiou]e$").search(word):
         suffix = ['EH0']  # AH0 ???
         word = word[:-1]
@@ -55,6 +59,8 @@ def suffixen(word):
         suffix = ['L', 'AH0', 'K']
         word = word[:-4]
     return word, suffix
+
+
 # er, en, ee ??
 
 def prefixen(word):
@@ -67,7 +73,7 @@ def prefixen(word):
         'her': ['HH', 'EH0', 'R'],
         'ver': ['F', 'EH0', 'R'],
         'ont': ['AW0', 'N', 'T'],
-        'aan' : ['AA0', 'N'],
+        'aan': ['AA0', 'N'],
         'af': ['AH0', 'F'],
         'bij': ['B', 'AY0'],
         u'b\N{LATIN SMALL LETTER Y WITH ACUTE}': ['B', 'AY0'],  # bý
@@ -85,14 +91,15 @@ def prefixen(word):
         'uit': ['UH0', 'T'],
         'vast': ['F', 'AH0', 'S', 'T'],
         'weg': ['V', 'EY0', 'G'],
-        }
+    }
     for each_prefix in prefix_pronunciation.keys():
-        if len(word) > len(each_prefix)+2 and word.startswith(each_prefix):
+        if len(word) > len(each_prefix) + 2 and word.startswith(each_prefix):
             # if each_prefix[-1] in ['a', 'e', 'i', 'o', 'u', 'j', 'ÿ', ý']:
             word = word[len(each_prefix):]
             prefix = prefix_pronunciation[each_prefix]
             break
     return prefix, word
+
 
 def stressWord(phonemes):
     index = 0
@@ -102,6 +109,7 @@ def stressWord(phonemes):
             break
         index += 1
     return phonemes
+
 
 def breakdownWord(word):
     sc = getSyllableCount(word)
@@ -128,8 +136,8 @@ def getSyllableCount(word):
     vowel_count = 0
     for letter in word:
         if isvowel(letter):
-            vowel_count = vowel_count + 1
-        if vowel_count == 3: # 3-vowel dipthongs
+            vowel_count += 1
+        if vowel_count == 3:  # 3-vowel dipthongs
             syllable_count += 1
             vowel_count = 1
         if isvowel(letter) and not isvowel(previous_letter):
@@ -138,6 +146,7 @@ def getSyllableCount(word):
             syllable_count += 1
         previous_letter = letter
     return syllable_count
+
 
 def wordToSyllables(word):
     word = word.lower()
@@ -153,14 +162,14 @@ def wordToSyllables(word):
     for letter in word:
         # vowels automatically continue a syllable, except for 3-vowel diphthongs
         if isvowel(letter):
-            vowel_count = vowel_count + 1
-            if vowel_count == 2 and word[pos] == word[pos-1]:  # second vowel in mooi
-                syllables[-1].append(letter) # second "o" in mooi continues the syllable
-            elif vowel_count == 2 and len(word) > pos+1 and word[pos] == word[pos+1]: # riool
-                syllables.append([letter]) # start a new syllable on the second vowel
+            vowel_count += 1
+            if vowel_count == 2 and word[pos] == word[pos - 1]:  # second vowel in mooi
+                syllables[-1].append(letter)  # second "o" in mooi continues the syllable
+            elif vowel_count == 2 and len(word) > pos + 1 and word[pos] == word[pos + 1]:  # riool
+                syllables.append([letter])  # start a new syllable on the second vowel
                 vowel_count = 1
             elif vowel_count == 3:
-                syllables.append([letter]) # start a new syllable on the third vowel
+                syllables.append([letter])  # start a new syllable on the third vowel
                 vowel_count = 1
             else:
                 syllables[-1].append(letter)  # just a vowel
@@ -170,12 +179,14 @@ def wordToSyllables(word):
             syllable_check += 1
             vowel_count = 0
         # if this is a consonant, the previous letter is a vowel and the next letter is a vowel, start a new syllable
-        elif len(word) > pos+1 and isvowel(previous_letter) and isvowel(word[pos+1]) and syllable_check < syllable_count:
+        elif len(word) > pos + 1 and isvowel(previous_letter) and isvowel(
+                word[pos + 1]) and syllable_check < syllable_count:
             syllables.append([letter])
             syllable_check += 1
             vowel_count = 0
         # if this is a consonant, and the previous letter was a consonant, and the letter before that was a vowel, start a new syllable
-        elif not isvowel(previous_letter) and len(syllables[-1]) > 1 and isvowel(syllables[-1][-2]) and syllable_check < syllable_count:
+        elif not isvowel(previous_letter) and len(syllables[-1]) > 1 and isvowel(
+                syllables[-1][-2]) and syllable_check < syllable_count:
             syllables.append([letter])
             syllable_check += 1
             vowel_count = 0
@@ -186,59 +197,64 @@ def wordToSyllables(word):
         pos += 1
     return syllables
 
-def syllablesToPhonemes(syllables,  recursive=False):
+
+def syllablesToPhonemes(syllables, recursive=False):
     isvowel = dict.fromkeys('aeiou').has_key
     phonemes = []
     simple_convert = {
-    'b': 'B',
-    'd': 'D',
-    'f': 'F',
-    'h': 'HH',
-    'j': 'Y',  # SH in some words borrowed from French
-    'k': 'K',
-    'l': 'L',
-    'm': 'M',
-    'n': 'N',
-    'p': 'P',
-    'r': 'R',
-    's': 'S',
-    't': 'T',
-    'v': 'F', #  English F mixed with English V
-    'w': 'V', # closer to soft English V than the English W - pronounced back in mouth, not with pursed lips
-    'z': 'Z'
+        'b': 'B',
+        'd': 'D',
+        'f': 'F',
+        'h': 'HH',
+        'j': 'Y',  # SH in some words borrowed from French
+        'k': 'K',
+        'l': 'L',
+        'm': 'M',
+        'n': 'N',
+        'p': 'P',
+        'r': 'R',
+        's': 'S',
+        't': 'T',
+        'v': 'F',  # English F mixed with English V
+        'w': 'V',  # closer to soft English V than the English W - pronounced back in mouth, not with pursed lips
+        'z': 'Z'
     }
     easy_consonants = simple_convert.keys()
-    syllable_pos, letter_pos = 0,1
-    pos = [1,1] # syllable 1, letter 1
+    syllable_pos, letter_pos = 0, 1
+    pos = [1, 1]  # syllable 1, letter 1
     previous_letter = ' '
     for syllable in syllables:
         for letter in syllable:
             if letter == previous_letter and not isvowel(letter):  # double consonants
                 pass
             # ===================== consonants ==========================
-            elif letter == "b" and pos[syllable_pos] == len(syllables) and pos[letter_pos] == len(syllables[-1]):  # last letter in word
+            elif letter == "b" and pos[syllable_pos] == len(syllables) and pos[letter_pos] == len(
+                    syllables[-1]):  # last letter in word
                 phonemes.append("P")
-            elif letter == "d" and pos[syllable_pos] == len(syllables) and pos[letter_pos] == len(syllables[-1]):  # last letter in word
+            elif letter == "d" and pos[syllable_pos] == len(syllables) and pos[letter_pos] == len(
+                    syllables[-1]):  # last letter in word
                 phonemes.append("T")
-            elif letter == "n" and len(syllable) > pos[letter_pos] and syllable[letter_pos] == "g": # ng
-                    pass # handled in next case
-            elif letter == "g" and previous_letter == "n": # ng
+            elif letter == "n" and len(syllable) > pos[letter_pos] and syllable[letter_pos] == "g":  # ng
+                pass  # handled in next case
+            elif letter == "g" and previous_letter == "n":  # ng
                 phonemes.append("NG")
             elif letter == 'g':
-                phonemes.append("HH")  # not accurate, but the nearest phoneme in CMU? (use K instead? put in a G anyway?)
+                phonemes.append(
+                    "HH")  # not accurate, but the nearest phoneme in CMU? (use K instead? put in a G anyway?)
             # elif letter == 'c' and len(syllable) > pos[letter_pos]-1 and syllable[pos[letter_pos]] == 'h':
-            elif letter == 'c' and len(syllable) > pos[letter_pos]+1 and syllable[pos[letter_pos]] == 'h':  # ch
+            elif letter == 'c' and len(syllable) > pos[letter_pos] + 1 and syllable[pos[letter_pos]] == 'h':  # ch
                 pass
-            elif letter == 'h' and previous_letter == 'c': # ch
-                phonemes.append("HH")  # not accurate, but the nearest phoneme in CMU? (use K instead? put in a G anyway?)
-            elif letter == 't'and len(syllable) > pos[letter_pos] and syllable[pos[letter_pos]] == 'h': # th
-                    pass # handled in next case
-            elif letter == 'h' and previous_letter == 't': # th
+            elif letter == 'h' and previous_letter == 'c':  # ch
+                phonemes.append(
+                    "HH")  # not accurate, but the nearest phoneme in CMU? (use K instead? put in a G anyway?)
+            elif letter == 't' and len(syllable) > pos[letter_pos] and syllable[pos[letter_pos]] == 'h':  # th
+                pass  # handled in next case
+            elif letter == 'h' and previous_letter == 't':  # th
                 phonemes.append("TH")
-            elif letter == 'j'and previous_letter == 'i':
-                    pass # handled in vowels
-            elif letter == 'w'and previous_letter == 'u':
-                    pass # handled in vowels
+            elif letter == 'j' and previous_letter == 'i':
+                pass  # handled in vowels
+            elif letter == 'w' and previous_letter == 'u':
+                pass  # handled in vowels
             elif letter == 'x':  # rare, mostly borrowed words
                 phonemes.append("K")
                 phonemes.append("S")
@@ -246,27 +262,29 @@ def syllablesToPhonemes(syllables,  recursive=False):
                 phonemes.append("K")
                 phonemes.append("W")
             elif letter == 'c':
-                if pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] in "ei":   # c     before e and i pronounce as s
+                if pos[letter_pos] < len(syllable) and syllable[
+                    pos[letter_pos]] in "ei":  # c     before e and i pronounce as s
                     phonemes.append("S")
                 else:
-                    phonemes.append("K")  # c     before a consonant, at the end of a word and before a, o, u pronounce as k;
+                    phonemes.append(
+                        "K")  # c     before a consonant, at the end of a word and before a, o, u pronounce as k;
             elif letter in easy_consonants:
                 phonemes.append(simple_convert[letter])
             # =============== vowels ================
             # ------------ A -------------------------------
-            elif letter == 'a': # short AH, long AA
+            elif letter == 'a':  # short AH, long AA
                 if pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'a':  # double a
                     phonemes.append("AA0")
                 elif previous_letter == 'a':  # double a handled by case above
                     pass
                 elif pos[letter_pos] == len(syllable):  # long a reduced to single letter
                     phonemes.append("AA0")
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'u': # au
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'u':  # au
                     phonemes.append("AW0")  # occasionally as UW0 in some words borrowed from French
                 else:
                     phonemes.append('AH0')  # like English short u (cut, hut)
             # ------------ E -------------------------------
-            elif letter == 'e': # e short EH long EY
+            elif letter == 'e':  # e short EH long EY
                 if pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'e':  # double e
                     phonemes.append("EY0")
                 elif previous_letter == 'e':  # double e handled by case above
@@ -277,47 +295,47 @@ def syllablesToPhonemes(syllables,  recursive=False):
                     pass
                 elif pos[letter_pos] == len(syllable):  # long e reduced to single letter
                     phonemes.append("EY0")
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'u': # eu
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'u':  # eu
                     phonemes.append("ER0")  # less R than English equivalent, closer to French eu
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'i': # ei
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'i':  # ei
                     phonemes.append("AY0")
                 else:
                     phonemes.append('EH0')  # closer to a (bad B AH D) than English short EH0 (bed = B EH D)
             # ------------ I -------------------------------
-            elif letter == 'i': # i short IH long IY
+            elif letter == 'i':  # i short IH long IY
                 if pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'i':  # double i
                     phonemes.append("IY0")
                 elif previous_letter == 'u':  # ui handled at u stage
                     pass
                 elif previous_letter == 'i':  # double i handled by case above
                     pass
-                elif previous_letter == 'e': # ei handled at ei stage
+                elif previous_letter == 'e':  # ei handled at ei stage
                     pass
                 # elif previous_letter == 'a': # !!!FIXME!!! handle aai, aaij
                 #    pass
                 elif pos[letter_pos] == len(syllable):  # long i reduced to single letter
                     phonemes.append("IY0")
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'j': # ij
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'j':  # ij
                     phonemes.append("AY0")
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'u': # iu
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'u':  # iu
                     phonemes.append("IY0")
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'e': # ie
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'e':  # ie
                     phonemes.append("IY0")
                 # elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'e': # ieuw !!!FIXME!!!  handle ieuw IY UW ???
                 #    phonemes.append("IY0")
                 else:
                     phonemes.append('IH0')
             # ------------ O -------------------------------
-            elif letter == 'o': # o short AA long OW
+            elif letter == 'o':  # o short AA long OW
                 if pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'o':  # double o
                     phonemes.append("OW0")
                 elif previous_letter == 'o':  # double o handled by case above
                     pass
                 elif pos[letter_pos] == len(syllable):  # long o reduced to single letter
                     phonemes.append("OW0")
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'e': # oe
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'e':  # oe
                     phonemes.append("UW0")
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'u': # ou
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'u':  # ou
                     phonemes.append("AW0")
                 else:
                     phonemes.append('AO0')
@@ -337,9 +355,9 @@ def syllablesToPhonemes(syllables,  recursive=False):
                     pass
                 elif pos[letter_pos] == len(syllable):  # long u reduced to single letter
                     phonemes.append("UW0")
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'w': # uw
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'w':  # uw
                     phonemes.append("UW0")  # uw = EW in English DEW IY UW ???
-                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'i': # ui
+                elif pos[letter_pos] < len(syllable) and syllable[pos[letter_pos]] == 'i':  # ui
                     phonemes.append("UH0")  # - not accurate but the nearest phoneme in CMU? (use UW instead?)
                 else:
                     phonemes.append('ER0')  # - not accurate but the nearest phoneme in CMU? (use AH instead?)
@@ -377,11 +395,14 @@ def syllablesToPhonemes(syllables,  recursive=False):
         previous_phoneme = phoneme
     return temp_phonemes
 
+
 if __name__ == "__main__":
-    testwords = ['Alle', 'bitte', 'all', 'alle', 'bed', 'kaud', 'hotel', 'kogel', 'licht', 'maand', 'niemand', 'tijd', 'vis', 'walvis',
-                    'graag', 'gemeen', 'goed', 'ja', 'niet', 'jager', 'juist', 'regen', 'riool', 'raam', 'bad', 'gat', 'tassen',
-                    'gaas', 'maand', 'varen', 'met', 'heg', 'meer', 'deeg', 'eten', 'gaten', 'muren',
-                    'boot', 'boten', 'ogen', 'muur', 'fuut', 'duren', 'mooi', 'ce', 'ci', 'hec', 'på', 'hänsyn']
+    testwords = ['Alle', 'bitte', 'all', 'alle', 'bed', 'kaud', 'hotel', 'kogel', 'licht', 'maand', 'niemand', 'tijd',
+                 'vis', 'walvis',
+                 'graag', 'gemeen', 'goed', 'ja', 'niet', 'jager', 'juist', 'regen', 'riool', 'raam', 'bad', 'gat',
+                 'tassen',
+                 'gaas', 'maand', 'varen', 'met', 'heg', 'meer', 'deeg', 'eten', 'gaten', 'muren',
+                 'boot', 'boten', 'ogen', 'muur', 'fuut', 'duren', 'mooi', 'ce', 'ci', 'hec', 'på', 'hänsyn']
     for word in testwords:
         # print word, wordToSyllables(word), syllablesToPhonemes(wordToSyllables(word)), breakdownWord(word)
         print word, wordToSyllables(word), breakdownWord(unicode(word, input_encoding))
