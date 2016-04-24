@@ -27,13 +27,15 @@
 """functions to take an Ukrainian word and return a list of phonemes
 """
 
-from unicode_hammer import latin1_to_ascii as hammer
+import locale
 
-import locale, re
+from unicode_hammer import latin1_to_ascii as hammer
 
 output_encoding = 'utf-16'
 
-input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
+input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
+
+
 # input_encoding = 'cp1252'
 # input_encoding = 'utf-8'  # unicode
 # input_encoding = 'utf-16'  # unicode
@@ -53,7 +55,7 @@ def breakdownWord(word, recursive=False):
         'u', 'U',
         u'\N{CYRILLIC SMALL LETTER A}',  # looks like normal a
         # u'\N{CYRILLIC SMALL LETTER IE}',  # looks like normal e
-        u'\N{CYRILLIC SMALL LETTER UKRAINIAN IE}', # looks something like small Euro symbol with one cross-piece
+        u'\N{CYRILLIC SMALL LETTER UKRAINIAN IE}',  # looks something like small Euro symbol with one cross-piece
         u'\N{CYRILLIC SMALL LETTER BYELORUSSIAN-UKRAINIAN I}',  # looks like normal i
         # u'\N{CYRILLIC SMALL LETTER YI}',  # i with diaresis
         u'\N{CYRILLIC SMALL LETTER I}',  # looks like small backwards capital N
@@ -62,7 +64,7 @@ def breakdownWord(word, recursive=False):
         u'\N{CYRILLIC SMALL LETTER U}',  # looks like normal y
         u'\N{CYRILLIC CAPITAL LETTER A}',  # looks like normal A
         # u'\N{CYRILLIC CAPITAL LETTER IE}',  # looks like normal E
-        u'\N{CYRILLIC CAPITAL LETTER UKRAINIAN IE}', # looks something like Euro symbol with one cross-piece
+        u'\N{CYRILLIC CAPITAL LETTER UKRAINIAN IE}',  # looks something like Euro symbol with one cross-piece
         u'\N{CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I}',  # looks like normal I
         # u'\N{CYRILLIC CAPITAL LETTER YI}',  # I with diaresis
         u'\N{CYRILLIC CAPITAL LETTER I}',  # looks like backwards capital N
@@ -104,7 +106,7 @@ def breakdownWord(word, recursive=False):
         u'\N{CYRILLIC SMALL LETTER BYELORUSSIAN-UKRAINIAN I}': 'IH0',
         u'\N{CYRILLIC SMALL LETTER ZHE}': 'ZH',
         u'\N{CYRILLIC SMALL LETTER ZE}': 'Z',
-        u'\N{CYRILLIC SMALL LETTER SHORT I}': 'IY0', # 'Y' ?
+        u'\N{CYRILLIC SMALL LETTER SHORT I}': 'IY0',  # 'Y' ?
         u'\N{CYRILLIC SMALL LETTER I}': 'IY0',
         u'\N{CYRILLIC SMALL LETTER KA}': 'K',
         u'\N{CYRILLIC SMALL LETTER EL}': 'L',
@@ -117,7 +119,7 @@ def breakdownWord(word, recursive=False):
         u'\N{CYRILLIC SMALL LETTER TE}': 'T',
         u'\N{CYRILLIC SMALL LETTER U}': 'UH0',
         u'\N{CYRILLIC SMALL LETTER EF}': 'F',
-        u'\N{CYRILLIC SMALL LETTER HA}': 'HH', #  'Y'?? 'K'??
+        u'\N{CYRILLIC SMALL LETTER HA}': 'HH',  # 'Y'?? 'K'??
         u'\N{CYRILLIC SMALL LETTER CHE}': 'CH',
         u'\N{CYRILLIC SMALL LETTER SHA}': 'SH',
         u'\N{CYRILLIC SMALL LETTER SHCHA}': 'SH',
@@ -133,7 +135,7 @@ def breakdownWord(word, recursive=False):
         u'\N{CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I}': 'IH0',
         u'\N{CYRILLIC CAPITAL LETTER ZHE}': 'ZH',
         u'\N{CYRILLIC CAPITAL LETTER ZE}': 'Z',
-        u'\N{CYRILLIC CAPITAL LETTER SHORT I}': 'IY0', # 'Y' ?
+        u'\N{CYRILLIC CAPITAL LETTER SHORT I}': 'IY0',  # 'Y' ?
         u'\N{CYRILLIC CAPITAL LETTER I}': 'IY0',
         u'\N{CYRILLIC CAPITAL LETTER KA}': 'K',
         u'\N{CYRILLIC CAPITAL LETTER EL}': 'L',
@@ -146,7 +148,7 @@ def breakdownWord(word, recursive=False):
         u'\N{CYRILLIC CAPITAL LETTER TE}': 'T',
         u'\N{CYRILLIC CAPITAL LETTER U}': 'UH0',
         u'\N{CYRILLIC CAPITAL LETTER EF}': 'F',
-        u'\N{CYRILLIC CAPITAL LETTER HA}': 'HH', #  'Y'?? 'K'??
+        u'\N{CYRILLIC CAPITAL LETTER HA}': 'HH',  # 'Y'?? 'K'??
         u'\N{CYRILLIC CAPITAL LETTER CHE}': 'CH',
         u'\N{CYRILLIC CAPITAL LETTER SHA}': 'SH',
         u'\N{CYRILLIC CAPITAL LETTER SHCHA}': 'SH',
@@ -159,7 +161,7 @@ def breakdownWord(word, recursive=False):
         # if letter == previous and not isvowel(letter):  # double consonants
         #     pass
         if letter == 'c':
-            if len(word) > pos+1 and word[pos+1] == 'h':
+            if len(word) > pos + 1 and word[pos + 1] == 'h':
                 phonemes.append('CH')
             else:
                 pass
@@ -175,7 +177,7 @@ def breakdownWord(word, recursive=False):
                 else:
                     phonemes.append('HH')
         elif letter == 's':
-            if len(word) > pos+1 and word[pos+1] == 'h':
+            if len(word) > pos + 1 and word[pos + 1] == 'h':
                 phonemes.append('SH')
             else:
                 phonemes.append('S')
@@ -185,7 +187,7 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('UH0')
         elif letter == 'z':
-            if len(word) > pos+1 and word[pos+1] == 'h':
+            if len(word) > pos + 1 and word[pos + 1] == 'h':
                 phonemes.append('ZH')
             else:
                 phonemes.append('Z')
@@ -197,7 +199,7 @@ def breakdownWord(word, recursive=False):
             phonemes.append('S')
         elif letter == u'\N{CYRILLIC SMALL LETTER YA}':
             phonemes.append('Y')
-            phonemes.append('AO0') # not if unstressed - drop this line ?
+            phonemes.append('AO0')  # not if unstressed - drop this line ?
         elif letter == u'\N{CYRILLIC SMALL LETTER YU}':
             phonemes.append('Y')
             phonemes.append('UW0')
@@ -222,7 +224,7 @@ def breakdownWord(word, recursive=False):
         elif letter == u'\N{CYRILLIC CAPITAL LETTER YA}':
             if previous in vowels or previous == "'" or pos == 0:
                 phonemes.append('Y')
-                phonemes.append('AO0') # not if unstressed - drop this line ?
+                phonemes.append('AO0')  # not if unstressed - drop this line ?
             else:
                 phonemes.append('AA0')
         elif letter == u'\N{CYRILLIC CAPITAL LETTER YI}':
@@ -240,8 +242,8 @@ def breakdownWord(word, recursive=False):
                 phon = breakdownWord(hammer(letter), True)
                 if phon:
                     phonemes.append(phon[0])
-        #~ else:
-            #~ print "not handled", letter.encode(output_encoding), word.encode(output_encoding)
+                    # ~ else:
+                    # ~ print "not handled", letter.encode(output_encoding), word.encode(output_encoding)
         pos += 1
         previous = letter
     # return " ".join(phonemes)
@@ -415,7 +417,7 @@ if __name__ == "__main__":
     u"\N{CYRILLIC SMALL LETTER TE}"
     u"\N{CYRILLIC SMALL LETTER VE}"
     u"\N{CYRILLIC SMALL LETTER A}".split()
-    #~ for word in testwordsC:
-        #~ print word, breakdownWord(unicode(word, input_encoding))
-    #~ for word in testwords:
-        #~ print word, breakdownWord(unicode(word, input_encoding))
+    # ~ for word in testwordsC:
+    # ~ print word, breakdownWord(unicode(word, input_encoding))
+    # ~ for word in testwords:
+    # ~ print word, breakdownWord(unicode(word, input_encoding))

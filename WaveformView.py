@@ -41,6 +41,7 @@ defaultSamplesPerFrame = 4
 defaultSampleWidth = 4
 defaultSamplesPerFrame = 2
 
+
 class WaveformView(wx.ScrolledWindow):
     def __init__(self, *args, **kwds):
         # begin wxGlade: WaveformView.__init__
@@ -54,7 +55,7 @@ class WaveformView(wx.ScrolledWindow):
         # test for wxPython type
         cdc = wx.ClientDC(self)
         self.isWxPhoenix = False
-        if not "SetClippingRect" in dir(cdc):
+        if not "SetClippingRect" in dir(cdc):  # TODO: Test this version: if "SetClippingRect" not in dir(cdc)
             self.isWxPhoenix = True
 
         # Other initialization
@@ -93,7 +94,7 @@ class WaveformView(wx.ScrolledWindow):
 
     def __set_properties(self):
         # begin wxGlade: WaveformView.__set_properties
-        self.SetMinSize((200,200))
+        self.SetMinSize((200, 200))
         self.SetBackgroundColour(wx.Colour(255, 255, 255))
         self.SetScrollRate(10, 0)
         # end wxGlade
@@ -123,7 +124,7 @@ class WaveformView(wx.ScrolledWindow):
             # paint the whole window, potentially very time consuming.
             self.Draw(dc)
 
-    def OnSize(self, event = None):
+    def OnSize(self, event=None):
         self.maxHeight = self.GetClientSize().height
         self.SetVirtualSize((self.maxWidth, self.maxHeight))
         if BUFFERED:
@@ -137,7 +138,7 @@ class WaveformView(wx.ScrolledWindow):
     def OnMouseDown(self, event):
         self.isDragging = False
         self.dragChange = False
-        self.draggingEnd = -1 # which end of the object (beginning or end) are you dragging
+        self.draggingEnd = -1  # which end of the object (beginning or end) are you dragging
         self.selectedPhrase = None
         self.selectedWord = None
         self.selectedPhoneme = None
@@ -169,27 +170,31 @@ class WaveformView(wx.ScrolledWindow):
                 self.parentWord = self.selectedWord
 
                 # now, test if the click was within the vertical range of one of these objects
-                if (self.selectedPhrase is not None) and (y > self.selectedPhrase.top) and (y < self.selectedPhrase.bottom):
+                if (self.selectedPhrase is not None) and (y > self.selectedPhrase.top) and (
+                            y < self.selectedPhrase.bottom):
                     self.selectedWord = None
                     self.selectedPhoneme = None
-                    self.draggingEnd = 0 # beginning of phrase
+                    self.draggingEnd = 0  # beginning of phrase
                     dist = self.scrubFrame - self.selectedPhrase.startFrame
                     if (self.selectedPhrase.endFrame - self.scrubFrame) < dist:
-                        self.draggingEnd = 1 # end of phrase
+                        self.draggingEnd = 1  # end of phrase
                         dist = self.selectedPhrase.endFrame - self.scrubFrame
-                    if (self.selectedPhrase.endFrame - self.selectedPhrase.startFrame > 1) and (math.fabs((self.selectedPhrase.endFrame + self.selectedPhrase.startFrame) / 2 - self.scrubFrame) < dist):
-                        self.draggingEnd = 2 # middle of phrase
+                    if (self.selectedPhrase.endFrame - self.selectedPhrase.startFrame > 1) and (math.fabs((
+                                                                                                                      self.selectedPhrase.endFrame + self.selectedPhrase.startFrame) / 2 - self.scrubFrame) < dist):
+                        self.draggingEnd = 2  # middle of phrase
                 elif (self.selectedWord is not None) and (y > self.selectedWord.top) and (y < self.selectedWord.bottom):
                     self.selectedPhrase = None
                     self.selectedPhoneme = None
-                    self.draggingEnd = 0 # beginning of word
+                    self.draggingEnd = 0  # beginning of word
                     dist = self.scrubFrame - self.selectedWord.startFrame
                     if (self.selectedWord.endFrame - self.scrubFrame) < dist:
-                        self.draggingEnd = 1 # end of word
+                        self.draggingEnd = 1  # end of word
                         dist = self.selectedWord.endFrame - self.scrubFrame
-                    if (self.selectedWord.endFrame - self.selectedWord.startFrame > 1) and (math.fabs((self.selectedWord.endFrame + self.selectedWord.startFrame) / 2 - self.scrubFrame) < dist):
-                        self.draggingEnd = 2 # middle of word
-                elif (self.selectedPhoneme is not None) and (y > self.selectedPhoneme.top) and (y < self.selectedPhoneme.bottom):
+                    if (self.selectedWord.endFrame - self.selectedWord.startFrame > 1) and (math.fabs((
+                                                                                                                  self.selectedWord.endFrame + self.selectedWord.startFrame) / 2 - self.scrubFrame) < dist):
+                        self.draggingEnd = 2  # middle of word
+                elif (self.selectedPhoneme is not None) and (y > self.selectedPhoneme.top) and (
+                            y < self.selectedPhoneme.bottom):
                     self.selectedPhrase = None
                     self.selectedWord = None
                     if self.scrubFrame == self.selectedPhoneme.frame:
@@ -228,7 +233,7 @@ class WaveformView(wx.ScrolledWindow):
                     self.UpdateDrawing()
                 dlg.Destroy()
                 self.isDragging = False
-                self.draggingEnd = -1 # which end of the object (beginning or end) are you dragging
+                self.draggingEnd = -1  # which end of the object (beginning or end) are you dragging
                 self.selectedPhrase = None
                 self.selectedWord = None
                 self.selectedPhoneme = None
@@ -237,20 +242,22 @@ class WaveformView(wx.ScrolledWindow):
                 if self.selectedPhrase is not None:
                     playSegment = True
                     self.doc.sound.PlaySegment(float(self.selectedPhrase.startFrame) / float(self.doc.fps),
-                            float(self.selectedPhrase.endFrame - self.selectedPhrase.startFrame + 1) / self.doc.fps,
-                            1.0)
+                                               float(
+                                                   self.selectedPhrase.endFrame - self.selectedPhrase.startFrame + 1) / self.doc.fps,
+                                               1.0)
                 elif self.selectedWord is not None:
                     playSegment = True
                     self.doc.sound.PlaySegment(float(self.selectedWord.startFrame) / float(self.doc.fps),
-                            float(self.selectedWord.endFrame - self.selectedWord.startFrame + 1) / self.doc.fps,
-                            1.0)
+                                               float(
+                                                   self.selectedWord.endFrame - self.selectedWord.startFrame + 1) / self.doc.fps,
+                                               1.0)
                 elif self.selectedPhoneme is not None:
                     playSegment = True
                     self.doc.sound.PlaySegment(float(self.selectedPhoneme.frame) / float(self.doc.fps),
-                            1.0 / self.doc.fps,
-                            1.0)
+                                               1.0 / self.doc.fps,
+                                               1.0)
                 self.isDragging = False
-                self.draggingEnd = -1 # which end of the object (beginning or end) are you dragging
+                self.draggingEnd = -1  # which end of the object (beginning or end) are you dragging
                 self.selectedPhrase = None
                 self.selectedWord = None
                 self.selectedPhoneme = None
@@ -261,12 +268,12 @@ class WaveformView(wx.ScrolledWindow):
                         if frame != nextFrame:
                             frame = nextFrame
                             self.mouthView.SetFrame(frame)
-                            #self.SetFrame(frame) # I'm not sure if it's good to display the playback marker during this operation or not
+                            # self.SetFrame(frame) # I'm not sure if it's good to display the playback marker during this operation or not
                             self.TheApp.Yield()
                         wx.MilliSleep(250.0 / self.doc.fps)
         if event.RightDown():
             self.isDragging = False
-            self.draggingEnd = -1 # which end of the object (beginning or end) are you dragging
+            self.draggingEnd = -1  # which end of the object (beginning or end) are you dragging
             self.selectedPhrase = None
             self.selectedWord = None
             self.selectedPhoneme = None
@@ -284,10 +291,10 @@ class WaveformView(wx.ScrolledWindow):
             self.selectedPhoneme = None
             if (self.doc is not None) and (self.doc.sound is not None):
                 while self.doc.sound.IsPlaying():
-                    pass # don't redraw until the playback for the last frame is done
+                    pass  # don't redraw until the playback for the last frame is done
             self.UpdateDrawing()
-			
-    def OnMouseWheel(self,event):
+
+    def OnMouseWheel(self, event):
         if self.doc is not None:
             if event.ControlDown():
                 if event.GetWheelRotation() > 0:
@@ -295,8 +302,8 @@ class WaveformView(wx.ScrolledWindow):
                 else:
                     self.OnZoomOut(event)
             else:
-                x=self.GetScrollPos(wx.HORIZONTAL)
-                self.Scroll(x-(event.GetWheelRotation()/10), 0)
+                x = self.GetScrollPos(wx.HORIZONTAL)
+                self.Scroll(x - (event.GetWheelRotation() / 10), 0)
 
     def OnMouseMove(self, event):
         if self.isDragging:
@@ -305,7 +312,7 @@ class WaveformView(wx.ScrolledWindow):
             frame = x / self.frameWidth
             if frame == self.dragStartFrame:
                 return
-            self.dragStartFrame = -1000 # kick it far out of the way
+            self.dragStartFrame = -1000  # kick it far out of the way
 
             if self.selectedPhrase is not None:
                 if self.draggingEnd == 0:
@@ -363,7 +370,8 @@ class WaveformView(wx.ScrolledWindow):
                         self.selectedPhoneme.frame = frame
                         self.parentWord.RepositionPhoneme(self.selectedPhoneme)
 
-            if (frame != self.scrubFrame) and (self.doc is not None) and (self.doc.sound is not None): # and (not self.doc.sound.IsPlaying()):
+            if (frame != self.scrubFrame) and (self.doc is not None) and (
+                        self.doc.sound is not None):  # and (not self.doc.sound.IsPlaying()):
                 self.oldFrame = self.scrubFrame
                 self.scrubFrame = frame
                 self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
@@ -400,16 +408,16 @@ class WaveformView(wx.ScrolledWindow):
             sampleDur = 1.0 / self.samplesPerSec
             maxAmp = 0.0
             while time < duration:
-                self.numSamples = self.numSamples + 1
+                self.numSamples += 1
                 amp = self.doc.sound.GetRMSAmplitude(time, sampleDur)
                 self.amp.append(amp)
                 if amp > maxAmp:
                     maxAmp = amp
-                time = time + sampleDur
+                time += sampleDur
             # normalize amplitudes
             maxAmp = 0.95 / maxAmp
             for i in range(len(self.amp)):
-                self.amp[i] = self.amp[i] * maxAmp
+                self.amp[i] *= maxAmp
             self.maxWidth = (self.numSamples + 1) * self.sampleWidth
             self.maxHeight = self.GetClientSize().height
         elif self.doc is not None:
@@ -429,7 +437,7 @@ class WaveformView(wx.ScrolledWindow):
                 self.buffer = None
             self.UpdateDrawing()
 
-    def UpdateDrawing(self, redrawAll = True):
+    def UpdateDrawing(self, redrawAll=True):
         if BUFFERED and self.buffer is None:
             print("Oh no!")
             return
@@ -443,16 +451,18 @@ class WaveformView(wx.ScrolledWindow):
                     firstSample, lastSample = lastSample, firstSample
                 firstSample -= self.samplesPerFrame * 2
                 lastSample += self.samplesPerFrame * 3
-                self.clipRect = wx.Rect((firstSample + 1) * self.sampleWidth, 0, (lastSample - firstSample - 2) * self.sampleWidth, cs.height)
+                self.clipRect = wx.Rect((firstSample + 1) * self.sampleWidth, 0,
+                                        (lastSample - firstSample - 2) * self.sampleWidth, cs.height)
             elif self.doc.sound.IsPlaying() and (not redrawAll):
                 if self.curFrame >= self.oldFrame:
-                    self.clipRect = wx.Rect(self.oldFrame * self.frameWidth, 0, (self.curFrame - self.oldFrame + 2) * self.frameWidth, cs.height)
+                    self.clipRect = wx.Rect(self.oldFrame * self.frameWidth, 0,
+                                            (self.curFrame - self.oldFrame + 2) * self.frameWidth, cs.height)
         if BUFFERED:
             # If doing buffered drawing, create the buffered DC, giving it
             # it a real DC to blit to when done.
             cdc = wx.ClientDC(self)
             self.PrepareDC(cdc)
-            #print(self.clipRect)
+            # print(self.clipRect)
             if self.clipRect is not None:
                 if not self.isWxPhoenix:
                     cdc.SetClippingRect(self.clipRect)
@@ -475,16 +485,16 @@ class WaveformView(wx.ScrolledWindow):
                 if not self.isWxPhoenix:
                     dc.SetClippingRect(self.clipRect)
                 else:
-                     # WxWidgets - Phoenix
+                    # WxWidgets - Phoenix
                     dc.SetClippingRegion(self.clipRect)
             self.Draw(dc)
 
     def Draw(self, dc):
         if self.doc is None:
-            #dc.BeginDrawing()
+            # dc.BeginDrawing()
             dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
             dc.Clear()
-            #dc.EndDrawing()
+            # dc.EndDrawing()
             return
         fillColor = wx.Colour(162, 205, 242)
         lineColor = wx.Colour(30, 121, 198)
@@ -505,12 +515,13 @@ class WaveformView(wx.ScrolledWindow):
         curFrame = self.curFrame
         cs = self.GetClientSize()
         halfClientHeight = cs.height / 2
-        #dc.BeginDrawing()
+        # dc.BeginDrawing()
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
         firstSample = 0
         lastSample = len(self.amp)
-        if (self.doc is not None) and (self.doc.sound is not None) and self.doc.sound.IsPlaying() and (not self.isDragging):
+        if (self.doc is not None) and (self.doc.sound is not None) and self.doc.sound.IsPlaying() and (
+                not self.isDragging):
             if curFrame >= self.oldFrame:
                 firstSample = (self.oldFrame - 1) * self.samplesPerFrame
                 if firstSample < 0:
@@ -520,8 +531,8 @@ class WaveformView(wx.ScrolledWindow):
                     lastSample = len(self.amp)
             drawPlayMarker = True
             x = curFrame * self.frameWidth
-            #print("OldFrame: ",self.oldFrame)
-            #print("X for cursor :", x)
+            # print("OldFrame: ",self.oldFrame)
+            # print("X for cursor :", x)
             # background of playback marker
             dc.SetBrush(wx.Brush(playBackCol))
             dc.SetPen(wx.TRANSPARENT_PEN)
@@ -571,13 +582,13 @@ class WaveformView(wx.ScrolledWindow):
                 # draw frame marker
                 dc.SetPen(wx.Pen(frameCol))
                 frameX = (frame + 1) * self.frameWidth
-                #print("framex: ",frameX)
+                # print("framex: ",frameX)
                 if (self.frameWidth > 2) or ((frame + 2) % fps == 0):
                     dc.DrawLine(frameX, topBorder, frameX, cs.height)
                 # draw frame label
                 if (self.frameWidth > 30) or ((frame + 2) % 5 == 0):
                     dc.DrawLine(frameX, 0, frameX, topBorder)
-                    dc.DrawLine(frameX+1,0,frameX+1, cs.height)
+                    dc.DrawLine(frameX + 1, 0, frameX + 1, cs.height)
                     dc.DrawLabel(str(frame + 2), wx.Rect(frameX + 1, 0, 128, 128))
                 dc.SetBrush(wx.Brush(fillColor))
                 dc.SetPen(wx.Pen(lineColor))
@@ -601,10 +612,10 @@ class WaveformView(wx.ScrolledWindow):
                     dc.SetPen(wx.Pen(fillColor))
                     dc.DrawLine(x, halfClientHeight - lastHalfHeight + 1, x, halfClientHeight + lastHalfHeight - 1)
                     dc.SetPen(wx.Pen(lineColor))
-            x = x + self.sampleWidth
-            sample = sample + 1
+            x += self.sampleWidth
+            sample += 1
             if sample % self.samplesPerFrame == 0:
-                frame = frame + 1
+                frame += 1
                 """
                 # draw frame markers
                 frameX = frame * self.frameWidth
@@ -617,12 +628,12 @@ class WaveformView(wx.ScrolledWindow):
             lastHalfHeight = halfHeight
         # draw the phrases/words/phonemes
         if self.doc.currentVoice is not None:
-            topBorder = topBorder + 4
+            topBorder += 4
             font.SetPointSize(8)
             font.SetWeight(wx.BOLD)
             dc.SetFont(font)
             textWidth, textHeight = dc.GetTextExtent("Ojyg")
-            textHeight = textHeight + 6
+            textHeight += 6
             self.phraseBottom = topBorder + textHeight
             self.wordBottom = topBorder + 4 + textHeight + textHeight + textHeight
             self.phonemeTop = cs.height - 4 - textHeight - textHeight
@@ -630,9 +641,10 @@ class WaveformView(wx.ScrolledWindow):
             for phrase in self.doc.currentVoice.phrases:
                 dc.SetBrush(wx.Brush(phraseFillCol))
                 dc.SetPen(wx.Pen(phraseOutlineCol))
-                r = wx.Rect(phrase.startFrame * self.frameWidth, topBorder, (phrase.endFrame - phrase.startFrame + 1) * self.frameWidth + 1, textHeight)
+                r = wx.Rect(phrase.startFrame * self.frameWidth, topBorder,
+                            (phrase.endFrame - phrase.startFrame + 1) * self.frameWidth + 1, textHeight)
                 if (self.clipRect is not None) and (not r.Intersects(self.clipRect)):
-                    continue # speed things up by skipping off-screen phrases
+                    continue  # speed things up by skipping off-screen phrases
                 phrase.top = r.y
                 phrase.bottom = r.y + r.height
                 dc.DrawRectangle(r.x, r.y, r.width, r.height)
@@ -640,7 +652,7 @@ class WaveformView(wx.ScrolledWindow):
                 if not self.isWxPhoenix:
                     dc.SetClippingRect(r)
                 else:
-                     # WxWidgets - Phoenix
+                    # WxWidgets - Phoenix
                     dc.SetClippingRegion(r)
                 dc.DrawLabel(phrase.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
                 dc.DestroyClippingRegion()
@@ -655,9 +667,10 @@ class WaveformView(wx.ScrolledWindow):
                 for word in phrase.words:
                     dc.SetBrush(wx.Brush(wordFillCol))
                     dc.SetPen(wx.Pen(wordOutlineCol))
-                    r = wx.Rect(word.startFrame * self.frameWidth, topBorder + 4 + textHeight, (word.endFrame - word.startFrame + 1) * self.frameWidth + 1, textHeight)
+                    r = wx.Rect(word.startFrame * self.frameWidth, topBorder + 4 + textHeight,
+                                (word.endFrame - word.startFrame + 1) * self.frameWidth + 1, textHeight)
                     if wordCount % 2:
-                        r.y = r.y + textHeight
+                        r.y += textHeight
                     word.top = r.y
                     word.bottom = r.y + r.height
                     dc.DrawRectangle(r.x, r.y, r.width, r.height)
@@ -665,7 +678,7 @@ class WaveformView(wx.ScrolledWindow):
                     if not self.isWxPhoenix:
                         dc.SetClippingRect(r)
                     else:
-                         # WxWidgets - Phoenix
+                        # WxWidgets - Phoenix
                         dc.SetClippingRegion(r)
                     dc.DrawLabel(word.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
                     dc.DestroyClippingRegion()
@@ -673,21 +686,22 @@ class WaveformView(wx.ScrolledWindow):
                         if not self.isWxPhoenix:
                             dc.SetClippingRect(self.clipRect)
                         else:
-                             # WxWidgets - Phoenix
+                            # WxWidgets - Phoenix
                             dc.SetClippingRegion(self.clipRect)
                     dc.SetBrush(wx.Brush(phonemeFillCol))
                     dc.SetPen(wx.Pen(phonemeOutlineCol))
                     phonemeCount = 0
                     for phoneme in word.phonemes:
-                        r = wx.Rect(phoneme.frame * self.frameWidth, cs.height - 4 - textHeight, self.frameWidth + 1, textHeight)
+                        r = wx.Rect(phoneme.frame * self.frameWidth, cs.height - 4 - textHeight, self.frameWidth + 1,
+                                    textHeight)
                         if phonemeCount % 2:
-                            r.y = r.y - textHeight
+                            r.y -= textHeight
                         phoneme.top = r.y
                         phoneme.bottom = r.y + r.height
                         dc.DrawRectangle(r.x, r.y, r.width, r.height)
                         dc.DrawLabel(phoneme.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-                        phonemeCount = phonemeCount + 1
-                    wordCount = wordCount + 1
+                        phonemeCount += 1
+                    wordCount += 1
         # draw the play marker
         if drawPlayMarker:
             x = curFrame * self.frameWidth
@@ -699,25 +713,24 @@ class WaveformView(wx.ScrolledWindow):
             dc.DrawRectangle(x, 0, self.frameWidth + 1, cs.height)
             # Draw Big Fat Frame Marker
             if self.isDragging:
-                  dc.DestroyClippingRegion()
-                  font.SetPointSize(16)
-                  font.SetWeight(wx.BOLD)
-                  dc.SetFont(font)
-                  dc.DrawLabel(str(curFrame + 1), wx.Rect(x-50, cs.height*0.4, 100,125),wx.ALIGN_CENTER)
-
+                dc.DestroyClippingRegion()
+                font.SetPointSize(16)
+                font.SetWeight(wx.BOLD)
+                dc.SetFont(font)
+                dc.DrawLabel(str(curFrame + 1), wx.Rect(x - 50, cs.height * 0.4, 100, 125), wx.ALIGN_CENTER)
 
         dc.EndDrawing()
 
     def OnZoomIn(self, event):
         if (self.doc is not None) and (self.samplesPerFrame < 16):
-            self.samplesPerFrame = self.samplesPerFrame * 2
+            self.samplesPerFrame *= 2
             self.samplesPerSec = self.doc.fps * self.samplesPerFrame
             self.frameWidth = self.sampleWidth * self.samplesPerFrame
             self.SetDocument(self.doc)
 
     def OnZoomOut(self, event):
         if (self.doc is not None) and (self.samplesPerFrame > 1):
-            self.samplesPerFrame = self.samplesPerFrame / 2
+            self.samplesPerFrame /= 2
             self.samplesPerSec = self.doc.fps * self.samplesPerFrame
             self.frameWidth = self.sampleWidth * self.samplesPerFrame
             self.SetDocument(self.doc)
@@ -731,5 +744,3 @@ class WaveformView(wx.ScrolledWindow):
             self.SetDocument(self.doc)
 
 # end of class WaveformView
-
-

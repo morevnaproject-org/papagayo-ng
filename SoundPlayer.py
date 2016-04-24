@@ -1,9 +1,11 @@
-import wave
 import audioop
-import sys
+import os
+import platform
 import traceback
+import wave
+
 import pyaudio
-import os, platform
+
 from utilities import which
 
 try:
@@ -16,13 +18,15 @@ try:
 except ImportError:
     import _thread as thread
 
+
 class SoundPlayer():
     def __init__(self, soundfile, parent):
         self.soundfile = soundfile
         self.isplaying = False
-        self.time = 0 # current audio position in frames
+        self.time = 0  # current audio position in frames
         self.audio = pyaudio.PyAudio()
         if AudioSegment:
+            # TODO: Might want to use if not which("blah"): instead
             if which("ffmpeg") != None:
                 AudioSegment.converter = which("ffmpeg")
             elif which("avconv") != None:
@@ -36,8 +40,8 @@ class SoundPlayer():
 
         try:
             if AudioSegment:
-                tempsound = AudioSegment.from_file(self.soundfile, format = os.path.splitext(self.soundfile)[1][1:])
-                tempsound.export(os.path.dirname(os.path.realpath(__file__)) +"\\temp.wav", format = "wav")
+                tempsound = AudioSegment.from_file(self.soundfile, format=os.path.splitext(self.soundfile)[1][1:])
+                tempsound.export(os.path.dirname(os.path.realpath(__file__)) + "\\temp.wav", format="wav")
                 self.wave_reference = wave.open(os.path.dirname(os.path.realpath(__file__)) + "\\temp.wav")
             else:
                 self.wave_reference = wave.open(self.soundfile)
@@ -49,11 +53,9 @@ class SoundPlayer():
             self.wave_reference = None
             self.isvalid = False
 
-
-
     def IsValid(self):
         return self.isvalid
-            
+
     def Duration(self):
         return float(self.wave_reference.getnframes()) / float(self.wave_reference.getframerate())
 
@@ -63,7 +65,7 @@ class SoundPlayer():
         self.wave_reference.setpos(startframe)
         frame = self.wave_reference.readframes(samplelen)
         width = self.wave_reference.getsampwidth()
-        return audioop.rms(frame,width)
+        return audioop.rms(frame, width)
 
     def IsPlaying(self):
         return self.isplaying
@@ -88,22 +90,22 @@ class SoundPlayer():
         except wave.Error:
             self.isplaying = False
             return
-        stream = self.audio.open(format =
-          self.audio.get_format_from_width(self.wave_reference.getsampwidth()),
-          channels = self.wave_reference.getnchannels(),
-          rate = self.wave_reference.getframerate(),
-          output = True)
+        stream = self.audio.open(format=
+                                 self.audio.get_format_from_width(self.wave_reference.getsampwidth()),
+                                 channels=self.wave_reference.getnchannels(),
+                                 rate=self.wave_reference.getframerate(),
+                                 output=True)
         # read data
-        
+
         if remaining >= 1024:
             data = self.wave_reference.readframes(chunk)
             remaining -= chunk
         else:
             data = self.wave_reference.readframes(remaining)
             remaining = 0
-        
+
         # play stream
-        while data != '' and self.isplaying==True:
+        while data != '' and self.isplaying == True:  # TODO: Test this version: while data != '' and self.isplaying:
             stream.write(data)
             self.time = float(self.wave_reference.tell()) / float(self.wave_reference.getframerate())
             if remaining >= 1024:
@@ -112,12 +114,12 @@ class SoundPlayer():
             else:
                 data = self.wave_reference.readframes(remaining)
                 remaining = 0
-            
+
         stream.close()
         self.isplaying = False
-    
+
     def Play(self, arg):
-        thread.start_new_thread(self._play, (0,self.Duration()))
+        thread.start_new_thread(self._play, (0, self.Duration()))
 
     def PlaySegment(self, start, length, arg):
-        thread.start_new_thread(self._play, (start,length))
+        thread.start_new_thread(self._play, (start, length))
