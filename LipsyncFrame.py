@@ -24,6 +24,7 @@ import string
 import math
 import wx
 import webbrowser
+import re
 from utilities import *
 # begin wxGlade: dependencies
 from MouthView import MouthView
@@ -623,6 +624,18 @@ class LipsyncFrame(wx.Frame):
             if voiceimagepath.ShowModal() ==wx.ID_OK:
                 self.config.Write("MouthDir",voiceimagepath.GetPath())
                 print((voiceimagepath.GetPath()))
+                full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
+                supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
+                for directory, dirnames, filenames in os.walk(voiceimagepath.GetPath()):
+                    self.mouthView.ProcessMouthDir(directory, filenames, supportedimagetypes)
+                mouthList = list(self.mouthView.mouths.keys())
+                mouthList.sort()
+                print(mouthList)
+                self.mouthChoice.Clear()
+                for mouth in mouthList:
+                    self.mouthChoice.Append(mouth)
+                self.mouthChoice.SetSelection(0)
+                self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
             voiceimagepath.Destroy()
 
     def OnFps(self, event):
