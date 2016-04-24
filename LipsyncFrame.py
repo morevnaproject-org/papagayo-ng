@@ -78,7 +78,7 @@ class LipsyncFrame(wx.Frame):
         # begin wxGlade: LipsyncFrame.__init__
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        
+
         # Menu Bar
         self.mainFrame_menubar = wx.MenuBar()
         wxglade_tmp_menu = wx.Menu()
@@ -100,7 +100,7 @@ class LipsyncFrame(wx.Frame):
         self.SetMenuBar(self.mainFrame_menubar)
         # Menu Bar end
         self.mainFrame_statusbar = self.CreateStatusBar(2)
-        
+
         # Tool Bar
         self.mainFrame_toolbar = wx.ToolBar(self, -1, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
         self.SetToolBar(self.mainFrame_toolbar)
@@ -175,7 +175,7 @@ class LipsyncFrame(wx.Frame):
             self.mouthChoice.Append(mouth)
         self.mouthChoice.SetSelection(0)
         self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
-        
+
         # setup language initialisation here
         self.langman = LanguageManager()
         self.langman.InitLanguages()
@@ -189,13 +189,13 @@ class LipsyncFrame(wx.Frame):
                 select = c
             c += 1
         self.languageChoice.SetSelection(select)
-        
+
         # setup phonemeset initialisation here
         self.phonemeset = PhonemeSet()
         for name in self.phonemeset.alternatives:
             self.phonemesetChoice.Append(name)
         self.phonemesetChoice.SetSelection(0)
-        
+
         #setup export intialization here
         exporterList = ["MOHO", "ALELO", "Images"]
         c = 0
@@ -206,7 +206,7 @@ class LipsyncFrame(wx.Frame):
                 select = c
             c += 1
         self.exportChoice.SetSelection(select)
-        
+
         self.ignoreTextChanges = False
         self.config = wx.Config("Papagayo", "Lost Marble")
 
@@ -256,7 +256,7 @@ class LipsyncFrame(wx.Frame):
         self.SetIcon(_icon)
         self.SetSize((850, 630))
         self.mainFrame_statusbar.SetStatusWidths([-1, 96])
-        
+
         # statusbar fields
         mainFrame_statusbar_fields = [_("Papagayo"), _("Stopped")]
         for i in range(len(mainFrame_statusbar_fields)):
@@ -371,7 +371,7 @@ class LipsyncFrame(wx.Frame):
             paths = dlg.GetPaths()
             self.Open(paths[0])
         dlg.Destroy()
-    
+
     def Open(self, path):
             self.doc = LipsyncDoc(self.langman, self)
             if path.endswith(lipsyncExtension):
@@ -407,7 +407,7 @@ class LipsyncFrame(wx.Frame):
                             self.voiceText.AppendText(line)
                     except:
                         pass
-                        
+
             if self.doc is not None:
                 self.SetTitle("%s [%s] - %s" % (self.doc.name, path, appTitle))
                 self.waveformView.SetDocument(self.doc)
@@ -612,8 +612,8 @@ class LipsyncFrame(wx.Frame):
                     self.config.Write("WorkingDir", dlg.GetDirectory())
                     self.doc.currentVoice.ExportImages(dlg.GetPaths()[0],self.mouthChoice.GetStringSelection())
                 dlg.Destroy()
-                    
-                
+
+
     def OnVoiceimagechoose(self, event):
         language = self.languageChoice.GetStringSelection()
         if (self.doc is not None) and (self.doc.currentVoice is not None):
@@ -691,12 +691,12 @@ class LipsyncFrame(wx.Frame):
         self.voiceText.SetValue(self.doc.currentVoice.text)
         self.waveformView.UpdateDrawing()
         self.mouthView.DrawMe()
-        
+
     def OnReloadDictionary(self, event):
         print("reload the dictionary")
         lang_config = self.doc.language_manager.language_table[self.languageChoice.GetStringSelection()]
         self.doc.language_manager.LoadLanguage(lang_config,force=True)
-        
+
 
 # end of class LipsyncFrame
 

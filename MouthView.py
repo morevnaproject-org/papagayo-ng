@@ -26,16 +26,6 @@ from utilities import *
 # begin wxGlade: dependencies
 # end wxGlade
 
-def ProcessMouthDir(mouthView, dirname, names, supportedimagetypes):
-    hasImages = False
-    for file in names:
-        file = file.lower()
-        if file.split(".")[-1] in supportedimagetypes:
-            hasImages = True
-    if not hasImages:
-        return
-    print(os.path.normpath(dirname),names)
-    mouthView.AddMouth(os.path.normpath(dirname), names)
 
 class MouthView(wx.Panel):
     def __init__(self, *args, **kwds):
@@ -117,19 +107,24 @@ class MouthView(wx.Panel):
         self.doc = doc
         self.DrawMe()
 
+    def ProcessMouthDir(self, dirname, names, supportedimagetypes):
+        hasImages = False
+        for file in names:
+            file = file.lower()
+            if file.split(".")[-1] in supportedimagetypes:
+                hasImages = True
+        if not hasImages:
+            return
+        print(os.path.normpath(dirname), names)
+        self.AddMouth(os.path.normpath(dirname), names)
+
     def LoadMouths(self):
         print(os.path.join(get_main_dir(), "rsrc","mouths"))
-        
-        #testresult = os.walk(os.path.join(get_main_dir(), "rsrc\\mouths\\"), ProcessMouthDir, self)
-        #ProcessMouthDir(testresult)
         #wx gives us a string instead of a list of filetypes
         full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
         supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
-        print(supportedimagetypes)
         for directory, dirnames, filenames in os.walk(os.path.join(get_main_dir(), "rsrc","mouths")):
-            ProcessMouthDir(self, directory, filenames, supportedimagetypes)
-        #for i in testresult:
-            #print(i)
+            self.ProcessMouthDir(directory, filenames, supportedimagetypes)
 
     def AddMouth(self, dirname, names):
         bitmaps = {}
