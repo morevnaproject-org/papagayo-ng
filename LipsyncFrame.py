@@ -486,7 +486,7 @@ class LipsyncFrame(wx.Frame):
             self.reloaddictBut.Enable(True)
             self.exportChoice.Enable(True)
             self.exportBut.Enable(True)
-            self.voiceimageBut.Enable(True)
+            self.voiceimageBut.Enable(False)
 
     def OnSave(self, event=None):
         if self.doc is None:
