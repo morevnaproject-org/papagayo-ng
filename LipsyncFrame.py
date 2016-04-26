@@ -273,7 +273,6 @@ class LipsyncFrame(wx.Frame):
         wx.EVT_TOOL(self, ID_ZOOM1, self.waveformView.OnZoom1)
         # voice settings
         wx.EVT_CHOICE(self, ID_MOUTHCHOICE, self.OnMouthChoice)
-        wx.EVT_CHOICE(self, ID_EXPORTCHOICE, self.OnExportChoice)
         wx.EVT_TEXT(self, ID_VOICENAME, self.OnVoiceName)
         wx.EVT_TEXT(self, ID_VOICETEXT, self.OnVoiceText)
         wx.EVT_BUTTON(self, ID_BREAKDOWN, self.OnVoiceBreakdown)
@@ -594,13 +593,6 @@ class LipsyncFrame(wx.Frame):
     def OnMouthChoice(self, event):
         self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
         self.mouthView.DrawMe()
-    
-    def OnExportChoice(self, event):
-        if self.exportChoice.GetStringSelection() == "Images":
-            self.voiceimageBut.Enable(True)
-        else:
-            self.voiceimageBut.Enable(False)
-            
 
     def OnVoiceName(self, event):
         if (self.doc is not None) and (self.doc.currentVoice is not None):
