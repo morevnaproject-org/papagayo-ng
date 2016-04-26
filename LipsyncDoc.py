@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os
+#import os
 import shutil
 import codecs
 import importlib
@@ -31,8 +31,8 @@ from utilities import *
 from PronunciationDialog import PronunciationDialog
 import SoundPlayer
 import traceback
-import sys
-import breakdowns
+#import sys
+#import breakdowns
 
 strip_symbols = '.,!?;-/()"'
 strip_symbols += '\N{INVERTED QUESTION MARK}'
@@ -61,7 +61,8 @@ class LipsyncWord:
             text = self.text.strip(strip_symbols)
             details = languagemanager.language_table[language]
             if details["type"] == "breakdown":
-                exec ("import %s as breakdown" % details["breakdown_class"])
+                #exec ("import %s as breakdown" % details["breakdown_class"])
+                breakdown = importlib.import_module(details["breakdown_class"])
                 pronunciation_raw = breakdown.breakdownWord(text)
             elif details["type"] == "dictionary":
                 if languagemanager.current_language != language:
