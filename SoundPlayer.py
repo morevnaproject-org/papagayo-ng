@@ -3,7 +3,7 @@ import os
 import platform
 import traceback
 import wave
-
+from utilities import *
 import pyaudio
 
 from utilities import which
@@ -19,21 +19,21 @@ except ImportError:
     import _thread as thread
 
 
-class SoundPlayer():
+class SoundPlayer:
     def __init__(self, soundfile, parent):
         self.soundfile = soundfile
         self.isplaying = False
         self.time = 0  # current audio position in frames
         self.audio = pyaudio.PyAudio()
         if AudioSegment:
-            # TODO: Might want to use if not which("blah"): instead
-            if which("ffmpeg") != None:
+            if which("ffmpeg") is not None:
                 AudioSegment.converter = which("ffmpeg")
-            elif which("avconv") != None:
+            elif which("avconv") is not None:
                 AudioSegment.converter = which("avconv")
             else:
                 if platform.system() == "Windows":
-                    AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
+                    AudioSegment.converter = os.path.join(get_main_dir(), "ffmpeg.exe")
+                    #AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
                 else:
                     # TODO: Check if we have ffmpeg or avconv installed
                     AudioSegment.converter = "ffmpeg"
@@ -41,8 +41,9 @@ class SoundPlayer():
         try:
             if AudioSegment:
                 tempsound = AudioSegment.from_file(self.soundfile, format=os.path.splitext(self.soundfile)[1][1:])
-                tempsound.export(os.path.dirname(os.path.realpath(__file__)) + "\\temp.wav", format="wav")
-                self.wave_reference = wave.open(os.path.dirname(os.path.realpath(__file__)) + "\\temp.wav")
+                tempsound.export(os.path.join(get_main_dir(), "temp.wav"), format="wav")
+                #tempsound.export(os.path.dirname(os.path.realpath(__file__)) + "\\temp.wav", format="wav")
+                self.wave_reference = wave.open(os.path.join(get_main_dir(), "temp.wav"))
             else:
                 self.wave_reference = wave.open(self.soundfile)
 

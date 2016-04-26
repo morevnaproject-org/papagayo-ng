@@ -19,13 +19,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os
+#import os
 import string
 import math
-import wx
+#import wx
 import webbrowser
 import re
-from utilities import *
+#from utilities import *
 # begin wxGlade: dependencies
 from MouthView import MouthView
 from WaveformView import WaveformView
