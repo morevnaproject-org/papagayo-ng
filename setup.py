@@ -1,5 +1,5 @@
-# Papagayo, a lip-sync tool for use with Lost Marble's Moho
-# Copyright (C) 2005 Mike Clifton
+# Papagayo-ng, a lip-sync tool for use with several different animation suites
+# Original Copyright (C) 2005 Mike Clifton
 # Contact information at http://www.lostmarble.com
 #
 # This program is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@ import py2exe
 import os
 import sys
 
-resources = [("", ["papagayo.nsi", "papagayo.ico", "gpl.txt"])]
+resources = [("", ["papagayo-ng.nsi", "papagayo-ng.ico", "gpl.txt"])]
 for root, dirs, files in os.walk('rsrc'):
     if ".svn" in root:
         continue
@@ -45,17 +45,17 @@ for root, dirs, files in os.walk('dlls'):
 
 setup(
     windows=[{
-        "script": "papagayo.py",
-        "icon_resources": [(1, "papagayo.ico")],
+        "script": "papagayo-ng.py",
+        "icon_resources": [(1, "papagayo-ng.ico")],
     }],
     options={"py2exe": {
         "compressed": 1,
         "optimize": 2,
         "packages": ["encodings"]
     }},
-    name="Papagayo",
+    name="Papagayo-ng",
     version="1.2",
     data_files=resources
 )
 
-os.system(r"C:\Program Files\NSIS\makensis.exe output\papagayo.nsi")
+os.system(r"C:\Program Files\NSIS\makensis.exe output\papagayo-ng.nsi")

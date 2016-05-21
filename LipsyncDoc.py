@@ -1,5 +1,5 @@
-# Papagayo, a lip-sync tool for use with Lost Marble's Moho
-# Copyright (C) 2005 Mike Clifton
+# Papagayo-ng, a lip-sync tool for use with several different animation suites
+# Original Copyright (C) 2005 Mike Clifton
 # Contact information at http://www.lostmarble.com
 #
 # This program is free software; you can redistribute it and/or
@@ -375,7 +375,7 @@ class LipsyncVoice:
         try:
             self.config
         except AttributeError:
-            self.config = wx.Config("Papagayo", "Lost Marble")
+            self.config = wx.Config("Papagayo-ng", "Lost Marble")
         phoneme = ""
         if len(self.phrases) > 0:
             startFrame = self.phrases[0].startFrame
