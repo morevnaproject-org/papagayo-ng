@@ -2,10 +2,8 @@
 # -*- coding: cp1252 -*-
 
 # this language module is written to be part of
-# Papagayo, a lip-sync tool for use with Lost Marble's Moho
-#
-# Papagayo is Copyright (C) 2005 Mike Clifton
-# Contact information at http://www.lostmarble.com
+# Papagayo-ng, a lip-sync tool for use with several different animation suites
+# Original Copyright (C) 2005 Mike Clifton
 #
 # this module Copyright (C) 2005 Myles Strous
 # Contact information at http://www-personal.monash.edu.au/~myless/catnap/index.html

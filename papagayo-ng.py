@@ -8,7 +8,6 @@
 # Manual changes will be overwritten without warning!
 
 import warnings
-
 import wxversion
 
 if wxversion.checkInstalled('2.8'):
@@ -16,9 +15,9 @@ if wxversion.checkInstalled('2.8'):
 else:
     warnings.warn("You are running an unsupported Version of wx. Please test this with wx Version 2.8 before reporting errors!")
 import wx
-import gettext
 import os
 import sys
+import gettext
 from LipsyncFrame import LipsyncFrame
 
 
@@ -33,7 +32,7 @@ class LipsyncApp(wx.App):
 # end of class LipsyncApp
 
 if __name__ == "__main__":
-    gettext.install("papagayo")  # replace with the appropriate catalog name
+    gettext.install("papagayo-ng", unicode=True)  # replace with the appropriate catalog name
 
     papagayo = LipsyncApp(0)
     papagayo.mainFrame.TheApp = papagayo
