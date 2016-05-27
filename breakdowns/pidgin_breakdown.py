@@ -2,7 +2,7 @@
 # -*- coding: cp1252 -*-
 
 # this language module is written to be part of
-# Papagayo-ng, a lip-sync tool for use with several different animation suites
+# Papagayo-NG, a lip-sync tool for use with several different animation suites
 # Original Copyright (C) 2005 Mike Clifton
 #
 # this module Copyright (C) 2016 Azia Giles Abuara

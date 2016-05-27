@@ -1,4 +1,4 @@
-# Papagayo-ng, a lip-sync tool for use with several different animation suites
+# Papagayo-NG, a lip-sync tool for use with several different animation suites
 # Original Copyright (C) 2005 Mike Clifton
 # Contact information at http://www.lostmarble.com
 #
@@ -375,7 +375,7 @@ class LipsyncVoice:
         try:
             self.config
         except AttributeError:
-            self.config = wx.Config("Papagayo-ng", "Lost Marble")
+            self.config = wx.Config("Papagayo-NG", "Lost Marble")
         phoneme = ""
         if len(self.phrases) > 0:
             startFrame = self.phrases[0].startFrame

@@ -5,7 +5,7 @@
     <object class="LipsyncFrame" name="mainFrame" base="EditFrame">
         <style>wxDEFAULT_FRAME_STYLE</style>
         <icon>code:wx.Bitmap(os.path.join(get_main_dir(),"rsrc/window_icon.bmp"))</icon>
-        <title>Papagayo-ng</title>
+        <title>Papagayo-NG</title>
         <menubar>1</menubar>
         <centered>1</centered>
         <statusbar>1</statusbar>
@@ -17,7 +17,7 @@
                     <item>
                         <label>&amp;Open...\tCtrl+O</label>
                         <id>wx.ID_OPEN</id>
-                        <help_str>Open a sound file or Papagayo-ng project</help_str>
+                        <help_str>Open a sound file or Papagayo-NG project</help_str>
                     </item>
                     <item>
                         <label>&amp;Save\tCtrl+S</label>
@@ -27,12 +27,12 @@
                     <item>
                         <label>Save &amp;As...</label>
                         <id>wx.ID_SAVEAS</id>
-                        <help_str>Save this Papagayo-ng project under a new name</help_str>
+                        <help_str>Save this Papagayo-NG project under a new name</help_str>
                     </item>
                     <item>
                         <label>Exit</label>
                         <id>wx.ID_EXIT</id>
-                        <help_str>Quit Papagayo-ng</help_str>
+                        <help_str>Quit Papagayo-NG</help_str>
                     </item>
                 </menu>
                 <menu name="" label="&amp;Edit">
@@ -60,16 +60,16 @@
                         <help_str>Open the user's manual</help_str>
                     </item>
                     <item>
-                        <label>&amp;About Papagayo-ng...</label>
+                        <label>&amp;About Papagayo-NG...</label>
                         <id>wx.ID_ABOUT</id>
-                        <help_str>Display information about Papagayo-ng</help_str>
+                        <help_str>Display information about Papagayo-NG</help_str>
                     </item>
                 </menu>
             </menus>
         </object>
         <object class="wxStatusBar" name="mainFrame_statusbar" base="EditStatusBar">
             <fields>
-                <field width="-1">Papagayo-ng</field>
+                <field width="-1">Papagayo-NG</field>
                 <field width="96">Stopped</field>
             </fields>
         </object>
@@ -82,7 +82,7 @@
                     <label>Open</label>
                     <type>0</type>
                     <short_help>Open</short_help>
-                    <long_help>Open a sound file or Papagayo-ng project</long_help>
+                    <long_help>Open a sound file or Papagayo-NG project</long_help>
                     <bitmap1>code:wx.Bitmap(os.path.join(get_main_dir(),"rsrc/open.png"))</bitmap1>
                     <bitmap2></bitmap2>
                 </tool>
@@ -91,7 +91,7 @@
                     <label>Save</label>
                     <type>0</type>
                     <short_help>Save</short_help>
-                    <long_help>Save this Papagayo-ng project</long_help>
+                    <long_help>Save this Papagayo-NG project</long_help>
                     <bitmap1>code:wx.Bitmap(os.path.join(get_main_dir(),"rsrc/save.png"))</bitmap1>
                     <bitmap2></bitmap2>
                 </tool>
@@ -491,7 +491,7 @@
     </object>
     <object class="AboutBox" name="dialog_1" base="EditDialog">
         <style>wxDEFAULT_DIALOG_STYLE</style>
-        <title>About Papagayo-ng</title>
+        <title>About Papagayo-NG</title>
         <centered>1</centered>
         <object class="wxBoxSizer" name="sizer_13" base="EditBoxSizer">
             <orient>wxVERTICAL</orient>

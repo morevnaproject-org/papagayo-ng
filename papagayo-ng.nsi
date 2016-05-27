@@ -1,6 +1,6 @@
 OutFile "..\papagayo-ng_installer.exe"
-InstallDir "$PROGRAMFILES\Papagayo-ng"
-Name "Papagayo-ng"
+InstallDir "$PROGRAMFILES\Papagayo-NG"
+Name "Papagayo-NG"
 
 SetCompressor /final lzma
 !include MUI2.nsh
@@ -17,7 +17,7 @@ LicenseData gpl.txt
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
-Section "Papagayo-ng (required)"
+Section "Papagayo-NG (required)"
   SectionIn RO  
   WriteRegStr HKLM "Software\$(^Name)" "Path" "$INSTDIR"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" "DisplayName" "$(^Name)"
