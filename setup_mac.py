@@ -1,5 +1,5 @@
-# Papagayo, a lip-sync tool for use with Lost Marble's Moho
-# Copyright (C) 2005 Mike Clifton
+# Papagayo-NG, a lip-sync tool for use with several different animation suites
+# Original Copyright (C) 2005 Mike Clifton
 # Contact information at http://www.lostmarble.com
 #
 # This program is free software; you can redistribute it and/or
@@ -26,14 +26,14 @@ py2app_options = dict(
     # This is a shortcut that will place MyApplication.icns
     # in the Contents/Resources folder of the application bundle,
     # and make sure the CFBundleIcon plist key is set appropriately.
-    iconfile="papagayo.icns",
+    iconfile="papagayo-ng.icns",
 ),
 
 setup(
-    app=["papagayo.py"],
+    app=["papagayo-ng.py"],
     options={"py2app": {
-        "iconfile": "papagayo.icns",
+        "iconfile": "papagayo-ng.icns",
     }},
-    name="Papagayo",
+    name="Papagayo-NG",
     version="1.1"
 )

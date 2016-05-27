@@ -1,5 +1,5 @@
-# Papagayo, a lip-sync tool for use with Lost Marble's Moho
-# Copyright (C) 2005 Mike Clifton
+# Papagayo-NG, a lip-sync tool for use with several different animation suites
+# Original Copyright (C) 2005 Mike Clifton
 # Contact information at http://www.lostmarble.com
 #
 # This program is free software; you can redistribute it and/or

@@ -32,7 +32,7 @@ class LipsyncApp(wx.App):
 # end of class LipsyncApp
 
 if __name__ == "__main__":
-    gettext.install("papagayo", unicode=True)  # replace with the appropriate catalog name
+    gettext.install("papagayo-ng", unicode=True)  # replace with the appropriate catalog name
 
     papagayo = LipsyncApp(0)
     papagayo.mainFrame.TheApp = papagayo
