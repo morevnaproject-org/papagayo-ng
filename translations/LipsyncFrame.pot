@@ -1,0 +1,245 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2016-05-29 00:44+Mitteleuropäische Sommerzeit\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: LipsyncFrame.py:88
+msgid "&Open...\tCtrl+O"
+msgstr ""
+
+#: LipsyncFrame.py:88 LipsyncFrame.py:125
+msgid "Open a sound file or Papagayo-NG project"
+msgstr ""
+
+#: LipsyncFrame.py:90
+msgid "&Save\tCtrl+S"
+msgstr ""
+
+#: LipsyncFrame.py:90
+msgid "Save this lipsync project"
+msgstr ""
+
+#: LipsyncFrame.py:91
+msgid "Save &As..."
+msgstr ""
+
+#: LipsyncFrame.py:91
+msgid "Save this Papagayo-NG project under a new name"
+msgstr ""
+
+#: LipsyncFrame.py:93
+msgid "Exit"
+msgstr ""
+
+#: LipsyncFrame.py:93
+msgid "Quit Papagayo-NG"
+msgstr ""
+
+#: LipsyncFrame.py:94
+msgid "&File"
+msgstr ""
+
+#: LipsyncFrame.py:96
+msgid "&Undo\tCtrl+Z"
+msgstr ""
+
+#: LipsyncFrame.py:97
+msgid "Cu&t\tCtrl+X"
+msgstr ""
+
+#: LipsyncFrame.py:98
+msgid "&Copy\tCtrl+C"
+msgstr ""
+
+#: LipsyncFrame.py:99
+msgid "&Paste\tCtrl+V"
+msgstr ""
+
+#: LipsyncFrame.py:100
+msgid "&Edit"
+msgstr ""
+
+#: LipsyncFrame.py:102
+msgid "&Help Topics"
+msgstr ""
+
+#: LipsyncFrame.py:102
+msgid "Open the user's manual"
+msgstr ""
+
+#: LipsyncFrame.py:103
+msgid "&About Papagayo-NG..."
+msgstr ""
+
+#: LipsyncFrame.py:103
+msgid "Display information about Papagayo-NG"
+msgstr ""
+
+#: LipsyncFrame.py:105
+msgid "&Help"
+msgstr ""
+
+#: LipsyncFrame.py:123 LipsyncFrame.py:125
+msgid "Open"
+msgstr ""
+
+#: LipsyncFrame.py:126 LipsyncFrame.py:128
+msgid "Save"
+msgstr ""
+
+#: LipsyncFrame.py:128
+msgid "Save this Papagayo-NG project"
+msgstr ""
+
+#: LipsyncFrame.py:130 LipsyncFrame.py:132
+msgid "Play"
+msgstr ""
+
+#: LipsyncFrame.py:132
+msgid "Play the sound clip"
+msgstr ""
+
+#: LipsyncFrame.py:133 LipsyncFrame.py:135
+msgid "Stop"
+msgstr ""
+
+#: LipsyncFrame.py:135
+msgid "Stop playing audio"
+msgstr ""
+
+#: LipsyncFrame.py:137 LipsyncFrame.py:139
+msgid "Zoom In"
+msgstr ""
+
+#: LipsyncFrame.py:139
+msgid "Zoom in on the waveform"
+msgstr ""
+
+#: LipsyncFrame.py:140 LipsyncFrame.py:142
+msgid "Zoom Out"
+msgstr ""
+
+#: LipsyncFrame.py:142
+msgid "Zoom out of the waveform"
+msgstr ""
+
+#: LipsyncFrame.py:143 LipsyncFrame.py:145
+msgid "Reset Zoom"
+msgstr ""
+
+#: LipsyncFrame.py:145
+msgid "Reset the zoomed view of the waveform"
+msgstr ""
+
+#: LipsyncFrame.py:149
+msgid "Voice name:"
+msgstr ""
+
+#: LipsyncFrame.py:153
+msgid "Spoken text:"
+msgstr ""
+
+#: LipsyncFrame.py:157
+msgid "Phonetic breakdown:"
+msgstr ""
+
+#: LipsyncFrame.py:166
+msgid "Breakdown"
+msgstr ""
+
+#: LipsyncFrame.py:169
+msgid "Reload Dictionary"
+msgstr ""
+
+#: LipsyncFrame.py:170
+msgid "Export:"
+msgstr ""
+
+#: LipsyncFrame.py:176
+msgid "Export..."
+msgstr ""
+
+#: LipsyncFrame.py:179
+msgid "Choose image set..."
+msgstr ""
+
+#: LipsyncFrame.py:180
+msgid "Current Voice"
+msgstr ""
+
+#: LipsyncFrame.py:181
+msgid "Fps:"
+msgstr ""
+
+#: LipsyncFrame.py:194
+msgid "New"
+msgstr ""
+
+#: LipsyncFrame.py:197
+msgid "Delete"
+msgstr ""
+
+#: LipsyncFrame.py:198
+msgid "Voice List"
+msgstr ""
+
+#: LipsyncFrame.py:296 LipsyncFrame.py:304
+msgid "Papagayo-NG"
+msgstr ""
+
+#: LipsyncFrame.py:304
+msgid "Stopped"
+msgstr ""
+
+#: LipsyncFrame.py:385
+msgid "Save changes to this project?"
+msgstr ""
+
+#: LipsyncFrame.py:408
+msgid "Open Audio or %s File"
+msgstr ""
+
+#: LipsyncFrame.py:425
+msgid "Please load correct audio file"
+msgstr ""
+
+#: LipsyncFrame.py:430
+msgid "Open Audio"
+msgstr ""
+
+#: LipsyncFrame.py:503
+msgid "Save %s File"
+msgstr ""
+
+#: LipsyncFrame.py:636
+msgid "Export Lipsync Data (MOHO)"
+msgstr ""
+
+#: LipsyncFrame.py:648
+msgid "FPS is NOT 100 continue? (You will have issues downstream.)"
+msgstr ""
+
+#: LipsyncFrame.py:657
+msgid "Export Lipsync Data (ALELO)"
+msgstr ""
+
+#: LipsyncFrame.py:668
+msgid "Export Image Strip"
+msgstr ""
+
+#: LipsyncFrame.py:680
+msgid "Choose Path for Images"
+msgstr ""
+

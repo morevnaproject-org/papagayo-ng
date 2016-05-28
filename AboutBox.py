@@ -57,7 +57,7 @@ class AboutBox(wx.Dialog):
     def __set_properties(self):
         # begin wxGlade: AboutBox.__set_properties
         self.SetTitle(_("About Papagayo-NG"))
-        self.htmlView.SetMinSize((400, 350))
+        self.htmlView.SetMinSize((400, 380))
         # end wxGlade
 
     def __do_layout(self):
