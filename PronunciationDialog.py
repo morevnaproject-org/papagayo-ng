@@ -30,7 +30,7 @@ class PronunciationDialog(wx.Dialog):
         # begin wxGlade: PronunciationDialog.__init__
         wx.Dialog.__init__(self, None, -1, "", style=wx.DEFAULT_DIALOG_STYLE)
 
-        self.wordLabel = wx.StaticText(self, -1, "Break down the word:", style=wx.ALIGN_CENTRE)
+        self.wordLabel = wx.StaticText(self, -1, _("Break down the word:"), style=wx.ALIGN_CENTRE)
 
         phoneme_ids = {}
         self.phoneme_buttons = {}
@@ -40,8 +40,8 @@ class PronunciationDialog(wx.Dialog):
                 self.phoneme_buttons[phoneme] = wx.Button(self, phoneme_ids[phoneme], phoneme)
 
         self.phonemeCtrl = wx.TextCtrl(self, -1, "")
-        self.button_1 = wx.Button(self, wx.ID_OK, "OK")
-        self.button_2 = wx.Button(self, wx.ID_CANCEL, "Cancel")
+        self.button_1 = wx.Button(self, wx.ID_OK, _("OK"))
+        self.button_2 = wx.Button(self, wx.ID_CANCEL, _("Cancel"))
 
         self.__set_properties()
         self.__do_layout()
@@ -54,7 +54,7 @@ class PronunciationDialog(wx.Dialog):
 
     def __set_properties(self):
         # begin wxGlade: PronunciationDialog.__set_properties
-        self.SetTitle("Unknown Word")
+        self.SetTitle(_("Unknown Word"))
         self.button_1.SetDefault()
 
     # end wxGlade
