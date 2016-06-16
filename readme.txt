@@ -68,5 +68,6 @@ http://code.google.com/p/papagayo/
 Papagayo-NG (C) 2016
 - Konstantin Dmitriev
 - Stefan Murawski
+- Azia Giles Abuara
 #TODO: Add People currently working on Papagayo-NG
 https://github.com/morevnaproject/papagayo-ng
