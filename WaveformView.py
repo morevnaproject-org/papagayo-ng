@@ -211,7 +211,7 @@ class WaveformView(wx.ScrolledWindow):
                 self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
                 self.mouthView.SetFrame(self.scrubFrame)
                 self.UpdateDrawing(False)
-            elif event.RightDown() and self.selectedWord:
+            elif event.RightIsDown()() and self.selectedWord:
                 self.isDragging = False
                 # manually enter the pronunciation for this word
                 dlg = PronunciationDialog(self, self.doc.parent.phonemeset.set)
@@ -271,7 +271,7 @@ class WaveformView(wx.ScrolledWindow):
                             # self.SetFrame(frame) # I'm not sure if it's good to display the playback marker during this operation or not
                             self.TheApp.Yield()
                         wx.MilliSleep(250.0 / self.doc.fps)
-        if event.RightDown():
+        if event.RightIsDown()():
             self.isDragging = False
             self.draggingEnd = -1  # which end of the object (beginning or end) are you dragging
             self.selectedPhrase = None

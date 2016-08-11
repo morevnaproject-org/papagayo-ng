@@ -502,7 +502,7 @@ class LipsyncFrame(wx.Frame):
         dlg = wx.FileDialog(
             self, message=_("Save %s File") % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
             defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".pgo", wildcard=saveWildcard,
-            style=wx.SAVE | wx.CHANGE_DIR | wx.OVERWRITE_PROMPT)
+            style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
         if dlg.ShowModal() == wx.ID_OK:
             self.config.Write("WorkingDir", dlg.GetDirectory())
             self.doc.Save(dlg.GetPaths()[0])
@@ -679,7 +679,7 @@ class LipsyncFrame(wx.Frame):
             voiceimagepath = wx.DirDialog(
                 self, message=_("Choose Path for Images"), defaultPath=self.config.Read("MouthDir", os.path.join(
                     os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")),
-                style=wx.OPEN | wx.CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
+                style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
             if voiceimagepath.ShowModal() == wx.ID_OK:
                 self.config.Write("MouthDir", voiceimagepath.GetPath())
                 print(voiceimagepath.GetPath())
