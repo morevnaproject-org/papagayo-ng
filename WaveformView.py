@@ -75,11 +75,13 @@ class WaveformView(wx.ScrolledWindow):
         self.phraseBottom = 16
         self.wordBottom = 32
         self.phonemeTop = 128
+        self.didresize = 0
 
         # Connect event handlers
         # window events
         wx.EVT_PAINT(self, self.OnPaint)
         wx.EVT_SIZE(self, self.OnSize)
+        wx.EVT_IDLE(self, self.OnIdle)
         # mouse events
         wx.EVT_LEFT_DOWN(self, self.OnMouseDown)
         wx.EVT_RIGHT_DOWN(self, self.OnMouseDown)
@@ -103,7 +105,16 @@ class WaveformView(wx.ScrolledWindow):
         # begin wxGlade: WaveformView.__do_layout
         self.Layout()
         # end wxGlade
-
+    def OnIdle(self, event):
+        if self.didresize:
+            if BUFFERED:
+                # Initialize the buffer bitmap.  No real DC is needed at this point.
+                if self.maxWidth > 0 and self.maxHeight > 0:
+                    self.buffer = wx.EmptyBitmap(self.maxWidth, self.maxHeight)
+                else:
+                    self.buffer = None
+                self.UpdateDrawing()
+            self.didresize = 0
     def OnPaint(self, event):
         if BUFFERED:
             # Create a buffered paint DC.  It will create the real
@@ -124,16 +135,11 @@ class WaveformView(wx.ScrolledWindow):
             # paint the whole window, potentially very time consuming.
             self.Draw(dc)
 
+
     def OnSize(self, event=None):
         self.maxHeight = self.GetClientSize().height
         self.SetVirtualSize((self.maxWidth, self.maxHeight))
-        if BUFFERED:
-            # Initialize the buffer bitmap.  No real DC is needed at this point.
-            if self.maxWidth > 0 and self.maxHeight > 0:
-                self.buffer = wx.EmptyBitmap(self.maxWidth, self.maxHeight)
-            else:
-                self.buffer = None
-            self.UpdateDrawing()
+        self.didresize = 1
 
     def OnMouseDown(self, event):
         self.isDragging = False
@@ -292,7 +298,7 @@ class WaveformView(wx.ScrolledWindow):
             if (self.doc is not None) and (self.doc.sound is not None):
                 while self.doc.sound.IsPlaying():
                     pass  # don't redraw until the playback for the last frame is done
-            self.UpdateDrawing()
+            self.UpdateDrawing()   
 
     def OnMouseWheel(self, event):
         if self.doc is not None:
