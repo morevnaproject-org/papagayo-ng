@@ -8,12 +8,15 @@
 # Manual changes will be overwritten without warning!
 
 import warnings
-import wxversion
+try:
+    import wxversion
 
-if wxversion.checkInstalled('2.8'):
-    wxversion.select('2.8')
-else:
-    warnings.warn("You are running an unsupported Version of wx. Please test this with wx Version 2.8 before reporting errors!")
+    if wxversion.checkInstalled('2.8'):
+        wxversion.select('2.8')
+    else:
+        warnings.warn("You are running an unsupported Version of wx. Please test this with wx Version 2.8 before reporting errors!")
+except ImportError:
+    warnings.warn("You either don't have wx installed or you are using wxphoenix. Please test this with wx Version 2.8 before reporting errors!")
 import wx
 import os
 import sys
@@ -24,7 +27,10 @@ from LipsyncFrame import LipsyncFrame
 class LipsyncApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
-        self.SetAssertMode(wx.PYAPP_ASSERT_SUPPRESS)
+        try:
+            self.SetAssertMode(wx.PYAPP_ASSERT_SUPPRESS)
+        except AttributeError:
+            self.SetAssertMode(wx.APP_ASSERT_SUPPRESS)
         self.mainFrame = LipsyncFrame(None, wx.ID_ANY, "")
         self.SetTopWindow(self.mainFrame)
         self.mainFrame.Show()
@@ -33,7 +39,10 @@ class LipsyncApp(wx.App):
 # end of class LipsyncApp
 
 if __name__ == "__main__":
-    gettext.install("papagayo-ng", unicode=True)
+    try:
+        gettext.install("papagayo-ng", unicode=True)
+    except TypeError:
+        gettext.install("papagayo-ng")
     papagayo = LipsyncApp(0)
     papagayo.mainFrame.TheApp = papagayo
     papagayo.mainFrame.waveformView.TheApp = papagayo

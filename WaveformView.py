@@ -217,7 +217,7 @@ class WaveformView(wx.ScrolledWindow):
                 self.doc.sound.PlaySegment(float(self.scrubFrame) / float(self.doc.fps), 15.0 / self.doc.fps, 1.0)
                 self.mouthView.SetFrame(self.scrubFrame)
                 self.UpdateDrawing(False)
-            elif event.RightIsDown()() and self.selectedWord:
+            elif event.RightIsDown() and self.selectedWord:
                 self.isDragging = False
                 # manually enter the pronunciation for this word
                 dlg = PronunciationDialog(self, self.doc.parent.phonemeset.set)
@@ -277,7 +277,7 @@ class WaveformView(wx.ScrolledWindow):
                             # self.SetFrame(frame) # I'm not sure if it's good to display the playback marker during this operation or not
                             self.TheApp.Yield()
                         wx.MilliSleep(250.0 / self.doc.fps)
-        if event.RightIsDown()():
+        if event.RightIsDown():
             self.isDragging = False
             self.draggingEnd = -1  # which end of the object (beginning or end) are you dragging
             self.selectedPhrase = None
@@ -297,8 +297,7 @@ class WaveformView(wx.ScrolledWindow):
             self.selectedPhoneme = None
             if (self.doc is not None) and (self.doc.sound is not None):
                 while self.doc.sound.IsPlaying():
-                    pass  # don't redraw until the playback for the last frame is done
-            self.UpdateDrawing()   
+                    pass  # don't redraw until the playback for the last frame is done   
 
     def OnMouseWheel(self, event):
         if self.doc is not None:
@@ -724,8 +723,10 @@ class WaveformView(wx.ScrolledWindow):
                 font.SetWeight(wx.BOLD)
                 dc.SetFont(font)
                 dc.DrawLabel(str(curFrame + 1), wx.Rect(x - 50, cs.height * 0.4, 100, 125), wx.ALIGN_CENTER)
-
-        dc.EndDrawing()
+        try:
+            dc.EndDrawing()
+        except AttributeError:
+            pass
 
     def OnZoomIn(self, event):
         if (self.doc is not None) and (self.samplesPerFrame < 16):
