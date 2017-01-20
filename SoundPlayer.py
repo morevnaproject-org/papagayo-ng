@@ -106,7 +106,7 @@ class SoundPlayer:
             remaining = 0
 
         # play stream
-        while data != '' and self.isplaying:
+        while data and self.isplaying:
             stream.write(data)
             self.time = float(self.wave_reference.tell()) / float(self.wave_reference.getframerate())
             if remaining >= 1024:
