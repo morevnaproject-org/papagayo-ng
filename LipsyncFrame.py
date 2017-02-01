@@ -196,6 +196,9 @@ class LipsyncFrame(wx.Frame):
         ID_DELVOICE = wx.NewId()
         self.delVoiceBut = wx.Button(self.panel_2, ID_DELVOICE, _("Delete"))
         self.sizer_5_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, _("Voice List"))
+        global ID_VOLSLIDER
+        ID_VOLSLIDER = wx.NewId()
+        self.volume_slider = wx.Slider(self.panel_2, ID_VOLSLIDER, value=50, minValue=0, maxValue=100, style=wx.SL_VERTICAL | wx.SL_INVERSE)
 
         self.__set_properties()
         self.__do_layout()
@@ -284,6 +287,7 @@ class LipsyncFrame(wx.Frame):
         wx.EVT_LISTBOX(self, ID_VOICELIST, self.OnSelVoice)
         wx.EVT_BUTTON(self, ID_NEWVOICE, self.OnNewVoice)
         wx.EVT_BUTTON(self, ID_DELVOICE, self.OnDelVoice)
+        wx.EVT_SLIDER(self, ID_VOLSLIDER, self.ChangeVolume)
 
     def __del__(self):
         try:
@@ -360,12 +364,18 @@ class LipsyncFrame(wx.Frame):
         sizer_5.Add(sizer_6, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 4)
         sizer_4.Add(sizer_5, 1, wx.ALL | wx.EXPAND, 4)
         sizer_2.Add(sizer_4, 0, wx.EXPAND | wx.LEFT, 4)
+        sizer_2.Add(self.volume_slider, 0, wx.EXPAND | wx.ALL, 0)
         self.panel_2.SetSizer(sizer_2)
         sizer_1.Add(self.panel_2, 1, wx.EXPAND, 0)
         self.SetSizer(sizer_1)
         self.Layout()
         self.Centre()
         # end wxGlade
+
+    def ChangeVolume(self, event):
+        if self.doc and self.doc.sound:
+            self.doc.sound.volume = int(self.volume_slider.GetValue())
+            #print(self.doc.sound.volume)
 
     def CloseOK(self, event):
         if not event.CanVeto():
