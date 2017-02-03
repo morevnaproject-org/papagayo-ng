@@ -22,6 +22,7 @@
 
 import math
 import wx
+import simplestopwatch as stopwatch
 
 if hasattr(wx, "Color"):
     wx.Colour = wx.Color
@@ -113,7 +114,10 @@ class WaveformView(wx.ScrolledWindow):
                     self.buffer = wx.EmptyBitmap(self.maxWidth, self.maxHeight)
                 else:
                     self.buffer = None
+                t = stopwatch.Timer()
                 self.UpdateDrawing()
+                t.stop()
+                print("Updating took: " +str(t.elapsed))
             self.didresize = 0
     def OnPaint(self, event):
         if BUFFERED:
@@ -482,7 +486,8 @@ class WaveformView(wx.ScrolledWindow):
                     # WxWidgets - Phoenix
                     dc.SetClippingRegion(self.clipRect)
             self.Draw(dc)
-            self.Draw(cdc)
+            if ((self.doc is not None) and (self.doc.sound is not None)) and self.doc.sound.IsPlaying():
+                self.Draw(cdc)
         else:
             dc = wx.ClientDC(self)
             self.PrepareDC(dc)
@@ -495,6 +500,7 @@ class WaveformView(wx.ScrolledWindow):
             self.Draw(dc)
 
     def Draw(self, dc):
+        t2 = stopwatch.Timer()
         if self.doc is None:
             # dc.BeginDrawing()
             dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
@@ -582,21 +588,25 @@ class WaveformView(wx.ScrolledWindow):
         lastHeight = -1
         lastHalfHeight = 1
         amp = 0
+        faster_drawing = True
         for i in range(int(firstSample), int(lastSample)):
+            if i % 100 == 0:
+                print("Sample " + str(i) + " Time " + str(t2.elapsed))
             if (sample + 1) % self.samplesPerFrame == 0:
                 # draw frame marker
-                dc.SetPen(wx.Pen(frameCol))
+                dc.SetPen(wx.Pen(frameCol))  # +0.06 seconds
                 frameX = (frame + 1) * self.frameWidth
                 # print("framex: ",frameX)
                 if (self.frameWidth > 2) or ((frame + 2) % fps == 0):
-                    dc.DrawLine(frameX, topBorder, frameX, cs.height)
+                    dc.DrawLine(frameX, topBorder, frameX, cs.height)  # +0.01 seconds
                 # draw frame label
                 if (self.frameWidth > 30) or ((frame + 2) % 5 == 0):
+                    # These three take about 0.01 seconds
                     dc.DrawLine(frameX, 0, frameX, topBorder)
                     dc.DrawLine(frameX + 1, 0, frameX + 1, cs.height)
                     dc.DrawLabel(str(frame + 2), wx.Rect(frameX + 1, 0, 128, 128))
-                dc.SetBrush(wx.Brush(fillColor))
-                dc.SetPen(wx.Pen(lineColor))
+                dc.SetBrush(wx.Brush(fillColor))  # +0.04 seconds
+                dc.SetPen(wx.Pen(lineColor))  # +0.07 seconds
             amp = self.amp[i]
             height = round(cs.height * amp)
             halfHeight = height / 2
@@ -606,17 +616,18 @@ class WaveformView(wx.ScrolledWindow):
             if SIMPLE_DISPLAY:
                 dc.DrawLine(x, halfClientHeight - halfHeight, x, halfClientHeight + halfHeight)
             else:
-                dc.DrawRectangle(x, halfClientHeight - halfHeight, self.sampleWidth + 1, height)
-                if drawPlayMarker and (frame == curFrame):
-                    dc.SetBrush(wx.Brush(fillColor))
-                    dc.SetPen(wx.Pen(lineColor))
-                if lastHeight > 0 and not (drawPlayMarker and frame == curFrame):
-                    if lastHeight > height:
-                        lastHeight = height
-                        lastHalfHeight = halfHeight
-                    dc.SetPen(wx.Pen(fillColor))
-                    dc.DrawLine(x, halfClientHeight - lastHalfHeight + 1, x, halfClientHeight + lastHalfHeight - 1)
-                    dc.SetPen(wx.Pen(lineColor))
+                dc.DrawRectangle(x, halfClientHeight - halfHeight, self.sampleWidth + 1, height)  # Only doing this takes 0.12 seconds
+                if not faster_drawing:
+                    if drawPlayMarker and (frame == curFrame):
+                        dc.SetBrush(wx.Brush(fillColor))
+                        c.SetPen(wx.Pen(lineColor))
+                    if lastHeight > 0 and not (drawPlayMarker and frame == curFrame):
+                        if lastHeight > height:
+                            lastHeight = height
+                            lastHalfHeight = halfHeight
+                        dc.SetPen(wx.Pen(fillColor))  # +0.16 seconds
+                        dc.DrawLine(x, halfClientHeight - lastHalfHeight + 1, x, halfClientHeight + lastHalfHeight - 1)
+                        dc.SetPen(wx.Pen(lineColor))  # +0.175 seconds
             x += self.sampleWidth
             sample += 1
             if sample % self.samplesPerFrame == 0:
@@ -631,6 +642,50 @@ class WaveformView(wx.ScrolledWindow):
                 """
             lastHeight = height
             lastHalfHeight = halfHeight
+        if faster_drawing:
+            # This fills in the lines between samples. Doing this separately saves between 0.11 and 0.25 seconds here.
+            dc.SetBrush(wx.Brush(fillColor))
+            dc.SetPen(wx.Pen(lineColor))
+            dc.SetTextForeground(frameTextCol)
+            dc.SetFont(font)
+            textWidth, topBorder = dc.GetTextExtent("Ojyg")
+            x = firstSample * self.sampleWidth
+            frame = firstSample / self.samplesPerFrame
+            fps = int(round(self.doc.fps))
+            sample = firstSample
+            lastHeight = -1
+            lastHalfHeight = 1
+            amp = 0
+            dc.SetPen(wx.Pen(fillColor))
+            for i in range(int(firstSample), int(lastSample)):
+                amp = self.amp[i]
+                height = round(cs.height * amp)
+                halfHeight = height / 2
+                if not SIMPLE_DISPLAY:
+                    if drawPlayMarker and (frame == curFrame):
+                        dc.SetBrush(wx.Brush(fillColor))
+                        dc.SetPen(wx.Pen(lineColor))
+                    if lastHeight > 0 and not (drawPlayMarker and frame == curFrame):
+                        if lastHeight > height:
+                            lastHeight = height
+                            lastHalfHeight = halfHeight
+                        dc.DrawLine(x, halfClientHeight - lastHalfHeight + 1, x, halfClientHeight + lastHalfHeight - 1)
+                x += self.sampleWidth
+                sample += 1
+                if sample % self.samplesPerFrame == 0:
+                    frame += 1
+                    """
+                    # draw frame markers
+                    frameX = frame * self.frameWidth
+                    dc.SetPen(wx.Pen(frameCol))
+                    dc.DrawLine(frameX, topBorder, frameX, cs.height)
+                    dc.SetBrush(wx.Brush(fillColor))
+                    dc.SetPen(wx.Pen(lineColor))
+                    """
+                lastHeight = height
+                lastHalfHeight = halfHeight
+            dc.SetPen(wx.Pen(lineColor))
+
         # draw the phrases/words/phonemes
         if self.doc.currentVoice is not None:
             topBorder += 4
@@ -727,6 +782,8 @@ class WaveformView(wx.ScrolledWindow):
             dc.EndDrawing()
         except AttributeError:
             pass
+        t2.stop()
+        print("Drawing took: " + str(t2.elapsed))
 
     def OnZoomIn(self, event):
         if (self.doc is not None) and (self.samplesPerFrame < 16):
