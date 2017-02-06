@@ -22,7 +22,11 @@
 
 import math
 import wx
-import simplestopwatch as stopwatch
+debug_performance = None
+if debug_performance:
+    import simplestopwatch as stopwatch
+else:
+    stopwatch = None
 
 if hasattr(wx, "Color"):
     wx.Colour = wx.Color
@@ -54,9 +58,9 @@ class WaveformView(wx.ScrolledWindow):
         # end wxGlade
 
         # test for wxPython type
-        cdc = wx.ClientDC(self)
+        self.cdc = wx.ClientDC(self)
         self.isWxPhoenix = False
-        if not "SetClippingRect" in dir(cdc):  # TODO: Test this version: if "SetClippingRect" not in dir(cdc)
+        if not "SetClippingRect" in dir(self.cdc):  # TODO: Test this version: if "SetClippingRect" not in dir(cdc)
             self.isWxPhoenix = True
 
         # Other initialization
@@ -106,6 +110,7 @@ class WaveformView(wx.ScrolledWindow):
         # begin wxGlade: WaveformView.__do_layout
         self.Layout()
         # end wxGlade
+
     def OnIdle(self, event):
         if self.didresize:
             if BUFFERED:
@@ -114,11 +119,14 @@ class WaveformView(wx.ScrolledWindow):
                     self.buffer = wx.EmptyBitmap(self.maxWidth, self.maxHeight)
                 else:
                     self.buffer = None
-                t = stopwatch.Timer()
+                if stopwatch:
+                    t = stopwatch.Timer()
                 self.UpdateDrawing()
-                t.stop()
-                print("Updating took: " +str(t.elapsed))
+                if stopwatch:
+                    t.stop()
+                    print("Updating took: " +str(t.elapsed))
             self.didresize = 0
+
     def OnPaint(self, event):
         if BUFFERED:
             # Create a buffered paint DC.  It will create the real
@@ -301,7 +309,8 @@ class WaveformView(wx.ScrolledWindow):
             self.selectedPhoneme = None
             if (self.doc is not None) and (self.doc.sound is not None):
                 while self.doc.sound.IsPlaying():
-                    pass  # don't redraw until the playback for the last frame is done   
+                    pass  # don't redraw until the playback for the last frame is done
+        self.didresize = True
 
     def OnMouseWheel(self, event):
         if self.doc is not None:
@@ -316,7 +325,10 @@ class WaveformView(wx.ScrolledWindow):
 
     def OnMouseMove(self, event):
         if self.isDragging:
-            x, y = event.GetPositionTuple()
+            try:
+                x, y = event.GetPositionTuple()
+            except AttributeError:
+                x, y = event.GetLogicalPosition(self.cdc)
             x, y = self.CalcUnscrolledPosition(x, y)
             frame = x / self.frameWidth
             if frame == self.dragStartFrame:
@@ -500,7 +512,8 @@ class WaveformView(wx.ScrolledWindow):
             self.Draw(dc)
 
     def Draw(self, dc):
-        t2 = stopwatch.Timer()
+        if stopwatch:
+            t2 = stopwatch.Timer()
         if self.doc is None:
             # dc.BeginDrawing()
             dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
@@ -590,8 +603,9 @@ class WaveformView(wx.ScrolledWindow):
         amp = 0
         faster_drawing = True
         for i in range(int(firstSample), int(lastSample)):
-            if i % 100 == 0:
-                print("Sample " + str(i) + " Time " + str(t2.elapsed))
+            if stopwatch:
+                if i % 100 == 0:
+                    print("Sample " + str(i) + " Time " + str(t2.elapsed))
             if (sample + 1) % self.samplesPerFrame == 0:
                 # draw frame marker
                 dc.SetPen(wx.Pen(frameCol))  # +0.06 seconds
@@ -620,7 +634,7 @@ class WaveformView(wx.ScrolledWindow):
                 if not faster_drawing:
                     if drawPlayMarker and (frame == curFrame):
                         dc.SetBrush(wx.Brush(fillColor))
-                        c.SetPen(wx.Pen(lineColor))
+                        dc.SetPen(wx.Pen(lineColor))
                     if lastHeight > 0 and not (drawPlayMarker and frame == curFrame):
                         if lastHeight > height:
                             lastHeight = height
@@ -782,8 +796,9 @@ class WaveformView(wx.ScrolledWindow):
             dc.EndDrawing()
         except AttributeError:
             pass
-        t2.stop()
-        print("Drawing took: " + str(t2.elapsed))
+        if stopwatch:
+            t2.stop()
+            print("Drawing took: " + str(t2.elapsed))
 
     def OnZoomIn(self, event):
         if (self.doc is not None) and (self.samplesPerFrame < 16):
