@@ -28,7 +28,14 @@ import re
 # from utilities import *
 # begin wxGlade: dependencies
 from MouthView import MouthView
-from WaveformView import WaveformView
+
+batched_drawing = False
+
+if batched_drawing:
+    from WaveformViewFast import WaveformView
+else:
+    from WaveformView import WaveformView
+
 # end wxGlade
 
 from AboutBox import AboutBox
