@@ -497,6 +497,8 @@ class LipsyncFrame(wx.Frame):
             self.exportChoice.Enable(True)
             self.exportBut.Enable(True)
             self.voiceimageBut.Enable(False)
+            # reload dictionary
+            self.OnReloadDictionary()
 
     def OnSave(self, event=None):
         if self.doc is None:
@@ -774,7 +776,7 @@ class LipsyncFrame(wx.Frame):
         self.waveformView.UpdateDrawing()
         self.mouthView.DrawMe()
 
-    def OnReloadDictionary(self, event):
+    def OnReloadDictionary(self, event = None):
         print("reload the dictionary")
         lang_config = self.doc.language_manager.language_table[self.languageChoice.GetStringSelection()]
         self.doc.language_manager.LoadLanguage(lang_config, force=True)
