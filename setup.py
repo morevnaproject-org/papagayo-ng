@@ -54,7 +54,7 @@ setup(
         "packages": ["encodings"]
     }},
     name="Papagayo-NG",
-    version="1.4.0",
+    version="1.4.1",
     data_files=resources
 )
 
