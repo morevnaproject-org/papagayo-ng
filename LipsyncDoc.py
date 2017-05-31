@@ -608,9 +608,10 @@ class LanguageManager:
             return
         self.current_language = language_config["label"]
 
-        for dictionary in language_config["dictionaries"]:
-            self.LoadDictionary(
-                os.path.join(get_main_dir(), language_config["location"], language_config["dictionaries"][dictionary]))
+        if "dictionaries" in language_config:
+            for dictionary in language_config["dictionaries"]:
+                self.LoadDictionary(
+                    os.path.join(get_main_dir(), language_config["location"], language_config["dictionaries"][dictionary]))
 
     def LanguageDetails(self, dirname, names):
         if "language.ini" in names:
