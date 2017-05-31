@@ -171,25 +171,26 @@ class WaveformView(wx.ScrolledWindow):
                 # test to see if the user clicked on a phrase, word, or phoneme
                 # first, find the phrase that was clicked on
                 for phrase in self.doc.currentVoice.phrases:
-                    if (self.scrubFrame >= phrase.startFrame) and (self.scrubFrame <= phrase.endFrame):
+                    if (self.scrubFrame >= phrase.startFrame) and (self.scrubFrame < phrase.endFrame + 1):
                         self.selectedPhrase = phrase
                 # next, find the word that was clicked on
                 if self.selectedPhrase is not None:
                     for word in self.selectedPhrase.words:
-                        if (self.scrubFrame >= word.startFrame) and (self.scrubFrame <= word.endFrame):
+                        if (self.scrubFrame >= word.startFrame) and (self.scrubFrame < word.endFrame + 1):
                             self.selectedWord = word
                 # finally, find the phoneme that was clicked on
                 if self.selectedWord is not None:
                     for phoneme in self.selectedWord.phonemes:
-                        if self.scrubFrame == phoneme.frame:
+                        if (self.scrubFrame >= phoneme.frame) and (self.scrubFrame < phoneme.frame + 1):
                             self.selectedPhoneme = phoneme
 
                 self.parentPhrase = self.selectedPhrase
                 self.parentWord = self.selectedWord
 
                 # now, test if the click was within the vertical range of one of these objects
-                if (self.selectedPhrase is not None) and (y > self.selectedPhrase.top) and (
-                            y < self.selectedPhrase.bottom):
+                if ( (self.selectedPhrase is not None)
+                 and (y > self.selectedPhrase.top)
+                 and (y < self.selectedPhrase.bottom) ):
                     self.selectedWord = None
                     self.selectedPhoneme = None
                     self.draggingEnd = 0  # beginning of phrase
@@ -197,10 +198,12 @@ class WaveformView(wx.ScrolledWindow):
                     if (self.selectedPhrase.endFrame - self.scrubFrame) < dist:
                         self.draggingEnd = 1  # end of phrase
                         dist = self.selectedPhrase.endFrame - self.scrubFrame
-                    if (self.selectedPhrase.endFrame - self.selectedPhrase.startFrame > 1) and (math.fabs((
-                                                                                                                      self.selectedPhrase.endFrame + self.selectedPhrase.startFrame) / 2 - self.scrubFrame) < dist):
+                    if ( (self.selectedPhrase.endFrame - self.selectedPhrase.startFrame > 1)
+                     and (math.fabs((self.selectedPhrase.endFrame + self.selectedPhrase.startFrame)/2 - self.scrubFrame) < dist) ):
                         self.draggingEnd = 2  # middle of phrase
-                elif (self.selectedWord is not None) and (y > self.selectedWord.top) and (y < self.selectedWord.bottom):
+                elif ( (self.selectedWord is not None)
+                   and (y > self.selectedWord.top)
+                   and (y < self.selectedWord.bottom) ):
                     self.selectedPhrase = None
                     self.selectedPhoneme = None
                     self.draggingEnd = 0  # beginning of word
@@ -208,15 +211,15 @@ class WaveformView(wx.ScrolledWindow):
                     if (self.selectedWord.endFrame - self.scrubFrame) < dist:
                         self.draggingEnd = 1  # end of word
                         dist = self.selectedWord.endFrame - self.scrubFrame
-                    if (self.selectedWord.endFrame - self.selectedWord.startFrame > 1) and (math.fabs((
-                                                                                                                  self.selectedWord.endFrame + self.selectedWord.startFrame) / 2 - self.scrubFrame) < dist):
+                    if ( (self.selectedWord.endFrame - self.selectedWord.startFrame > 1)
+                     and (math.fabs((self.selectedWord.endFrame + self.selectedWord.startFrame)/2 - self.scrubFrame) < dist) ):
                         self.draggingEnd = 2  # middle of word
-                elif (self.selectedPhoneme is not None) and (y > self.selectedPhoneme.top) and (
-                            y < self.selectedPhoneme.bottom):
+                elif ( (self.selectedPhoneme is not None)
+                   and (y > self.selectedPhoneme.top)
+                   and (y < self.selectedPhoneme.bottom) ):
                     self.selectedPhrase = None
                     self.selectedWord = None
-                    if self.scrubFrame == self.selectedPhoneme.frame:
-                        self.draggingEnd = 0
+                    self.draggingEnd = 0
                 else:
                     self.selectedPhrase = None
                     self.selectedWord = None
