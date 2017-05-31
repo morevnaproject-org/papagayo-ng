@@ -24,7 +24,7 @@
 
 """functions to take a German word and return a list of phonemes
 """
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 
@@ -245,4 +245,4 @@ if __name__ == "__main__":
                  'meñe', 'på', 'hänsyn'
                  ]
     for word in testwords:
-        print word, breakdownWord(unicode(word, input_encoding))
+        print(word, breakdownWord(unicode(word, input_encoding)))

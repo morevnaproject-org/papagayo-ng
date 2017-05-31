@@ -27,7 +27,7 @@
 
 import locale
 
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 output_encoding = 'utf-16'
 
@@ -388,6 +388,6 @@ if __name__ == "__main__":
     u"\N{CYRILLIC SMALL LETTER VE}"
     u"\N{CYRILLIC SMALL LETTER A}".split()
     # ~ for word in testwordsC:
-    # ~ print word, breakdownWord(unicode(word, input_encoding))
+    # ~ print(word, breakdownWord(unicode(word, input_encoding)))
     # ~ for word in testwords:
-    # ~ print word, breakdownWord(unicode(word, input_encoding))
+    # ~ print(word, breakdownWord(unicode(word, input_encoding)))

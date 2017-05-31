@@ -28,7 +28,7 @@
 import locale
 import re
 
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 
@@ -187,4 +187,4 @@ if __name__ == "__main__":
     testwords = splitter.split(teststring)
     testwords.append('på')
     for word in testwords:
-        print word, breakdownWord(unicode(word, input_encoding))
+        print(word, breakdownWord(unicode(word, input_encoding)))

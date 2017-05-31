@@ -26,7 +26,7 @@
 """
 import locale
 
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'cp1252'
@@ -263,4 +263,4 @@ if __name__ == "__main__":
                  'på', 'hänsyn'
                  ]
     for word in testwords:
-        print word, breakdownWord(unicode(word, input_encoding))
+        print(word, breakdownWord(unicode(word, input_encoding)))

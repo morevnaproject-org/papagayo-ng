@@ -24,7 +24,7 @@
 
 """functions to take a Norwegian word and return a list of phonemes
 """
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 
@@ -220,5 +220,5 @@ if __name__ == "__main__":
                  'êtres', 'français', 'égaux'
                  ]
     for eachword in testwords:
-        print eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(
-            unicode(eachword, input_encoding))
+        print(eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(
+            unicode(eachword, input_encoding)))
