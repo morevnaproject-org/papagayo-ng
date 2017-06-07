@@ -1,3 +1,4 @@
+from . import unicode_hammer
 from . import dutch_breakdown
 from . import finnish_breakdown
 from . import french_breakdown

@@ -32,7 +32,7 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'latin-1'  # common in English GUIs
 # input_encoding = 'iso-8859-1'  # common in English GUIs
 # input_encoding = 'utf-8'  # common
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 
 def stressSpanishWord(breakdown_word):
@@ -239,5 +239,5 @@ if __name__ == '__main__':
     test_words = ['Holas', 'amigos', 'si', 'español', 'padré', 'Selecciones', 'de', 'la', 'semana', 'Los', 'mejores',
                   'sitios', 'los', 'derechos', 'humanos', 'en', 'américa', 'latina', 'y', 'färger', 'på', 'hänsyn']
     for eachword in test_words:
-        print eachword, breakdownWord(unicode(eachword, input_encoding)), " ".join(
-            breakdownWord(unicode(eachword, input_encoding)))
+        print(eachword, breakdownWord(unicode(eachword, input_encoding)), " ".join(
+            breakdownWord(unicode(eachword, input_encoding))))

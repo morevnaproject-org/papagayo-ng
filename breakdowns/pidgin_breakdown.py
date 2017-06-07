@@ -36,7 +36,7 @@ alphabet in mind i.e a-z,sh,ch. In summary play just with this 28 sounds to spel
 
 """functions to take any Word in Any Language or Dialect and return a list of phonemes
 """
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
@@ -153,4 +153,4 @@ if __name__ == "__main__":
                         'krouhkrouh', 'wan', 'kosh'
                         ]
     for word in testwords:
-        print word, breakdownWord(unicode(word, input_encoding))
+        print(word, breakdownWord(unicode(word, input_encoding)))

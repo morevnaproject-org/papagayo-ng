@@ -28,7 +28,7 @@
 import locale
 import re
 
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 
@@ -402,5 +402,5 @@ if __name__ == "__main__":
                  'gaas', 'maand', 'varen', 'met', 'heg', 'meer', 'deeg', 'eten', 'gaten', 'muren',
                  'boot', 'boten', 'ogen', 'muur', 'fuut', 'duren', 'mooi', 'ce', 'ci', 'hec', 'på', 'hänsyn']
     for word in testwords:
-        # print word, wordToSyllables(word), syllablesToPhonemes(wordToSyllables(word)), breakdownWord(word)
-        print word, wordToSyllables(word), breakdownWord(unicode(word, input_encoding))
+        #print(word, wordToSyllables(word), syllablesToPhonemes(wordToSyllables(word)), breakdownWord(word))
+        print(word, wordToSyllables(word), breakdownWord(unicode(word, input_encoding)))

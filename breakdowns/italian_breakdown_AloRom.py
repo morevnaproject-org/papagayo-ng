@@ -22,7 +22,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from unicode_hammer import latin1_to_ascii as hammer
+from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 import locale
 
@@ -180,4 +180,4 @@ if __name__ == '__main__':
                   'HO', 'HAi', 'CHE', 'CHIuso', 'anCHE', 'BanJo', 'marGIne',
                   'RAdio', 'ROnco', 'RUbino', 'REsto', 'ramaRRo', 'cROsta', 'på', 'hänsyn']
     for word in test_words:
-        print word, " --> ", breakdownWord(unicode(word, input_encoding))
+        print(word, " --> ", breakdownWord(unicode(word, input_encoding)))
