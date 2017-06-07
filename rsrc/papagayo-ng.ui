@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../qt-icons.qrc">
+    <normaloff>:/rsrc/window_icon.bmp</normaloff>:/rsrc/window_icon.bmp</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
     <property name="sizeConstraint">
@@ -61,16 +65,7 @@
                 </sizepolicy>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_4">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
+                <property name="margin">
                  <number>0</number>
                 </property>
                 <item>
@@ -357,16 +352,7 @@
             </sizepolicy>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
-            <property name="leftMargin">
-             <number>1</number>
-            </property>
-            <property name="topMargin">
-             <number>1</number>
-            </property>
-            <property name="rightMargin">
-             <number>1</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>1</number>
             </property>
             <item>
@@ -527,8 +513,8 @@
   </action>
   <action name="action_Open">
    <property name="icon">
-    <iconset>
-     <normaloff>open.png</normaloff>open.png</iconset>
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/open.png</normaloff>:/rsrc/open.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Open</string>
@@ -536,8 +522,8 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset>
-     <normaloff>save.png</normaloff>save.png</iconset>
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/save.png</normaloff>:/rsrc/save.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -575,8 +561,8 @@
   </action>
   <action name="actionPlay">
    <property name="icon">
-    <iconset>
-     <normaloff>play.png</normaloff>play.png</iconset>
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/play.png</normaloff>:/rsrc/play.png</iconset>
    </property>
    <property name="text">
     <string>Play</string>
@@ -584,8 +570,8 @@
   </action>
   <action name="actionStop">
    <property name="icon">
-    <iconset>
-     <normaloff>stop.png</normaloff>stop.png</iconset>
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/stop.png</normaloff>:/rsrc/stop.png</iconset>
    </property>
    <property name="text">
     <string>Stop</string>
@@ -593,8 +579,8 @@
   </action>
   <action name="actionZoomIn">
    <property name="icon">
-    <iconset>
-     <normaloff>zoom_in.png</normaloff>zoom_in.png</iconset>
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/zoom_in.png</normaloff>:/rsrc/zoom_in.png</iconset>
    </property>
    <property name="text">
     <string>ZoomIn</string>
@@ -602,8 +588,8 @@
   </action>
   <action name="actionZoomOut">
    <property name="icon">
-    <iconset>
-     <normaloff>zoom_out.png</normaloff>zoom_out.png</iconset>
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/zoom_out.png</normaloff>:/rsrc/zoom_out.png</iconset>
    </property>
    <property name="text">
     <string>ZoomOut</string>
@@ -611,14 +597,16 @@
   </action>
   <action name="actionResetZoom">
    <property name="icon">
-    <iconset>
-     <normaloff>zoom_1.png</normaloff>zoom_1.png</iconset>
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/zoom_1.png</normaloff>:/rsrc/zoom_1.png</iconset>
    </property>
    <property name="text">
     <string>ResetZoom</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../qt-icons.qrc"/>
+ </resources>
  <connections/>
 </ui>
