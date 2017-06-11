@@ -14,6 +14,6 @@ def loadUiWidget(uifilename, parent=None):
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
-    MainWindow = loadUiWidget("./rsrc/papagayo-ng.ui")
+    MainWindow = loadUiWidget("./rsrc/papagayo-ng2.ui")
     MainWindow.show()
     sys.exit(app.exec_())
