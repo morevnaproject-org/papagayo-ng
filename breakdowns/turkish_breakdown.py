@@ -38,11 +38,17 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'iso-8859-1'
 
 
+def isvowel(phoneme):
+    if phoneme in dict.fromkeys(
+        u'aeiou\N{LATIN SMALL LETTER DOTLESS I}'
+        u'\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH DIAERESIS}'
+        u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}'):
+        return True
+    else:
+        return False
+
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys(u'aeiou\N{LATIN SMALL LETTER DOTLESS I}'
-                            u'\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH DIAERESIS}'
-                            u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}').has_key
     phonemes = []
     simple_convert = {
         'b': 'B',

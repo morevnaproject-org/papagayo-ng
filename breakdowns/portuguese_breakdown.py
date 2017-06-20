@@ -52,9 +52,14 @@ setvowels = u'aeiou' + \
             u'\N{LATIN SMALL LETTER U WITH ACUTE}'
 
 
+def isvowel(phoneme):
+    if phoneme in dict.fromkeys(setvowels):
+        return True
+    else:
+        return False
+
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys(setvowels).has_key
     phonemes = []
     simple_convert = {
         'b': 'B',

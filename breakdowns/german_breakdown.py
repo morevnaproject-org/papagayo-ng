@@ -37,9 +37,14 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'latin-1'
 # input_encoding = 'iso-8859-1'
 
+def isvowel(phoneme):
+    if phoneme in dict.fromkeys('aeiouäöü'):
+        return True
+    else:
+        return False
+
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys('aeiouäöü').has_key
     phonemes = []
     simple_convert = {
         'f': 'F',

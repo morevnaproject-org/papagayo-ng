@@ -55,7 +55,6 @@ accented_u = [u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER U 
 
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys('aабвгдежeийклiмнопoтуфхцшњuщъыь').has_key
     phonemes = []
     simple_convert = {
         'b': 'B',

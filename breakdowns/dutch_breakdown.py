@@ -62,7 +62,6 @@ def suffixen(word):
 # er, en, ee ??
 
 def prefixen(word):
-    isvowel = dict.fromkeys('aeiou').has_key
     prefix = False
     prefix_pronunciation = {
         'ge': ['HH', 'AH0'],  # HH EH0 ???
@@ -127,8 +126,6 @@ def breakdownWord(word):
 
 
 def getSyllableCount(word):
-    isvowel = dict.fromkeys('aeiou').has_key
-    istrema = dict.fromkeys('δλοφό').has_key
     previous_letter = ' '
     syllable_count = 0
     vowel_count = 0
@@ -144,12 +141,21 @@ def getSyllableCount(word):
             syllable_count += 1
         previous_letter = letter
     return syllable_count
-
-
+    
+def isvowel(phoneme):
+    if phoneme in dict.fromkeys('aeiou'):
+        return True
+    else:
+        return False
+        
+def istrema(phoneme):
+    if phoneme in dict.fromkeys('δλοφό'):
+        return True
+    else:
+        return False
+    
 def wordToSyllables(word):
     word = word.lower()
-    isvowel = dict.fromkeys('aeiou').has_key
-    istrema = dict.fromkeys('δλοφό').has_key
     syllable_count = getSyllableCount(word)
     syllables = [[]]
     previous_letter = ' '
@@ -197,7 +203,6 @@ def wordToSyllables(word):
 
 
 def syllablesToPhonemes(syllables, recursive=False):
-    isvowel = dict.fromkeys('aeiou').has_key
     phonemes = []
     simple_convert = {
         'b': 'B',

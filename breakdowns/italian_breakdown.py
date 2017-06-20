@@ -45,9 +45,14 @@ vowels = u'aeiou' + \
 
 # print vowels.encode('cp1252')
 
+def isvowel(phoneme):
+    if phoneme in dict.fromkeys(vowels):
+        return True
+    else:
+        return False
+
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys(vowels).has_key
     phonemes = []
     simple_convert = {
         'b': 'B',

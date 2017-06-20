@@ -52,10 +52,8 @@ accented_o = [u'\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETT
 accented_u = [u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER U WITH GRAVE}',
               u'\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']
 
-
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys('aабвгдежeийклiмнопoтуфхцшњuщъыь').has_key
     phonemes = []
     simple_convert = {
         'j': 'JH',

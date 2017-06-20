@@ -102,8 +102,7 @@ def prefixen(word):
         u"poly": ["P", "AO0", "L", "UW0"],
         u"post": ["P", "AO0", "S", "T"],
     }
-    prefixes = prefix_pronunciation.keys()
-    prefixes.sort()
+    prefixes = sorted(prefix_pronunciation.keys())
     for each_prefix in prefixes:
         if len(word) >= len(each_prefix) + 2 and word.startswith(each_prefix):
             # if each_prefix[-1] in ['a', 'e', 'i', 'o', 'u', 'j', 'ÿ', ý']:
@@ -135,7 +134,6 @@ def prefixen(word):
 
 def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
     word = word.lower()
-    # isvowel = dict.fromkeys('aeiou').has_key
     phonemes = []
     simple_convert = {
         #    u'\N{LATIN SMALL LETTER A WITH ACUTE}': 'AH0',
