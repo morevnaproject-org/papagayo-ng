@@ -1,10 +1,10 @@
 To work with the Papagayo-NG source code, you need some special software installed. This software is not necessary to run the installer-based version of Papagayo-NG, but you do need it if you want to use this source code package.
 
 Python - the programming language that Papagayo is written in.
-http://www.python.org/
+https://www.python.org/
 
 wxPython - a cross-platform user interface library for Python, based on wxWidgets.
-http://www.wxpython.org/
+https://www.wxpython.org/
 
 wxGlade - a user interface builder for wxWidgets. This program is not strictly necessary, but is helpful if you want to modify the user interface of Papagayo.
 http://wxglade.sourceforge.net/
@@ -63,7 +63,7 @@ http://www.lostmarble.com
 
 Modifications (C) 2010 Benjamin Lau
 Contact:
-http://code.google.com/p/papagayo/
+https://code.google.com/archive/p/papagayo/
 
 Papagayo-NG (C) 2016
 - Konstantin Dmitriev
