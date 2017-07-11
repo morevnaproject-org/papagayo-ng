@@ -29,7 +29,7 @@ import re
 # begin wxGlade: dependencies
 from MouthView import MouthView
 
-batched_drawing = False
+batched_drawing = True
 
 if batched_drawing:
     from WaveformViewFast import WaveformView
