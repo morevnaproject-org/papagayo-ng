@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>main_window</class>
+ <widget class="QMainWindow" name="main_window">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1092</width>
-    <height>857</height>
+    <width>1024</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,23 +17,23 @@
    <iconset resource="../qt-icons.qrc">
     <normaloff>:/rsrc/window_icon.bmp</normaloff>:/rsrc/window_icon.bmp</iconset>
   </property>
-  <widget class="QWidget" name="centralwidget">
+  <widget class="QWidget" name="central_widget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
     <property name="sizeConstraint">
      <enum>QLayout::SetMinimumSize</enum>
     </property>
     <item>
-     <layout class="QHBoxLayout" name="horizontallayout" stretch="0,0,0">
+     <layout class="QHBoxLayout" name="horizontal_layout" stretch="0,0,0">
       <property name="sizeConstraint">
        <enum>QLayout::SetFixedSize</enum>
       </property>
       <item>
-       <layout class="QVBoxLayout" name="verticallayoutleft" stretch="2,0">
+       <layout class="QVBoxLayout" name="vertical_layout_left" stretch="2,0">
         <item>
-         <widget class="QGraphicsView" name="graphicsView_2"/>
+         <widget class="QGraphicsView" name="waveform_view"/>
         </item>
         <item>
-         <widget class="QGroupBox" name="CurrentVoice">
+         <widget class="QGroupBox" name="current_voice">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -60,7 +60,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
-            <widget class="QWidget" name="Voicenamelayout" native="true">
+            <widget class="QGroupBox" name="voice_name_layout">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -68,20 +68,11 @@
               </sizepolicy>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="Voicename">
+               <widget class="QLabel" name="voice_name">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                   <horstretch>0</horstretch>
@@ -94,7 +85,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="Voicename_input">
+               <widget class="QLineEdit" name="voice_name_input">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -110,7 +101,7 @@
                </widget>
               </item>
               <item>
-               <spacer name="Voicenamespacerright">
+               <spacer name="voice_name_spacer_right">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -126,131 +117,138 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="Spokentext">
-             <property name="text">
+            <widget class="QGroupBox" name="text_input_group">
+             <property name="title">
               <string>Spoken Text:</string>
              </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QTextEdit" name="text_edit"/>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
-            <widget class="QTextEdit" name="textEdit"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="Phoneticbreakdown">
-             <property name="text">
+            <widget class="QGroupBox" name="phoneme_group">
+             <property name="title">
               <string>Phonetic Breakdown:</string>
              </property>
+             <layout class="QHBoxLayout" name="phoneme_layout">
+              <item>
+               <widget class="QComboBox" name="language"/>
+              </item>
+              <item>
+               <widget class="QComboBox" name="phoneme_set"/>
+              </item>
+              <item>
+               <spacer name="phoneme_spacer_middle">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="breakdown_button">
+                <property name="text">
+                 <string>Breakdown</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="reload_dict_button">
+                <property name="text">
+                 <string>Reload Dictionary</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="phoneme_spacer_right">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="Phonemelayout">
-             <item>
-              <widget class="QComboBox" name="comboBox_2"/>
-             </item>
-             <item>
-              <widget class="QComboBox" name="comboBox_3"/>
-             </item>
-             <item>
-              <spacer name="Phonemespacermiddle">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="Breakdown_button">
-               <property name="text">
-                <string>Breakdown</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="Reloaddict_button">
-               <property name="text">
-                <string>Reload Dictionary</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="Phonemespacerright">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QLabel" name="Export">
-             <property name="text">
+            <widget class="QGroupBox" name="export_group">
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="title">
               <string>Export</string>
              </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+             <layout class="QHBoxLayout" name="export_layout">
+              <item>
+               <widget class="QComboBox" name="export_combo"/>
+              </item>
+              <item>
+               <spacer name="export_spacer_middle">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="export_button">
+                <property name="text">
+                 <string>Export</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="choose_imageset_button">
+                <property name="text">
+                 <string>Choose Image Set...</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="export_spacer_right">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
             </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="Exportlayout">
-             <item>
-              <widget class="QComboBox" name="comboBox_4"/>
-             </item>
-             <item>
-              <spacer name="Exportspacermiddle">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="Export_button">
-               <property name="text">
-                <string>Export</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="Chooseimageset_button">
-               <property name="text">
-                <string>Choose Image Set...</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="Exportspacerright">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
            </item>
           </layout>
          </widget>
@@ -258,7 +256,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QGroupBox" name="verticalGroupBox">
+       <widget class="QGroupBox" name="vertical_layout_right">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -279,7 +277,7 @@
           <number>1</number>
          </property>
          <item>
-          <widget class="QWidget" name="FPSControls" native="true">
+          <widget class="QWidget" name="fps_controls" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -288,7 +286,7 @@
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
-             <spacer name="FPSSpacerleft">
+             <spacer name="fps_spacer_left">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -301,14 +299,14 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLabel" name="FPS">
+             <widget class="QLabel" name="fps">
               <property name="text">
                <string>FPS:</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="FPS_Input">
+             <widget class="QLineEdit" name="fps_input">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -318,7 +316,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="FPSSpacerright">
+             <spacer name="fps_spacer_right">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -334,7 +332,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBox">
+          <widget class="QComboBox" name="mouth_choice">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -344,7 +342,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QGraphicsView" name="graphicsView">
+          <widget class="QGraphicsView" name="mouth_view">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -354,7 +352,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox">
+          <widget class="QGroupBox" name="voice_list_group">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -365,20 +363,11 @@
             <string>Voice List</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
-            <property name="leftMargin">
-             <number>1</number>
-            </property>
-            <property name="topMargin">
-             <number>1</number>
-            </property>
-            <property name="rightMargin">
-             <number>1</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>1</number>
             </property>
             <item>
-             <widget class="QListView" name="Voicelist_list">
+             <widget class="QListView" name="voice_list">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -388,7 +377,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QWidget" name="Voicelistbuttons" native="true">
+             <widget class="QWidget" name="voice_list_buttons" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -400,7 +389,7 @@
                 <number>1</number>
                </property>
                <item>
-                <widget class="QPushButton" name="New_button">
+                <widget class="QPushButton" name="new_button">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -413,7 +402,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="Delete_button">
+                <widget class="QPushButton" name="delete_button">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -435,7 +424,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QSlider" name="verticalSlider">
+       <widget class="QSlider" name="volume_slider">
         <property name="value">
          <number>50</number>
         </property>
@@ -462,41 +451,41 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1092</width>
+     <width>1024</width>
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File">
+   <widget class="QMenu" name="menu_file">
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="action_Open"/>
-    <addaction name="actionSave"/>
-    <addaction name="action_Save_As"/>
-    <addaction name="action_Exit"/>
+    <addaction name="action_open"/>
+    <addaction name="action_save"/>
+    <addaction name="action_save_as"/>
+    <addaction name="action_exit"/>
    </widget>
-   <widget class="QMenu" name="menu_Edit">
+   <widget class="QMenu" name="menu_edit">
     <property name="title">
      <string>&amp;Edit</string>
     </property>
-    <addaction name="action_Undo"/>
-    <addaction name="action_Cut"/>
-    <addaction name="action_Copy"/>
-    <addaction name="action_Paste"/>
+    <addaction name="action_undo"/>
+    <addaction name="action_cut"/>
+    <addaction name="action_copy"/>
+    <addaction name="action_paste"/>
    </widget>
-   <widget class="QMenu" name="menu_Help">
+   <widget class="QMenu" name="menu_help">
     <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="action_Help_Topics"/>
-    <addaction name="action_About_Papagayo_ng"/>
+    <addaction name="action_help_topics"/>
+    <addaction name="action_about_papagayo_ng"/>
    </widget>
-   <addaction name="menu_File"/>
-   <addaction name="menu_Edit"/>
-   <addaction name="menu_Help"/>
+   <addaction name="menu_file"/>
+   <addaction name="menu_edit"/>
+   <addaction name="menu_help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="toolbar">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -506,27 +495,27 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_Open"/>
-   <addaction name="actionSave"/>
+   <addaction name="action_open"/>
+   <addaction name="action_save"/>
    <addaction name="separator"/>
-   <addaction name="actionPlay"/>
-   <addaction name="actionStop"/>
+   <addaction name="action_play"/>
+   <addaction name="action_stop"/>
    <addaction name="separator"/>
-   <addaction name="actionZoomIn"/>
-   <addaction name="actionZoomOut"/>
-   <addaction name="actionResetZoom"/>
+   <addaction name="action_zoom_in"/>
+   <addaction name="action_zoom_out"/>
+   <addaction name="action_reset_zoom"/>
   </widget>
-  <action name="action_Help_Topics">
+  <action name="action_help_topics">
    <property name="text">
     <string>&amp;Help Topics</string>
    </property>
   </action>
-  <action name="action_About_Papagayo_ng">
+  <action name="action_about_papagayo_ng">
    <property name="text">
     <string>&amp;About Papagayo-ng</string>
    </property>
   </action>
-  <action name="action_Open">
+  <action name="action_open">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
      <normaloff>:/rsrc/open.png</normaloff>:/rsrc/open.png</iconset>
@@ -535,7 +524,7 @@
     <string>&amp;Open</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="action_save">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
      <normaloff>:/rsrc/save.png</normaloff>:/rsrc/save.png</iconset>
@@ -544,37 +533,37 @@
     <string>&amp;Save</string>
    </property>
   </action>
-  <action name="action_Save_As">
+  <action name="action_save_as">
    <property name="text">
     <string>&amp;Save As...</string>
    </property>
   </action>
-  <action name="action_Exit">
+  <action name="action_exit">
    <property name="text">
     <string>&amp;Exit</string>
    </property>
   </action>
-  <action name="action_Undo">
+  <action name="action_undo">
    <property name="text">
     <string>Undo</string>
    </property>
   </action>
-  <action name="action_Cut">
+  <action name="action_cut">
    <property name="text">
     <string>&amp;Cut</string>
    </property>
   </action>
-  <action name="action_Copy">
+  <action name="action_copy">
    <property name="text">
     <string>&amp;Copy</string>
    </property>
   </action>
-  <action name="action_Paste">
+  <action name="action_paste">
    <property name="text">
     <string>&amp;Paste</string>
    </property>
   </action>
-  <action name="actionPlay">
+  <action name="action_play">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
      <normaloff>:/rsrc/play.png</normaloff>:/rsrc/play.png</iconset>
@@ -583,7 +572,7 @@
     <string>Play</string>
    </property>
   </action>
-  <action name="actionStop">
+  <action name="action_stop">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
      <normaloff>:/rsrc/stop.png</normaloff>:/rsrc/stop.png</iconset>
@@ -592,7 +581,7 @@
     <string>Stop</string>
    </property>
   </action>
-  <action name="actionZoomIn">
+  <action name="action_zoom_in">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
      <normaloff>:/rsrc/zoom_in.png</normaloff>:/rsrc/zoom_in.png</iconset>
@@ -601,7 +590,7 @@
     <string>ZoomIn</string>
    </property>
   </action>
-  <action name="actionZoomOut">
+  <action name="action_zoom_out">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
      <normaloff>:/rsrc/zoom_out.png</normaloff>:/rsrc/zoom_out.png</iconset>
@@ -610,7 +599,7 @@
     <string>ZoomOut</string>
    </property>
   </action>
-  <action name="actionResetZoom">
+  <action name="action_reset_zoom">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
      <normaloff>:/rsrc/zoom_1.png</normaloff>:/rsrc/zoom_1.png</iconset>
