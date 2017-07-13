@@ -93,6 +93,7 @@ class LipsyncWord:
         except:
             traceback.print_exc()
             # this word was not found in the phoneme dictionary
+            # TODO: This still depends on wx, make it neutral!
             dlg = PronunciationDialog(parentWindow, phonemeset.set)
             dlg.wordLabel.SetLabel(dlg.wordLabel.GetLabel() + ' ' + self.text)
             if dlg.ShowModal() == wx.ID_OK:
@@ -372,6 +373,7 @@ class LipsyncVoice:
         outFile.close()
 
     def ExportImages(self, path, currentmouth):
+        # TODO: self.config still relies on wx!
         try:
             self.config
         except AttributeError:

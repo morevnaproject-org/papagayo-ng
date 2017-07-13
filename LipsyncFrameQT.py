@@ -139,7 +139,7 @@ class LipsyncFrame:
             elif result == QtGui.QMessageBox.Cancel:
                 return False
         else:
-            return False
+            return True
         #     dlg = wx.MessageDialog(self, _('Save changes to this project?'), appTitle,
         #                            wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_QUESTION)
         #     result = dlg.ShowModal()
@@ -169,6 +169,7 @@ class LipsyncFrame:
         if file_path:
             print(file_path)
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
+            print(os.path.dirname(file_path))
             self.open(file_path)
         # dlg = wx.FileDialog(
         #     self, message=_("Open Audio or %s File") % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
