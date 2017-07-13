@@ -23,6 +23,7 @@
 import string
 import math
 # import wx
+from PySide import QtCore, QtGui, QtUiTools
 import webbrowser
 import re
 # from utilities import *
@@ -34,12 +35,14 @@ import re
 # from AboutBox import AboutBox
 from LipsyncDoc import *
 
-appTitle = "Papagayo-NG"
-lipsyncExtension = ".pgo"
+app_title = "Papagayo-NG"
+lipsync_extension = "*.pgo"
+audio_extensions = "*.wav *.mp3 *.aiff *.aif *.au *.snd *.mov *.m4a"
+open_wildcard = "%s and sound files (%s %s)" % (app_title, audio_extensions, lipsync_extension)
 audioExtensions = "*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a"
-openWildcard = "%s and sound files|*%s;%s" % (appTitle, lipsyncExtension, audioExtensions)
-openAudioWildcard = "Sound files|%s" % (audioExtensions)
-saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
+# openWildcard = "%s and sound files|*%s;%s" % (appTitle, lipsyncExtension, audioExtensions)
+# openAudioWildcard = "Sound files|%s" % (audioExtensions)
+# saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
 
 
 class DigitOnlyValidator(wx.PyValidator):
@@ -76,7 +79,119 @@ class DigitOnlyValidator(wx.PyValidator):
         return
 
 
-class LipsyncFrame(wx.Frame):
+class LipsyncFrame:
+    def __init__(self):
+        self.app = QtGui.QApplication(sys.argv)
+        self.main_window = self.load_ui_widget("./rsrc/papagayo-ng2.ui")
+
+        self.loader = None
+        self.ui_file = None
+        self.ui = None
+        self.doc = None
+        self.config = QtCore.QSettings(app_title, "Lost Marble")
+
+        # This adds our statuses to the statusbar
+        self.mainframe_statusbar_fields = [app_title, "Stopped"]
+        self.play_status = QtGui.QLabel()
+        self.play_status.setText(self.mainframe_statusbar_fields[1])
+        # An empty Label to add a separator
+        self.sep_status = QtGui.QLabel()
+        self.sep_status.setText(u"")
+        self.main_window.statusbar.addPermanentWidget(self.sep_status)
+        self.main_window.statusbar.addPermanentWidget(self.play_status)
+        self.main_window.statusbar.showMessage(self.mainframe_statusbar_fields[0])
+        # Connect Events
+        self.main_window.action_play.triggered.connect(self.test_button_event)
+        self.main_window.action_exit.triggered.connect(self.quit_application)
+        self.main_window.action_open.triggered.connect(self.on_open)
+
+    def load_ui_widget(self, ui_filename, parent=None):
+        self.loader = QtUiTools.QUiLoader()
+        self.ui_file = QtCore.QFile(ui_filename)
+        self.ui_file.open(QtCore.QFile.ReadOnly)
+        self.ui = self.loader.load(self.ui_file, parent)
+        self.ui_file.close()
+        return self.ui
+
+    def test_button_event(self):
+        self.play_status.setText("Running")
+
+    def close_doc_ok(self):
+        if self.doc is not None:
+            if not self.doc.dirty:
+                return True
+            dlg = QtGui.QMessageBox()
+            dlg.setText("Save changes to this project?")
+            dlg.setStandardButtons(QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            dlg.setDefaultButton(QtGui.QMessageBox.Yes)
+            dlg.setIcon(QtGui.QMessageBox.Question)
+            result = dlg.exec_()
+            if result == QtGui.QMessageBox.Yes:
+                self.on_save()
+                if not self.doc.dirty:
+                    self.config.setValue("LastFPS", str(self.doc.fps))
+                    return True
+                else:
+                    return False
+            elif result == QtGui.QMessageBox.No:
+                self.config.setValue("LastFPS", str(self.doc.fps))
+                return True
+            elif result == QtGui.QMessageBox.Cancel:
+                return False
+        else:
+            return False
+        #     dlg = wx.MessageDialog(self, _('Save changes to this project?'), appTitle,
+        #                            wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_QUESTION)
+        #     result = dlg.ShowModal()
+        #     dlg.Destroy()
+        #     if result == wx.ID_YES:
+        #         self.OnSave()
+        #         if not self.doc.dirty:
+        #             self.config.Write("LastFPS", str(self.doc.fps))
+        #             return True
+        #         else:
+        #             return False
+        #     elif result == wx.ID_NO:
+        #         self.config.Write("LastFPS", str(self.doc.fps))
+        #         return True
+        #     elif result == wx.ID_CANCEL:
+        #         return False
+        # else:
+        #     return True
+
+    def on_open(self):
+        if not self.close_doc_ok():
+            return
+        file_path, _ = QtGui.QFileDialog.getOpenFileName(self.main_window,
+                                                         "Open Audio or %s File" % app_title,
+                                                         self.config.value("WorkingDir", get_main_dir()),
+                                                         open_wildcard)
+        if file_path:
+            print(file_path)
+            self.config.setValue("WorkingDir", os.path.dirname(file_path))
+            self.open(file_path)
+        # dlg = wx.FileDialog(
+        #     self, message=_("Open Audio or %s File") % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+        #     defaultFile="", wildcard=openWildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
+        # if dlg.ShowModal() == wx.ID_OK:
+        #     self.OnStop()
+        #     self.OnClose()
+        #     self.config.Write("WorkingDir", dlg.GetDirectory())
+        #     paths = dlg.GetPaths()
+        #     self.Open(paths[0])
+        # dlg.Destroy()
+
+    def open(self, path):
+        pass
+
+    def on_save(self):
+        pass
+
+    def quit_application(self):
+        sys.exit(self.app.exec_())
+
+
+class LipsyncFrameold(wx.Frame):
     def __init__(self, *args, **kwds):
 
         # self.waveformView = WaveformView(self.panel_2, wx.ID_ANY)
@@ -100,7 +215,7 @@ class LipsyncFrame(wx.Frame):
         exporterList = ["MOHO", "ALELO", "Images"]
 
         self.ignoreTextChanges = False
-        #self.config = wx.Config("Papagayo-NG", "Lost Marble")
+        # self.config = wx.Config("Papagayo-NG", "Lost Marble")
         self.curFrame = 0
         self.timer = None
 
