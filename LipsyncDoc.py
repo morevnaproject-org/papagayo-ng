@@ -185,7 +185,7 @@ class LipsyncVoice:
         self.text = ""
         self.phrases = []
 
-    def RunBreakdown(self, frameDuration, parentWindow, language, languagemanager, phonemeset):
+    def run_breakdown(self, frameDuration, parentWindow, language, languagemanager, phonemeset):
         # make sure there is a space after all punctuation marks
         repeatLoop = True
         while repeatLoop:
@@ -238,7 +238,7 @@ class LipsyncVoice:
             phrase.startFrame = phrase.words[0].startFrame
             phrase.endFrame = phrase.words[-1].endFrame
 
-    def RepositionPhrase(self, phrase, lastFrame):
+    def reposition_phrase(self, phrase, lastFrame):
         id = 0
         for i in range(len(self.phrases)):
             if phrase is self.phrases[i]:
@@ -287,7 +287,7 @@ class LipsyncVoice:
                 word.endFrame = word.phonemes[-1].frame + int(round(framesPerPhoneme)) - 1
             phrase.RepositionWord(word)
 
-    def Open(self, inFile):
+    def open(self, inFile):
         self.name = inFile.readline().strip()
         tempText = inFile.readline().strip()
         self.text = tempText.replace('|', '\n')
@@ -314,7 +314,7 @@ class LipsyncVoice:
                 phrase.words.append(word)
             self.phrases.append(phrase)
 
-    def Save(self, outFile):
+    def save(self, outFile):
         outFile.write("\t%s\n" % self.name)
         tempText = self.text.replace('\n', '|')
         outFile.write("\t%s\n" % tempText)
@@ -329,7 +329,7 @@ class LipsyncVoice:
                 for phoneme in word.phonemes:
                     outFile.write("\t\t\t\t%d %s\n" % (phoneme.frame, phoneme.text))
 
-    def GetPhonemeAtFrame(self, frame):
+    def get_phoneme_at_frame(self, frame):
         for phrase in self.phrases:
             if (frame <= phrase.endFrame) and (frame >= phrase.startFrame):
                 # we found the phrase that contains this frame
@@ -346,7 +346,7 @@ class LipsyncVoice:
                 break
         return "rest"
 
-    def Export(self, path):
+    def export(self, path):
 
         outFile = open(path, 'w')
         outFile.write("MohoSwitch1\n")
@@ -372,7 +372,7 @@ class LipsyncVoice:
         outFile.write("%d %s\n" % (endFrame + 2, "rest"))
         outFile.close()
 
-    def ExportImages(self, path, currentmouth):
+    def export_images(self, path, currentmouth):
         # TODO: self.config still relies on wx!
         try:
             self.config
@@ -413,7 +413,7 @@ class LipsyncVoice:
                 except KeyError:
                     print("Phoneme '" + phoneme + "' does not exist in chosen directory.")
 
-    def ExportAlelo(self, path, language, languagemanager):
+    def export_alelo(self, path, language, languagemanager):
         outFile = open(path, 'w')
         for phrase in self.phrases:
             for word in phrase.words:
@@ -462,7 +462,7 @@ class LipsyncDoc:
         self.soundPath = ""
         self.sound = None
         self.voices = []
-        self.currentVoice = None
+        self.current_voice = None
         self.language_manager = langman
         self.parent = parent
 
@@ -471,13 +471,13 @@ class LipsyncDoc:
         if self.sound is not None:
             del self.sound
 
-    def Open(self, path):
+    def open(self, path):
         self.dirty = False
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
         self.sound = None
         self.voices = []
-        self.currentVoice = None
+        self.current_voice = None
         inFile = codecs.open(self.path, 'r', 'utf-8', 'replace')
         inFile.readline()  # discard the header
         self.soundPath = inFile.readline().strip()
@@ -495,9 +495,9 @@ class LipsyncDoc:
         inFile.close()
         self.OpenAudio(self.soundPath)
         if len(self.voices) > 0:
-            self.currentVoice = self.voices[0]
+            self.current_voice = self.voices[0]
 
-    def OpenAudio(self, path):
+    def open_audio(self, path):
         if self.sound is not None:
             del self.sound
             self.sound = None
@@ -516,7 +516,7 @@ class LipsyncDoc:
         else:
             self.sound = None
 
-    def Save(self, path):
+    def save(self, path):
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
         if os.path.dirname(self.path) == os.path.dirname(self.soundPath):

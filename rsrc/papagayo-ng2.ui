@@ -30,7 +30,7 @@
       <item>
        <layout class="QVBoxLayout" name="vertical_layout_left" stretch="2,0">
         <item>
-         <widget class="QGraphicsView" name="waveform_view"/>
+         <widget class="WaveformView" name="waveform_view"/>
         </item>
         <item>
          <widget class="QGroupBox" name="current_voice">
@@ -609,6 +609,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>WaveformView</class>
+   <extends>QFrame</extends>
+   <header>WaveformViewQT.py</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../qt-icons.qrc"/>
  </resources>
