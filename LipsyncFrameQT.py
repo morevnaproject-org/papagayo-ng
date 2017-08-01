@@ -31,6 +31,7 @@ import re
 # from MouthView import MouthView
 # from WaveformView import WaveformView
 from WaveformViewQT import WaveformView
+from MouthViewQT import MouthView
 # end wxGlade
 
 # from AboutBox import AboutBox
@@ -84,7 +85,7 @@ class LipsyncFrame:
     def __init__(self):
         self.app = QtGui.QApplication(sys.argv)
         self.main_window = self.load_ui_widget("./rsrc/papagayo-ng2.ui")
-
+        self.main_window.setWindowTitle("%s" % app_title)
         self.loader = None
         self.ui_file = None
         self.ui = None
@@ -96,6 +97,15 @@ class LipsyncFrame:
         self.langman.InitLanguages()
         language_list = list(self.langman.language_table.keys())
         language_list.sort()
+
+        c = 0
+        select = 0
+        for language in language_list:
+            self.main_window.language_choice.addItem(language)
+            if language == "English":
+                select = c
+            c += 1
+        self.main_window.language_choice.setCurrentIndex(select)
 
         # This adds our statuses to the statusbar
         self.mainframe_statusbar_fields = [app_title, "Stopped"]
@@ -120,6 +130,7 @@ class LipsyncFrame:
         self.ui_file = QtCore.QFile(ui_filename)
         self.ui_file.open(QtCore.QFile.ReadOnly)
         self.loader.registerCustomWidget(WaveformView)
+        self.loader.registerCustomWidget(MouthView)
         self.ui = self.loader.load(self.ui_file, parent)
         self.ui_file.close()
         return self.ui
@@ -226,98 +237,36 @@ class LipsyncFrame:
                 try:
                     txt_file = open(path[0].rsplit('.', 1)[0] + ".trans", 'r')  # TODO: Check if path is correct
                     for line in txt_file:
-                        self.voice_list.appendRow(QtGui.QStandardItem(line))
+                        self.main_window.voice_list.appendRow(QtGui.QStandardItem(line))
                 except:
                     pass
         if self.doc is not None:
             self.main_window.setWindowTitle("%s [%s] - %s" % (self.doc.name, path, app_title))
-            self.waveform_view.SetDocument(self.doc)
-            self.mouth_view.SetDocument(self.doc)
-            # menus
-            #self.
-            #     self.mainFrame_menubar.Enable(wx.ID_SAVE, True)
-            #     self.mainFrame_menubar.Enable(wx.ID_SAVEAS, True)
-            #     # toolbar buttons
-            #     self.mainFrame_toolbar.EnableTool(wx.ID_SAVE, True)
-            #     if self.doc.sound is not None:
-            #         self.mainFrame_toolbar.EnableTool(ID_PLAY, True)
-            #         self.mainFrame_toolbar.EnableTool(ID_ZOOMIN, True)
-            #         self.mainFrame_toolbar.EnableTool(ID_ZOOMOUT, True)
-            #         self.mainFrame_toolbar.EnableTool(ID_ZOOM1, True)
-        # self.doc = LipsyncDoc(self.langman, self)
-        # if path.endswith(lipsyncExtension):
-        #     # open a lipsync project
-        #     self.doc.Open(path)
-        #     while self.doc.sound is None:
-        #         # if no sound file found, then ask user to specify one
-        #         dlg = wx.MessageDialog(self, _('Please load correct audio file'), appTitle,
-        #                                wx.OK | wx.ICON_WARNING)
-        #         result = dlg.ShowModal()
-        #         dlg.Destroy()
-        #         dlg = wx.FileDialog(
-        #             self, message=_("Open Audio"), defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-        #             defaultFile="", wildcard=openAudioWildcard,
-        #             style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
-        #         if dlg.ShowModal() == wx.ID_OK:
-        #             self.config.Write("WorkingDir", dlg.GetDirectory())
-        #             paths = dlg.GetPaths()
-        #             self.doc.OpenAudio(paths[0])
-        #         dlg.Destroy()
-        # else:
-        #     # open an audio file
-        #     self.doc.fps = int(self.config.Read("LastFPS", "24"))
-        #     self.doc.OpenAudio(path)
-        #     if self.doc.sound is None:
-        #         self.doc = None
-        #     else:
-        #         self.doc.voices.append(LipsyncVoice("Voice 1"))
-        #         self.doc.currentVoice = self.doc.voices[0]
-        #         # check for a .trans file with the same name as the doc
-        #         try:
-        #             txtFile = file(path[0].rsplit('.', 1)[0] + ".trans", 'r')  # TODO: Check if path is correct
-        #             for line in txtFile:
-        #                 self.voiceText.AppendText(line)
-        #         except:  # TODO: except is too broad
-        #             pass
-        #
-        # if self.doc is not None:
-        #     self.SetTitle("%s [%s] - %s" % (self.doc.name, path, appTitle))
-        #     self.waveformView.SetDocument(self.doc)
-        #     self.mouthView.SetDocument(self.doc)
-        #     # menus
-        #     self.mainFrame_menubar.Enable(wx.ID_SAVE, True)
-        #     self.mainFrame_menubar.Enable(wx.ID_SAVEAS, True)
-        #     # toolbar buttons
-        #     self.mainFrame_toolbar.EnableTool(wx.ID_SAVE, True)
-        #     if self.doc.sound is not None:
-        #         self.mainFrame_toolbar.EnableTool(ID_PLAY, True)
-        #         self.mainFrame_toolbar.EnableTool(ID_ZOOMIN, True)
-        #         self.mainFrame_toolbar.EnableTool(ID_ZOOMOUT, True)
-        #         self.mainFrame_toolbar.EnableTool(ID_ZOOM1, True)
-        #     # voice list
-        #     self.voiceList.Enable(True)
-        #     self.newVoiceBut.Enable(True)
-        #     self.delVoiceBut.Enable(True)
-        #     for voice in self.doc.voices:
-        #         self.voiceList.Insert(voice.name, self.voiceList.GetCount())
-        #     self.voiceList.SetSelection(0)
-        #     # voice controls
-        #     self.fpsCtrl.Enable(True)
-        #     self.fpsCtrl.SetValue(str(self.doc.fps))
-        #     self.voiceName.Enable(True)
-        #     self.voiceName.SetValue(self.doc.currentVoice.name)
-        #     self.voiceText.Enable(True)
-        #     self.voiceText.SetValue(self.doc.currentVoice.text)
-        #     self.languageChoice.Enable(True)
-        #     self.phonemesetChoice.Enable(True)
-        #     self.breakdownBut.Enable(True)
-        #     self.reloaddictBut.Enable(True)
-        #     self.exportChoice.Enable(True)
-        #     self.exportBut.Enable(True)
-        #     self.voiceimageBut.Enable(False)
-        #     # reload dictionary
-        #     self.OnReloadDictionary()
-        pass
+            self.main_window.waveform_view.SetDocument(self.doc)
+            self.main_window.mouth_view.SetDocument(self.doc)
+            # Reenable all disabled widgets TODO: Can likely be reduced
+            self.main_window.vertical_layout_right.setEnabled(True)
+            self.main_window.vertical_layout_left.setEnabled(True)
+            self.main_window.volume_slider.setEnabled(True)
+            self.main_window.action_save.setEnabled(True)
+            self.main_window.action_save_as.setEnabled(True)
+            self.main_window.menu_edit.setEnabled(True)
+            if self.doc.sound is not None:
+                self.main_window.action_play.setEnabled(True)
+                self.main_window.action_stop.setEnabled(True)
+                self.main_window.action_zoom_in.setEnabled(True)
+                self.main_window.action_zoom_out.setEnabled(True)
+                self.main_window.action_reset_zoom.setEnabled(True)
+
+            self.main_window.voice_list.clear()
+            for voice in self.doc.voices:
+                self.main_window.voice_list.addItem(voice.name)
+            self.main_window.voice_list.setCurrentRow(0)
+            self.main_window.fps_input.setText(str(self.doc.fps))
+            self.main_window.voice_name_input.setText(self.doc.current_voice.name)
+            self.main_window.text_edit.setText(self.doc.current_voice.text)
+            # reload dictionary
+            self.on_reload_dictionary()
 
     def on_save(self):
         # Test Drawing on the WaveformView
@@ -329,6 +278,11 @@ class LipsyncFrame:
         for i in range(50):
             self.main_window.waveform_view.scene().addLine(50*i, 0, 50*i, wvheight)
         pass
+
+    def on_reload_dictionary(self, event = None):
+        # print("reload the dictionary")
+        lang_config = self.doc.language_manager.language_table[self.main_window.language_choice.currentText()]
+        self.doc.language_manager.LoadLanguage(lang_config, force=True)
 
     def quit_application(self):
         sys.exit(self.app.exec_())
@@ -841,7 +795,7 @@ class LipsyncFrameold(wx.Frame):
         # self.mouthView.DrawMe()
         pass
 
-    def OnReloadDictionary(self, event = None):
+    def on_reload_dictionary(self, event = None):
         # print("reload the dictionary")
         # lang_config = self.doc.language_manager.language_table[self.languageChoice.GetStringSelection()]
         # self.doc.language_manager.LoadLanguage(lang_config, force=True)
