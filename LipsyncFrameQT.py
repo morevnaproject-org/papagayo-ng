@@ -25,6 +25,7 @@ import math
 # import wx
 from PySide import QtCore, QtGui, QtUiTools
 import webbrowser
+import random
 import re
 # from utilities import *
 # begin wxGlade: dependencies
@@ -122,8 +123,16 @@ class LipsyncFrame:
         self.main_window.action_exit.triggered.connect(self.quit_application)
         self.main_window.action_open.triggered.connect(self.on_open)
         self.main_window.action_save.triggered.connect(self.on_save)
+        self.main_window.action_zoom_in.triggered.connect(self.on_zoom_in)
+        self.main_window.action_zoom_out.triggered.connect(self.on_zoom_out)
+        self.main_window.action_reset_zoom.triggered.connect(self.on_zoom_reset)
+        self.main_window.waveform_view.resizeEvent = self.on_resize
+        self.main_window.waveform_view.wheelEvent = self.on_wheel
 
-        # self.main_window.vertical_layout_left.addWidget(self.waveform_view)
+        self.wv_height = 0
+        self.zoom_factor = 1
+        self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
+        self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
 
     def load_ui_widget(self, ui_filename, parent=None):
         self.loader = QtUiTools.QUiLoader()
@@ -269,15 +278,58 @@ class LipsyncFrame:
             self.on_reload_dictionary()
 
     def on_save(self):
-        # Test Drawing on the WaveformView
         self.main_window.waveform_view.scene().clear()
-        self.main_window.waveform_view.scene().addText("Test")
-        wvheight = self.main_window.waveform_view.height()-self.main_window.waveform_view.horizontalScrollBar().height()
-        print(wvheight)
+        self.wv_height = self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height()
+        print(self.wv_height)
+        self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
+        self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
+        for i in range(5000):
+            self.main_window.waveform_view.scene().addLine(10 * i, 0, 10 * i, self.wv_height)
+            self.main_window.waveform_view.scene().addRect(10 * i, 0, 10, random.randrange(self.wv_height), self.wv_pen, self.wv_brush)
+    # TODO: These are very similar, might want to combine them
+    def on_resize(self, event = None):
+        # Test Drawing on the WaveformView
+        # self.new_height = self.main_window.waveform_view.height()-self.main_window.waveform_view.horizontalScrollBar().height()
+        # self.height_scale = self.new_height / self.old_height
+        # self.old_height = self.new_height
+        # print(self.height_scale)
+        # for item in self.main_window.waveform_view.items():
+        #     item.scale(1, self.height_scale)
+        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
+                                                 self.main_window.waveform_view.y(),
+                                                 self.main_window.waveform_view.width(),
+                                                 self.wv_height)
 
-        for i in range(50):
-            self.main_window.waveform_view.scene().addLine(50*i, 0, 50*i, wvheight)
-        pass
+    def on_zoom_in(self, event = None):
+        self.zoom_factor -= 0.1
+        print(self.zoom_factor)
+        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
+                                                 self.main_window.waveform_view.y(),
+                                                 self.main_window.waveform_view.width()*self.zoom_factor,
+                                                 self.wv_height)
+
+    def on_zoom_out(self, event = None):
+        self.zoom_factor += 0.1
+        print(self.zoom_factor)
+        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
+                                                 self.main_window.waveform_view.y(),
+                                                 self.main_window.waveform_view.width()*self.zoom_factor,
+                                                 self.wv_height)
+
+    def on_zoom_reset(self, event = None):
+        self.zoom_factor = 1
+        print(self.zoom_factor)
+        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
+                                                 self.main_window.waveform_view.y(),
+                                                 self.main_window.waveform_view.width()*self.zoom_factor,
+                                                 self.wv_height)
+
+    def on_wheel(self, event = None):
+        self.zoom_factor += (event.delta()/1200)
+        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
+                                                 self.main_window.waveform_view.y(),
+                                                 self.main_window.waveform_view.width()*self.zoom_factor,
+                                                 self.wv_height)
 
     def on_reload_dictionary(self, event = None):
         # print("reload the dictionary")
