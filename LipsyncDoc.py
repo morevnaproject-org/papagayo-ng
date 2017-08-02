@@ -25,10 +25,10 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
-import wx
+# import wx
 
 from utilities import *
-from PronunciationDialog import PronunciationDialog
+from PronunciationDialogQT import PronunciationDialog
 import SoundPlayer
 import traceback
 #import sys

@@ -21,7 +21,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import math
-import wx
+# import wx
 debug_performance = None
 if debug_performance:
     import simplestopwatch as stopwatch

@@ -48,38 +48,38 @@ audioExtensions = "*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a"
 # saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
 
 
-class DigitOnlyValidator(wx.PyValidator):
-    def __init__(self, flag=None, pyVar=None):
-        wx.PyValidator.__init__(self)
-        self.Bind(wx.EVT_CHAR, self.OnChar)
-
-    def clone(self):
-        return DigitOnlyValidator()
-
-    def validate(self, win):
-        tc = self.GetWindow()
-        val = tc.GetValue()
-
-        for x in val:
-            if x not in string.digits:
-                return False
-
-        return True
-
-    def on_char(self, event):
-        key = event.GetKeyCode()
-
-        if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
-            event.Skip()
-            return
-
-        if chr(key) in string.digits:
-            event.Skip()
-            return
-
-        # Returning without calling event.Skip() eats the event before it
-        # gets to the text control
-        return
+# class DigitOnlyValidator(wx.PyValidator):
+#     def __init__(self, flag=None, pyVar=None):
+#         wx.PyValidator.__init__(self)
+#         self.Bind(wx.EVT_CHAR, self.OnChar)
+#
+#     def clone(self):
+#         return DigitOnlyValidator()
+#
+#     def validate(self, win):
+#         tc = self.GetWindow()
+#         val = tc.GetValue()
+#
+#         for x in val:
+#             if x not in string.digits:
+#                 return False
+#
+#         return True
+#
+#     def on_char(self, event):
+#         key = event.GetKeyCode()
+#
+#         if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
+#             event.Skip()
+#             return
+#
+#         if chr(key) in string.digits:
+#             event.Skip()
+#             return
+#
+#         # Returning without calling event.Skip() eats the event before it
+#         # gets to the text control
+#         return
 
 
 class LipsyncFrame:
@@ -126,11 +126,14 @@ class LipsyncFrame:
         self.main_window.action_zoom_in.triggered.connect(self.on_zoom_in)
         self.main_window.action_zoom_out.triggered.connect(self.on_zoom_out)
         self.main_window.action_reset_zoom.triggered.connect(self.on_zoom_reset)
+        self.main_window.reload_dict_button.clicked.connect(self.on_reload_dictionary)
         self.main_window.waveform_view.resizeEvent = self.on_resize
         self.main_window.waveform_view.wheelEvent = self.on_wheel
+        self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(self.on_slider_change)
 
         self.wv_height = 0
         self.zoom_factor = 1
+        self.scroll_position = 0
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
 
@@ -286,6 +289,7 @@ class LipsyncFrame:
         for i in range(5000):
             self.main_window.waveform_view.scene().addLine(10 * i, 0, 10 * i, self.wv_height)
             self.main_window.waveform_view.scene().addRect(10 * i, 0, 10, random.randrange(self.wv_height), self.wv_pen, self.wv_brush)
+
     # TODO: These are very similar, might want to combine them
     def on_resize(self, event = None):
         # Test Drawing on the WaveformView
@@ -297,8 +301,9 @@ class LipsyncFrame:
         #     item.scale(1, self.height_scale)
         self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
                                                  self.main_window.waveform_view.y(),
-                                                 self.main_window.waveform_view.width(),
+                                                 self.main_window.waveform_view.width()*self.zoom_factor,
                                                  self.wv_height)
+        self.main_window.waveform_view.horizontalScrollBar().setValue(self.scroll_position)
 
     def on_zoom_in(self, event = None):
         self.zoom_factor -= 0.1
@@ -325,14 +330,22 @@ class LipsyncFrame:
                                                  self.wv_height)
 
     def on_wheel(self, event = None):
-        self.zoom_factor += (event.delta()/1200)
-        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
-                                                 self.main_window.waveform_view.y(),
-                                                 self.main_window.waveform_view.width()*self.zoom_factor,
-                                                 self.wv_height)
+        # print(self.main_window.waveform_view.matrix())
+        self.scroll_position = self.main_window.waveform_view.horizontalScrollBar().value()+(event.delta()/1.2)
+        self.main_window.waveform_view.horizontalScrollBar().setValue(self.scroll_position)
+        # print(event.delta()/1200.0)
+        # self.zoom_factor += (event.delta()/1200.0)
+        # print(self.zoom_factor)
+        # self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
+        #                                          self.main_window.waveform_view.y(),
+        #                                          self.main_window.waveform_view.width()*self.zoom_factor,
+        #                                          self.wv_height)
+
+    def on_slider_change(self, value):
+        self.scroll_position = value
 
     def on_reload_dictionary(self, event = None):
-        # print("reload the dictionary")
+        print("reload the dictionary")
         lang_config = self.doc.language_manager.language_table[self.main_window.language_choice.currentText()]
         self.doc.language_manager.LoadLanguage(lang_config, force=True)
 
@@ -340,517 +353,517 @@ class LipsyncFrame:
         sys.exit(self.app.exec_())
 
 
-class LipsyncFrameold(wx.Frame):
-    def __init__(self, *args, **kwds):
-
-        # self.waveformView = WaveformView(self.panel_2, wx.ID_ANY)
-
-        self.fpsCtrl.SetValidator(DigitOnlyValidator())
-
-        self.doc = None
-        mouthList = list(self.mouthView.mouths.keys())
-        mouthList.sort()
-        print(mouthList)
-
-        # setup language initialisation here
-
-        self.langman = LanguageManager()
-        self.langman.InitLanguages()
-        languageList = list(self.langman.language_table.keys())
-        languageList.sort()
-        # setup phonemeset initialisation here
-        self.phonemeset = PhonemeSet()
-        # setup export initialisation here
-        exporterList = ["MOHO", "ALELO", "Images"]
-
-        self.ignoreTextChanges = False
-        # self.config = wx.Config("Papagayo-NG", "Lost Marble")
-        self.curFrame = 0
-        self.timer = None
-
-        # # Connect event handlers
-        # global ID_PLAY_TICK
-        # ID_PLAY_TICK = wx.NewId()
-        # # window events
-        # wx.EVT_CLOSE(self, self.CloseOK)
-        # self.Bind(wx.EVT_TIMER, self.OnPlayTick)
-        # # wx.EVT_TIMER(self, ID_PLAY_TICK, self.OnPlayTick)
-        # # menus
-        # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
-        # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
-        # wx.EVT_MENU(self, wx.ID_SAVEAS, self.OnSaveAs)
-        # wx.EVT_MENU(self, wx.ID_EXIT, self.OnQuit)
-        # wx.EVT_MENU(self, wx.ID_HELP, self.OnHelp)
-        # wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)
-        # # tools
-        # wx.EVT_TOOL(self, ID_PLAY, self.OnPlay)
-        # wx.EVT_TOOL(self, ID_STOP, self.OnStop)
-        # wx.EVT_TOOL(self, ID_ZOOMIN, self.waveformView.OnZoomIn)
-        # wx.EVT_TOOL(self, ID_ZOOMOUT, self.waveformView.OnZoomOut)
-        # wx.EVT_TOOL(self, ID_ZOOM1, self.waveformView.OnZoom1)
-        # # voice settings
-        # wx.EVT_CHOICE(self, ID_MOUTHCHOICE, self.OnMouthChoice)
-        # wx.EVT_CHOICE(self, ID_EXPORTCHOICE, self.OnExportChoice)
-        # wx.EVT_TEXT(self, ID_VOICENAME, self.OnVoiceName)
-        # wx.EVT_TEXT(self, ID_VOICETEXT, self.OnVoiceText)
-        # wx.EVT_BUTTON(self, ID_BREAKDOWN, self.OnVoiceBreakdown)
-        # wx.EVT_BUTTON(self, ID_RELOADDICT, self.OnReloadDictionary)
-        # wx.EVT_BUTTON(self, ID_EXPORT, self.OnVoiceExport)
-        # wx.EVT_BUTTON(self, ID_VOICEIMAGE, self.OnVoiceimagechoose)
-        # wx.EVT_TEXT(self, ID_FPS, self.OnFps)
-        # wx.EVT_LISTBOX(self, ID_VOICELIST, self.OnSelVoice)
-        # wx.EVT_BUTTON(self, ID_NEWVOICE, self.OnNewVoice)
-        # wx.EVT_BUTTON(self, ID_DELVOICE, self.OnDelVoice)
-        # wx.EVT_SLIDER(self, ID_VOLSLIDER, self.ChangeVolume)
-
-    def __del__(self):
-        try:
-            self.config.Flush()
-        except AttributeError:
-            print("Error")
-
-    def __set_properties(self):
-        # begin wxGlade: LipsyncFrame.__set_properties
-        # self.SetTitle(_("Papagayo-NG"))
-        # _icon = wx.EmptyIcon()
-        # _icon.CopyFromBitmap(wx.Bitmap(os.path.join(get_main_dir(), "rsrc/window_icon.bmp")))
-        # self.SetIcon(_icon)
-        pass
-        # end wxGlade
-
-    def __do_layout(self):
-        pass
-
-    def ChangeVolume(self, event):
-        # if self.doc and self.doc.sound:
-        #     self.doc.sound.volume = int(self.volume_slider.GetValue())
-        #     #print(self.doc.sound.volume)
-        pass
-
-    def CloseOK(self, event):
-        # if not event.CanVeto():
-        #     self.OnClose()
-        #     event.Skip()
-        #     return
-        # if not self.CloseDocOK():
-        #     event.Veto()
-        #     return
-        # self.OnClose()
-        # event.Skip()
-        pass
-
-    def CloseDocOK(self):
-        # if self.doc is not None:
-        #     if not self.doc.dirty:
-        #         return True
-        #     dlg = wx.MessageDialog(self, _('Save changes to this project?'), appTitle,
-        #                            wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_QUESTION)
-        #     result = dlg.ShowModal()
-        #     dlg.Destroy()
-        #     if result == wx.ID_YES:
-        #         self.OnSave()
-        #         if not self.doc.dirty:
-        #             self.config.Write("LastFPS", str(self.doc.fps))
-        #             return True
-        #         else:
-        #             return False
-        #     elif result == wx.ID_NO:
-        #         self.config.Write("LastFPS", str(self.doc.fps))
-        #         return True
-        #     elif result == wx.ID_CANCEL:
-        #         return False
-        # else:
-        #     return True
-        pass
-
-    def OnOpen(self, event=None):
-        # if not self.CloseDocOK():
-        #     return
-        # dlg = wx.FileDialog(
-        #     self, message=_("Open Audio or %s File") % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-        #     defaultFile="", wildcard=openWildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
-        # if dlg.ShowModal() == wx.ID_OK:
-        #     self.OnStop()
-        #     self.OnClose()
-        #     self.config.Write("WorkingDir", dlg.GetDirectory())
-        #     paths = dlg.GetPaths()
-        #     self.Open(paths[0])
-        # dlg.Destroy()
-        pass
-
-    def Open(self, path):
-        # self.doc = LipsyncDoc(self.langman, self)
-        # if path.endswith(lipsyncExtension):
-        #     # open a lipsync project
-        #     self.doc.Open(path)
-        #     while self.doc.sound is None:
-        #         # if no sound file found, then ask user to specify one
-        #         dlg = wx.MessageDialog(self, _('Please load correct audio file'), appTitle,
-        #                                wx.OK | wx.ICON_WARNING)
-        #         result = dlg.ShowModal()
-        #         dlg.Destroy()
-        #         dlg = wx.FileDialog(
-        #             self, message=_("Open Audio"), defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-        #             defaultFile="", wildcard=openAudioWildcard,
-        #             style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
-        #         if dlg.ShowModal() == wx.ID_OK:
-        #             self.config.Write("WorkingDir", dlg.GetDirectory())
-        #             paths = dlg.GetPaths()
-        #             self.doc.OpenAudio(paths[0])
-        #         dlg.Destroy()
-        # else:
-        #     # open an audio file
-        #     self.doc.fps = int(self.config.Read("LastFPS", "24"))
-        #     self.doc.OpenAudio(path)
-        #     if self.doc.sound is None:
-        #         self.doc = None
-        #     else:
-        #         self.doc.voices.append(LipsyncVoice("Voice 1"))
-        #         self.doc.currentVoice = self.doc.voices[0]
-        #         # check for a .trans file with the same name as the doc
-        #         try:
-        #             txtFile = file(path[0].rsplit('.', 1)[0] + ".trans", 'r')  # TODO: Check if path is correct
-        #             for line in txtFile:
-        #                 self.voiceText.AppendText(line)
-        #         except:  # TODO: except is too broad
-        #             pass
-        #
-        # if self.doc is not None:
-        #     self.SetTitle("%s [%s] - %s" % (self.doc.name, path, appTitle))
-        #     self.waveformView.SetDocument(self.doc)
-        #     self.mouthView.SetDocument(self.doc)
-        #     # menus
-        #     self.mainFrame_menubar.Enable(wx.ID_SAVE, True)
-        #     self.mainFrame_menubar.Enable(wx.ID_SAVEAS, True)
-        #     # toolbar buttons
-        #     self.mainFrame_toolbar.EnableTool(wx.ID_SAVE, True)
-        #     if self.doc.sound is not None:
-        #         self.mainFrame_toolbar.EnableTool(ID_PLAY, True)
-        #         self.mainFrame_toolbar.EnableTool(ID_ZOOMIN, True)
-        #         self.mainFrame_toolbar.EnableTool(ID_ZOOMOUT, True)
-        #         self.mainFrame_toolbar.EnableTool(ID_ZOOM1, True)
-        #     # voice list
-        #     self.voiceList.Enable(True)
-        #     self.newVoiceBut.Enable(True)
-        #     self.delVoiceBut.Enable(True)
-        #     for voice in self.doc.voices:
-        #         self.voiceList.Insert(voice.name, self.voiceList.GetCount())
-        #     self.voiceList.SetSelection(0)
-        #     # voice controls
-        #     self.fpsCtrl.Enable(True)
-        #     self.fpsCtrl.SetValue(str(self.doc.fps))
-        #     self.voiceName.Enable(True)
-        #     self.voiceName.SetValue(self.doc.currentVoice.name)
-        #     self.voiceText.Enable(True)
-        #     self.voiceText.SetValue(self.doc.currentVoice.text)
-        #     self.languageChoice.Enable(True)
-        #     self.phonemesetChoice.Enable(True)
-        #     self.breakdownBut.Enable(True)
-        #     self.reloaddictBut.Enable(True)
-        #     self.exportChoice.Enable(True)
-        #     self.exportBut.Enable(True)
-        #     self.voiceimageBut.Enable(False)
-        #     # reload dictionary
-        #     self.OnReloadDictionary()
-        pass
-
-    def OnSave(self, event=None):
-        if self.doc is None:
-            return
-        if self.doc.path is None:
-            self.OnSaveAs()
-            return
-        self.doc.Save(self.doc.path)
-
-    def OnSaveAs(self, event=None):
-        # if self.doc is None:
-        #     return
-        # dlg = wx.FileDialog(
-        #     self, message=_("Save %s File") % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-        #     defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".pgo", wildcard=saveWildcard,
-        #     style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
-        # if dlg.ShowModal() == wx.ID_OK:
-        #     self.config.Write("WorkingDir", dlg.GetDirectory())
-        #     self.doc.Save(dlg.GetPaths()[0])
-        #     self.SetTitle("%s [%s] - %s" % (self.doc.name, dlg.GetPaths()[0], appTitle))
-        # dlg.Destroy()
-        pass
-
-    def OnClose(self):
-        # if self.doc is not None:
-        #     self.config.Write("LastFPS", str(self.doc.fps))
-        #     del self.doc
-        # self.doc = None
-        # self.waveformView.SetDocument(self.doc)
-        # # menus
-        # self.mainFrame_menubar.Enable(wx.ID_SAVE, False)
-        # self.mainFrame_menubar.Enable(wx.ID_SAVEAS, False)
-        # # toolbar buttons
-        # self.mainFrame_toolbar.EnableTool(wx.ID_SAVE, False)
-        # self.mainFrame_toolbar.EnableTool(ID_PLAY, False)
-        # self.mainFrame_toolbar.EnableTool(ID_STOP, False)
-        # self.mainFrame_toolbar.EnableTool(ID_ZOOMIN, False)
-        # self.mainFrame_toolbar.EnableTool(ID_ZOOMOUT, False)
-        # self.mainFrame_toolbar.EnableTool(ID_ZOOM1, False)
-        # # voice controls
-        # self.voiceName.Clear()
-        # self.voiceName.Enable(False)
-        # self.voiceText.Clear()
-        # self.voiceText.Enable(False)
-        # self.languageChoice.Enable(False)
-        # self.phonemesetChoice.Enable(False)
-        # self.breakdownBut.Enable(False)
-        # self.reloaddictBut.Enable(False)
-        # self.exportChoice.Enable(False)
-        # self.exportBut.Enable(False)
-        # self.voiceimageBut.Enable(False)
-        # # voice list
-        # self.fpsCtrl.Clear()
-        # self.fpsCtrl.Enable(False)
-        # self.voiceList.Clear()
-        # self.voiceList.Enable(False)
-        # self.newVoiceBut.Enable(False)
-        # self.delVoiceBut.Enable(False)
-        pass
-
-    def OnQuit(self, event=None):
-        self.OnClose()
-        self.Close(True)
-
-    def OnHelp(self, event=None):
-        webbrowser.open("file://%s" % os.path.join(get_main_dir(), "help/index.html"))  # TODO: Fix path
-
-    def OnAbout(self, event=None):
-        # dlg = AboutBox(self)
-        # dlg.ShowModal()
-        # dlg.Destroy()
-        pass
-
-    def OnPlay(self, event=None):
-        # if (self.doc is not None) and (self.doc.sound is not None):
-        #     self.curFrame = -1
-        #     self.mainFrame_toolbar.EnableTool(ID_PLAY, False)
-        #     self.mainFrame_toolbar.EnableTool(ID_STOP, True)
-        #     self.doc.sound.SetCurTime(0)
-        #     self.doc.sound.Play(False)
-        #     self.timer = wx.Timer(self, ID_PLAY_TICK)
-        #     self.timer.Start(250.0 / self.doc.fps)
-        pass
-
-    def OnStop(self, event=None):
-        # if (self.doc is not None) and (self.doc.sound is not None):
-        #     self.doc.sound.Stop()
-        #     self.doc.sound.SetCurTime(0)
-        #     self.mouthView.SetFrame(0)
-        #     self.waveformView.SetFrame(0)
-        #     self.mainFrame_toolbar.EnableTool(ID_PLAY, True)
-        #     self.mainFrame_toolbar.EnableTool(ID_STOP, False)
-        #     self.mainFrame_statusbar.SetStatusText("Stopped", 1)
-        pass
-
-    def OnPlayTick(self, event):
-        # if (self.doc is not None) and (self.doc.sound is not None):
-        #     if self.doc.sound.IsPlaying():
-        #         curFrame = int(math.floor(self.doc.sound.CurrentTime() * self.doc.fps))
-        #         if curFrame != self.curFrame:
-        #             self.curFrame = curFrame
-        #             self.mouthView.SetFrame(self.curFrame)
-        #             self.waveformView.SetFrame(self.curFrame)
-        #             self.mainFrame_statusbar.SetStatusText("Frame: %d" % (curFrame + 1), 1)
-        #     else:
-        #         self.OnStop()
-        #         self.timer.Stop()
-        #         del self.timer
-        pass
-
-    def OnMouthChoice(self, event):
-        # self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
-        # self.mouthView.DrawMe()
-        pass
-    
-    def OnExportChoice(self, event):
-        # if self.exportChoice.GetStringSelection() == "Images":
-        #     self.voiceimageBut.Enable(True)
-        # else:
-        #     self.voiceimageBut.Enable(False)
-        pass
-            
-
-    def OnVoiceName(self, event):
-        # if (self.doc is not None) and (self.doc.currentVoice is not None):
-        #     self.doc.dirty = True
-        #     self.doc.currentVoice.name = self.voiceName.GetValue()
-        #     self.voiceList.SetString(self.voiceList.GetSelection(), self.doc.currentVoice.name)
-        pass
-
-    def OnVoiceText(self, event):
-        # if self.ignoreTextChanges:
-        #     return
-        # if (self.doc is not None) and (self.doc.currentVoice is not None):
-        #     self.doc.dirty = True
-        #     self.doc.currentVoice.text = self.voiceText.GetValue()
-        pass
-
-    def OnVoiceBreakdown(self, event=None):
-        # if (self.doc is not None) and (self.doc.currentVoice is not None):
-        #     language = self.languageChoice.GetStringSelection()
-        #     phonemeset_name = self.phonemesetChoice.GetStringSelection()
-        #     self.phonemeset.Load(phonemeset_name)
-        #     self.doc.dirty = True
-        #     self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language, self.langman, self.phonemeset)
-        #     self.waveformView.UpdateDrawing()
-        #     self.ignoreTextChanges = True
-        #     self.voiceText.SetValue(self.doc.currentVoice.text)
-        #     self.ignoreTextChanges = False
-        pass
-
-    def OnVoiceExport(self, event):
-        # language = self.languageChoice.GetStringSelection()
-        # if (self.doc is not None) and (self.doc.currentVoice is not None):
-        #     exporter = self.exportChoice.GetStringSelection()
-        #     if exporter == "MOHO":
-        #         dlg = wx.FileDialog(
-        #             self, message=_("Export Lipsync Data (MOHO)"),
-        #             defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-        #             defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".dat",
-        #             wildcard="Moho switch files (*.dat)|*.dat",
-        #             style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
-        #         if dlg.ShowModal() == wx.ID_OK:
-        #             self.config.Write("WorkingDir", dlg.GetDirectory())
-        #             self.doc.currentVoice.Export(dlg.GetPaths()[0])
-        #         dlg.Destroy()
-        #     elif exporter == "ALELO":
-        #         fps = int(self.fpsCtrl.GetValue())
-        #         if fps != 100:
-        #             dlg = wx.MessageDialog(self, _('FPS is NOT 100 continue? (You will have issues downstream.)'),
-        #                                    appTitle,
-        #                                    wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_WARNING)
-        #             result = dlg.ShowModal()
-        #             dlg.Destroy()
-        #         else:
-        #             result = wx.ID_YES
-        #         if result == wx.ID_YES:
-        #             dlg = wx.FileDialog(
-        #                 self, message=_("Export Lipsync Data (ALELO)"),
-        #                 defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-        #                 defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".txt",
-        #                 wildcard="Alelo timing files (*.txt)|*.txt",
-        #                 style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
-        #             if dlg.ShowModal() == wx.ID_OK:
-        #                 self.config.Write("WorkingDir", dlg.GetDirectory())
-        #                 self.doc.currentVoice.ExportAlelo(dlg.GetPaths()[0], language, self.langman)
-        #             dlg.Destroy()
-        #     elif exporter == "Images":
-        #         dlg = wx.FileDialog(
-        #             self, message=_("Export Image Strip"), defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-        #             defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0],
-        #             style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
-        #         if dlg.ShowModal() == wx.ID_OK:
-        #             self.config.Write("WorkingDir", dlg.GetDirectory())
-        #             self.doc.currentVoice.ExportImages(dlg.GetPaths()[0], self.mouthChoice.GetStringSelection())
-        #         dlg.Destroy()
-        pass
-
-    def OnVoiceimagechoose(self, event):
-        # language = self.languageChoice.GetStringSelection()
-        # if (self.doc is not None) and (self.doc.currentVoice is not None):
-        #     voiceimagepath = wx.DirDialog(
-        #         self, message=_("Choose Path for Images"), defaultPath=self.config.Read("MouthDir", os.path.join(
-        #             os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")),
-        #         style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
-        #     if voiceimagepath.ShowModal() == wx.ID_OK:
-        #         self.config.Write("MouthDir", voiceimagepath.GetPath())
-        #         print(voiceimagepath.GetPath())
-        #         full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
-        #         supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
-        #         for directory, dirnames, filenames in os.walk(voiceimagepath.GetPath()):
-        #             self.mouthView.ProcessMouthDir(directory, filenames, supportedimagetypes)
-        #         mouthList = list(self.mouthView.mouths.keys())
-        #         mouthList.sort()
-        #         print(mouthList)
-        #         self.mouthChoice.Clear()
-        #         for mouth in mouthList:
-        #             self.mouthChoice.Append(mouth)
-        #         self.mouthChoice.SetSelection(0)
-        #         self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
-        #     voiceimagepath.Destroy()
-        pass
-
-    def OnFps(self, event):
-        # if self.doc is None:
-        #     return
-        # try:
-        #     newFps = int(self.fpsCtrl.GetValue())
-        # except:  # TODO: except is too broad
-        #     newFps = self.doc.fps
-        # if newFps == self.doc.fps:
-        #     return
-        # self.doc.dirty = True
-        # self.doc.fps = newFps
-        # if self.doc.fps < 1:
-        #     self.doc.fps = 1
-        # if self.doc.fps > 120:
-        #     self.doc.fps = 120
-        # # refresh the document properties
-        # self.doc.OpenAudio(self.doc.soundPath)
-        # self.waveformView.SetDocument(None)
-        # self.waveformView.SetDocument(self.doc)
-        # self.mouthView.DrawMe()
-        pass
-
-    def OnSelVoice(self, event):
-        # if self.doc is None:
-        #     return
-        # self.ignoreTextChanges = True
-        # self.doc.currentVoice = self.doc.voices[self.voiceList.GetSelection()]
-        # self.voiceName.SetValue(self.doc.currentVoice.name)
-        # self.voiceText.SetValue(self.doc.currentVoice.text)
-        # self.ignoreTextChanges = False
-        # self.waveformView.UpdateDrawing()
-        # self.mouthView.DrawMe()
-        pass
-
-    def OnNewVoice(self, event):
-        # if self.doc is None:
-        #     return
-        # self.doc.dirty = True
-        # self.doc.voices.append(LipsyncVoice("Voice %d" % (len(self.doc.voices) + 1)))
-        # self.doc.currentVoice = self.doc.voices[-1]
-        # self.voiceList.Insert(self.doc.currentVoice.name, self.voiceList.GetCount())
-        # self.voiceList.SetSelection(self.voiceList.GetCount() - 1)
-        # self.ignoreTextChanges = True
-        # self.voiceName.SetValue(self.doc.currentVoice.name)
-        # self.voiceText.SetValue(self.doc.currentVoice.text)
-        # self.ignoreTextChanges = False
-        # self.waveformView.UpdateDrawing()
-        # self.mouthView.DrawMe()
-        pass
-
-    def OnDelVoice(self, event):
-        # if (self.doc is None) or (len(self.doc.voices) == 1):
-        #     return
-        # self.doc.dirty = True
-        # newIndex = self.doc.voices.index(self.doc.currentVoice)
-        # if newIndex > 0:
-        #     newIndex -= 1
-        # else:
-        #     newIndex = 0
-        # self.doc.voices.remove(self.doc.currentVoice)
-        # self.doc.currentVoice = self.doc.voices[newIndex]
-        # self.voiceList.Clear()
-        # for voice in self.doc.voices:
-        #     self.voiceList.Insert(voice.name, self.voiceList.GetCount())
-        # self.voiceList.SetSelection(newIndex)
-        # self.voiceName.SetValue(self.doc.currentVoice.name)
-        # self.voiceText.SetValue(self.doc.currentVoice.text)
-        # self.waveformView.UpdateDrawing()
-        # self.mouthView.DrawMe()
-        pass
-
-    def on_reload_dictionary(self, event = None):
-        # print("reload the dictionary")
-        # lang_config = self.doc.language_manager.language_table[self.languageChoice.GetStringSelection()]
-        # self.doc.language_manager.LoadLanguage(lang_config, force=True)
-        pass
+# class LipsyncFrameold(wx.Frame):
+#     def __init__(self, *args, **kwds):
+#
+#         # self.waveformView = WaveformView(self.panel_2, wx.ID_ANY)
+#
+#         self.fpsCtrl.SetValidator(DigitOnlyValidator())
+#
+#         self.doc = None
+#         mouthList = list(self.mouthView.mouths.keys())
+#         mouthList.sort()
+#         print(mouthList)
+#
+#         # setup language initialisation here
+#
+#         self.langman = LanguageManager()
+#         self.langman.InitLanguages()
+#         languageList = list(self.langman.language_table.keys())
+#         languageList.sort()
+#         # setup phonemeset initialisation here
+#         self.phonemeset = PhonemeSet()
+#         # setup export initialisation here
+#         exporterList = ["MOHO", "ALELO", "Images"]
+#
+#         self.ignoreTextChanges = False
+#         # self.config = wx.Config("Papagayo-NG", "Lost Marble")
+#         self.curFrame = 0
+#         self.timer = None
+#
+#         # # Connect event handlers
+#         # global ID_PLAY_TICK
+#         # ID_PLAY_TICK = wx.NewId()
+#         # # window events
+#         # wx.EVT_CLOSE(self, self.CloseOK)
+#         # self.Bind(wx.EVT_TIMER, self.OnPlayTick)
+#         # # wx.EVT_TIMER(self, ID_PLAY_TICK, self.OnPlayTick)
+#         # # menus
+#         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
+#         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
+#         # wx.EVT_MENU(self, wx.ID_SAVEAS, self.OnSaveAs)
+#         # wx.EVT_MENU(self, wx.ID_EXIT, self.OnQuit)
+#         # wx.EVT_MENU(self, wx.ID_HELP, self.OnHelp)
+#         # wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)
+#         # # tools
+#         # wx.EVT_TOOL(self, ID_PLAY, self.OnPlay)
+#         # wx.EVT_TOOL(self, ID_STOP, self.OnStop)
+#         # wx.EVT_TOOL(self, ID_ZOOMIN, self.waveformView.OnZoomIn)
+#         # wx.EVT_TOOL(self, ID_ZOOMOUT, self.waveformView.OnZoomOut)
+#         # wx.EVT_TOOL(self, ID_ZOOM1, self.waveformView.OnZoom1)
+#         # # voice settings
+#         # wx.EVT_CHOICE(self, ID_MOUTHCHOICE, self.OnMouthChoice)
+#         # wx.EVT_CHOICE(self, ID_EXPORTCHOICE, self.OnExportChoice)
+#         # wx.EVT_TEXT(self, ID_VOICENAME, self.OnVoiceName)
+#         # wx.EVT_TEXT(self, ID_VOICETEXT, self.OnVoiceText)
+#         # wx.EVT_BUTTON(self, ID_BREAKDOWN, self.OnVoiceBreakdown)
+#         # wx.EVT_BUTTON(self, ID_RELOADDICT, self.OnReloadDictionary)
+#         # wx.EVT_BUTTON(self, ID_EXPORT, self.OnVoiceExport)
+#         # wx.EVT_BUTTON(self, ID_VOICEIMAGE, self.OnVoiceimagechoose)
+#         # wx.EVT_TEXT(self, ID_FPS, self.OnFps)
+#         # wx.EVT_LISTBOX(self, ID_VOICELIST, self.OnSelVoice)
+#         # wx.EVT_BUTTON(self, ID_NEWVOICE, self.OnNewVoice)
+#         # wx.EVT_BUTTON(self, ID_DELVOICE, self.OnDelVoice)
+#         # wx.EVT_SLIDER(self, ID_VOLSLIDER, self.ChangeVolume)
+#
+#     def __del__(self):
+#         try:
+#             self.config.Flush()
+#         except AttributeError:
+#             print("Error")
+#
+#     def __set_properties(self):
+#         # begin wxGlade: LipsyncFrame.__set_properties
+#         # self.SetTitle(_("Papagayo-NG"))
+#         # _icon = wx.EmptyIcon()
+#         # _icon.CopyFromBitmap(wx.Bitmap(os.path.join(get_main_dir(), "rsrc/window_icon.bmp")))
+#         # self.SetIcon(_icon)
+#         pass
+#         # end wxGlade
+#
+#     def __do_layout(self):
+#         pass
+#
+#     def ChangeVolume(self, event):
+#         # if self.doc and self.doc.sound:
+#         #     self.doc.sound.volume = int(self.volume_slider.GetValue())
+#         #     #print(self.doc.sound.volume)
+#         pass
+#
+#     def CloseOK(self, event):
+#         # if not event.CanVeto():
+#         #     self.OnClose()
+#         #     event.Skip()
+#         #     return
+#         # if not self.CloseDocOK():
+#         #     event.Veto()
+#         #     return
+#         # self.OnClose()
+#         # event.Skip()
+#         pass
+#
+#     def CloseDocOK(self):
+#         # if self.doc is not None:
+#         #     if not self.doc.dirty:
+#         #         return True
+#         #     dlg = wx.MessageDialog(self, _('Save changes to this project?'), appTitle,
+#         #                            wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_QUESTION)
+#         #     result = dlg.ShowModal()
+#         #     dlg.Destroy()
+#         #     if result == wx.ID_YES:
+#         #         self.OnSave()
+#         #         if not self.doc.dirty:
+#         #             self.config.Write("LastFPS", str(self.doc.fps))
+#         #             return True
+#         #         else:
+#         #             return False
+#         #     elif result == wx.ID_NO:
+#         #         self.config.Write("LastFPS", str(self.doc.fps))
+#         #         return True
+#         #     elif result == wx.ID_CANCEL:
+#         #         return False
+#         # else:
+#         #     return True
+#         pass
+#
+#     def OnOpen(self, event=None):
+#         # if not self.CloseDocOK():
+#         #     return
+#         # dlg = wx.FileDialog(
+#         #     self, message=_("Open Audio or %s File") % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+#         #     defaultFile="", wildcard=openWildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
+#         # if dlg.ShowModal() == wx.ID_OK:
+#         #     self.OnStop()
+#         #     self.OnClose()
+#         #     self.config.Write("WorkingDir", dlg.GetDirectory())
+#         #     paths = dlg.GetPaths()
+#         #     self.Open(paths[0])
+#         # dlg.Destroy()
+#         pass
+#
+#     def Open(self, path):
+#         # self.doc = LipsyncDoc(self.langman, self)
+#         # if path.endswith(lipsyncExtension):
+#         #     # open a lipsync project
+#         #     self.doc.Open(path)
+#         #     while self.doc.sound is None:
+#         #         # if no sound file found, then ask user to specify one
+#         #         dlg = wx.MessageDialog(self, _('Please load correct audio file'), appTitle,
+#         #                                wx.OK | wx.ICON_WARNING)
+#         #         result = dlg.ShowModal()
+#         #         dlg.Destroy()
+#         #         dlg = wx.FileDialog(
+#         #             self, message=_("Open Audio"), defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+#         #             defaultFile="", wildcard=openAudioWildcard,
+#         #             style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
+#         #         if dlg.ShowModal() == wx.ID_OK:
+#         #             self.config.Write("WorkingDir", dlg.GetDirectory())
+#         #             paths = dlg.GetPaths()
+#         #             self.doc.OpenAudio(paths[0])
+#         #         dlg.Destroy()
+#         # else:
+#         #     # open an audio file
+#         #     self.doc.fps = int(self.config.Read("LastFPS", "24"))
+#         #     self.doc.OpenAudio(path)
+#         #     if self.doc.sound is None:
+#         #         self.doc = None
+#         #     else:
+#         #         self.doc.voices.append(LipsyncVoice("Voice 1"))
+#         #         self.doc.currentVoice = self.doc.voices[0]
+#         #         # check for a .trans file with the same name as the doc
+#         #         try:
+#         #             txtFile = file(path[0].rsplit('.', 1)[0] + ".trans", 'r')  # TODO: Check if path is correct
+#         #             for line in txtFile:
+#         #                 self.voiceText.AppendText(line)
+#         #         except:  # TODO: except is too broad
+#         #             pass
+#         #
+#         # if self.doc is not None:
+#         #     self.SetTitle("%s [%s] - %s" % (self.doc.name, path, appTitle))
+#         #     self.waveformView.SetDocument(self.doc)
+#         #     self.mouthView.SetDocument(self.doc)
+#         #     # menus
+#         #     self.mainFrame_menubar.Enable(wx.ID_SAVE, True)
+#         #     self.mainFrame_menubar.Enable(wx.ID_SAVEAS, True)
+#         #     # toolbar buttons
+#         #     self.mainFrame_toolbar.EnableTool(wx.ID_SAVE, True)
+#         #     if self.doc.sound is not None:
+#         #         self.mainFrame_toolbar.EnableTool(ID_PLAY, True)
+#         #         self.mainFrame_toolbar.EnableTool(ID_ZOOMIN, True)
+#         #         self.mainFrame_toolbar.EnableTool(ID_ZOOMOUT, True)
+#         #         self.mainFrame_toolbar.EnableTool(ID_ZOOM1, True)
+#         #     # voice list
+#         #     self.voiceList.Enable(True)
+#         #     self.newVoiceBut.Enable(True)
+#         #     self.delVoiceBut.Enable(True)
+#         #     for voice in self.doc.voices:
+#         #         self.voiceList.Insert(voice.name, self.voiceList.GetCount())
+#         #     self.voiceList.SetSelection(0)
+#         #     # voice controls
+#         #     self.fpsCtrl.Enable(True)
+#         #     self.fpsCtrl.SetValue(str(self.doc.fps))
+#         #     self.voiceName.Enable(True)
+#         #     self.voiceName.SetValue(self.doc.currentVoice.name)
+#         #     self.voiceText.Enable(True)
+#         #     self.voiceText.SetValue(self.doc.currentVoice.text)
+#         #     self.languageChoice.Enable(True)
+#         #     self.phonemesetChoice.Enable(True)
+#         #     self.breakdownBut.Enable(True)
+#         #     self.reloaddictBut.Enable(True)
+#         #     self.exportChoice.Enable(True)
+#         #     self.exportBut.Enable(True)
+#         #     self.voiceimageBut.Enable(False)
+#         #     # reload dictionary
+#         #     self.OnReloadDictionary()
+#         pass
+#
+#     def OnSave(self, event=None):
+#         if self.doc is None:
+#             return
+#         if self.doc.path is None:
+#             self.OnSaveAs()
+#             return
+#         self.doc.Save(self.doc.path)
+#
+#     def OnSaveAs(self, event=None):
+#         # if self.doc is None:
+#         #     return
+#         # dlg = wx.FileDialog(
+#         #     self, message=_("Save %s File") % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+#         #     defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".pgo", wildcard=saveWildcard,
+#         #     style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+#         # if dlg.ShowModal() == wx.ID_OK:
+#         #     self.config.Write("WorkingDir", dlg.GetDirectory())
+#         #     self.doc.Save(dlg.GetPaths()[0])
+#         #     self.SetTitle("%s [%s] - %s" % (self.doc.name, dlg.GetPaths()[0], appTitle))
+#         # dlg.Destroy()
+#         pass
+#
+#     def OnClose(self):
+#         # if self.doc is not None:
+#         #     self.config.Write("LastFPS", str(self.doc.fps))
+#         #     del self.doc
+#         # self.doc = None
+#         # self.waveformView.SetDocument(self.doc)
+#         # # menus
+#         # self.mainFrame_menubar.Enable(wx.ID_SAVE, False)
+#         # self.mainFrame_menubar.Enable(wx.ID_SAVEAS, False)
+#         # # toolbar buttons
+#         # self.mainFrame_toolbar.EnableTool(wx.ID_SAVE, False)
+#         # self.mainFrame_toolbar.EnableTool(ID_PLAY, False)
+#         # self.mainFrame_toolbar.EnableTool(ID_STOP, False)
+#         # self.mainFrame_toolbar.EnableTool(ID_ZOOMIN, False)
+#         # self.mainFrame_toolbar.EnableTool(ID_ZOOMOUT, False)
+#         # self.mainFrame_toolbar.EnableTool(ID_ZOOM1, False)
+#         # # voice controls
+#         # self.voiceName.Clear()
+#         # self.voiceName.Enable(False)
+#         # self.voiceText.Clear()
+#         # self.voiceText.Enable(False)
+#         # self.languageChoice.Enable(False)
+#         # self.phonemesetChoice.Enable(False)
+#         # self.breakdownBut.Enable(False)
+#         # self.reloaddictBut.Enable(False)
+#         # self.exportChoice.Enable(False)
+#         # self.exportBut.Enable(False)
+#         # self.voiceimageBut.Enable(False)
+#         # # voice list
+#         # self.fpsCtrl.Clear()
+#         # self.fpsCtrl.Enable(False)
+#         # self.voiceList.Clear()
+#         # self.voiceList.Enable(False)
+#         # self.newVoiceBut.Enable(False)
+#         # self.delVoiceBut.Enable(False)
+#         pass
+#
+#     def OnQuit(self, event=None):
+#         self.OnClose()
+#         self.Close(True)
+#
+#     def OnHelp(self, event=None):
+#         webbrowser.open("file://%s" % os.path.join(get_main_dir(), "help/index.html"))  # TODO: Fix path
+#
+#     def OnAbout(self, event=None):
+#         # dlg = AboutBox(self)
+#         # dlg.ShowModal()
+#         # dlg.Destroy()
+#         pass
+#
+#     def OnPlay(self, event=None):
+#         # if (self.doc is not None) and (self.doc.sound is not None):
+#         #     self.curFrame = -1
+#         #     self.mainFrame_toolbar.EnableTool(ID_PLAY, False)
+#         #     self.mainFrame_toolbar.EnableTool(ID_STOP, True)
+#         #     self.doc.sound.SetCurTime(0)
+#         #     self.doc.sound.Play(False)
+#         #     self.timer = wx.Timer(self, ID_PLAY_TICK)
+#         #     self.timer.Start(250.0 / self.doc.fps)
+#         pass
+#
+#     def OnStop(self, event=None):
+#         # if (self.doc is not None) and (self.doc.sound is not None):
+#         #     self.doc.sound.Stop()
+#         #     self.doc.sound.SetCurTime(0)
+#         #     self.mouthView.SetFrame(0)
+#         #     self.waveformView.SetFrame(0)
+#         #     self.mainFrame_toolbar.EnableTool(ID_PLAY, True)
+#         #     self.mainFrame_toolbar.EnableTool(ID_STOP, False)
+#         #     self.mainFrame_statusbar.SetStatusText("Stopped", 1)
+#         pass
+#
+#     def OnPlayTick(self, event):
+#         # if (self.doc is not None) and (self.doc.sound is not None):
+#         #     if self.doc.sound.IsPlaying():
+#         #         curFrame = int(math.floor(self.doc.sound.CurrentTime() * self.doc.fps))
+#         #         if curFrame != self.curFrame:
+#         #             self.curFrame = curFrame
+#         #             self.mouthView.SetFrame(self.curFrame)
+#         #             self.waveformView.SetFrame(self.curFrame)
+#         #             self.mainFrame_statusbar.SetStatusText("Frame: %d" % (curFrame + 1), 1)
+#         #     else:
+#         #         self.OnStop()
+#         #         self.timer.Stop()
+#         #         del self.timer
+#         pass
+#
+#     def OnMouthChoice(self, event):
+#         # self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
+#         # self.mouthView.DrawMe()
+#         pass
+#
+#     def OnExportChoice(self, event):
+#         # if self.exportChoice.GetStringSelection() == "Images":
+#         #     self.voiceimageBut.Enable(True)
+#         # else:
+#         #     self.voiceimageBut.Enable(False)
+#         pass
+#
+#
+#     def OnVoiceName(self, event):
+#         # if (self.doc is not None) and (self.doc.currentVoice is not None):
+#         #     self.doc.dirty = True
+#         #     self.doc.currentVoice.name = self.voiceName.GetValue()
+#         #     self.voiceList.SetString(self.voiceList.GetSelection(), self.doc.currentVoice.name)
+#         pass
+#
+#     def OnVoiceText(self, event):
+#         # if self.ignoreTextChanges:
+#         #     return
+#         # if (self.doc is not None) and (self.doc.currentVoice is not None):
+#         #     self.doc.dirty = True
+#         #     self.doc.currentVoice.text = self.voiceText.GetValue()
+#         pass
+#
+#     def OnVoiceBreakdown(self, event=None):
+#         # if (self.doc is not None) and (self.doc.currentVoice is not None):
+#         #     language = self.languageChoice.GetStringSelection()
+#         #     phonemeset_name = self.phonemesetChoice.GetStringSelection()
+#         #     self.phonemeset.Load(phonemeset_name)
+#         #     self.doc.dirty = True
+#         #     self.doc.currentVoice.RunBreakdown(self.doc.soundDuration, self, language, self.langman, self.phonemeset)
+#         #     self.waveformView.UpdateDrawing()
+#         #     self.ignoreTextChanges = True
+#         #     self.voiceText.SetValue(self.doc.currentVoice.text)
+#         #     self.ignoreTextChanges = False
+#         pass
+#
+#     def OnVoiceExport(self, event):
+#         # language = self.languageChoice.GetStringSelection()
+#         # if (self.doc is not None) and (self.doc.currentVoice is not None):
+#         #     exporter = self.exportChoice.GetStringSelection()
+#         #     if exporter == "MOHO":
+#         #         dlg = wx.FileDialog(
+#         #             self, message=_("Export Lipsync Data (MOHO)"),
+#         #             defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+#         #             defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".dat",
+#         #             wildcard="Moho switch files (*.dat)|*.dat",
+#         #             style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+#         #         if dlg.ShowModal() == wx.ID_OK:
+#         #             self.config.Write("WorkingDir", dlg.GetDirectory())
+#         #             self.doc.currentVoice.Export(dlg.GetPaths()[0])
+#         #         dlg.Destroy()
+#         #     elif exporter == "ALELO":
+#         #         fps = int(self.fpsCtrl.GetValue())
+#         #         if fps != 100:
+#         #             dlg = wx.MessageDialog(self, _('FPS is NOT 100 continue? (You will have issues downstream.)'),
+#         #                                    appTitle,
+#         #                                    wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_WARNING)
+#         #             result = dlg.ShowModal()
+#         #             dlg.Destroy()
+#         #         else:
+#         #             result = wx.ID_YES
+#         #         if result == wx.ID_YES:
+#         #             dlg = wx.FileDialog(
+#         #                 self, message=_("Export Lipsync Data (ALELO)"),
+#         #                 defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+#         #                 defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".txt",
+#         #                 wildcard="Alelo timing files (*.txt)|*.txt",
+#         #                 style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+#         #             if dlg.ShowModal() == wx.ID_OK:
+#         #                 self.config.Write("WorkingDir", dlg.GetDirectory())
+#         #                 self.doc.currentVoice.ExportAlelo(dlg.GetPaths()[0], language, self.langman)
+#         #             dlg.Destroy()
+#         #     elif exporter == "Images":
+#         #         dlg = wx.FileDialog(
+#         #             self, message=_("Export Image Strip"), defaultDir=self.config.Read("WorkingDir", get_main_dir()),
+#         #             defaultFile="%s" % self.doc.soundPath.rsplit('.', 1)[0],
+#         #             style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT)
+#         #         if dlg.ShowModal() == wx.ID_OK:
+#         #             self.config.Write("WorkingDir", dlg.GetDirectory())
+#         #             self.doc.currentVoice.ExportImages(dlg.GetPaths()[0], self.mouthChoice.GetStringSelection())
+#         #         dlg.Destroy()
+#         pass
+#
+#     def OnVoiceimagechoose(self, event):
+#         # language = self.languageChoice.GetStringSelection()
+#         # if (self.doc is not None) and (self.doc.currentVoice is not None):
+#         #     voiceimagepath = wx.DirDialog(
+#         #         self, message=_("Choose Path for Images"), defaultPath=self.config.Read("MouthDir", os.path.join(
+#         #             os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")),
+#         #         style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.DD_DIR_MUST_EXIST)
+#         #     if voiceimagepath.ShowModal() == wx.ID_OK:
+#         #         self.config.Write("MouthDir", voiceimagepath.GetPath())
+#         #         print(voiceimagepath.GetPath())
+#         #         full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
+#         #         supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
+#         #         for directory, dirnames, filenames in os.walk(voiceimagepath.GetPath()):
+#         #             self.mouthView.ProcessMouthDir(directory, filenames, supportedimagetypes)
+#         #         mouthList = list(self.mouthView.mouths.keys())
+#         #         mouthList.sort()
+#         #         print(mouthList)
+#         #         self.mouthChoice.Clear()
+#         #         for mouth in mouthList:
+#         #             self.mouthChoice.Append(mouth)
+#         #         self.mouthChoice.SetSelection(0)
+#         #         self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
+#         #     voiceimagepath.Destroy()
+#         pass
+#
+#     def OnFps(self, event):
+#         # if self.doc is None:
+#         #     return
+#         # try:
+#         #     newFps = int(self.fpsCtrl.GetValue())
+#         # except:  # TODO: except is too broad
+#         #     newFps = self.doc.fps
+#         # if newFps == self.doc.fps:
+#         #     return
+#         # self.doc.dirty = True
+#         # self.doc.fps = newFps
+#         # if self.doc.fps < 1:
+#         #     self.doc.fps = 1
+#         # if self.doc.fps > 120:
+#         #     self.doc.fps = 120
+#         # # refresh the document properties
+#         # self.doc.OpenAudio(self.doc.soundPath)
+#         # self.waveformView.SetDocument(None)
+#         # self.waveformView.SetDocument(self.doc)
+#         # self.mouthView.DrawMe()
+#         pass
+#
+#     def OnSelVoice(self, event):
+#         # if self.doc is None:
+#         #     return
+#         # self.ignoreTextChanges = True
+#         # self.doc.currentVoice = self.doc.voices[self.voiceList.GetSelection()]
+#         # self.voiceName.SetValue(self.doc.currentVoice.name)
+#         # self.voiceText.SetValue(self.doc.currentVoice.text)
+#         # self.ignoreTextChanges = False
+#         # self.waveformView.UpdateDrawing()
+#         # self.mouthView.DrawMe()
+#         pass
+#
+#     def OnNewVoice(self, event):
+#         # if self.doc is None:
+#         #     return
+#         # self.doc.dirty = True
+#         # self.doc.voices.append(LipsyncVoice("Voice %d" % (len(self.doc.voices) + 1)))
+#         # self.doc.currentVoice = self.doc.voices[-1]
+#         # self.voiceList.Insert(self.doc.currentVoice.name, self.voiceList.GetCount())
+#         # self.voiceList.SetSelection(self.voiceList.GetCount() - 1)
+#         # self.ignoreTextChanges = True
+#         # self.voiceName.SetValue(self.doc.currentVoice.name)
+#         # self.voiceText.SetValue(self.doc.currentVoice.text)
+#         # self.ignoreTextChanges = False
+#         # self.waveformView.UpdateDrawing()
+#         # self.mouthView.DrawMe()
+#         pass
+#
+#     def OnDelVoice(self, event):
+#         # if (self.doc is None) or (len(self.doc.voices) == 1):
+#         #     return
+#         # self.doc.dirty = True
+#         # newIndex = self.doc.voices.index(self.doc.currentVoice)
+#         # if newIndex > 0:
+#         #     newIndex -= 1
+#         # else:
+#         #     newIndex = 0
+#         # self.doc.voices.remove(self.doc.currentVoice)
+#         # self.doc.currentVoice = self.doc.voices[newIndex]
+#         # self.voiceList.Clear()
+#         # for voice in self.doc.voices:
+#         #     self.voiceList.Insert(voice.name, self.voiceList.GetCount())
+#         # self.voiceList.SetSelection(newIndex)
+#         # self.voiceName.SetValue(self.doc.currentVoice.name)
+#         # self.voiceText.SetValue(self.doc.currentVoice.text)
+#         # self.waveformView.UpdateDrawing()
+#         # self.mouthView.DrawMe()
+#         pass
+#
+#     def on_reload_dictionary(self, event = None):
+#         # print("reload the dictionary")
+#         # lang_config = self.doc.language_manager.language_table[self.languageChoice.GetStringSelection()]
+#         # self.doc.language_manager.LoadLanguage(lang_config, force=True)
+#         pass
 
 # end of class LipsyncFrame
