@@ -137,6 +137,9 @@ class LipsyncFrame:
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
 
+        self.validator = QtGui.QIntValidator(1, 999, None)
+        self.main_window.fps_input.setValidator(self.validator)
+
     def load_ui_widget(self, ui_filename, parent=None):
         self.loader = QtUiTools.QUiLoader()
         self.ui_file = QtCore.QFile(ui_filename)
