@@ -43,43 +43,10 @@ lipsync_extension = "*.pgo"
 audio_extensions = "*.wav *.mp3 *.aiff *.aif *.au *.snd *.mov *.m4a"
 open_wildcard = "%s and sound files (%s %s)" % (app_title, audio_extensions, lipsync_extension)
 audioExtensions = "*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a"
+save_wildcard = "%s files (%s)" % (app_title, lipsync_extension)
 # openWildcard = "%s and sound files|*%s;%s" % (appTitle, lipsyncExtension, audioExtensions)
 # openAudioWildcard = "Sound files|%s" % (audioExtensions)
 # saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
-
-
-# class DigitOnlyValidator(wx.PyValidator):
-#     def __init__(self, flag=None, pyVar=None):
-#         wx.PyValidator.__init__(self)
-#         self.Bind(wx.EVT_CHAR, self.OnChar)
-#
-#     def clone(self):
-#         return DigitOnlyValidator()
-#
-#     def validate(self, win):
-#         tc = self.GetWindow()
-#         val = tc.GetValue()
-#
-#         for x in val:
-#             if x not in string.digits:
-#                 return False
-#
-#         return True
-#
-#     def on_char(self, event):
-#         key = event.GetKeyCode()
-#
-#         if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
-#             event.Skip()
-#             return
-#
-#         if chr(key) in string.digits:
-#             event.Skip()
-#             return
-#
-#         # Returning without calling event.Skip() eats the event before it
-#         # gets to the text control
-#         return
 
 
 class LipsyncFrame:
@@ -130,7 +97,37 @@ class LipsyncFrame:
         self.main_window.waveform_view.resizeEvent = self.on_resize
         self.main_window.waveform_view.wheelEvent = self.on_wheel
         self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(self.on_slider_change)
+        self.main_window.action_help_topics.triggered.connect(self.on_help)
+        #         # # menus
+        #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
+        #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
+        #         # wx.EVT_MENU(self, wx.ID_SAVEAS, self.OnSaveAs)
+        #         # wx.EVT_MENU(self, wx.ID_EXIT, self.OnQuit)
+        #         # wx.EVT_MENU(self, wx.ID_HELP, self.OnHelp)
+        #         # wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)
+        #         # # tools
+        #         # wx.EVT_TOOL(self, ID_PLAY, self.OnPlay)
+        #         # wx.EVT_TOOL(self, ID_STOP, self.OnStop)
+        #         # wx.EVT_TOOL(self, ID_ZOOMIN, self.waveformView.OnZoomIn)
+        #         # wx.EVT_TOOL(self, ID_ZOOMOUT, self.waveformView.OnZoomOut)
+        #         # wx.EVT_TOOL(self, ID_ZOOM1, self.waveformView.OnZoom1)
+        #         # # voice settings
+        #         # wx.EVT_CHOICE(self, ID_MOUTHCHOICE, self.OnMouthChoice)
+        #         # wx.EVT_CHOICE(self, ID_EXPORTCHOICE, self.OnExportChoice)
+        #         # wx.EVT_TEXT(self, ID_VOICENAME, self.OnVoiceName)
+        #         # wx.EVT_TEXT(self, ID_VOICETEXT, self.OnVoiceText)
+        #         # wx.EVT_BUTTON(self, ID_BREAKDOWN, self.OnVoiceBreakdown)
+        #         # wx.EVT_BUTTON(self, ID_RELOADDICT, self.OnReloadDictionary)
+        #         # wx.EVT_BUTTON(self, ID_EXPORT, self.OnVoiceExport)
+        #         # wx.EVT_BUTTON(self, ID_VOICEIMAGE, self.OnVoiceimagechoose)
+        #         # wx.EVT_TEXT(self, ID_FPS, self.OnFps)
+        #         # wx.EVT_LISTBOX(self, ID_VOICELIST, self.OnSelVoice)
+        #         # wx.EVT_BUTTON(self, ID_NEWVOICE, self.OnNewVoice)
+        #         # wx.EVT_BUTTON(self, ID_DELVOICE, self.OnDelVoice)
+        #         # wx.EVT_SLIDER(self, ID_VOLSLIDER, self.ChangeVolume)
 
+        self.cur_frame = 0
+        self.timer = None
         self.wv_height = 0
         self.zoom_factor = 1
         self.scroll_position = 0
@@ -177,28 +174,11 @@ class LipsyncFrame:
                 return False
         else:
             return True
-        #     dlg = wx.MessageDialog(self, _('Save changes to this project?'), appTitle,
-        #                            wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_QUESTION)
-        #     result = dlg.ShowModal()
-        #     dlg.Destroy()
-        #     if result == wx.ID_YES:
-        #         self.OnSave()
-        #         if not self.doc.dirty:
-        #             self.config.Write("LastFPS", str(self.doc.fps))
-        #             return True
-        #         else:
-        #             return False
-        #     elif result == wx.ID_NO:
-        #         self.config.Write("LastFPS", str(self.doc.fps))
-        #         return True
-        #     elif result == wx.ID_CANCEL:
-        #         return False
-        # else:
-        #     return True
 
     def on_open(self):
         if not self.close_doc_ok():
             return
+        print(self.config.value("WorkingDir", get_main_dir()))
         file_path, _ = QtGui.QFileDialog.getOpenFileName(self.main_window,
                                                          "Open Audio or %s File" % app_title,
                                                          self.config.value("WorkingDir", get_main_dir()),
@@ -208,16 +188,6 @@ class LipsyncFrame:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
             print(os.path.dirname(file_path))
             self.open(file_path)
-        # dlg = wx.FileDialog(
-        #     self, message=_("Open Audio or %s File") % appTitle, defaultDir=self.config.Read("WorkingDir", get_main_dir()),
-        #     defaultFile="", wildcard=openWildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
-        # if dlg.ShowModal() == wx.ID_OK:
-        #     self.OnStop()
-        #     self.OnClose()
-        #     self.config.Write("WorkingDir", dlg.GetDirectory())
-        #     paths = dlg.GetPaths()
-        #     self.Open(paths[0])
-        # dlg.Destroy()
 
     def open(self, path):
         self.doc = LipsyncDoc(self.langman, self)
@@ -232,10 +202,11 @@ class LipsyncFrame:
                 dlg.setIcon(QtGui.QMessageBox.Warning)
                 dlg.exec_()  # This should open it as a modal blocking window
                 dlg.destroy()  # Untested, might not need it
+                print(self.config.value("WorkingDir", get_main_dir()))
                 file_path, _ = QtGui.QFileDialog(self.main_window,
-                                        "Open Audio",
-                                        self.config.value("WorkingDir", get_main_dir()),
-                                        open_wildcard)
+                                                 "Open Audio",
+                                                 self.config.value("WorkingDir", get_main_dir()),
+                                                 open_wildcard)
                 if file_path:
                     self.config.setValue("WorkingDir", os.path.dirname(file_path))
                     self.doc.open_audio(file_path)
@@ -268,7 +239,7 @@ class LipsyncFrame:
             self.main_window.menu_edit.setEnabled(True)
             if self.doc.sound is not None:
                 self.main_window.action_play.setEnabled(True)
-                self.main_window.action_stop.setEnabled(True)
+                # self.main_window.action_stop.setEnabled(True)
                 self.main_window.action_zoom_in.setEnabled(True)
                 self.main_window.action_zoom_out.setEnabled(True)
                 self.main_window.action_reset_zoom.setEnabled(True)
@@ -284,6 +255,13 @@ class LipsyncFrame:
             self.on_reload_dictionary()
 
     def on_save(self):
+        if self.doc is None:
+            return
+        if self.doc.path is None:
+            self.on_save_as()
+            return
+        self.doc.save(self.doc.path)
+        # TestWaveform
         self.main_window.waveform_view.scene().clear()
         self.wv_height = self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height()
         print(self.wv_height)
@@ -293,8 +271,103 @@ class LipsyncFrame:
             self.main_window.waveform_view.scene().addLine(10 * i, 0, 10 * i, self.wv_height)
             self.main_window.waveform_view.scene().addRect(10 * i, 0, 10, random.randrange(self.wv_height), self.wv_pen, self.wv_brush)
 
+    def on_save_as(self):
+        if self.doc is None:
+            return
+        print(self.config.value("WorkingDir", get_main_dir()))
+        file_path, _ = QtGui.QFileDialog.getOpenFileName(self.main_window,
+                                                         "Save %s File" % app_title,
+                                                         self.config.value("WorkingDir", get_main_dir()),
+                                                         save_wildcard)
+        if file_path:
+            self.config.setValue("WorkingDir", os.path.dirname(file_path))
+            self.doc.save(os.path.dirname(file_path))
+            self.main_window.setWindowTitle("%s [%s] - %s" % (self.doc.name, file_path, app_title))
+
+    def on_close(self):
+        if self.doc is not None:
+            self.config.setValue("LastFPS", str(self.doc.fps))
+            del self.doc
+        self.doc = None
+        self.main_window.waveform_view.set_document(self.doc)
+        # clear voice controls
+        self.main_window.voice_name_input.clear()
+        self.main_window.text_edit.clear()
+        self.main_window.fps_input.clear()
+        self.main_window.voice_list.clear()
+        # disabling widgets
+        self.main_window.vertical_layout_right.setEnabled(False)
+        self.main_window.vertical_layout_left.setEnabled(False)
+        self.main_window.volume_slider.setEnabled(False)
+        self.main_window.action_save.setEnabled(False)
+        self.main_window.action_save_as.setEnabled(False)
+        self.main_window.menu_edit.setEnabled(False)
+        self.main_window.action_play.setEnabled(False)
+        self.main_window.action_stop.setEnabled(False)
+        self.main_window.action_zoom_in.setEnabled(False)
+        self.main_window.action_zoom_out.setEnabled(False)
+        self.main_window.action_reset_zoom.setEnabled(False)
+
+    def on_quit(self, event=None):
+        self.on_close()
+        self.close(True)
+
+    def on_help(self, event=None):
+        print("file://%s" % os.path.join(get_main_dir(), r"help\index.html"))
+        test_path = r"D:\Program Files (x86)\Papagayo\help\index.html"
+        real_path = os.path.join(get_main_dir(), r"help\index.html")
+        webbrowser.open("file://%s" % test_path)  # TODO: Fix path
+
+    def on_about(self, event=None):
+        # dlg = AboutBox(self)
+        # dlg.ShowModal()
+        # dlg.Destroy()
+        pass
+
+    def on_play(self, event=None):
+        if (self.doc is not None) and (self.doc.sound is not None):
+            self.cur_frame = -1
+            self.main_window.action_play.setEnabled(False)
+            self.main_window.action_stop.setEnabled(True)
+            self.doc.sound.set_cur_time(0)
+            self.doc.sound.play(False)
+            self.timer = QtCore.QTimer(self)
+            self.main_window.connect(self.timer, None, self.on_play_tick)
+            # self.connect(self.timer, None, self.on_play_tick)
+            self.timer.start(250.0/self.doc.fps)
+        #     self.mainFrame_toolbar.EnableTool(ID_PLAY, False)
+        #     self.mainFrame_toolbar.EnableTool(ID_STOP, True)
+        #     self.doc.sound.SetCurTime(0)
+        #     self.doc.sound.Play(False)
+        #     self.timer = wx.Timer(self, ID_PLAY_TICK)
+        #     self.timer.Start(250.0 / self.doc.fps)
+
+    def on_stop(self, event=None):
+        if (self.doc is not None) and (self.doc.sound is not None):
+            self.doc.sound.stop()
+            self.doc.sound.set_cur_time(0)
+            self.main_window.mouth_view.set_frame(0)
+            self.main_window.waveform_view.set_frame(0)
+            self.main_window.action_stop.setEnabled(False)
+            self.main_window.action_play.setEnabled(True)
+            self.main_window.statusbar.showMessage("Stopped")
+
+    def on_play_tick(self, event=None):
+        if (self.doc is not None) and (self.doc.sound is not None):
+            if self.doc.sound.is_playing():
+                cur_frame = int(math.floor(self.doc.sound.current_time() * self.doc.fps))
+                if cur_frame != self.cur_frame:
+                    self.cur_frame = cur_frame
+                    self.main_window.mouth_view.set_frame(self.cur_frame)
+                    self.main_window.waveform_view.set_frame(self.cur_frame)
+                    self.main_window.statusbar.showMessage("Frame: %d" % (cur_frame + 1))
+            else:
+                self.on_stop()
+                self.timer.stop()
+                del self.timer
+
     # TODO: These are very similar, might want to combine them
-    def on_resize(self, event = None):
+    def on_resize(self, event=None):
         # Test Drawing on the WaveformView
         # self.new_height = self.main_window.waveform_view.height()-self.main_window.waveform_view.horizontalScrollBar().height()
         # self.height_scale = self.new_height / self.old_height
@@ -308,7 +381,7 @@ class LipsyncFrame:
                                                  self.wv_height)
         self.main_window.waveform_view.horizontalScrollBar().setValue(self.scroll_position)
 
-    def on_zoom_in(self, event = None):
+    def on_zoom_in(self, event=None):
         self.zoom_factor -= 0.1
         print(self.zoom_factor)
         self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
@@ -316,7 +389,7 @@ class LipsyncFrame:
                                                  self.main_window.waveform_view.width()*self.zoom_factor,
                                                  self.wv_height)
 
-    def on_zoom_out(self, event = None):
+    def on_zoom_out(self, event=None):
         self.zoom_factor += 0.1
         print(self.zoom_factor)
         self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
@@ -324,7 +397,7 @@ class LipsyncFrame:
                                                  self.main_window.waveform_view.width()*self.zoom_factor,
                                                  self.wv_height)
 
-    def on_zoom_reset(self, event = None):
+    def on_zoom_reset(self, event=None):
         self.zoom_factor = 1
         print(self.zoom_factor)
         self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
@@ -332,7 +405,7 @@ class LipsyncFrame:
                                                  self.main_window.waveform_view.width()*self.zoom_factor,
                                                  self.wv_height)
 
-    def on_wheel(self, event = None):
+    def on_wheel(self, event=None):
         # print(self.main_window.waveform_view.matrix())
         self.scroll_position = self.main_window.waveform_view.horizontalScrollBar().value()+(event.delta()/1.2)
         self.main_window.waveform_view.horizontalScrollBar().setValue(self.scroll_position)
@@ -347,7 +420,7 @@ class LipsyncFrame:
     def on_slider_change(self, value):
         self.scroll_position = value
 
-    def on_reload_dictionary(self, event = None):
+    def on_reload_dictionary(self, event=None):
         print("reload the dictionary")
         lang_config = self.doc.language_manager.language_table[self.main_window.language_choice.currentText()]
         self.doc.language_manager.LoadLanguage(lang_config, force=True)
