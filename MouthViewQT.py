@@ -19,9 +19,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#import os
-from PySide import QtGui
-import re
+# import os
+from PySide import QtGui, QtCore
 from utilities import *
 
 
@@ -32,22 +31,17 @@ from utilities import *
 class MouthView(QtGui.QGraphicsView):
     def __init__(self, parent=None):
         super(MouthView, self).__init__(parent)
-        # # begin wxGlade: MouthView.__init__
-        # kwds["style"] = wx.BORDER_SUNKEN | wx.TAB_TRAVERSAL
-        # wx.Panel.__init__(self, *args, **kwds)
-        #
-        # self.__set_properties()
-        # self.__do_layout()
-        # # end wxGlade
-        #
-        # # Other initialization
-        # self.doc = None
-        # self.curFrame = 0
-        # self.oldFrame = 0
-        # self.currentPhoneme = "rest"
-        # self.currentMouth = None
-        # self.mouths = {}
-        # self.LoadMouths()
+        self.setScene(QtGui.QGraphicsScene(self))
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        # Other initialization
+        self.doc = None
+        self.cur_frame = 0
+        self.old_frame = 0
+        self.current_phoneme = "rest"
+        self.current_mouth = None
+        self.mouths = {}
+        self.load_mouths()
         #
         # # Connect event handlers
         # # window events
@@ -74,7 +68,30 @@ class MouthView(QtGui.QGraphicsView):
         # self.DrawMe(dc)
         pass
 
-    def DrawMe(self, dc=None):
+    def draw_me(self, dc=None):
+        if (self.doc is not None) and (self.doc.sound is not None) and (self.doc.sound.is_playing()):
+            if self.doc.current_voice is not None:
+                phoneme = self.doc.current_voice.get_phoneme_at_frame(self.cur_frame)
+            else:
+                phoneme = "rest"
+            if phoneme == self.current_phoneme:
+                return
+            else:
+                self.current_phoneme = phoneme
+        else:
+            self.current_phoneme = "rest"
+
+        bitmap = self.mouths[self.current_mouth][self.current_phoneme]
+        self.scene().clear()
+        self.scene().addPixmap(bitmap)
+        self.fitInView(self.x(),
+                       self.y(),
+                       self.width(),
+                       self.height())
+        print(self.x(),
+              self.y(),
+              self.width(),
+              self.height())
         # if (self.doc is not None) and (self.doc.sound is not None) and (self.doc.sound.IsPlaying()):
         #     if self.doc.currentVoice is not None:
         #         phoneme = self.doc.currentVoice.GetPhonemeAtFrame(self.curFrame)
@@ -106,50 +123,46 @@ class MouthView(QtGui.QGraphicsView):
         #     del dc
         pass
 
-    def SetFrame(self, frame):
-        # self.oldFrame = self.curFrame
-        # self.curFrame = frame
-        # self.DrawMe()
+    def set_frame(self, frame):
+        self.old_frame = self.cur_frame
+        self.cur_frame = frame
+        self.draw_me()
         pass
 
-    def SetDocument(self, doc):
-        # self.doc = doc
-        # self.DrawMe()
+    def set_document(self, doc):
+        self.doc = doc
+        self.draw_me()
         pass
 
-    def ProcessMouthDir(self, dirname, names, supportedimagetypes):
-        # hasImages = False
-        # for files in names:
-        #     files = files.lower()
-        #     if files.split(".")[-1] in supportedimagetypes:
-        #         hasImages = True
-        # if not hasImages:
-        #     return
-        # print(os.path.normpath(dirname), names)
-        # self.AddMouth(os.path.normpath(dirname), names)
+    def process_mouth_dir(self, dir_name, names, supported_imagetypes):
+        has_images = False
+        for files in names:
+            files = files.lower()
+            if files.split(".")[-1] in supported_imagetypes:
+                has_images = True
+        if not has_images:
+            return
+        print(os.path.normpath(dir_name), names)
+        self.add_mouth(os.path.normpath(dir_name), names)
         pass
 
-    def LoadMouths(self):
-        # print(os.path.join(get_main_dir(), "rsrc", "mouths"))
-        # # wx gives us a string instead of a list of filetypes
-        # full_pattern = re.compile('[^a-zA-Z0-9.\\\/]|_')
-        # supportedimagetypes = re.sub(full_pattern, '', wx.Image.GetImageExtWildcard()).split(".")
-        # for directory, dirnames, filenames in os.walk(os.path.join(get_main_dir(), "rsrc", "mouths")):
-        #     self.ProcessMouthDir(directory, filenames, supportedimagetypes)
+    def load_mouths(self):
+        print(os.path.join(get_main_dir(), "rsrc", "mouths"))
+        supported_imagetypes = QtGui.QImageReader.supportedImageFormats()
+        for directory, dir_names, file_names in os.walk(os.path.join(get_main_dir(), "rsrc", "mouths")):
+            self.process_mouth_dir(directory, file_names, supported_imagetypes)
         pass
 
-    def AddMouth(self, dirname, names):
-        # bitmaps = {}
-        # for files in names:
-        #     if ".svn" in files:
-        #         continue
-        #     path = os.path.normpath(os.path.join(dirname, files))
-        #     nolog = wx.LogNull()
-        #     bitmaps[files.split('.')[0]] = wx.Bitmap(path, wx.BITMAP_TYPE_ANY)
-        #     del nolog
-        # self.mouths[os.path.basename(dirname)] = bitmaps
-        # if self.currentMouth is None:
-        #     self.currentMouth = os.path.basename(dirname)
+    def add_mouth(self, dir_name, names):
+        bitmaps = {}
+        for files in names:
+            if ".svn" in files:
+                continue
+            path = os.path.normpath(os.path.join(dir_name, files))
+            bitmaps[files.split('.')[0]] = QtGui.QPixmap(path)
+        self.mouths[os.path.basename(dir_name)] = bitmaps
+        if self.current_mouth is None:
+            self.current_mouth = os.path.basename(dir_name)
         pass
 
 # end of class MouthView

@@ -425,7 +425,7 @@ class WaveformView(QtGui.QGraphicsView):
         # self.UpdateDrawing(False)
         pass
 
-    def SetDocument(self, doc):
+    def set_document(self, doc):
         # if (self.doc is None) and (doc is not None):
         #     self.sampleWidth = defaultSampleWidth
         #     self.samplesPerFrame = defaultSamplesPerFrame

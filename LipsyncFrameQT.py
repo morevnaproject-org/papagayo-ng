@@ -24,6 +24,7 @@ import string
 import math
 # import wx
 from PySide import QtCore, QtGui, QtUiTools
+from PySide.QtWebKit import QWebView
 import webbrowser
 import random
 import re
@@ -35,7 +36,7 @@ from WaveformViewQT import WaveformView
 from MouthViewQT import MouthView
 # end wxGlade
 
-# from AboutBox import AboutBox
+from AboutBoxQT import AboutBox
 from LipsyncDoc import *
 
 app_title = "Papagayo-NG"
@@ -58,9 +59,20 @@ class LipsyncFrame:
         self.ui_file = None
         self.ui = None
         self.doc = None
+        self.about_dlg = None
         self.config = QtCore.QSettings(app_title, "Lost Marble")
 
         # TODO: need a good description for this stuff
+
+        mouth_list = list(self.main_window.mouth_view.mouths.keys())
+        mouth_list.sort()
+        print(mouth_list)
+        for mouth in mouth_list:
+            self.main_window.mouth_choice.addItem(mouth)
+            # self.mouthChoice.Append(mouth)
+        self.main_window.mouth_choice.setCurrentIndex(0)
+        self.main_window.mouth_choice.current_mouth = self.main_window.mouth_choice.currentText()
+
         self.langman = LanguageManager()
         self.langman.InitLanguages()
         language_list = list(self.langman.language_table.keys())
@@ -74,6 +86,17 @@ class LipsyncFrame:
                 select = c
             c += 1
         self.main_window.language_choice.setCurrentIndex(select)
+
+        # setup export initialisation here
+        exporter_list = ["MOHO", "ALELO", "Images"]
+        c = 0
+        select = 0
+        for exporter in exporter_list:
+            self.main_window.export_combo.addItem(exporter)
+            if exporter == "MOHO":
+                select = c
+            c += 1
+        self.main_window.export_combo.setCurrentIndex(select)
 
         # This adds our statuses to the statusbar
         self.mainframe_statusbar_fields = [app_title, "Stopped"]
@@ -98,6 +121,8 @@ class LipsyncFrame:
         self.main_window.waveform_view.wheelEvent = self.on_wheel
         self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(self.on_slider_change)
         self.main_window.action_help_topics.triggered.connect(self.on_help)
+        self.main_window.action_about_papagayo_ng.triggered.connect(self.on_about)
+        self.main_window.export_combo.currentIndexChanged.connect(self.on_export_choice)
         #         # # menus
         #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -228,8 +253,8 @@ class LipsyncFrame:
                     pass
         if self.doc is not None:
             self.main_window.setWindowTitle("%s [%s] - %s" % (self.doc.name, path, app_title))
-            self.main_window.waveform_view.SetDocument(self.doc)
-            self.main_window.mouth_view.SetDocument(self.doc)
+            self.main_window.waveform_view.set_document(self.doc)
+            self.main_window.mouth_view.set_document(self.doc)
             # Reenable all disabled widgets TODO: Can likely be reduced
             self.main_window.vertical_layout_right.setEnabled(True)
             self.main_window.vertical_layout_left.setEnabled(True)
@@ -313,16 +338,14 @@ class LipsyncFrame:
         self.close(True)
 
     def on_help(self, event=None):
-        print("file://%s" % os.path.join(get_main_dir(), r"help\index.html"))
-        test_path = r"D:\Program Files (x86)\Papagayo\help\index.html"
-        real_path = os.path.join(get_main_dir(), r"help\index.html")
-        webbrowser.open("file://%s" % test_path)  # TODO: Fix path
+        github_path = "https://github.com/morevnaproject/papagayo-ng/issues"
+        test_path = "file://%s" % r"D:\Program Files (x86)\Papagayo\help\index.html"
+        real_path = "file://%s" % os.path.join(get_main_dir(), r"help\index.html")
+        webbrowser.open(github_path)  # TODO: Fix path
 
     def on_about(self, event=None):
-        # dlg = AboutBox(self)
-        # dlg.ShowModal()
-        # dlg.Destroy()
-        pass
+        self.about_dlg = AboutBox()
+        self.about_dlg.main_window.show()
 
     def on_play(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):
@@ -365,6 +388,24 @@ class LipsyncFrame:
                 self.on_stop()
                 self.timer.stop()
                 del self.timer
+
+    def on_mouth_choice(self, event=None):
+        self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
+        self.main_window.mouth_view.draw_me()
+        # self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
+        # self.mouthView.DrawMe()
+        pass
+
+    def on_export_choice(self, event=None):
+        if self.main_window.export_combo.currentText() == "Images":
+            self.main_window.choose_imageset_button.setEnabled(True)
+        else:
+            self.main_window.choose_imageset_button.setEnabled(False)
+        # if self.exportChoice.GetStringSelection() == "Images":
+        #     self.voiceimageBut.Enable(True)
+        # else:
+        #     self.voiceimageBut.Enable(False)
+        pass
 
     # TODO: These are very similar, might want to combine them
     def on_resize(self, event=None):

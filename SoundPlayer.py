@@ -76,7 +76,7 @@ class SoundPlayer:
             width = self.wave_reference.getsampwidth()
             return audioop.rms(frame, width)
 
-    def IsPlaying(self):
+    def is_playing(self):
         return self.isplaying
 
     def SetCurTime(self, time):
