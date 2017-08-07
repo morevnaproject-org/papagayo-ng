@@ -98,6 +98,7 @@ class LipsyncFrame:
             c += 1
         self.main_window.export_combo.setCurrentIndex(select)
 
+        self.ignore_text_changes = False
         # This adds our statuses to the statusbar
         self.mainframe_statusbar_fields = [app_title, "Stopped"]
         self.play_status = QtGui.QLabel()
@@ -123,6 +124,8 @@ class LipsyncFrame:
         self.main_window.action_help_topics.triggered.connect(self.on_help)
         self.main_window.action_about_papagayo_ng.triggered.connect(self.on_about)
         self.main_window.export_combo.currentIndexChanged.connect(self.on_export_choice)
+        self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
+        self.main_window.text_edit.textChanged.connect(self.on_voice_text)
         #         # # menus
         #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -262,6 +265,7 @@ class LipsyncFrame:
             self.main_window.action_save.setEnabled(True)
             self.main_window.action_save_as.setEnabled(True)
             self.main_window.menu_edit.setEnabled(True)
+            self.main_window.choose_imageset_button.setEnabled(False)
             if self.doc.sound is not None:
                 self.main_window.action_play.setEnabled(True)
                 # self.main_window.action_stop.setEnabled(True)
@@ -406,6 +410,21 @@ class LipsyncFrame:
         # else:
         #     self.voiceimageBut.Enable(False)
         pass
+
+    def on_voice_name(self, event=None):
+        print(self.main_window.voice_name_input.text())
+        if (self.doc is not None) and (self.doc.current_voice is not None):
+            self.doc.dirty = True
+            self.doc.current_voice.name = self.main_window.voice_name_input.text()
+            self.main_window.voice_name_input.setText(self.doc.current_voice.name)
+
+    def on_voice_text(self, event=None):
+        print(self.main_window.text_edit.toPlainText())
+        if self.ignore_text_changes:
+            return
+        if (self.doc is not None) and (self.doc.current_voice is not None):
+            self.doc.dirty = True
+            self.doc.current_voice.text = self.main_window.text_edit.toPlainText()
 
     # TODO: These are very similar, might want to combine them
     def on_resize(self, event=None):
