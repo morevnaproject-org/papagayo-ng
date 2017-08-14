@@ -74,7 +74,7 @@ class LipsyncFrame:
         self.main_window.mouth_choice.current_mouth = self.main_window.mouth_choice.currentText()
 
         self.langman = LanguageManager()
-        self.langman.InitLanguages()
+        self.langman.init_languages()
         language_list = list(self.langman.language_table.keys())
         language_list.sort()
 
@@ -86,6 +86,12 @@ class LipsyncFrame:
                 select = c
             c += 1
         self.main_window.language_choice.setCurrentIndex(select)
+
+        # setup phonemeset initialisation here
+        self.phonemeset = PhonemeSet()
+        for name in self.phonemeset.alternatives:
+            self.main_window.phoneme_set.addItem(name)
+        self.main_window.phoneme_set.setCurrentIndex(0)
 
         # setup export initialisation here
         exporter_list = ["MOHO", "ALELO", "Images"]
@@ -126,6 +132,9 @@ class LipsyncFrame:
         self.main_window.export_combo.currentIndexChanged.connect(self.on_export_choice)
         self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
         self.main_window.text_edit.textChanged.connect(self.on_voice_text)
+        self.main_window.export_button.clicked.connect(self.on_voice_export)
+        self.main_window.breakdown_button.clicked.connect(self.on_voice_breakdown)
+        self.main_window.choose_imageset_button.clicked.connect(self.on_voiceimagechoose)
         #         # # menus
         #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -426,6 +435,90 @@ class LipsyncFrame:
             self.doc.dirty = True
             self.doc.current_voice.text = self.main_window.text_edit.toPlainText()
 
+    def on_voice_breakdown(self, event=None):
+        if (self.doc is not None) and (self.doc.current_voice is not None):
+            language = self.main_window.language_choice.currentText()
+            phonemeset_name = self.main_window.phoneme_set.currentText()
+            self.phonemeset.load(phonemeset_name)
+            self.doc.dirty = True
+            self.doc.current_voice.run_breakdown(self.doc.soundDuration, self, language, self.langman,
+                                                 self.phonemeset)
+            self.main_window.waveform_view.update_drawing()
+            self.ignore_text_changes = True
+            self.main_window.text_edit.setText(self.doc.current_voice.text)
+            self.ignore_text_changes = False
+
+    def on_voice_export(self, event=None):
+        language = self.main_window.language_choice.currentText()
+        if (self.doc is not None) and (self.doc.current_voice is not None):
+            exporter = self.main_window.export_combo.currentText()
+            message = ""
+            default_file = ""
+            wildcard = ""
+            if exporter == "MOHO":
+                message = "Export Lipsync Data (MOHO)"
+                default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".dat"
+                wildcard = "Moho switch files (*.dat)|*.dat"
+            elif exporter == "ALELO":
+                fps = int(self.config.value("FPS", 24))
+                if fps != 100:
+                    dlg = QtGui.QMessageBox()
+                    dlg.setText("FPS is NOT 100 continue? (You will have issues downstream.)")
+                    dlg.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+                    dlg.setDefaultButton(QtGui.QMessageBox.Yes)
+                    dlg.setIcon(QtGui.QMessageBox.Question)
+                    result = dlg.exec_()
+                    if result == QtGui.QMessageBox.Yes:
+                        message = "Export Lipsync Data (ALELO)"
+                        default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".txt"
+                        wildcard = "Alelo timing files (*.txt)|*.txt"
+                    elif result == QtGui.QMessageBox.No:
+                        return
+                    elif result == QtGui.QMessageBox.Cancel:
+                        return
+                else:
+                    message = "Export Lipsync Data (ALELO)"
+                    default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".txt"
+                    wildcard = "Alelo timing files (*.txt)|*.txt"
+            elif exporter == "Images":
+                    message = "Export Image Strip"
+                    default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0]
+                    wildcard = ""
+            file_path, _ = QtGui.QFileDialog.getSaveFileName(self.main_window,
+                                                             message,
+                                                             self.config.value("WorkingDir", get_main_dir()),
+                                                             wildcard)
+            if file_path:
+                self.config.setValue("WorkingDir", os.path.dirname(file_path))
+                if exporter == "MOHO":
+                    self.doc.current_voice.export(file_path)
+                elif exporter == "ALELO":
+                    self.doc.current_voice.export_alelo(file_path, language, self.langman)
+                elif exporter == "Images":
+                    self.doc.current_voice.export_images(file_path, self.main_window.mouth_choice.currentText())
+
+    def on_voiceimagechoose(self, event=None):
+        language = self.main_window.language_choice.currentText()
+        if (self.doc is not None) and (self.doc.current_voice is not None):
+            voiceimage_path = QtGui.QFileDialog.getExistingDirectory(self.main_window,
+                                                                        "Choose Path for Images",
+                                                                        self.config.value("MouthDir",
+                                                                                          os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")))
+            if voiceimage_path:
+                self.config.setValue("MouthDir", voiceimage_path)
+                print(voiceimage_path)
+                supported_imagetypes = QtGui.QImageReader.supportedImageFormats()
+                for directory, dir_names, file_names in os.walk(voiceimage_path):
+                    self.main_window.mouth_view.process_mouth_dir(directory, file_names, supported_imagetypes)
+                mouth_list = list(self.main_window.mouth_view.mouths.keys())
+                mouth_list.sort()
+                print(mouth_list)
+                self.main_window.mouth_choice.clear()
+                for mouth in mouth_list:
+                    self.main_window.mouth_choice.addItem(mouth)
+                self.main_window.mouth_choice.setCurrentIndex(0)
+                self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
+
     # TODO: These are very similar, might want to combine them
     def on_resize(self, event=None):
         # Test Drawing on the WaveformView
@@ -483,7 +576,7 @@ class LipsyncFrame:
     def on_reload_dictionary(self, event=None):
         print("reload the dictionary")
         lang_config = self.doc.language_manager.language_table[self.main_window.language_choice.currentText()]
-        self.doc.language_manager.LoadLanguage(lang_config, force=True)
+        self.doc.language_manager.load_language(lang_config, force=True)
 
     def quit_application(self):
         sys.exit(self.app.exec_())

@@ -55,7 +55,7 @@ class LipsyncWord:
         self.endFrame = 0
         self.phonemes = []
 
-    def RunBreakdown(self, parentWindow, language, languagemanager, phonemeset):
+    def run_breakdown(self, parentWindow, language, languagemanager, phonemeset):
         self.phonemes = []
         try:
             text = self.text.strip(strip_symbols)
@@ -105,7 +105,7 @@ class LipsyncWord:
                     self.phonemes.append(phoneme)
             dlg.Destroy()
 
-    def RepositionPhoneme(self, phoneme):
+    def reposition_phoneme(self, phoneme):
         id = 0
         for i in range(len(self.phonemes)):
             if phoneme is self.phonemes[i]:
@@ -129,7 +129,7 @@ class LipsyncPhrase:
         self.endFrame = 0
         self.words = []
 
-    def RunBreakdown(self, parentWindow, language, languagemanager, phonemeset):
+    def run_breakdown(self, parentWindow, language, languagemanager, phonemeset):
         self.words = []
         for w in self.text.split():
             if len(w) == 0:
@@ -138,9 +138,9 @@ class LipsyncPhrase:
             word.text = w
             self.words.append(word)
         for word in self.words:
-            word.RunBreakdown(parentWindow, language, languagemanager, phonemeset)
+            word.run_breakdown(parentWindow, language, languagemanager, phonemeset)
 
-    def RepositionWord(self, word):
+    def reposition_word(self, word):
         id = 0
         for i in range(len(self.words)):
             if word is self.words[i]:
@@ -174,7 +174,7 @@ class LipsyncPhrase:
             phoneme.frame = int(round(curFrame))
             curFrame += framesPerPhoneme
         for phoneme in word.phonemes:
-            word.RepositionPhoneme(phoneme)
+            word.reposition_phoneme(phoneme)
 
 
 ###############################################################
@@ -205,7 +205,7 @@ class LipsyncVoice:
             self.phrases.append(phrase)
         # now break down the phrases
         for phrase in self.phrases:
-            phrase.RunBreakdown(parentWindow, language, languagemanager, phonemeset)
+            phrase.run_breakdown(parentWindow, language, languagemanager, phonemeset)
         # for first-guess frame alignment, count how many phonemes we have
         phonemeCount = 0
         for phrase in self.phrases:
@@ -362,7 +362,7 @@ class LipsyncVoice:
             endFrame = 1
 
         for frame in range(startFrame, endFrame + 1):
-            nextPhoneme = self.GetPhonemeAtFrame(frame)
+            nextPhoneme = self.get_phoneme_at_frame(frame)
             if nextPhoneme != phoneme:
                 if phoneme == "rest":
                     # export an extra "rest" phoneme at the end of a pause between words or phrases
@@ -392,7 +392,7 @@ class LipsyncVoice:
                             os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/") + currentmouth):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
             for frame in range(startFrame, endFrame + 1):
-                phoneme = self.GetPhonemeAtFrame(frame)
+                phoneme = self.get_phoneme_at_frame(frame)
                 try:
                     shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                              "rsrc/mouths/") + currentmouth + "/" + phoneme + phonemedict[phoneme],
@@ -406,7 +406,7 @@ class LipsyncVoice:
             for files in os.listdir(self.config.Read("MouthDir")):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
             for frame in range(startFrame, endFrame + 1):
-                phoneme = self.GetPhonemeAtFrame(frame)
+                phoneme = self.get_phoneme_at_frame(frame)
                 try:
                     shutil.copy(self.config.Read("MouthDir") + "/" + phoneme + phonemedict[phoneme],
                                 path + str(frame).rjust(6, '0') + phoneme + phonemedict[phoneme])
@@ -436,8 +436,11 @@ class LipsyncVoice:
                     if first:
                         first = False
                     else:
-                        outFile.write("%d %d %s\n" % (
-                            lastPhoneme.frame, phoneme.frame - 1, languagemanager.export_conversion[lastPhoneme_text]))
+                        try:
+                            outFile.write("%d %d %s\n" % (
+                                lastPhoneme.frame, phoneme.frame - 1, languagemanager.export_conversion[lastPhoneme_text]))
+                        except KeyError:
+                            pass
                     if phoneme.text.lower() == "sil":
                         position += 1
                         outFile.write("%d %d sil\n" % (phoneme.frame, phoneme.frame))
@@ -445,8 +448,11 @@ class LipsyncVoice:
                     position += 1
                     lastPhoneme_text = pronunciation[position]
                     lastPhoneme = phoneme
-                outFile.write("%d %d %s\n" % (
-                    lastPhoneme.frame, word.endFrame, languagemanager.export_conversion[lastPhoneme_text]))
+                try:
+                    outFile.write("%d %d %s\n" % (
+                        lastPhoneme.frame, word.endFrame, languagemanager.export_conversion[lastPhoneme_text]))
+                except KeyError:
+                    pass
         outFile.close()
 
 
@@ -490,10 +496,10 @@ class LipsyncDoc:
         numVoices = int(inFile.readline())
         for i in range(numVoices):
             voice = LipsyncVoice()
-            voice.Open(inFile)
+            voice.open(inFile)
             self.voices.append(voice)
         inFile.close()
-        self.OpenAudio(self.soundPath)
+        self.open_audio(self.soundPath)
         if len(self.voices) > 0:
             self.current_voice = self.voices[0]
 
@@ -546,9 +552,9 @@ class PhonemeSet:
         self.set = []
         self.conversion = {}
         self.alternatives = phoneme_sets
-        self.Load(self.alternatives[0])
+        self.load(self.alternatives[0])
 
-    def Load(self, name=''):
+    def load(self, name=''):
         if name in self.alternatives:
             print("import phonemes_%s as phonemeset" % name)
             phonemeset = importlib.import_module("phonemes_%s" % name)
@@ -572,9 +578,9 @@ class LanguageManager:
         self.current_language = ""
 
         self.export_conversion = {}
-        self.InitLanguages()
+        self.init_languages()
 
-    def LoadDictionary(self, path):
+    def load_dictionary(self, path):
         try:
             inFile = open(path, 'r')
         except:
@@ -605,17 +611,17 @@ class LanguageManager:
         inFile.close()
         inFile = None
 
-    def LoadLanguage(self, language_config, force=False):
+    def load_language(self, language_config, force=False):
         if self.current_language == language_config["label"] and not force:
             return
         self.current_language = language_config["label"]
 
         if "dictionaries" in language_config:
             for dictionary in language_config["dictionaries"]:
-                self.LoadDictionary(
+                self.load_dictionary(
                     os.path.join(get_main_dir(), language_config["location"], language_config["dictionaries"][dictionary]))
 
-    def LanguageDetails(self, dirname, names):
+    def language_details(self, dirname, names):
         if "language.ini" in names:
             config = configparser.ConfigParser()
             config.read(os.path.join(dirname, "language.ini"))
@@ -642,9 +648,9 @@ class LanguageManager:
             else:
                 print("unknown type ignored language not added to table")
 
-    def InitLanguages(self):
+    def init_languages(self):
         if len(self.language_table) > 0:
             return
         for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc/languages")):
             if "language.ini" in files:
-                self.LanguageDetails(path, files)
+                self.language_details(path, files)
