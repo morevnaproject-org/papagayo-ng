@@ -501,9 +501,9 @@ class LipsyncFrame:
         language = self.main_window.language_choice.currentText()
         if (self.doc is not None) and (self.doc.current_voice is not None):
             voiceimage_path = QtGui.QFileDialog.getExistingDirectory(self.main_window,
-                                                                        "Choose Path for Images",
-                                                                        self.config.value("MouthDir",
-                                                                                          os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")))
+                                                                     "Choose Path for Images",
+                                                                     self.config.value("MouthDir",
+                                                                                       os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")))
             if voiceimage_path:
                 self.config.setValue("MouthDir", voiceimage_path)
                 print(voiceimage_path)

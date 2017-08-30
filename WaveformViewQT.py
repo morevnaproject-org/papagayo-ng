@@ -20,9 +20,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import math
+import math, random
 # import wx
-debug_performance = None
+debug_performance = True
 if debug_performance:
     import simplestopwatch as stopwatch
 else:
@@ -38,10 +38,10 @@ from LipsyncDoc import *
 BUFFERED = 1
 SIMPLE_DISPLAY = 0
 
-defaultSampleWidth = 2
-defaultSamplesPerFrame = 4
-defaultSampleWidth = 4
-defaultSamplesPerFrame = 2
+# default_sample_width = 2
+# default_samples_per_frame = 4
+default_sample_width = 4
+default_samples_per_frame = 2
 
 
 class WaveformView(QtGui.QGraphicsView):
@@ -65,22 +65,22 @@ class WaveformView(QtGui.QGraphicsView):
 
         # Other initialization
         self.doc = None
-        self.maxWidth = 1
-        self.maxHeight = 1
-        self.isDragging = False
-        self.basicScrubbing = False
-        self.curFrame = 0
-        self.oldFrame = 0
+        self.max_width = 1
+        self.max_height = 1
+        self.is_dragging = False
+        self.basic_scrubbing = False
+        self.cur_frame = 0
+        self.old_frame = 0
         self.buffer = None
-        self.clipRect = None
-        self.sampleWidth = defaultSampleWidth
-        self.samplesPerFrame = defaultSamplesPerFrame
-        self.samplesPerSec = 24 * self.samplesPerFrame
-        self.frameWidth = self.sampleWidth * self.samplesPerFrame
-        self.phraseBottom = 16
-        self.wordBottom = 32
-        self.phonemeTop = 128
-        self.didresize = 0
+        self.clip_rect = None
+        self.sample_width = default_sample_width
+        self.samples_per_frame = default_samples_per_frame
+        self.samples_per_sec = 24 * self.samples_per_frame
+        self.frame_width = self.sample_width * self.samples_per_frame
+        self.phrase_bottom = 16
+        self.word_bottom = 32
+        self.phoneme_top = 128
+        self.did_resize = 0
         #
         # # Connect event handlers
         # # window events
@@ -426,38 +426,40 @@ class WaveformView(QtGui.QGraphicsView):
         pass
 
     def set_document(self, doc):
-        # if (self.doc is None) and (doc is not None):
-        #     self.sampleWidth = defaultSampleWidth
-        #     self.samplesPerFrame = defaultSamplesPerFrame
-        #     self.samplesPerSec = doc.fps * self.samplesPerFrame
-        #     self.frameWidth = self.sampleWidth * self.samplesPerFrame
-        # self.doc = doc
-        # self.numSamples = 0
-        # self.amp = []
-        # self.maxWidth = 32
-        # self.maxHeight = 32
-        # if (self.doc is not None) and (self.doc.sound is not None):
-        #     self.frameWidth = self.sampleWidth * self.samplesPerFrame
-        #     duration = self.doc.sound.Duration()
-        #     time = 0.0
-        #     sampleDur = 1.0 / self.samplesPerSec
-        #     maxAmp = 0.0
-        #     while time < duration:
-        #         self.numSamples += 1
-        #         amp = self.doc.sound.GetRMSAmplitude(time, sampleDur)
-        #         self.amp.append(amp)
-        #         if amp > maxAmp:
-        #             maxAmp = amp
-        #         time += sampleDur
-        #     # normalize amplitudes
-        #     maxAmp = 0.95 / maxAmp
-        #     for i in range(len(self.amp)):
-        #         self.amp[i] *= maxAmp
-        #     self.maxWidth = (self.numSamples + 1) * self.sampleWidth
-        #     self.maxHeight = self.GetClientSize().height
-        # elif self.doc is not None:
-        #     self.maxWidth = self.doc.soundDuration * self.frameWidth
-        #     self.maxHeight = self.GetClientSize().height
+        if (self.doc is None) and (doc is not None):
+            self.sample_width = default_sample_width
+            self.samples_per_frame = default_samples_per_frame
+            self.samples_per_sec = doc.fps * self.samples_per_frame
+            self.frame_width = self.sample_width * self.samples_per_frame
+        self.doc = doc
+        self.num_samples = 0
+        self.amp = []
+        self.max_width = 32
+        self.max_height = 32
+        if (self.doc is not None) and (self.doc.sound is not None):
+            self.frame_width = self.sample_width * self.samples_per_frame
+            duration = self.doc.sound.Duration()
+            time = 0.0
+            sample_dur = 1.0 / self.samples_per_sec
+            max_amp = 0.0
+            while time < duration:
+                self.num_samples += 1
+                amp = self.doc.sound.GetRMSAmplitude(time, sample_dur)
+                self.amp.append(amp)
+                if amp > max_amp:
+                    max_amp = amp
+                time += sample_dur
+            # normalize amplitudes
+            max_amp = 0.95 / max_amp
+            for i in range(len(self.amp)):
+                self.amp[i] *= max_amp
+            self.max_width = (self.num_samples + 1) * self.sample_width
+            self.wv_height = self.height() - self.horizontalScrollBar().height()
+            self.max_height = self.wv_height
+        elif self.doc is not None:
+            self.max_width = self.doc.sound_duration * self.frame_width
+            self.wv_height = self.height() - self.horizontalScrollBar().height()
+            self.max_height = self.wv_height
         # self.SetVirtualSize((self.maxWidth, self.maxHeight))
         # # clear the current waveform
         # dc = wx.ClientDC(self)
@@ -473,7 +475,8 @@ class WaveformView(QtGui.QGraphicsView):
         #     self.UpdateDrawing()
         pass
 
-    def UpdateDrawing(self, redrawAll=True):
+    def update_drawing(self, redraw_all=True):
+        self.draw()
         # if BUFFERED and self.buffer is None:
         #     print("Oh no!")
         #     return
@@ -527,15 +530,85 @@ class WaveformView(QtGui.QGraphicsView):
         #     self.Draw(dc)
         pass
 
-    def paint(self, painter, option, widget):
+    def draw(self):
         print("Begin Drawing")
+        QtGui.QColor()
+        fill_color = QtGui.QColor(162, 205, 242)
+        line_color = QtGui.QColor(30, 121, 198)
+        frame_col = QtGui.QColor(192, 192, 192)
+        frame_text_col = QtGui.QColor(64, 64, 64)
+        play_back_col = QtGui.QColor(255, 127, 127)
+        play_fore_col = QtGui.QColor(209, 102, 121)
+        play_outline_col = QtGui.QColor(128, 0, 0)
+        text_col = QtGui.QColor(64, 64, 64)
+        phrase_fill_col = QtGui.QColor(205, 242, 162)
+        phrase_outline_col = QtGui.QColor(121, 198, 30)
+        word_fill_col = QtGui.QColor(242, 205, 162)
+        word_outline_col = QtGui.QColor(198, 121, 30)
+        phoneme_fill_col = QtGui.QColor(231, 185, 210)
+        phoneme_outline_col = QtGui.QColor(173, 114, 146)
+        font = QtGui.QFont("Swiss", 6)
+        draw_play_marker = False
+        # TestWaveform
+        self.scene().clear()
+        first_sample = 0
+        last_sample = len(self.amp)
+        self.wv_height = self.height() - self.horizontalScrollBar().height()
+        half_client_height = (self.height() - self.horizontalScrollBar().height()) / 2
+        font_metrics = QtGui.QFontMetrics(font)
 
-        # p = QtGui.QPainter(self)
-        # #while not p.isActive():
-        # #    p.begin(self.view)
-        # #p.begin()
-        # p.drawLine(5, 5, 20, 20)
-        # #p.end()
+        x = first_sample * self.sample_width
+        frame = first_sample / self.samples_per_frame
+        fps = int(round(self.doc.fps))
+        sample = first_sample
+        last_height = -1
+        last_half_height = 1
+        amp = 0
+        top_border = 0
+        if stopwatch:
+            t2 = stopwatch.Timer()
+        for i in range(int(first_sample), int(last_sample)):
+            if stopwatch:
+                if i % 100 == 0:
+                    print("Sample " + str(i) + " Time " + str(t2.elapsed))
+            print("SPerFrame: " + str((sample + 1) % self.samples_per_frame))
+            if (sample + 1) % self.samples_per_frame == 0:
+                # draw frame marker
+                # dc.SetPen(wx.Pen(frameCol))  # +0.06 seconds
+                # self.frame_width = 4
+                frame_x = (frame + 1) * self.frame_width
+                # print("framex: ",frameX)
+                if (self.frame_width > 2) or ((frame + 2) % fps == 0):
+                    self.scene().addLine(frame_x, top_border, frame_x, self.wv_height, frame_col)
+                    print("Line: " + str(frame_x))
+                    # dc.DrawLine(frameX, 0, frameX, cs.height)  # +0.01 seconds
+                # draw frame label
+                if (self.frame_width > 30) or ((frame + 2) % 5 == 0):
+                    # These three take about 0.01 seconds
+                    self.scene().addLine(frame_x, 0, frame_x, top_border, frame_col)
+                    # dc.DrawLine(frameX, 0, frameX, topBorder)
+                    self.scene().addLine(frame_x + 1, 0, frame_x + 1, self.wv_height, frame_col)
+                    # dc.DrawLine(frameX + 1, 0, frameX + 1, cs.height)
+                    self.scene().addText(str(frame + 2), font)
+
+                    # dc.DrawLabel(str(frame + 2), wx.Rect(frameX + 1, 0, 128, 128))
+                # dc.SetBrush(wx.Brush(fillColor))  # +0.04 seconds
+                # dc.SetPen(wx.Pen(lineColor))  # +0.07 seconds
+            amp = self.amp[i]
+            height = round(self.wv_height * amp)
+            half_height = height / 2
+            # if draw_play_marker and (frame == cur_frame):
+            #     dc.SetBrush(wx.Brush(playForeCol))
+            #     dc.SetPen(wx.TRANSPARENT_PEN)
+            sample += 1
+        # self.wv_height = self.height() - self.horizontalScrollBar().height()
+        # print(self.wv_height)
+        # self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
+        # self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
+        # for i in range(5000):
+        #     self.scene().addLine(10 * i, 0, 10 * i, self.wv_height)
+        #     self.scene().addRect(10 * i, 0, 10, random.randrange(self.wv_height), self.wv_pen,
+        #                          self.wv_brush)
         print("End Drawing")
         # if stopwatch:
         #     t2 = stopwatch.Timer()
@@ -827,25 +900,25 @@ class WaveformView(QtGui.QGraphicsView):
         pass
 
     def OnZoomIn(self, event):
-        if (self.doc is not None) and (self.samplesPerFrame < 16):
-            self.samplesPerFrame *= 2
-            self.samplesPerSec = self.doc.fps * self.samplesPerFrame
-            self.frameWidth = self.sampleWidth * self.samplesPerFrame
-            self.SetDocument(self.doc)
+        if (self.doc is not None) and (self.samples_per_frame < 16):
+            self.samples_per_frame *= 2
+            self.samples_per_sec = self.doc.fps * self.samples_per_frame
+            self.frame_width = self.sample_width * self.samples_per_frame
+            self.set_document(self.doc)
 
     def OnZoomOut(self, event):
-        if (self.doc is not None) and (self.samplesPerFrame > 1):
-            self.samplesPerFrame /= 2
-            self.samplesPerSec = self.doc.fps * self.samplesPerFrame
-            self.frameWidth = self.sampleWidth * self.samplesPerFrame
-            self.SetDocument(self.doc)
+        if (self.doc is not None) and (self.samples_per_frame > 1):
+            self.samples_per_frame /= 2
+            self.samples_per_sec = self.doc.fps * self.samples_per_frame
+            self.frame_width = self.sample_width * self.samples_per_frame
+            self.set_document(self.doc)
 
     def OnZoom1(self, event):
         if self.doc is not None:
-            self.sampleWidth = defaultSampleWidth
-            self.samplesPerFrame = defaultSamplesPerFrame
-            self.samplesPerSec = self.doc.fps * self.samplesPerFrame
-            self.frameWidth = self.sampleWidth * self.samplesPerFrame
-            self.SetDocument(self.doc)
+            self.sample_width = default_sample_width
+            self.samples_per_frame = default_samples_per_frame
+            self.samples_per_sec = self.doc.fps * self.samples_per_frame
+            self.frame_width = self.sample_width * self.samples_per_frame
+            self.set_document(self.doc)
 
 # end of class WaveformView
