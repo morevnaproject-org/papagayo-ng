@@ -47,8 +47,9 @@ default_samples_per_frame = 2
 class WaveformView(QtGui.QGraphicsView):
     def __init__(self, parent=None):
         super(WaveformView, self).__init__(parent)
-        self.setScene( QtGui.QGraphicsScene(self) )
+        self.setScene(QtGui.QGraphicsScene(self))
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         # self.scene().addText("Hello")
         # for i in range(50):
         #     self.scene().addLine(50*i,0,50*i,self.height())
@@ -81,6 +82,8 @@ class WaveformView(QtGui.QGraphicsView):
         self.word_bottom = 32
         self.phoneme_top = 128
         self.did_resize = 0
+        self.waveform_polygon = None
+        self.wv_height = 1
         #
         # # Connect event handlers
         # # window events
@@ -460,6 +463,9 @@ class WaveformView(QtGui.QGraphicsView):
             self.max_width = self.doc.sound_duration * self.frame_width
             self.wv_height = self.height() - self.horizontalScrollBar().height()
             self.max_height = self.wv_height
+        print(self.amp)
+        self.update_drawing()
+        
         # self.SetVirtualSize((self.maxWidth, self.maxHeight))
         # # clear the current waveform
         # dc = wx.ClientDC(self)
@@ -530,6 +536,11 @@ class WaveformView(QtGui.QGraphicsView):
         #     self.Draw(dc)
         pass
 
+    # def resize(self, new_height):
+    #     old_height = self.waveform_polygon.boundingRect().height()
+    #     factor = old_height / new_height
+    #     self.waveform_polygon.translate(1, factor)
+
     def draw(self):
         print("Begin Drawing")
         QtGui.QColor()
@@ -553,10 +564,10 @@ class WaveformView(QtGui.QGraphicsView):
         self.scene().clear()
         first_sample = 0
         last_sample = len(self.amp)
-        self.wv_height = self.height() - self.horizontalScrollBar().height()
-        half_client_height = (self.height() - self.horizontalScrollBar().height()) / 2
+        self.wv_height = self.height()  # - self.horizontalScrollBar().height()
+        half_client_height = self.wv_height / 2
         font_metrics = QtGui.QFontMetrics(font)
-
+        text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
         x = first_sample * self.sample_width
         frame = first_sample / self.samples_per_frame
         fps = int(round(self.doc.fps))
@@ -564,7 +575,9 @@ class WaveformView(QtGui.QGraphicsView):
         last_height = -1
         last_half_height = 1
         amp = 0
-        top_border = 0
+        frame_rectangle_list = []
+        frame_rectangle_polygon_upper = []
+        frame_rectangle_polygon_lower = []
         if stopwatch:
             t2 = stopwatch.Timer()
         for i in range(int(first_sample), int(last_sample)):
@@ -572,7 +585,7 @@ class WaveformView(QtGui.QGraphicsView):
                 if i % 100 == 0:
                     print("Sample " + str(i) + " Time " + str(t2.elapsed))
             print("SPerFrame: " + str((sample + 1) % self.samples_per_frame))
-            if (sample + 1) % self.samples_per_frame == 0:
+            if (i + 1) % self.samples_per_frame == 0:
                 # draw frame marker
                 # dc.SetPen(wx.Pen(frameCol))  # +0.06 seconds
                 # self.frame_width = 4
@@ -580,27 +593,45 @@ class WaveformView(QtGui.QGraphicsView):
                 # print("framex: ",frameX)
                 if (self.frame_width > 2) or ((frame + 2) % fps == 0):
                     self.scene().addLine(frame_x, top_border, frame_x, self.wv_height, frame_col)
-                    print("Line: " + str(frame_x))
+                    # print("Line: " + str(frame_x))
                     # dc.DrawLine(frameX, 0, frameX, cs.height)  # +0.01 seconds
+                    pass
                 # draw frame label
-                if (self.frame_width > 30) or ((frame + 2) % 5 == 0):
+                if (self.frame_width > 30) or ((int(frame) + 2) % 5 == 0):
                     # These three take about 0.01 seconds
                     self.scene().addLine(frame_x, 0, frame_x, top_border, frame_col)
                     # dc.DrawLine(frameX, 0, frameX, topBorder)
-                    self.scene().addLine(frame_x + 1, 0, frame_x + 1, self.wv_height, frame_col)
+                    self.scene().addLine(frame_x + 1, 0, (frame_x + 1), self.wv_height, frame_col)
                     # dc.DrawLine(frameX + 1, 0, frameX + 1, cs.height)
-                    self.scene().addText(str(frame + 2), font)
-
+                    temp_text = self.scene().addText(str(int(frame + 2)), font)
+                    temp_text.setPos((frame_x + 1), 0)
+                    temp_text.setDefaultTextColor(frame_col)
                     # dc.DrawLabel(str(frame + 2), wx.Rect(frameX + 1, 0, 128, 128))
                 # dc.SetBrush(wx.Brush(fillColor))  # +0.04 seconds
                 # dc.SetPen(wx.Pen(lineColor))  # +0.07 seconds
             amp = self.amp[i]
             height = round(self.wv_height * amp)
             half_height = height / 2
-            # if draw_play_marker and (frame == cur_frame):
+            if draw_play_marker and (frame == self.cur_frame):
+                pass
+            else:
+                # frame_rectangle_list.append((x, half_client_height - half_height, self.sample_width+1, height))
+                # self.scene().addRect(x, half_client_height - half_height, self.sample_width+1, height, line_color, fill_color)
+                frame_rectangle_polygon_upper.append((x, half_client_height - half_height))
+                frame_rectangle_polygon_upper.append((x + self.sample_width, half_client_height - half_height))
+                frame_rectangle_polygon_lower.append((x, (half_client_height - half_height) + height))
+                frame_rectangle_polygon_lower.append((x + self.sample_width, (half_client_height - half_height) + height))
             #     dc.SetBrush(wx.Brush(playForeCol))
             #     dc.SetPen(wx.TRANSPARENT_PEN)
+            x += self.sample_width
             sample += 1
+            if sample % self.samples_per_frame == 0:
+                frame += 1
+        frame_rectangle_polygon_lower.reverse()
+        temp_polygon = QtGui.QPolygonF()
+        for coordinates in (frame_rectangle_polygon_upper + frame_rectangle_polygon_lower):
+            temp_polygon.append(QtCore.QPointF(coordinates[0], coordinates[1]))
+        self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
         # self.wv_height = self.height() - self.horizontalScrollBar().height()
         # print(self.wv_height)
         # self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)

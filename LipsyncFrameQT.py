@@ -165,14 +165,18 @@ class LipsyncFrame:
 
         self.cur_frame = 0
         self.timer = None
-        self.wv_height = 0
+        self.wv_height = 1
+        self.old_height = self.wv_height
         self.zoom_factor = 1
         self.scroll_position = 0
+        self.did_resize = False
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
 
         self.validator = QtGui.QIntValidator(1, 999, None)
         self.main_window.fps_input.setValidator(self.validator)
+        self.idle_timer = QtCore.QTimer()
+        self.idle_timer.timeout.connect(self.do_idle)
 
     def load_ui_widget(self, ui_filename, parent=None):
         self.loader = QtUiTools.QUiLoader()
@@ -302,6 +306,7 @@ class LipsyncFrame:
         # TestWaveform
         self.main_window.waveform_view.scene().clear()
         self.wv_height = self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height()
+        self.old_height = self.wv_height
         print(self.wv_height)
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
@@ -522,17 +527,43 @@ class LipsyncFrame:
     # TODO: These are very similar, might want to combine them
     def on_resize(self, event=None):
         # Test Drawing on the WaveformView
-        # self.new_height = self.main_window.waveform_view.height()-self.main_window.waveform_view.horizontalScrollBar().height()
-        # self.height_scale = self.new_height / self.old_height
-        # self.old_height = self.new_height
-        # print(self.height_scale)
         # for item in self.main_window.waveform_view.items():
         #     item.scale(1, self.height_scale)
         self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
                                                  self.main_window.waveform_view.y(),
                                                  self.main_window.waveform_view.width()*self.zoom_factor,
-                                                 self.wv_height)
+                                                 self.main_window.waveform_view.scene().sceneRect().height(),
+                                                 QtCore.Qt.IgnoreAspectRatio)
+
+        # This is buggy if we increase the window size after decreasing it, but the redraw after works.
+        # self.main_window.waveform_view.fitInView(self.main_window.waveform_view.scene().sceneRect(),QtCore.Qt.IgnoreAspectRatio)
         self.main_window.waveform_view.horizontalScrollBar().setValue(self.scroll_position)
+        self.did_resize = True
+        self.idle_timer.start(500)
+
+    def do_idle(self):
+        if self.did_resize:
+            self.did_resize = False
+            self.main_window.waveform_view.fitInView(self.main_window.waveform_view.scene().sceneRect().x(),
+                                                     self.main_window.waveform_view.scene().sceneRect().y(),
+                                                     self.main_window.waveform_view.width() * self.zoom_factor,
+                                                     self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height(),
+                                                     QtCore.Qt.IgnoreAspectRatio)
+            try:
+                self.main_window.waveform_view.update_drawing()
+            except AttributeError:
+                pass  # Not initialized yet
+            self.main_window.waveform_view.fitInView(self.main_window.waveform_view.scene().sceneRect().x(),
+                                                     self.main_window.waveform_view.scene().sceneRect().y(),
+                                                     self.main_window.waveform_view.width() * self.zoom_factor,
+                                                     self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height(),
+                                                     QtCore.Qt.IgnoreAspectRatio)
+            # self.main_window.waveform_view.fitInView(self.main_window.waveform_view.scene().sceneRect().x(),
+            #                                          self.main_window.waveform_view.scene().sceneRect().y(),
+            #                                          self.main_window.waveform_view.width()*self.zoom_factor,
+            #                                          self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height(),
+            #                                          QtCore.Qt.IgnoreAspectRatio)
+        self.idle_timer.stop()
 
     def on_zoom_in(self, event=None):
         self.zoom_factor -= 0.1
