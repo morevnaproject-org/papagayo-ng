@@ -38,6 +38,22 @@ from LipsyncDoc import *
 BUFFERED = 1
 SIMPLE_DISPLAY = 0
 
+fill_color = QtGui.QColor(162, 205, 242)
+line_color = QtGui.QColor(30, 121, 198)
+frame_col = QtGui.QColor(192, 192, 192)
+frame_text_col = QtGui.QColor(64, 64, 64)
+play_back_col = QtGui.QColor(255, 127, 127)
+play_fore_col = QtGui.QColor(209, 102, 121)
+play_outline_col = QtGui.QColor(128, 0, 0)
+text_col = QtGui.QColor(64, 64, 64)
+phrase_fill_col = QtGui.QColor(205, 242, 162)
+phrase_outline_col = QtGui.QColor(121, 198, 30)
+word_fill_col = QtGui.QColor(242, 205, 162)
+word_outline_col = QtGui.QColor(198, 121, 30)
+phoneme_fill_col = QtGui.QColor(231, 185, 210)
+phoneme_outline_col = QtGui.QColor(173, 114, 146)
+font = QtGui.QFont("Swiss", 6)
+
 # default_sample_width = 2
 # default_samples_per_frame = 4
 default_sample_width = 4
@@ -541,24 +557,65 @@ class WaveformView(QtGui.QGraphicsView):
     #     factor = old_height / new_height
     #     self.waveform_polygon.translate(1, factor)
 
+    def drawBackground(self, painter, rect):
+
+        background_brush = QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern)
+        painter.fillRect(rect, background_brush)
+        if self.doc is not None:
+            pen = QtGui.QPen(frame_col)
+            # pen.setWidth(5)
+            painter.setPen(pen)
+            painter.setFont(font)
+
+            first_sample = 0
+            last_sample = len(self.amp)
+            self.wv_height = self.height()  # - self.horizontalScrollBar().height()
+            half_client_height = self.wv_height / 2
+            font_metrics = QtGui.QFontMetrics(font)
+            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
+            x = first_sample * self.sample_width
+            frame = first_sample / self.samples_per_frame
+            fps = int(round(self.doc.fps))
+            sample = first_sample
+            list_of_lines = []
+            list_of_textmarkers = []
+            for i in range(int(first_sample), int(last_sample)):
+                if (i + 1) % self.samples_per_frame == 0:
+                    frame_x = (frame + 1) * self.frame_width
+                    if (self.frame_width > 2) or ((frame + 2) % fps == 0):
+                        list_of_lines.append(QtCore.QLineF(frame_x, top_border, frame_x, self.wv_height))
+                    # draw frame label
+                    if (self.frame_width > 30) or ((int(frame) + 2) % 5 == 0):
+                        list_of_lines.append(QtCore.QLineF(frame_x, 0, frame_x, top_border))
+                        list_of_lines.append(QtCore.QLineF(frame_x + 1, 0, frame_x + 1, self.wv_height))
+                        temp_rect = QtCore.QRectF(int(frame_x + 4), font_metrics.height() - 2, text_width, top_border)
+                        # Positioning is a bit different in QT here
+                        list_of_textmarkers.append((temp_rect, str(int(frame + 2))))
+                x += self.sample_width
+                sample += 1
+                if sample % self.samples_per_frame == 0:
+                    frame += 1
+            painter.drawLines(list_of_lines)
+            for text_marker in list_of_textmarkers:
+                painter.drawText(text_marker[0], QtCore.Qt.AlignLeft, text_marker[1])
+
     def draw(self):
         print("Begin Drawing")
-        QtGui.QColor()
-        fill_color = QtGui.QColor(162, 205, 242)
-        line_color = QtGui.QColor(30, 121, 198)
-        frame_col = QtGui.QColor(192, 192, 192)
-        frame_text_col = QtGui.QColor(64, 64, 64)
-        play_back_col = QtGui.QColor(255, 127, 127)
-        play_fore_col = QtGui.QColor(209, 102, 121)
-        play_outline_col = QtGui.QColor(128, 0, 0)
-        text_col = QtGui.QColor(64, 64, 64)
-        phrase_fill_col = QtGui.QColor(205, 242, 162)
-        phrase_outline_col = QtGui.QColor(121, 198, 30)
-        word_fill_col = QtGui.QColor(242, 205, 162)
-        word_outline_col = QtGui.QColor(198, 121, 30)
-        phoneme_fill_col = QtGui.QColor(231, 185, 210)
-        phoneme_outline_col = QtGui.QColor(173, 114, 146)
-        font = QtGui.QFont("Swiss", 6)
+        # fill_color = QtGui.QColor(162, 205, 242)
+        # line_color = QtGui.QColor(30, 121, 198)
+        # frame_col = QtGui.QColor(192, 192, 192)
+        # frame_text_col = QtGui.QColor(64, 64, 64)
+        # play_back_col = QtGui.QColor(255, 127, 127)
+        # play_fore_col = QtGui.QColor(209, 102, 121)
+        # play_outline_col = QtGui.QColor(128, 0, 0)
+        # text_col = QtGui.QColor(64, 64, 64)
+        # phrase_fill_col = QtGui.QColor(205, 242, 162)
+        # phrase_outline_col = QtGui.QColor(121, 198, 30)
+        # word_fill_col = QtGui.QColor(242, 205, 162)
+        # word_outline_col = QtGui.QColor(198, 121, 30)
+        # phoneme_fill_col = QtGui.QColor(231, 185, 210)
+        # phoneme_outline_col = QtGui.QColor(173, 114, 146)
+        # font = QtGui.QFont("Swiss", 6)
         draw_play_marker = False
         # TestWaveform
         self.scene().clear()
@@ -584,33 +641,7 @@ class WaveformView(QtGui.QGraphicsView):
             if stopwatch:
                 if i % 100 == 0:
                     print("Sample " + str(i) + " Time " + str(t2.elapsed))
-            print("SPerFrame: " + str((sample + 1) % self.samples_per_frame))
-            if (i + 1) % self.samples_per_frame == 0:
-                # draw frame marker
-                # dc.SetPen(wx.Pen(frameCol))  # +0.06 seconds
-                # self.frame_width = 4
-                frame_x = (frame + 1) * self.frame_width
-                # print("framex: ",frameX)
-                if (self.frame_width > 2) or ((frame + 2) % fps == 0):
-                    self.scene().addLine(frame_x, top_border, frame_x, self.wv_height, frame_col)
-                    # print("Line: " + str(frame_x))
-                    # dc.DrawLine(frameX, 0, frameX, cs.height)  # +0.01 seconds
-                    pass
-                # draw frame label
-                if (self.frame_width > 30) or ((int(frame) + 2) % 5 == 0):
-                    # These three take about 0.01 seconds
-                    self.scene().addLine(frame_x, 0, frame_x, top_border, frame_col)
-                    # dc.DrawLine(frameX, 0, frameX, topBorder)
-                    self.scene().addLine(frame_x + 1, 0, (frame_x + 1), self.wv_height, frame_col)
-                    # dc.DrawLine(frameX + 1, 0, frameX + 1, cs.height)
-                    temp_text = self.scene().addText(str(int(frame + 2)), font)
-                    temp_text.setPos((frame_x + 1), 0)
-                    temp_text.setDefaultTextColor(frame_col)
-                    # dc.DrawLabel(str(frame + 2), wx.Rect(frameX + 1, 0, 128, 128))
-                # dc.SetBrush(wx.Brush(fillColor))  # +0.04 seconds
-                # dc.SetPen(wx.Pen(lineColor))  # +0.07 seconds
-            amp = self.amp[i]
-            height = round(self.wv_height * amp)
+            height = round(self.wv_height * self.amp[i])
             half_height = height / 2
             if draw_play_marker and (frame == self.cur_frame):
                 pass
@@ -621,8 +652,6 @@ class WaveformView(QtGui.QGraphicsView):
                 frame_rectangle_polygon_upper.append((x + self.sample_width, half_client_height - half_height))
                 frame_rectangle_polygon_lower.append((x, (half_client_height - half_height) + height))
                 frame_rectangle_polygon_lower.append((x + self.sample_width, (half_client_height - half_height) + height))
-            #     dc.SetBrush(wx.Brush(playForeCol))
-            #     dc.SetPen(wx.TRANSPARENT_PEN)
             x += self.sample_width
             sample += 1
             if sample % self.samples_per_frame == 0:
