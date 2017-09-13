@@ -197,7 +197,7 @@ class LipsyncFrame:
                 return True
             dlg = QtGui.QMessageBox()
             dlg.setText("Save changes to this project?")
-            dlg.setStandardButtons(QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            dlg.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             dlg.setDefaultButton(QtGui.QMessageBox.Yes)
             dlg.setIcon(QtGui.QMessageBox.Question)
             result = dlg.exec_()
@@ -232,7 +232,7 @@ class LipsyncFrame:
 
     def open(self, path):
         self.doc = LipsyncDoc(self.langman, self)
-        if path.endswith(lipsync_extension):
+        if path.endswith(lipsync_extension[1:]):
             # open a lipsync project
             self.doc.open(path)
             while self.doc.sound is None:
@@ -250,7 +250,7 @@ class LipsyncFrame:
                                                  open_wildcard)
                 if file_path:
                     self.config.setValue("WorkingDir", os.path.dirname(file_path))
-                    self.doc.open_audio(file_path)
+                    self.doc.open(file_path)
         else:
             # open an audio file
             self.doc.fps = int(self.config.value("LastFPS", 24))
