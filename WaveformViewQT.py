@@ -60,6 +60,32 @@ default_sample_width = 4
 default_samples_per_frame = 2
 
 
+class MovableButton(QtGui.QPushButton):
+    def __init__(self, title, parent):
+        super(MovableButton, self).__init__(title, parent)
+
+    def mouseMoveEvent(self, e):
+
+        if e.buttons() != QtCore.Qt.LeftButton:
+            return
+
+        mime_data = QtCore.QMimeData()
+
+        drag = QtGui.QDrag(self)
+        drag.setMimeData(mime_data)
+        drag.setHotSpot(e.pos() - self.rect().topLeft())
+        print(self.geometry())
+        print(e.pos())
+        self.move(e.globalPos())
+        dropAction = drag.start(QtCore.Qt.MoveAction)
+
+    def mousePressEvent(self, e):
+
+        QtGui.QPushButton.mousePressEvent(self, e)
+        if e.button() == QtCore.Qt.RightButton:
+            print('press')
+
+
 class WaveformView(QtGui.QGraphicsView):
     def __init__(self, parent=None):
         super(WaveformView, self).__init__(parent)
@@ -69,7 +95,8 @@ class WaveformView(QtGui.QGraphicsView):
         # self.scene().addText("Hello")
         # for i in range(50):
         #     self.scene().addLine(50*i,0,50*i,self.height())
-
+        self.setAcceptDrops(True)
+        self.setMouseTracking(True)
         self.__set_properties()
         self.__do_layout()
         # end wxGlade
@@ -132,6 +159,18 @@ class WaveformView(QtGui.QGraphicsView):
         # self.Layout()
         pass
         # end wxGlade
+
+    def dragEnterEvent(self, e):
+        print("DragEnter!")
+        e.accept()
+
+    def dropEvent(self, e):
+        print("DropEvent!")
+        position = e.pos()
+        dropped_widget = e.widget()
+        dropped_widget.move(position)
+        e.setDropAction(QtCore.Qt.MoveAction)
+        e.accept()
 
     def OnIdle(self, event):
         # if self.didresize:
@@ -661,6 +700,11 @@ class WaveformView(QtGui.QGraphicsView):
         for coordinates in (frame_rectangle_polygon_upper + frame_rectangle_polygon_lower):
             temp_polygon.append(QtCore.QPointF(coordinates[0], coordinates[1]))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
+
+        # Here we use a Button to simulate our phonemes,
+        test_button = self.scene().addWidget(MovableButton("test", None))
+        test_button.setGeometry(QtCore.QRectF(20, 20, font_metrics.width(test_button.widget().text()), font_metrics.height()))
+
         # self.wv_height = self.height() - self.horizontalScrollBar().height()
         # print(self.wv_height)
         # self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
