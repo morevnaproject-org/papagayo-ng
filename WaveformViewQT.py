@@ -60,6 +60,25 @@ default_sample_width = 4
 default_samples_per_frame = 2
 
 
+class SceneWithDrag(QtGui.QGraphicsScene):
+    def dragEnterEvent(self, e):
+        e.acceptProposedAction()
+
+    def dropEvent(self, e):
+        # find item at these coordinates
+        item = self.itemAt(e.scenePos())
+        if item:
+            if item.setAcceptDrops:
+                # pass on event to item at the coordinates
+                try:
+                    item.dropEvent(e)
+                except RuntimeError:
+                    pass  # This will suppress a Runtime Error generated when dropping into a widget with no MyProxy
+
+    def dragMoveEvent(self, e):
+        e.acceptProposedAction()
+
+
 class MovableButton(QtGui.QPushButton):
     def __init__(self, title, parent):
         super(MovableButton, self).__init__(title, parent)
@@ -74,14 +93,11 @@ class MovableButton(QtGui.QPushButton):
         drag = QtGui.QDrag(self)
         drag.setMimeData(mime_data)
         drag.setHotSpot(e.pos() - self.rect().topLeft())
-        print(self.geometry())
-        print(e.pos())
-        self.move(e.globalPos())
         dropAction = drag.start(QtCore.Qt.MoveAction)
 
     def mousePressEvent(self, e):
 
-        QtGui.QPushButton.mousePressEvent(self, e)
+        # QtGui.QPushButton.mousePressEvent(self, e)
         if e.button() == QtCore.Qt.RightButton:
             print('press')
 
@@ -89,23 +105,14 @@ class MovableButton(QtGui.QPushButton):
 class WaveformView(QtGui.QGraphicsView):
     def __init__(self, parent=None):
         super(WaveformView, self).__init__(parent)
-        self.setScene(QtGui.QGraphicsScene(self))
+        self.setScene(SceneWithDrag(self))
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        # self.scene().addText("Hello")
-        # for i in range(50):
-        #     self.scene().addLine(50*i,0,50*i,self.height())
+
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         self.__set_properties()
         self.__do_layout()
-        # end wxGlade
-
-        # test for wxPython type
-        #self.cdc = wx.ClientDC(self)
-        #self.isWxPhoenix = False
-        #if not "SetClippingRect" in dir(self.cdc):  # TODO: Test this version: if "SetClippingRect" not in dir(cdc)
-        #    self.isWxPhoenix = True
 
         # Other initialization
         self.doc = None
@@ -164,13 +171,17 @@ class WaveformView(QtGui.QGraphicsView):
         print("DragEnter!")
         e.accept()
 
-    def dropEvent(self, e):
-        print("DropEvent!")
+    def dragMoveEvent(self, e):
+        print("DragMove!")
         position = e.pos()
-        dropped_widget = e.widget()
-        dropped_widget.move(position)
-        e.setDropAction(QtCore.Qt.MoveAction)
+        print(e.pos())
+        dropped_widget = e.source()
+        dropped_widget.move(QtCore.QPoint(position.x(), dropped_widget.y()))  # We keep the Y-Position
+        # e.setDropAction(QtCore.Qt.MoveAction)
         e.accept()
+
+    def dropMoveEvent(self, e):
+        return
 
     def OnIdle(self, event):
         # if self.didresize:
@@ -701,7 +712,7 @@ class WaveformView(QtGui.QGraphicsView):
             temp_polygon.append(QtCore.QPointF(coordinates[0], coordinates[1]))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
 
-        # Here we use a Button to simulate our phonemes,
+        # Here we use a Button to simulate our phonemes, currently get's regenerated.
         test_button = self.scene().addWidget(MovableButton("test", None))
         test_button.setGeometry(QtCore.QRectF(20, 20, font_metrics.width(test_button.widget().text()), font_metrics.height()))
 
