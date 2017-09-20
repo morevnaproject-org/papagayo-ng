@@ -82,24 +82,42 @@ class SceneWithDrag(QtGui.QGraphicsScene):
 class MovableButton(QtGui.QPushButton):
     def __init__(self, title, parent):
         super(MovableButton, self).__init__(title, parent)
+        self.is_resizing = False
+
+        # self.setStyleSheet(f"background-color:rgb({phoneme_fill_col.red()},{phoneme_fill_col.green()},{phoneme_fill_col.blue()})")
+        self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
+                                                                             phoneme_fill_col.green(),
+                                                                             phoneme_fill_col.blue())
+        self.background_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(), 
+                                                                              phoneme_outline_col.green(),
+                                                                              phoneme_outline_col.blue())
+        self.setStyleSheet(self.background_string)
 
     def mouseMoveEvent(self, e):
 
         if e.buttons() != QtCore.Qt.LeftButton:
             return
+        if (e.pos().x() > self.width()-10) or self.is_resizing:
+            if e.pos().x() > 0:
+                self.resize(e.pos().x(), self.height())
+                self.is_resizing = True
+        else:
+            mime_data = QtCore.QMimeData()
 
-        mime_data = QtCore.QMimeData()
-
-        drag = QtGui.QDrag(self)
-        drag.setMimeData(mime_data)
-        drag.setHotSpot(e.pos() - self.rect().topLeft())
-        dropAction = drag.start(QtCore.Qt.MoveAction)
+            drag = QtGui.QDrag(self)
+            drag.setMimeData(mime_data)
+            drag.setHotSpot(e.pos() - self.rect().topLeft())
+            dropAction = drag.start(QtCore.Qt.MoveAction)
 
     def mousePressEvent(self, e):
 
         # QtGui.QPushButton.mousePressEvent(self, e)
         if e.button() == QtCore.Qt.RightButton:
             print('press')
+            print(self.text())
+
+    def mouseReleaseEvent(self, e):
+        self.is_resizing = False
 
 
 class WaveformView(QtGui.QGraphicsView):
@@ -715,6 +733,8 @@ class WaveformView(QtGui.QGraphicsView):
         # Here we use a Button to simulate our phonemes, currently get's regenerated.
         test_button = self.scene().addWidget(MovableButton("test", None))
         test_button.setGeometry(QtCore.QRectF(20, 20, font_metrics.width(test_button.widget().text()), font_metrics.height()))
+        test_button2 = self.scene().addWidget(MovableButton("test2", None))
+        test_button2.setGeometry(QtCore.QRectF(60, 20, font_metrics.width(test_button2.widget().text()), font_metrics.height()))
 
         # self.wv_height = self.height() - self.horizontalScrollBar().height()
         # print(self.wv_height)
