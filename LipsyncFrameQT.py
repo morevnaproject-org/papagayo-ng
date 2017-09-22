@@ -23,8 +23,9 @@
 import string
 import math
 # import wx
-from PySide import QtCore, QtGui, QtUiTools
-from PySide.QtWebKit import QWebView
+from qtpy import QtCore, QtGui, QtWidgets
+import qtpy.uic as uic
+
 import webbrowser
 import random
 import re
@@ -52,7 +53,7 @@ save_wildcard = "%s files (%s)" % (app_title, lipsync_extension)
 
 class LipsyncFrame:
     def __init__(self):
-        self.app = QtGui.QApplication(sys.argv)
+        self.app = QtWidgets.QApplication(sys.argv)
         self.main_window = self.load_ui_widget("./rsrc/papagayo-ng2.ui")
         self.main_window.setWindowTitle("%s" % app_title)
         self.loader = None
@@ -107,10 +108,10 @@ class LipsyncFrame:
         self.ignore_text_changes = False
         # This adds our statuses to the statusbar
         self.mainframe_statusbar_fields = [app_title, "Stopped"]
-        self.play_status = QtGui.QLabel()
+        self.play_status = QtWidgets.QLabel()
         self.play_status.setText(self.mainframe_statusbar_fields[1])
         # An empty Label to add a separator
-        self.sep_status = QtGui.QLabel()
+        self.sep_status = QtWidgets.QLabel()
         self.sep_status.setText(u"")
         self.main_window.statusbar.addPermanentWidget(self.sep_status)
         self.main_window.statusbar.addPermanentWidget(self.play_status)
@@ -179,13 +180,7 @@ class LipsyncFrame:
         self.idle_timer.timeout.connect(self.do_idle)
 
     def load_ui_widget(self, ui_filename, parent=None):
-        self.loader = QtUiTools.QUiLoader()
-        self.ui_file = QtCore.QFile(ui_filename)
-        self.ui_file.open(QtCore.QFile.ReadOnly)
-        self.loader.registerCustomWidget(WaveformView)
-        self.loader.registerCustomWidget(MouthView)
-        self.ui = self.loader.load(self.ui_file, parent)
-        self.ui_file.close()
+        self.ui = uic.loadUi(ui_filename, parent)
         return self.ui
 
     def test_button_event(self):
@@ -208,10 +203,10 @@ class LipsyncFrame:
                     return True
                 else:
                     return False
-            elif result == QtGui.QMessageBox.No:
+            elif result == QtWidgets.QMessageBox.No:
                 self.config.setValue("LastFPS", str(self.doc.fps))
                 return True
-            elif result == QtGui.QMessageBox.Cancel:
+            elif result == QtWidgets.QMessageBox.Cancel:
                 return False
         else:
             return True
@@ -220,7 +215,7 @@ class LipsyncFrame:
         if not self.close_doc_ok():
             return
         print(self.config.value("WorkingDir", get_main_dir()))
-        file_path, _ = QtGui.QFileDialog.getOpenFileName(self.main_window,
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
                                                          "Open Audio or %s File" % app_title,
                                                          self.config.value("WorkingDir", get_main_dir()),
                                                          open_wildcard)
@@ -237,14 +232,14 @@ class LipsyncFrame:
             self.doc.open(path)
             while self.doc.sound is None:
                 # if no sound file found, then ask user to specify one
-                dlg = QtGui.QMessageBox(self.main_window)
+                dlg = QtWidgets.QMessageBox(self.main_window)
                 dlg.setText('Please load correct audio file')
                 dlg.setWindowTitle(app_title)
-                dlg.setIcon(QtGui.QMessageBox.Warning)
+                dlg.setIcon(QtWidgets.QMessageBox.Warning)
                 dlg.exec_()  # This should open it as a modal blocking window
                 dlg.destroy()  # Untested, might not need it
                 print(self.config.value("WorkingDir", get_main_dir()))
-                file_path, _ = QtGui.QFileDialog(self.main_window,
+                file_path, _ = QtWidgets.QFileDialog(self.main_window,
                                                  "Open Audio",
                                                  self.config.value("WorkingDir", get_main_dir()),
                                                  open_wildcard)
@@ -318,10 +313,10 @@ class LipsyncFrame:
         if self.doc is None:
             return
         print(self.config.value("WorkingDir", get_main_dir()))
-        file_path, _ = QtGui.QFileDialog.getOpenFileName(self.main_window,
-                                                         "Save %s File" % app_title,
-                                                         self.config.value("WorkingDir", get_main_dir()),
-                                                         save_wildcard)
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
+                                                             "Save %s File" % app_title,
+                                                             self.config.value("WorkingDir", get_main_dir()),
+                                                             save_wildcard)
         if file_path:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
             self.doc.save(os.path.dirname(file_path))
@@ -467,19 +462,19 @@ class LipsyncFrame:
             elif exporter == "ALELO":
                 fps = int(self.config.value("FPS", 24))
                 if fps != 100:
-                    dlg = QtGui.QMessageBox()
+                    dlg = QtWidgets.QMessageBox()
                     dlg.setText("FPS is NOT 100 continue? (You will have issues downstream.)")
-                    dlg.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-                    dlg.setDefaultButton(QtGui.QMessageBox.Yes)
-                    dlg.setIcon(QtGui.QMessageBox.Question)
+                    dlg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                    dlg.setDefaultButton(QtWidgets.QMessageBox.Yes)
+                    dlg.setIcon(QtWidgets.QMessageBox.Question)
                     result = dlg.exec_()
-                    if result == QtGui.QMessageBox.Yes:
+                    if result == QtWidgets.QMessageBox.Yes:
                         message = "Export Lipsync Data (ALELO)"
                         default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".txt"
                         wildcard = "Alelo timing files (*.txt)|*.txt"
-                    elif result == QtGui.QMessageBox.No:
+                    elif result == QtWidgets.QMessageBox.No:
                         return
-                    elif result == QtGui.QMessageBox.Cancel:
+                    elif result == QtWidgets.QMessageBox.Cancel:
                         return
                 else:
                     message = "Export Lipsync Data (ALELO)"
@@ -489,7 +484,7 @@ class LipsyncFrame:
                     message = "Export Image Strip"
                     default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0]
                     wildcard = ""
-            file_path, _ = QtGui.QFileDialog.getSaveFileName(self.main_window,
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                              message,
                                                              self.config.value("WorkingDir", get_main_dir()),
                                                              wildcard)
@@ -505,7 +500,7 @@ class LipsyncFrame:
     def on_voiceimagechoose(self, event=None):
         language = self.main_window.language_choice.currentText()
         if (self.doc is not None) and (self.doc.current_voice is not None):
-            voiceimage_path = QtGui.QFileDialog.getExistingDirectory(self.main_window,
+            voiceimage_path = QtWidgets.QFileDialog.getExistingDirectory(self.main_window,
                                                                      "Choose Path for Images",
                                                                      self.config.value("MouthDir",
                                                                                        os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")))

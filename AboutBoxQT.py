@@ -20,8 +20,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide import QtCore, QtUiTools, QtGui
-from PySide.QtWebKit import QWebView
+from qtpy import QtCore, QtGui
+from qtpy.QtWebEngineWidgets import QWebEngineView
+import qtpy.uic as uic
 
 from utilities import *
 
@@ -41,12 +42,7 @@ class AboutBox:
             self.main_window.html_view.setHtml(html_file_fixed_paths, baseUrl=QtCore.QUrl(r"file:///%s" % os.path.join(get_main_dir(), r"rsrc\about.html")))
 
     def load_ui_widget(self, ui_filename, parent=None):
-        self.loader = QtUiTools.QUiLoader()
-        self.ui_file = QtCore.QFile(ui_filename)
-        self.ui_file.open(QtCore.QFile.ReadOnly)
-        self.loader.registerCustomWidget(QWebView)
-        self.ui = self.loader.load(self.ui_file, parent)
-        self.ui_file.close()
+        self.ui = uic.loadUi(ui_filename, parent)
         return self.ui
 
     def close(self):

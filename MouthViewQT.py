@@ -20,18 +20,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # import os
-from PySide import QtGui, QtCore
+from qtpy import QtGui, QtCore, QtWidgets
+
 from utilities import *
 
 
-# begin wxGlade: dependencies
-# end wxGlade
-
-
-class MouthView(QtGui.QGraphicsView):
+class MouthView(QtWidgets.QGraphicsView):
     def __init__(self, parent=None):
         super(MouthView, self).__init__(parent)
-        self.setScene(QtGui.QGraphicsScene(self))
+        self.setScene(QtWidgets.QGraphicsScene(self))
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         # Other initialization

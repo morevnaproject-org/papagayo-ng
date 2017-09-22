@@ -72,7 +72,7 @@
      <enum>QLayout::SetDefaultConstraint</enum>
     </property>
     <item>
-     <widget class="QWebView" name="html_view" native="true">
+     <widget class="QWebEngineView" name="html_view" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -135,9 +135,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QWebView</class>
+   <class>QWebEngineView</class>
    <extends>QWidget</extends>
-   <header>AboutBoxQT.py</header>
+   <header>AboutBoxQT</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -21,17 +21,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import math, random
+from qtpy import QtGui, QtCore, QtWidgets
 # import wx
 debug_performance = True
 if debug_performance:
     import simplestopwatch as stopwatch
 else:
     stopwatch = None
-
-from PySide import QtGui, QtCore
-
-# begin wxGlade: dependencies
-# end wxGlade
 
 from LipsyncDoc import *
 
@@ -60,16 +56,17 @@ default_sample_width = 4
 default_samples_per_frame = 2
 
 
-class SceneWithDrag(QtGui.QGraphicsScene):
+class SceneWithDrag(QtWidgets.QGraphicsScene):
     def dragEnterEvent(self, e):
         e.acceptProposedAction()
 
     def dropEvent(self, e):
         # find item at these coordinates
-        item = self.itemAt(e.scenePos())
+        item = self.itemAt(e.scenePos(), QtGui.QTransform())
         if item:
             if item.setAcceptDrops:
                 # pass on event to item at the coordinates
+                item.dropEvent(e)
                 try:
                     item.dropEvent(e)
                 except RuntimeError:
@@ -79,7 +76,7 @@ class SceneWithDrag(QtGui.QGraphicsScene):
         e.acceptProposedAction()
 
 
-class MovableButton(QtGui.QPushButton):
+class MovableButton(QtWidgets.QPushButton):
     def __init__(self, title, parent):
         super(MovableButton, self).__init__(title, parent)
         self.is_resizing = False
@@ -88,7 +85,7 @@ class MovableButton(QtGui.QPushButton):
         self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
                                                                              phoneme_fill_col.green(),
                                                                              phoneme_fill_col.blue())
-        self.background_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(), 
+        self.background_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
                                                                               phoneme_outline_col.green(),
                                                                               phoneme_outline_col.blue())
         self.setStyleSheet(self.background_string)
@@ -107,10 +104,13 @@ class MovableButton(QtGui.QPushButton):
             drag = QtGui.QDrag(self)
             drag.setMimeData(mime_data)
             drag.setHotSpot(e.pos() - self.rect().topLeft())
-            dropAction = drag.start(QtCore.Qt.MoveAction)
+            # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
+            try:
+                dropAction = drag.exec(QtCore.Qt.MoveAction)
+            except AttributeError:
+                dropAction = drag.start(QtCore.Qt.MoveAction)
 
     def mousePressEvent(self, e):
-
         # QtGui.QPushButton.mousePressEvent(self, e)
         if e.button() == QtCore.Qt.RightButton:
             print('press')
@@ -120,7 +120,7 @@ class MovableButton(QtGui.QPushButton):
         self.is_resizing = False
 
 
-class WaveformView(QtGui.QGraphicsView):
+class WaveformView(QtWidgets.QGraphicsView):
     def __init__(self, parent=None):
         super(WaveformView, self).__init__(parent)
         self.setScene(SceneWithDrag(self))
@@ -200,6 +200,9 @@ class WaveformView(QtGui.QGraphicsView):
 
     def dropMoveEvent(self, e):
         return
+
+    def dropEvent(self, e):
+        print("Dropped")
 
     def OnIdle(self, event):
         # if self.didresize:

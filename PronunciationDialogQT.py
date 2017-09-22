@@ -20,13 +20,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # import wx
-from PySide import QtCore, QtGui, QtUiTools
+from qtpy import QtCore, QtWidgets
+from qtpy.uic import loadUi
+
 
 # begin wxGlade: dependencies
 # end wxGlade
 
 
-class PronunciationDialog(QtGui.QDialog):
+class PronunciationDialog(QtWidgets.QDialog):
     def __init__(self, parent, phoneme_set):
         super(PronunciationDialog, self).__init__(parent)
         # # begin wxGlade: PronunciationDialog.__init__
