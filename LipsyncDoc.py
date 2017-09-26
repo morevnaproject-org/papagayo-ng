@@ -51,7 +51,7 @@ class LipsyncPhoneme:
 class LipsyncWord:
     def __init__(self):
         self.text = ""
-        self.startFrame = 0
+        self.start_frame = 0
         self.endFrame = 0
         self.phonemes = []
 
@@ -66,7 +66,7 @@ class LipsyncWord:
                 pronunciation_raw = breakdown.breakdownWord(text)
             elif details["type"] == "dictionary":
                 if languagemanager.current_language != language:
-                    languagemanager.LoadLanguage(details)
+                    languagemanager.load_language(details)
                     languagemanager.current_language = language
                 if details["case"] == "upper":
                     pronunciation_raw = languagemanager.raw_dictionary[text.upper()]
@@ -114,8 +114,8 @@ class LipsyncWord:
             phoneme.frame = self.phonemes[id - 1].frame + 1
         if (id < len(self.phonemes) - 1) and (phoneme.frame > self.phonemes[id + 1].frame - 1):
             phoneme.frame = self.phonemes[id + 1].frame - 1
-        if phoneme.frame < self.startFrame:
-            phoneme.frame = self.startFrame
+        if phoneme.frame < self.start_frame:
+            phoneme.frame = self.start_frame
         if phoneme.frame > self.endFrame:
             phoneme.frame = self.endFrame
 
@@ -125,7 +125,7 @@ class LipsyncWord:
 class LipsyncPhrase:
     def __init__(self):
         self.text = ""
-        self.startFrame = 0
+        self.start_frame = 0
         self.endFrame = 0
         self.words = []
 
@@ -145,21 +145,21 @@ class LipsyncPhrase:
         for i in range(len(self.words)):
             if word is self.words[i]:
                 id = i
-        if (id > 0) and (word.startFrame < self.words[id - 1].endFrame + 1):
-            word.startFrame = self.words[id - 1].endFrame + 1
-            if word.endFrame < word.startFrame + 1:
-                word.endFrame = word.startFrame + 1
-        if (id < len(self.words) - 1) and (word.endFrame > self.words[id + 1].startFrame - 1):
-            word.endFrame = self.words[id + 1].startFrame - 1
-            if word.startFrame > word.endFrame - 1:
-                word.startFrame = word.endFrame - 1
-        if word.startFrame < self.startFrame:
-            word.startFrame = self.startFrame
+        if (id > 0) and (word.start_frame < self.words[id - 1].endFrame + 1):
+            word.start_frame = self.words[id - 1].endFrame + 1
+            if word.endFrame < word.start_frame + 1:
+                word.endFrame = word.start_frame + 1
+        if (id < len(self.words) - 1) and (word.endFrame > self.words[id + 1].start_frame - 1):
+            word.endFrame = self.words[id + 1].start_frame - 1
+            if word.start_frame > word.endFrame - 1:
+                word.start_frame = word.endFrame - 1
+        if word.start_frame < self.start_frame:
+            word.start_frame = self.start_frame
         if word.endFrame > self.endFrame:
             word.endFrame = self.endFrame
-        if word.endFrame < word.startFrame:
-            word.endFrame = word.startFrame
-        frameDuration = word.endFrame - word.startFrame + 1
+        if word.endFrame < word.start_frame:
+            word.endFrame = word.start_frame
+        frameDuration = word.endFrame - word.start_frame + 1
         phonemeCount = len(word.phonemes)
         # now divide up the total time by phonemes
         if frameDuration > 0 and phonemeCount > 0:
@@ -169,7 +169,7 @@ class LipsyncPhrase:
         else:
             framesPerPhoneme = 1
         # finally, assign frames based on phoneme durations
-        curFrame = word.startFrame
+        curFrame = word.start_frame
         for phoneme in word.phonemes:
             phoneme.frame = int(round(curFrame))
             curFrame += framesPerPhoneme
@@ -229,13 +229,13 @@ class LipsyncVoice:
                     phoneme.frame = curFrame
                     curFrame += framesPerPhoneme
                 if len(word.phonemes) == 0:  # deal with unknown words
-                    word.startFrame = curFrame
+                    word.start_frame = curFrame
                     word.endFrame = curFrame + 3
                     curFrame += 4
                 else:
-                    word.startFrame = word.phonemes[0].frame
+                    word.start_frame = word.phonemes[0].frame
                     word.endFrame = word.phonemes[-1].frame + framesPerPhoneme - 1
-            phrase.startFrame = phrase.words[0].startFrame
+            phrase.start_frame = phrase.words[0].start_frame
             phrase.endFrame = phrase.words[-1].endFrame
 
     def reposition_phrase(self, phrase, lastFrame):
@@ -243,22 +243,22 @@ class LipsyncVoice:
         for i in range(len(self.phrases)):
             if phrase is self.phrases[i]:
                 id = i
-        if (id > 0) and (phrase.startFrame < self.phrases[id - 1].endFrame + 1):
-            phrase.startFrame = self.phrases[id - 1].endFrame + 1
-            if phrase.endFrame < phrase.startFrame + 1:
-                phrase.endFrame = phrase.startFrame + 1
-        if (id < len(self.phrases) - 1) and (phrase.endFrame > self.phrases[id + 1].startFrame - 1):
-            phrase.endFrame = self.phrases[id + 1].startFrame - 1
-            if phrase.startFrame > phrase.endFrame - 1:
-                phrase.startFrame = phrase.endFrame - 1
-        if phrase.startFrame < 0:
-            phrase.startFrame = 0
+        if (id > 0) and (phrase.start_frame < self.phrases[id - 1].endFrame + 1):
+            phrase.start_frame = self.phrases[id - 1].endFrame + 1
+            if phrase.endFrame < phrase.start_frame + 1:
+                phrase.endFrame = phrase.start_frame + 1
+        if (id < len(self.phrases) - 1) and (phrase.endFrame > self.phrases[id + 1].start_frame - 1):
+            phrase.endFrame = self.phrases[id + 1].start_frame - 1
+            if phrase.start_frame > phrase.endFrame - 1:
+                phrase.start_frame = phrase.endFrame - 1
+        if phrase.start_frame < 0:
+            phrase.start_frame = 0
         if phrase.endFrame > lastFrame:
             phrase.endFrame = lastFrame
-        if phrase.startFrame > phrase.endFrame - 1:
-            phrase.startFrame = phrase.endFrame - 1
+        if phrase.start_frame > phrase.endFrame - 1:
+            phrase.start_frame = phrase.endFrame - 1
         # for first-guess frame alignment, count how many phonemes we have
-        frameDuration = phrase.endFrame - phrase.startFrame + 1
+        frameDuration = phrase.endFrame - phrase.start_frame + 1
         phonemeCount = 0
         for word in phrase.words:
             if len(word.phonemes) == 0:  # deal with unknown words
@@ -273,17 +273,17 @@ class LipsyncVoice:
         else:
             framesPerPhoneme = 1
         # finally, assign frames based on phoneme durations
-        curFrame = phrase.startFrame
+        curFrame = phrase.start_frame
         for word in phrase.words:
             for phoneme in word.phonemes:
                 phoneme.frame = int(round(curFrame))
                 curFrame += framesPerPhoneme
             if len(word.phonemes) == 0:  # deal with unknown words
-                word.startFrame = curFrame
+                word.start_frame = curFrame
                 word.endFrame = curFrame + 3
                 curFrame += 4
             else:
-                word.startFrame = word.phonemes[0].frame
+                word.start_frame = word.phonemes[0].frame
                 word.endFrame = word.phonemes[-1].frame + int(round(framesPerPhoneme)) - 1
             phrase.RepositionWord(word)
 
@@ -295,14 +295,14 @@ class LipsyncVoice:
         for p in range(numPhrases):
             phrase = LipsyncPhrase()
             phrase.text = inFile.readline().strip()
-            phrase.startFrame = int(inFile.readline())
+            phrase.start_frame = int(inFile.readline())
             phrase.endFrame = int(inFile.readline())
             numWords = int(inFile.readline())
             for w in range(numWords):
                 word = LipsyncWord()
                 wordLine = inFile.readline().split()
                 word.text = wordLine[0]
-                word.startFrame = int(wordLine[1])
+                word.start_frame = int(wordLine[1])
                 word.endFrame = int(wordLine[2])
                 numPhonemes = int(wordLine[3])
                 for p in range(numPhonemes):  # TODO: Might want to rename p to make it clearer
@@ -321,21 +321,21 @@ class LipsyncVoice:
         outFile.write("\t%d\n" % len(self.phrases))
         for phrase in self.phrases:
             outFile.write("\t\t%s\n" % phrase.text)
-            outFile.write("\t\t%d\n" % phrase.startFrame)
+            outFile.write("\t\t%d\n" % phrase.start_frame)
             outFile.write("\t\t%d\n" % phrase.endFrame)
             outFile.write("\t\t%d\n" % len(phrase.words))
             for word in phrase.words:
-                outFile.write("\t\t\t%s %d %d %d\n" % (word.text, word.startFrame, word.endFrame, len(word.phonemes)))
+                outFile.write("\t\t\t%s %d %d %d\n" % (word.text, word.start_frame, word.endFrame, len(word.phonemes)))
                 for phoneme in word.phonemes:
                     outFile.write("\t\t\t\t%d %s\n" % (phoneme.frame, phoneme.text))
 
     def get_phoneme_at_frame(self, frame):
         for phrase in self.phrases:
-            if (frame <= phrase.endFrame) and (frame >= phrase.startFrame):
+            if (frame <= phrase.endFrame) and (frame >= phrase.start_frame):
                 # we found the phrase that contains this frame
                 word = None
                 for w in phrase.words:
-                    if (frame <= w.endFrame) and (frame >= w.startFrame):
+                    if (frame <= w.endFrame) and (frame >= w.start_frame):
                         word = w  # the frame is inside this word
                         break
                 if word is not None:
@@ -352,16 +352,16 @@ class LipsyncVoice:
         outFile.write("MohoSwitch1\n")
         phoneme = ""
         if len(self.phrases) > 0:
-            startFrame = self.phrases[0].startFrame
+            start_frame = self.phrases[0].start_frame
             endFrame = self.phrases[-1].endFrame
-            if startFrame != 0:
+            if start_frame != 0:
                 phoneme = "rest"
                 outFile.write("%d %s\n" % (1, phoneme))
         else:
-            startFrame = 0
+            start_frame = 0
             endFrame = 1
 
-        for frame in range(startFrame, endFrame + 1):
+        for frame in range(start_frame, endFrame + 1):
             nextPhoneme = self.get_phoneme_at_frame(frame)
             if nextPhoneme != phoneme:
                 if phoneme == "rest":
@@ -380,10 +380,10 @@ class LipsyncVoice:
             self.config = wx.Config("Papagayo-NG", "Lost Marble")
         phoneme = ""
         if len(self.phrases) > 0:
-            startFrame = self.phrases[0].startFrame
+            start_frame = self.phrases[0].start_frame
             endFrame = self.phrases[-1].endFrame
         else:
-            startFrame = 0
+            start_frame = 0
             endFrame = 1
         if not self.config.Read("MouthDir"):
             print("Use normal procedure.\n")
@@ -391,7 +391,7 @@ class LipsyncVoice:
             for files in os.listdir(
                             os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/") + currentmouth):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
-            for frame in range(startFrame, endFrame + 1):
+            for frame in range(start_frame, endFrame + 1):
                 phoneme = self.get_phoneme_at_frame(frame)
                 try:
                     shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -405,7 +405,7 @@ class LipsyncVoice:
             phonemedict = {}
             for files in os.listdir(self.config.Read("MouthDir")):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
-            for frame in range(startFrame, endFrame + 1):
+            for frame in range(start_frame, endFrame + 1):
                 phoneme = self.get_phoneme_at_frame(frame)
                 try:
                     shutil.copy(self.config.Read("MouthDir") + "/" + phoneme + phonemedict[phoneme],

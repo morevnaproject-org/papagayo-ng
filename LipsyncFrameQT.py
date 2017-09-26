@@ -190,13 +190,13 @@ class LipsyncFrame:
         if self.doc is not None:
             if not self.doc.dirty:
                 return True
-            dlg = QtGui.QMessageBox()
+            dlg = QtWidgets.QMessageBox()
             dlg.setText("Save changes to this project?")
-            dlg.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            dlg.setDefaultButton(QtGui.QMessageBox.Yes)
-            dlg.setIcon(QtGui.QMessageBox.Question)
+            dlg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            dlg.setDefaultButton(QtWidgets.QMessageBox.Yes)
+            dlg.setIcon(QtWidgets.QMessageBox.Question)
             result = dlg.exec_()
-            if result == QtGui.QMessageBox.Yes:
+            if result == QtWidgets.QMessageBox.Yes:
                 self.on_save()
                 if not self.doc.dirty:
                     self.config.setValue("LastFPS", str(self.doc.fps))

@@ -119,6 +119,12 @@ class MovableButton(QtWidgets.QPushButton):
     def mouseReleaseEvent(self, e):
         self.is_resizing = False
 
+    def __del__(self):
+        try:
+            self.deleteLater()
+        except RuntimeError:
+            pass
+
 
 class WaveformView(QtWidgets.QGraphicsView):
     def __init__(self, parent=None):
@@ -152,6 +158,10 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.did_resize = 0
         self.waveform_polygon = None
         self.wv_height = 1
+        self.temp_phrase = None
+        self.temp_word = None
+        self.temp_phoneme = None
+
         #
         # # Connect event handlers
         # # window events
@@ -640,7 +650,7 @@ class WaveformView(QtWidgets.QGraphicsView):
 
             first_sample = 0
             last_sample = len(self.amp)
-            self.wv_height = self.height()  # - self.horizontalScrollBar().height()
+            self.wv_height = self.scene().height()  # - self.horizontalScrollBar().height()
             half_client_height = self.wv_height / 2
             font_metrics = QtGui.QFontMetrics(font)
             text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
@@ -689,7 +699,9 @@ class WaveformView(QtWidgets.QGraphicsView):
         # font = QtGui.QFont("Swiss", 6)
         draw_play_marker = False
         # TestWaveform
+        print("before clear")
         self.scene().clear()
+        print("cleared")
         first_sample = 0
         last_sample = len(self.amp)
         self.wv_height = self.height()  # - self.horizontalScrollBar().height()
@@ -733,11 +745,125 @@ class WaveformView(QtWidgets.QGraphicsView):
             temp_polygon.append(QtCore.QPointF(coordinates[0], coordinates[1]))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
 
-        # Here we use a Button to simulate our phonemes, currently get's regenerated.
-        test_button = self.scene().addWidget(MovableButton("test", None))
-        test_button.setGeometry(QtCore.QRectF(20, 20, font_metrics.width(test_button.widget().text()), font_metrics.height()))
-        test_button2 = self.scene().addWidget(MovableButton("test2", None))
-        test_button2.setGeometry(QtCore.QRectF(60, 20, font_metrics.width(test_button2.widget().text()), font_metrics.height()))
+        # # Here we use a Button to simulate our phonemes, currently get's regenerated.
+        # test_button = self.scene().addWidget(MovableButton("test", None))
+        # test_button.setGeometry(QtCore.QRectF(20, 20, font_metrics.width(test_button.widget().text()), font_metrics.height()))
+        # test_button2 = self.scene().addWidget(MovableButton("test2", None))
+        # test_button2.setGeometry(QtCore.QRectF(60, 20, font_metrics.width(test_button2.widget().text()), font_metrics.height()))
+        self.temp_phrase = None
+        self.temp_word = None
+        self.temp_phoneme = None
+
+        if self.doc.current_voice is not None:
+            top_border += 4
+            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            # self.phrase_bottom = top_border + text_height
+            # self.word_bottom = top_border + 4 + (text_height * 3)
+            # self.phoneme_top = self.height() - 4 - (text_height * 2)
+            for phrase in self.doc.current_voice.phrases:
+                self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, None))
+                self.temp_phrase.setGeometry(QtCore.QRectF(phrase.start_frame * self.frame_width,
+                                                           top_border,
+                                                           (phrase.endFrame - phrase.start_frame + 1) * self.frame_width +1,
+                                                           text_height))
+                phrase.top = self.temp_phrase.y()
+                phrase.bottom = self.temp_phrase.y() + text_height
+                word_count = 0
+                for word in phrase.words:
+                    self.temp_word = self.scene().addWidget(MovableButton(word.text, None))
+                    self.temp_word.setGeometry(QtCore.QRectF(word.start_frame * self.frame_width,
+                                                             top_border + 4 + text_height + (text_height * (word_count % 2)),
+                                                             (word.endFrame - word.start_frame + 1) * self.frame_width + 1,
+                                                             text_height))
+                    word.top = self.temp_word.y()
+                    word.bottom = self.temp_word.y() + text_height
+                    word_count += 1
+                    phoneme_count = 0
+                    for phoneme in word.phonemes:
+                        self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, None))
+                        self.temp_phoneme.setGeometry(QtCore.QRectF(phoneme.frame * self.frame_width,
+                                                                    self.scene().height() - 10 - text_height - (text_height * (phoneme_count % 2)),
+                                                                    self.frame_width + 1,
+                                                                    text_height))
+                        phoneme.top = self.temp_phoneme.y()
+                        phoneme.bottom = self.temp_phoneme.y() + text_height
+                        phoneme_count += 1
+        # # draw the phrases/words/phonemes
+        # if self.doc.currentVoice is not None:
+        #     topBorder += 4
+        #     font.SetPointSize(8)
+        #     font.SetWeight(wx.BOLD)
+        #     dc.SetFont(font)
+        #     textWidth, textHeight = dc.GetTextExtent("Ojyg")
+        #     textHeight += 6
+        #     self.phraseBottom = topBorder + textHeight
+        #     self.wordBottom = topBorder + 4 + textHeight + textHeight + textHeight
+        #     self.phonemeTop = cs.height - 4 - textHeight - textHeight
+        #     dc.SetTextForeground(textCol)
+        #     for phrase in self.doc.currentVoice.phrases:
+        #         dc.SetBrush(wx.Brush(phraseFillCol))
+        #         dc.SetPen(wx.Pen(phraseOutlineCol))
+        #         r = wx.Rect(phrase.startFrame * self.frameWidth, topBorder,
+        #                     (phrase.endFrame - phrase.startFrame + 1) * self.frameWidth + 1, textHeight)
+        #         if (self.clipRect is not None) and (not r.Intersects(self.clipRect)):
+        #             continue  # speed things up by skipping off-screen phrases
+        #         phrase.top = r.y
+        #         phrase.bottom = r.y + r.height
+        #         dc.DrawRectangle(r.x, r.y, r.width, r.height)
+        #         r.Inflate(-4, 0)
+        #         if not self.isWxPhoenix:
+        #             dc.SetClippingRect(r)
+        #         else:
+        #             # WxWidgets - Phoenix
+        #             dc.SetClippingRegion(r)
+        #         dc.DrawLabel(phrase.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+        #         dc.DestroyClippingRegion()
+        #         if self.clipRect is not None:
+        #             if not self.isWxPhoenix:
+        #                 dc.SetClippingRect(self.clipRect)
+        #             else:
+        #                 # WxWidgets - Phoenix
+        #                 dc.SetClippingRegion(self.clipRect)
+        #
+        #         wordCount = 0
+        #         for word in phrase.words:
+        #             dc.SetBrush(wx.Brush(wordFillCol))
+        #             dc.SetPen(wx.Pen(wordOutlineCol))
+        #             r = wx.Rect(word.startFrame * self.frameWidth, topBorder + 4 + textHeight,
+        #                         (word.endFrame - word.startFrame + 1) * self.frameWidth + 1, textHeight)
+        #             if wordCount % 2:
+        #                 r.y += textHeight
+        #             word.top = r.y
+        #             word.bottom = r.y + r.height
+        #             dc.DrawRectangle(r.x, r.y, r.width, r.height)
+        #             r.Inflate(-4, 0)
+        #             if not self.isWxPhoenix:
+        #                 dc.SetClippingRect(r)
+        #             else:
+        #                 # WxWidgets - Phoenix
+        #                 dc.SetClippingRegion(r)
+        #             dc.DrawLabel(word.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+        #             dc.DestroyClippingRegion()
+        #             if self.clipRect is not None:
+        #                 if not self.isWxPhoenix:
+        #                     dc.SetClippingRect(self.clipRect)
+        #                 else:
+        #                     # WxWidgets - Phoenix
+        #                     dc.SetClippingRegion(self.clipRect)
+        #             dc.SetBrush(wx.Brush(phonemeFillCol))
+        #             dc.SetPen(wx.Pen(phonemeOutlineCol))
+        #             phonemeCount = 0
+        #             for phoneme in word.phonemes:
+        #                 r = wx.Rect(phoneme.frame * self.frameWidth, cs.height - 4 - textHeight, self.frameWidth + 1,
+        #                             textHeight)
+        #                 if phonemeCount % 2:
+        #                     r.y -= textHeight
+        #                 phoneme.top = r.y
+        #                 phoneme.bottom = r.y + r.height
+        #                 dc.DrawRectangle(r.x, r.y, r.width, r.height)
+        #                 dc.DrawLabel(phoneme.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+        #                 phonemeCount += 1
+        #             wordCount += 1
 
         # self.wv_height = self.height() - self.horizontalScrollBar().height()
         # print(self.wv_height)
