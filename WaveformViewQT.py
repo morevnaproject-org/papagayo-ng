@@ -77,18 +77,18 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 
 class MovableButton(QtWidgets.QPushButton):
-    def __init__(self, title, parent):
-        super(MovableButton, self).__init__(title, parent)
+    def __init__(self, title, parent, style):
+        super(MovableButton, self).__init__(title, parent, style)
         self.is_resizing = False
 
         # self.setStyleSheet(f"background-color:rgb({phoneme_fill_col.red()},{phoneme_fill_col.green()},{phoneme_fill_col.blue()})")
-        self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
-                                                                             phoneme_fill_col.green(),
-                                                                             phoneme_fill_col.blue())
-        self.background_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
-                                                                              phoneme_outline_col.green(),
-                                                                              phoneme_outline_col.blue())
-        self.setStyleSheet(self.background_string)
+        # self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
+        #                                                                      phoneme_fill_col.green(),
+        #                                                                      phoneme_fill_col.blue())
+        # self.background_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
+        #                                                                       phoneme_outline_col.green(),
+        #                                                                       phoneme_outline_col.blue())
+        self.setStyleSheet(style)
 
     def mouseMoveEvent(self, e):
 
@@ -124,6 +124,10 @@ class MovableButton(QtWidgets.QPushButton):
             self.deleteLater()
         except RuntimeError:
             pass
+        
+    def mouseDoubleClickEvent(self, e):
+        print("Double Click: ")
+        print(self.text())
 
 
 class WaveformView(QtWidgets.QGraphicsView):
@@ -753,6 +757,24 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.temp_phrase = None
         self.temp_word = None
         self.temp_phoneme = None
+        phrase_col_string = "background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
+                                                                        phrase_fill_col.green(),
+                                                                        phrase_fill_col.blue())
+        phrase_col_string += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
+                                                                         phrase_outline_col.green(),
+                                                                         phrase_outline_col.blue())
+        word_col_string = "background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
+                                                                      word_fill_col.green(),
+                                                                      word_fill_col.blue())
+        word_col_string += "border:1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
+                                                                       word_outline_col.green(),
+                                                                       word_outline_col.blue())
+        phoneme_col_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
+                                                                         phoneme_fill_col.green(),
+                                                                         phoneme_fill_col.blue())
+        phoneme_col_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
+                                                                          phoneme_outline_col.green(),
+                                                                          phoneme_outline_col.blue())
 
         if self.doc.current_voice is not None:
             top_border += 4
@@ -761,7 +783,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             # self.word_bottom = top_border + 4 + (text_height * 3)
             # self.phoneme_top = self.height() - 4 - (text_height * 2)
             for phrase in self.doc.current_voice.phrases:
-                self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, None))
+                self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, None, phrase_col_string))
                 self.temp_phrase.setGeometry(QtCore.QRectF(phrase.start_frame * self.frame_width,
                                                            top_border,
                                                            (phrase.endFrame - phrase.start_frame + 1) * self.frame_width +1,
@@ -770,7 +792,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 phrase.bottom = self.temp_phrase.y() + text_height
                 word_count = 0
                 for word in phrase.words:
-                    self.temp_word = self.scene().addWidget(MovableButton(word.text, None))
+                    self.temp_word = self.scene().addWidget(MovableButton(word.text, None, word_col_string))
                     self.temp_word.setGeometry(QtCore.QRectF(word.start_frame * self.frame_width,
                                                              top_border + 4 + text_height + (text_height * (word_count % 2)),
                                                              (word.endFrame - word.start_frame + 1) * self.frame_width + 1,
@@ -780,7 +802,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     word_count += 1
                     phoneme_count = 0
                     for phoneme in word.phonemes:
-                        self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, None))
+                        self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, None, phoneme_col_string))
                         self.temp_phoneme.setGeometry(QtCore.QRectF(phoneme.frame * self.frame_width,
                                                                     self.scene().height() - 10 - text_height - (text_height * (phoneme_count % 2)),
                                                                     self.frame_width + 1,
