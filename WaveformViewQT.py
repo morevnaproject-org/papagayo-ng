@@ -124,7 +124,7 @@ class MovableButton(QtWidgets.QPushButton):
             self.deleteLater()
         except RuntimeError:
             pass
-        
+
     def mouseDoubleClickEvent(self, e):
         print("Double Click: ")
         print(self.text())
@@ -165,7 +165,9 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.temp_phrase = None
         self.temp_word = None
         self.temp_phoneme = None
-
+        self.draw_play_marker = False
+        self.num_samples = 0
+        self.amp = []
         #
         # # Connect event handlers
         # # window events
@@ -517,7 +519,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         #         self.lastFrame = self.scrubFrame
         pass
 
-    def SetFrame(self, frame):
+    def set_frame(self, frame):
         # self.oldFrame = self.curFrame
         # self.curFrame = frame
         # # Scroll the window (if necessary) to make sure the current frame is visible
@@ -642,8 +644,15 @@ class WaveformView(QtWidgets.QGraphicsView):
     #     factor = old_height / new_height
     #     self.waveform_polygon.translate(1, factor)
 
-    def drawBackground(self, painter, rect):
+    def drawForeground(self, painter, rect):
+        # We might draw the play marker here instead.
+        # if self.draw_play_marker:
+        #     foreground_brush = QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern)
+        #     outline = QtGui.QPen(play_outline_col)
+        #     painter.fillRect()
+        pass
 
+    def drawBackground(self, painter, rect):
         background_brush = QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern)
         painter.fillRect(rect, background_brush)
         if self.doc is not None:
@@ -701,7 +710,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         # phoneme_fill_col = QtGui.QColor(231, 185, 210)
         # phoneme_outline_col = QtGui.QColor(173, 114, 146)
         # font = QtGui.QFont("Swiss", 6)
-        draw_play_marker = False
+        self.draw_play_marker = False
         # TestWaveform
         print("before clear")
         self.scene().clear()
@@ -730,7 +739,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     print("Sample " + str(i) + " Time " + str(t2.elapsed))
             height = round(self.wv_height * self.amp[i])
             half_height = height / 2
-            if draw_play_marker and (frame == self.cur_frame):
+            if self.draw_play_marker and (frame == self.cur_frame):
                 pass
             else:
                 # frame_rectangle_list.append((x, half_client_height - half_height, self.sample_width+1, height))
@@ -810,6 +819,37 @@ class WaveformView(QtWidgets.QGraphicsView):
                         phoneme.top = self.temp_phoneme.y()
                         phoneme.bottom = self.temp_phoneme.y() + text_height
                         phoneme_count += 1
+
+        # This doesn't do anything yet because this method is not running all the time.
+        # We should create an object and make it in/visible on demand and move it.
+        if self.doc.sound.is_playing():
+            print("Playing, now drawing marker!")
+            x = self.cur_frame * self.frame_width
+            #     foreground_brush = QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern)
+            #     outline = QtGui.QPen(play_outline_col)
+            temp_play_marker = self.scene().addRect(x,
+                                                    0,
+                                                    self.frame_width + 1,
+                                                    self.height(),
+                                                    QtGui.QPen(play_outline_col),
+                                                    QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+        # # draw the play marker
+        # if drawPlayMarker:
+        #     x = curFrame * self.frameWidth
+        #     # foreground
+        #     height = round(cs.height * amp)
+        #     # outline
+        #     dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        #     dc.SetPen(wx.Pen(playOutlineCol))
+        #     dc.DrawRectangle(x, 0, self.frameWidth + 1, cs.height)
+        #     # Draw Big Fat Frame Marker
+        #     if self.isDragging:
+        #         dc.DestroyClippingRegion()
+        #         font.SetPointSize(16)
+        #         font.SetWeight(wx.BOLD)
+        #         dc.SetFont(font)
+        #         dc.DrawLabel(str(curFrame + 1), wx.Rect(x - 50, cs.height * 0.4, 100, 125), wx.ALIGN_CENTER)
+
         # # draw the phrases/words/phonemes
         # if self.doc.currentVoice is not None:
         #     topBorder += 4

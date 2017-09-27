@@ -79,16 +79,16 @@ class SoundPlayer:
     def is_playing(self):
         return self.isplaying
 
-    def SetCurTime(self, time):
+    def set_cur_time(self, time):
         self.time = time
 
-    def Stop(self):
+    def stop(self):
         self.isplaying = False
 
     def CurrentTime(self):
         return self.time
 
-    def SetVolume(self, volume):
+    def set_volume(self, volume):
         self.volume = volume
 
     def _play(self, start, length):
@@ -148,7 +148,7 @@ class SoundPlayer:
         stream.close()
         self.isplaying = False
 
-    def Play(self, arg):
+    def play(self, arg):
         thread.start_new_thread(self._play, (0, self.Duration()))
 
     def PlaySegment(self, start, length, arg):

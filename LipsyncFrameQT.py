@@ -117,7 +117,8 @@ class LipsyncFrame:
         self.main_window.statusbar.addPermanentWidget(self.play_status)
         self.main_window.statusbar.showMessage(self.mainframe_statusbar_fields[0])
         # Connect Events
-        self.main_window.action_play.triggered.connect(self.test_button_event)
+        self.main_window.action_play.triggered.connect(self.on_play)
+        self.main_window.action_stop.triggered.connect(self.on_stop)
         self.main_window.action_exit.triggered.connect(self.quit_application)
         self.main_window.action_open.triggered.connect(self.on_open)
         self.main_window.action_save.triggered.connect(self.on_save)
@@ -367,7 +368,7 @@ class LipsyncFrame:
             self.main_window.action_stop.setEnabled(True)
             self.doc.sound.set_cur_time(0)
             self.doc.sound.play(False)
-            self.timer = QtCore.QTimer(self)
+            self.timer = QtCore.QTimer()
             self.main_window.connect(self.timer, None, self.on_play_tick)
             # self.connect(self.timer, None, self.on_play_tick)
             self.timer.start(250.0/self.doc.fps)
