@@ -137,6 +137,7 @@ class LipsyncFrame:
         self.main_window.export_button.clicked.connect(self.on_voice_export)
         self.main_window.breakdown_button.clicked.connect(self.on_voice_breakdown)
         self.main_window.choose_imageset_button.clicked.connect(self.on_voiceimagechoose)
+        self.main_window.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
         #         # # menus
         #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -410,9 +411,6 @@ class LipsyncFrame:
     def on_mouth_choice(self, event=None):
         self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
         self.main_window.mouth_view.draw_me()
-        # self.mouthView.currentMouth = self.mouthChoice.GetStringSelection()
-        # self.mouthView.DrawMe()
-        pass
 
     def on_export_choice(self, event=None):
         if self.main_window.export_combo.currentText() == "Images":
