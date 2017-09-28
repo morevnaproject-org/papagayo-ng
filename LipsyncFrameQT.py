@@ -570,6 +570,8 @@ class LipsyncFrame:
                                                  self.main_window.waveform_view.y(),
                                                  self.main_window.waveform_view.width()*self.zoom_factor,
                                                  self.wv_height)
+        self.did_resize = True
+        self.do_idle()
 
     def on_zoom_out(self, event=None):
         self.zoom_factor += 0.1
@@ -578,6 +580,8 @@ class LipsyncFrame:
                                                  self.main_window.waveform_view.y(),
                                                  self.main_window.waveform_view.width()*self.zoom_factor,
                                                  self.wv_height)
+        self.did_resize = True
+        self.do_idle()
 
     def on_zoom_reset(self, event=None):
         self.zoom_factor = 1
@@ -586,6 +590,8 @@ class LipsyncFrame:
                                                  self.main_window.waveform_view.y(),
                                                  self.main_window.waveform_view.width()*self.zoom_factor,
                                                  self.wv_height)
+        self.did_resize = True
+        self.do_idle()
 
     def on_wheel(self, event=None):
         # print(self.main_window.waveform_view.matrix())
