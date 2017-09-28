@@ -168,6 +168,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.draw_play_marker = False
         self.num_samples = 0
         self.amp = []
+        self.temp_play_marker = None
         #
         # # Connect event handlers
         # # window events
@@ -822,17 +823,20 @@ class WaveformView(QtWidgets.QGraphicsView):
 
         # This doesn't do anything yet because this method is not running all the time.
         # We should create an object and make it in/visible on demand and move it.
-        if self.doc.sound.is_playing():
-            print("Playing, now drawing marker!")
-            x = self.cur_frame * self.frame_width
-            #     foreground_brush = QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern)
-            #     outline = QtGui.QPen(play_outline_col)
-            temp_play_marker = self.scene().addRect(x,
-                                                    0,
-                                                    self.frame_width + 1,
-                                                    self.height(),
-                                                    QtGui.QPen(play_outline_col),
-                                                    QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+        print("Playing, now drawing marker!")
+        x = self.cur_frame * self.frame_width
+        #     foreground_brush = QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern)
+        #     outline = QtGui.QPen(play_outline_col)
+        self.temp_play_marker = self.scene().addRect(x,
+                                                0,
+                                                self.frame_width + 1,
+                                                self.height(),
+                                                QtGui.QPen(play_outline_col),
+                                                QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+        if not self.doc.sound.is_playing():
+            self.temp_play_marker.setVisible(False)
+        else:
+            self.temp_play_marker.setVisible(True)
         # # draw the play marker
         # if drawPlayMarker:
         #     x = curFrame * self.frameWidth

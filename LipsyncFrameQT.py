@@ -369,7 +369,8 @@ class LipsyncFrame:
             self.doc.sound.set_cur_time(0)
             self.doc.sound.play(False)
             self.timer = QtCore.QTimer()
-            self.main_window.connect(self.timer, None, self.on_play_tick)
+            # self.main_window.connect(self.timer, None, self.on_play_tick)
+            self.timer.timeout.connect(self.on_play_tick)
             # self.connect(self.timer, None, self.on_play_tick)
             self.timer.start(250.0/self.doc.fps)
         #     self.mainFrame_toolbar.EnableTool(ID_PLAY, False)
@@ -397,8 +398,11 @@ class LipsyncFrame:
                     self.cur_frame = cur_frame
                     self.main_window.mouth_view.set_frame(self.cur_frame)
                     self.main_window.waveform_view.set_frame(self.cur_frame)
+                    self.main_window.waveform_view.temp_play_marker.setVisible(True)
+                    self.main_window.waveform_view.temp_play_marker.setPos(self.cur_frame * self.main_window.waveform_view.frame_width, 0)
                     self.main_window.statusbar.showMessage("Frame: %d" % (cur_frame + 1))
             else:
+                self.main_window.waveform_view.temp_play_marker.setVisible(False)
                 self.on_stop()
                 self.timer.stop()
                 del self.timer

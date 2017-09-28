@@ -85,7 +85,7 @@ class SoundPlayer:
     def stop(self):
         self.isplaying = False
 
-    def CurrentTime(self):
+    def current_time(self):
         return self.time
 
     def set_volume(self, volume):
