@@ -139,6 +139,7 @@ class LipsyncFrame:
         self.main_window.choose_imageset_button.clicked.connect(self.on_voiceimagechoose)
         self.main_window.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
         self.main_window.voice_list.itemClicked.connect(self.on_sel_voice)
+        self.main_window.volume_slider.valueChanged.connect(self.change_volume)
         #         # # menus
         #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -408,6 +409,10 @@ class LipsyncFrame:
                 self.on_stop()
                 self.timer.stop()
                 del self.timer
+
+    def change_volume(self, e):
+        if self.doc and self.doc.sound:
+            self.doc.sound.volume = int(self.main_window.volume_slider.value())
 
     def on_mouth_choice(self, event=None):
         self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
