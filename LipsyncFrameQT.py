@@ -138,6 +138,7 @@ class LipsyncFrame:
         self.main_window.breakdown_button.clicked.connect(self.on_voice_breakdown)
         self.main_window.choose_imageset_button.clicked.connect(self.on_voiceimagechoose)
         self.main_window.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
+        self.main_window.voice_list.itemClicked.connect(self.on_sel_voice)
         #         # # menus
         #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -499,6 +500,17 @@ class LipsyncFrame:
                     self.doc.current_voice.export_alelo(file_path, language, self.langman)
                 elif exporter == "Images":
                     self.doc.current_voice.export_images(file_path, self.main_window.mouth_choice.currentText())
+
+    def on_sel_voice(self, e):
+        if not self.doc:
+            return
+        self.ignore_text_changes = True
+        self.doc.current_voice = self.doc.voices[self.main_window.voice_list.row(self.main_window.voice_list.currentItem())]
+        self.main_window.voice_name_input.setText(self.doc.current_voice.name)
+        self.main_window.text_edit.setText(self.doc.current_voice.text)
+        self.ignore_text_changes = False
+        self.main_window.waveform_view.update_drawing()
+        self.main_window.mouth_view.draw_me()
 
     def on_voiceimagechoose(self, event=None):
         language = self.main_window.language_choice.currentText()
