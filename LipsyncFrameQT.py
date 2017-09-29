@@ -140,6 +140,8 @@ class LipsyncFrame:
         self.main_window.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
         self.main_window.voice_list.itemClicked.connect(self.on_sel_voice)
         self.main_window.volume_slider.valueChanged.connect(self.change_volume)
+        self.main_window.new_button.clicked.connect(self.on_new_voice)
+        self.main_window.delete_button.clicked.connect(self.on_del_voice)
         #         # # menus
         #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -514,6 +516,41 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
+        self.main_window.waveform_view.update_drawing()
+        self.main_window.mouth_view.draw_me()
+
+    def on_new_voice(self, event=None):
+        if not self.doc:
+            return
+        self.doc.dirty = True
+        self.doc.voices.append(LipsyncVoice("Voice %d" % (len(self.doc.voices) + 1)))
+        self.doc.current_voice = self.doc.voices[-1]
+        self.main_window.voice_list.addItem(self.doc.current_voice.name)
+        self.main_window.voice_list.setCurrentRow(self.main_window.voice_list.count() - 1)
+        self.ignore_text_changes = True
+        self.main_window.voice_name_input.setText(self.doc.current_voice.name)
+        self.main_window.text_edit.setText(self.doc.current_voice.text)
+        self.ignore_text_changes = False
+        self.main_window.waveform_view.update_drawing()
+        self.main_window.mouth_view.draw_me()
+
+    def on_del_voice(self, event=None):
+        if (not self.doc) or (len(self.doc.voices) == 1):
+            return
+        self.doc.dirty = True
+        new_index = self.doc.voices.index(self.doc.current_voice)
+        if new_index > 0:
+            new_index -= 1
+        else:
+            new_index = 0
+        self.doc.voices.remove(self.doc.current_voice)
+        self.doc.current_voice = self.doc.voices[new_index]
+        self.main_window.voice_list.clear()
+        for voice in self.doc.voices:
+            self.main_window.voice_list.addItem(voice.name)
+        self.main_window.voice_list.setCurrentRow(new_index)
+        self.main_window.voice_name_input.setText(self.doc.current_voice.name)
+        self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.main_window.waveform_view.update_drawing()
         self.main_window.mouth_view.draw_me()
 
