@@ -136,12 +136,14 @@ class LipsyncFrame:
         self.main_window.text_edit.textChanged.connect(self.on_voice_text)
         self.main_window.export_button.clicked.connect(self.on_voice_export)
         self.main_window.breakdown_button.clicked.connect(self.on_voice_breakdown)
-        self.main_window.choose_imageset_button.clicked.connect(self.on_voiceimagechoose)
+        self.main_window.choose_imageset_button.clicked.connect(self.on_voice_image_choose)
         self.main_window.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
         self.main_window.voice_list.itemClicked.connect(self.on_sel_voice)
         self.main_window.volume_slider.valueChanged.connect(self.change_volume)
         self.main_window.new_button.clicked.connect(self.on_new_voice)
         self.main_window.delete_button.clicked.connect(self.on_del_voice)
+        self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
+        self.main_window.text_edit.textChanged.connect(self.on_voice_text)
         #         # # menus
         #         # wx.EVT_MENU(self, wx.ID_OPEN, self.OnOpen)
         #         # wx.EVT_MENU(self, wx.ID_SAVE, self.OnSave)
@@ -437,6 +439,7 @@ class LipsyncFrame:
             self.doc.dirty = True
             self.doc.current_voice.name = self.main_window.voice_name_input.text()
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
+            self.main_window.voice_list.currentItem().setText(self.doc.current_voice.name)
 
     def on_voice_text(self, event=None):
         print(self.main_window.text_edit.toPlainText())
@@ -554,7 +557,7 @@ class LipsyncFrame:
         self.main_window.waveform_view.update_drawing()
         self.main_window.mouth_view.draw_me()
 
-    def on_voiceimagechoose(self, event=None):
+    def on_voice_image_choose(self, event=None):
         language = self.main_window.language_choice.currentText()
         if (self.doc is not None) and (self.doc.current_voice is not None):
             voiceimage_path = QtWidgets.QFileDialog.getExistingDirectory(self.main_window,
