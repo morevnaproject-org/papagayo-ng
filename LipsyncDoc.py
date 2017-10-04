@@ -90,20 +90,20 @@ class LipsyncWord:
                 phoneme = LipsyncPhoneme()
                 phoneme.text = p
                 self.phonemes.append(phoneme)
-        except:
-            traceback.print_exc()
+        except KeyError:
             # this word was not found in the phoneme dictionary
-            # TODO: This still depends on wx, make it neutral!
+            # TODO: This now depends on QT, make it neutral!
             dlg = PronunciationDialog(parentWindow, phonemeset.set)
-            dlg.wordLabel.SetLabel(dlg.wordLabel.GetLabel() + ' ' + self.text)
-            if dlg.ShowModal() == wx.ID_OK:
-                for p in dlg.phonemeCtrl.GetValue().split():
+            dlg.word_label.setText(dlg.word_label.text() + ' ' + self.text)
+            dlg.exec_()
+            if dlg.gave_ok:
+                for p in dlg.phoneme_ctrl.text().split():
                     if len(p) == 0:
                         continue
                     phoneme = LipsyncPhoneme()
                     phoneme.text = p
                     self.phonemes.append(phoneme)
-            dlg.Destroy()
+            dlg.destroy()
 
     def reposition_phoneme(self, phoneme):
         id = 0
