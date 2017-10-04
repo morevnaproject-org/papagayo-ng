@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from qtpy import QtCore, QtWidgets
+from math import sqrt
 
 
 class PronunciationDialog(QtWidgets.QDialog):
@@ -38,7 +39,7 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.gave_ok = False
         self.curr_x = 0
         self.curr_y = 0
-        self.max_x = 3
+        self.max_x = round(sqrt(len(phoneme_set)))  # This way the grid should always be as square as possible
 
         self.box.addWidget(self.word_label)
         self.box.addLayout(self.phoneme_grid)
@@ -58,8 +59,10 @@ class PronunciationDialog(QtWidgets.QDialog):
                 if self.curr_x >= self.max_x:
                     self.curr_x = 0
                     self.curr_y += 1
+
         self.decide_box.accepted.connect(self.on_accept)
         self.decide_box.rejected.connect(self.on_reject)
+
         self.setLayout(self.box)
         self.setModal(True)
         self.show()
