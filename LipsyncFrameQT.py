@@ -321,13 +321,13 @@ class LipsyncFrame:
         if self.doc is None:
             return
         print(self.config.value("WorkingDir", get_main_dir()))
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                              "Save %s File" % app_title,
                                                              self.config.value("WorkingDir", get_main_dir()),
                                                              save_wildcard)
         if file_path:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
-            self.doc.save(os.path.dirname(file_path))
+            self.doc.save(file_path)
             self.main_window.setWindowTitle("%s [%s] - %s" % (self.doc.name, file_path, app_title))
 
     def on_close(self):

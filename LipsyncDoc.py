@@ -536,7 +536,7 @@ class LipsyncDoc:
         outFile.write("%d\n" % self.soundDuration)
         outFile.write("%d\n" % len(self.voices))
         for voice in self.voices:
-            voice.Save(outFile)
+            voice.save(outFile)
         outFile.close()
         self.dirty = False
 
