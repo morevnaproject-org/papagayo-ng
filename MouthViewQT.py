@@ -39,31 +39,6 @@ class MouthView(QtWidgets.QGraphicsView):
         self.current_mouth = None
         self.mouths = {}
         self.load_mouths()
-        #
-        # # Connect event handlers
-        # # window events
-        # wx.EVT_PAINT(self, self.OnPaint)
-        pass
-
-    def __set_properties(self):
-        # begin wxGlade: MouthView.__set_properties
-        #self.SetMinSize((200, 200))
-        #self.SetBackgroundColour(wx.Colour(255, 255, 255))
-        # end wxGlade
-        pass
-
-    def __do_layout(self):
-        # begin wxGlade: MouthView.__do_layout
-        #self.Layout()
-        # end wxGlade
-        pass
-
-    def OnPaint(self, event):
-        # dc = wx.PaintDC(self)
-        # dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        # dc.Clear()
-        # self.DrawMe(dc)
-        pass
 
     def draw_me(self, dc=None):
         if (self.doc is not None) and (self.doc.sound is not None) and (self.doc.sound.is_playing()):
@@ -77,48 +52,18 @@ class MouthView(QtWidgets.QGraphicsView):
                 self.current_phoneme = phoneme
         else:
             self.current_phoneme = "rest"
-
-        bitmap = self.mouths[self.current_mouth][self.current_phoneme]
+        if self.current_phoneme in self.mouths[self.current_mouth]:
+            bitmap = self.mouths[self.current_mouth][self.current_phoneme]
+        else:
+            bitmap = self.mouths[self.current_mouth]["rest"]
         self.scene().clear()
         self.scene().addPixmap(bitmap)
+        if self.current_phoneme not in self.mouths[self.current_mouth]:
+            self.scene().addText("Missing Mouth: " + self.current_phoneme, QtGui.QFont("Swiss", 14))
         self.fitInView(self.x(),
                        self.y(),
                        self.width(),
                        self.height())
-        print(self.x(),
-              self.y(),
-              self.width(),
-              self.height())
-        # if (self.doc is not None) and (self.doc.sound is not None) and (self.doc.sound.IsPlaying()):
-        #     if self.doc.currentVoice is not None:
-        #         phoneme = self.doc.currentVoice.GetPhonemeAtFrame(self.curFrame)
-        #     else:
-        #         phoneme = "rest"
-        #     if phoneme == self.currentPhoneme:
-        #         return
-        #     else:
-        #         self.currentPhoneme = phoneme
-        # else:
-        #     self.currentPhoneme = "rest"
-        # if dc is None:
-        #     dc = wx.ClientDC(self)
-        #     freeDC = True
-        # else:
-        #     freeDC = False
-        # # dc.BeginDrawing()
-        # if 1:
-        #     bitmap = self.mouths[self.currentMouth][self.currentPhoneme]
-        #     width, height = self.GetClientSize()
-        #     dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        #     dc.Clear()
-        #     dc.DrawBitmap(bitmap, width / 2 - bitmap.GetWidth() / 2, height / 2 - bitmap.GetHeight() / 2)
-        # else:
-        #     dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        #     dc.Clear()
-        # # dc.EndDrawing()
-        # if freeDC:
-        #     del dc
-        pass
 
     def set_frame(self, frame):
         self.old_frame = self.cur_frame
