@@ -23,7 +23,7 @@
 import math, random
 from qtpy import QtGui, QtCore, QtWidgets
 # import wx
-debug_performance = True
+debug_performance = False
 if debug_performance:
     import simplestopwatch as stopwatch
 else:
@@ -105,10 +105,11 @@ class MovableButton(QtWidgets.QPushButton):
             drag.setMimeData(mime_data)
             drag.setHotSpot(e.pos() - self.rect().topLeft())
             # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
-            try:
-                dropAction = drag.exec(QtCore.Qt.MoveAction)
-            except AttributeError:
-                dropAction = drag.start(QtCore.Qt.MoveAction)
+            # try:
+            #     dropAction = drag.exec(QtCore.Qt.MoveAction)
+            # except AttributeError:
+            #     dropAction = drag.start(QtCore.Qt.MoveAction)
+            dropAction = drag.start(QtCore.Qt.MoveAction)
 
     def mousePressEvent(self, e):
         # QtGui.QPushButton.mousePressEvent(self, e)
@@ -521,16 +522,16 @@ class WaveformView(QtWidgets.QGraphicsView):
         pass
 
     def set_frame(self, frame):
-        # self.oldFrame = self.curFrame
-        # self.curFrame = frame
-        # # Scroll the window (if necessary) to make sure the current frame is visible
-        # cs = self.GetClientSize()
-        # curFrameX, curFrameY = self.CalcScrolledPosition(self.curFrame * self.frameWidth, 0)
-        # if curFrameX < 0 or curFrameX > cs.width:
-        #     xs, ys = self.GetScrollPixelsPerUnit()
-        #     self.Scroll(self.curFrame * self.frameWidth / xs, -1)
-        # self.UpdateDrawing(False)
-        pass
+        self.centerOn(self.temp_play_marker)
+        self.temp_play_marker.setPos(
+            frame * self.frame_width, 0)
+        # update_rect = QtCore.QRectF(self.main_window.waveform_view.temp_play_marker.x() - self.main_window.waveform_view.temp_play_marker.rect().width(),
+        #                             self.main_window.waveform_view.temp_play_marker.y(),
+        #                             self.main_window.waveform_view.temp_play_marker.rect().width() * 2,
+        #                             self.main_window.waveform_view.temp_play_marker.rect().height())
+        update_rect = self.scene().sceneRect()
+        self.scene().update(update_rect)
+
 
     def set_document(self, doc):
         if (self.doc is None) and (doc is not None):
@@ -828,15 +829,17 @@ class WaveformView(QtWidgets.QGraphicsView):
         #     foreground_brush = QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern)
         #     outline = QtGui.QPen(play_outline_col)
         self.temp_play_marker = self.scene().addRect(x,
-                                                0,
-                                                self.frame_width + 1,
-                                                self.height(),
-                                                QtGui.QPen(play_outline_col),
-                                                QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
-        if not self.doc.sound.is_playing():
-            self.temp_play_marker.setVisible(False)
-        else:
-            self.temp_play_marker.setVisible(True)
+                                                     0,
+                                                     self.frame_width + 1,
+                                                     self.height(),
+                                                     QtGui.QPen(play_outline_col),
+                                                     QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+        self.temp_play_marker.setOpacity(0.5)
+        self.temp_play_marker.setVisible(False)
+        # if not self.doc.sound.is_playing():
+        #     self.temp_play_marker.setVisible(False)
+        # else:
+        #     self.temp_play_marker.setVisible(True)
         # # draw the play marker
         # if drawPlayMarker:
         #     x = curFrame * self.frameWidth
