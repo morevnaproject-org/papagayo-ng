@@ -122,13 +122,12 @@ class LipsyncFrame:
         self.main_window.action_exit.triggered.connect(self.quit_application)
         self.main_window.action_open.triggered.connect(self.on_open)
         self.main_window.action_save.triggered.connect(self.on_save)
-        self.main_window.action_zoom_in.triggered.connect(self.on_zoom_in)
-        self.main_window.action_zoom_out.triggered.connect(self.on_zoom_out)
-        self.main_window.action_reset_zoom.triggered.connect(self.on_zoom_reset)
+        self.main_window.action_zoom_in.triggered.connect(self.main_window.waveform_view.on_zoom_in)
+        self.main_window.action_zoom_out.triggered.connect(self.main_window.waveform_view.on_zoom_out)
+        self.main_window.action_reset_zoom.triggered.connect(self.main_window.waveform_view.on_zoom_reset)
+
         self.main_window.reload_dict_button.clicked.connect(self.on_reload_dictionary)
-        self.main_window.waveform_view.resizeEvent = self.on_resize
-        self.main_window.waveform_view.wheelEvent = self.on_wheel
-        self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(self.on_slider_change)
+        self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(self.main_window.waveform_view.on_slider_change)
         self.main_window.action_help_topics.triggered.connect(self.on_help)
         self.main_window.action_about_papagayo_ng.triggered.connect(self.on_about)
         self.main_window.export_combo.currentIndexChanged.connect(self.on_export_choice)
@@ -184,8 +183,6 @@ class LipsyncFrame:
 
         self.validator = QtGui.QIntValidator(1, 999, None)
         self.main_window.fps_input.setValidator(self.validator)
-        self.idle_timer = QtCore.QTimer()
-        self.idle_timer.timeout.connect(self.do_idle)
 
     def load_ui_widget(self, ui_filename, parent=None):
         self.ui = uic.loadUi(ui_filename, parent)
@@ -397,6 +394,7 @@ class LipsyncFrame:
             self.main_window.action_stop.setEnabled(False)
             self.main_window.action_play.setEnabled(True)
             self.main_window.statusbar.showMessage("Stopped")
+            self.main_window.waveform_view.horizontalScrollBar().setValue(self.main_window.waveform_view.scroll_position)
 
     def on_play_tick(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):
@@ -407,6 +405,7 @@ class LipsyncFrame:
                     self.main_window.mouth_view.set_frame(self.cur_frame)
                     self.main_window.waveform_view.set_frame(self.cur_frame)
                     self.main_window.statusbar.showMessage("Frame: %d" % (cur_frame + 1))
+                    self.main_window.waveform_view.scroll_position = self.main_window.waveform_view.horizontalScrollBar().value()
             else:
                 self.main_window.waveform_view.temp_play_marker.setVisible(False)
                 self.on_stop()
@@ -577,92 +576,6 @@ class LipsyncFrame:
                     self.main_window.mouth_choice.addItem(mouth)
                 self.main_window.mouth_choice.setCurrentIndex(0)
                 self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
-
-    # TODO: These are very similar, might want to combine them
-    def on_resize(self, event=None):
-        # Test Drawing on the WaveformView
-        # for item in self.main_window.waveform_view.items():
-        #     item.scale(1, self.height_scale)
-        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
-                                                 self.main_window.waveform_view.y(),
-                                                 self.main_window.waveform_view.width()*self.zoom_factor,
-                                                 self.main_window.waveform_view.scene().sceneRect().height(),
-                                                 QtCore.Qt.IgnoreAspectRatio)
-
-        # This is buggy if we increase the window size after decreasing it, but the redraw after works.
-        # self.main_window.waveform_view.fitInView(self.main_window.waveform_view.scene().sceneRect(),QtCore.Qt.IgnoreAspectRatio)
-        self.main_window.waveform_view.horizontalScrollBar().setValue(self.scroll_position)
-        self.did_resize = True
-        self.idle_timer.start(500)
-
-    def do_idle(self):
-        if self.did_resize:
-            self.did_resize = False
-            self.main_window.waveform_view.fitInView(self.main_window.waveform_view.scene().sceneRect().x(),
-                                                     self.main_window.waveform_view.scene().sceneRect().y(),
-                                                     self.main_window.waveform_view.width() * self.zoom_factor,
-                                                     self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height(),
-                                                     QtCore.Qt.IgnoreAspectRatio)
-            try:
-                self.main_window.waveform_view.update_drawing()
-            except AttributeError:
-                pass  # Not initialized yet
-            self.main_window.waveform_view.fitInView(self.main_window.waveform_view.scene().sceneRect().x(),
-                                                     self.main_window.waveform_view.scene().sceneRect().y(),
-                                                     self.main_window.waveform_view.width() * self.zoom_factor,
-                                                     self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height(),
-                                                     QtCore.Qt.IgnoreAspectRatio)
-            # self.main_window.waveform_view.fitInView(self.main_window.waveform_view.scene().sceneRect().x(),
-            #                                          self.main_window.waveform_view.scene().sceneRect().y(),
-            #                                          self.main_window.waveform_view.width()*self.zoom_factor,
-            #                                          self.main_window.waveform_view.height() - self.main_window.waveform_view.horizontalScrollBar().height(),
-            #                                          QtCore.Qt.IgnoreAspectRatio)
-        self.idle_timer.stop()
-
-    def on_zoom_in(self, event=None):
-        self.zoom_factor -= 0.1
-        print(self.zoom_factor)
-        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
-                                                 self.main_window.waveform_view.y(),
-                                                 self.main_window.waveform_view.width()*self.zoom_factor,
-                                                 self.wv_height)
-        self.did_resize = True
-        self.do_idle()
-
-    def on_zoom_out(self, event=None):
-        self.zoom_factor += 0.1
-        print(self.zoom_factor)
-        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
-                                                 self.main_window.waveform_view.y(),
-                                                 self.main_window.waveform_view.width()*self.zoom_factor,
-                                                 self.wv_height)
-        self.did_resize = True
-        self.do_idle()
-
-    def on_zoom_reset(self, event=None):
-        self.zoom_factor = 1
-        print(self.zoom_factor)
-        self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
-                                                 self.main_window.waveform_view.y(),
-                                                 self.main_window.waveform_view.width()*self.zoom_factor,
-                                                 self.wv_height)
-        self.did_resize = True
-        self.do_idle()
-
-    def on_wheel(self, event=None):
-        # print(self.main_window.waveform_view.matrix())
-        self.scroll_position = self.main_window.waveform_view.horizontalScrollBar().value()+(event.delta()/1.2)
-        self.main_window.waveform_view.horizontalScrollBar().setValue(self.scroll_position)
-        # print(event.delta()/1200.0)
-        # self.zoom_factor += (event.delta()/1200.0)
-        # print(self.zoom_factor)
-        # self.main_window.waveform_view.fitInView(self.main_window.waveform_view.x(),
-        #                                          self.main_window.waveform_view.y(),
-        #                                          self.main_window.waveform_view.width()*self.zoom_factor,
-        #                                          self.wv_height)
-
-    def on_slider_change(self, value):
-        self.scroll_position = value
 
     def on_reload_dictionary(self, event=None):
         print("reload the dictionary")

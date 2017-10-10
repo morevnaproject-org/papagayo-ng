@@ -170,6 +170,12 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.num_samples = 0
         self.amp = []
         self.temp_play_marker = None
+        self.idle_timer = QtCore.QTimer()
+        self.idle_timer.setSingleShot(True)
+        # self.idle_timer.singleShot(1000, self.do_idle)
+        self.idle_timer.timeout.connect(self.do_idle)
+        self.did_resize = False
+        self.scroll_position = 0
         #
         # # Connect event handlers
         # # window events
@@ -221,6 +227,45 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def dropEvent(self, e):
         print("Dropped")
+
+    def wheelEvent(self, event):
+        self.scroll_position = self.horizontalScrollBar().value()+(event.delta()/1.2)
+        self.horizontalScrollBar().setValue(self.scroll_position)
+
+    def on_slider_change(self, value):
+        self.scroll_position = value
+
+    def resizeEvent(self, event):
+        # for item in self.main_window.waveform_view.items():
+        #     item.scale(1, self.height_scale)
+
+        update_rect = self.scene().sceneRect()
+        update_rect.setWidth(self.width())
+        update_rect.setHeight(self.scene().height())
+        self.fitInView(update_rect, QtCore.Qt.IgnoreAspectRatio)
+
+        # This is buggy if we increase the window size after decreasing it, but the redraw after works.
+        self.horizontalScrollBar().setValue(self.scroll_position)
+        if not self.did_resize:
+            self.did_resize = True
+            self.idle_timer.start(500)
+
+    def do_idle(self):
+        try:
+            self.update_drawing()
+        except AttributeError:
+            pass  # Not initialized yet
+        update_rect = self.scene().sceneRect()
+        update_rect.setWidth(self.width())
+        update_rect.setHeight(
+            self.height() - self.horizontalScrollBar().height())
+        self.fitInView(update_rect, QtCore.Qt.IgnoreAspectRatio)
+        update_rect = self.scene().sceneRect()
+        self.scene().update(update_rect)
+        self.horizontalScrollBar().setValue(self.scroll_position)
+        self.idle_timer.stop()
+        self.did_resize = False
+
 
     def OnIdle(self, event):
         # if self.didresize:
@@ -532,7 +577,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         update_rect = self.scene().sceneRect()
         self.scene().update(update_rect)
 
-
     def set_document(self, doc):
         if (self.doc is None) and (doc is not None):
             self.sample_width = default_sample_width
@@ -748,8 +792,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                 # self.scene().addRect(x, half_client_height - half_height, self.sample_width+1, height, line_color, fill_color)
                 frame_rectangle_polygon_upper.append((x, half_client_height - half_height))
                 frame_rectangle_polygon_upper.append((x + self.sample_width, half_client_height - half_height))
-                frame_rectangle_polygon_lower.append((x, (half_client_height - half_height) + height))
-                frame_rectangle_polygon_lower.append((x + self.sample_width, (half_client_height - half_height) + height))
+                frame_rectangle_polygon_lower.append((x, half_client_height + half_height))
+                frame_rectangle_polygon_lower.append((x + self.sample_width, half_client_height + half_height))
             x += self.sample_width
             sample += 1
             if sample % self.samples_per_frame == 0:
@@ -815,7 +859,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     for phoneme in word.phonemes:
                         self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, None, phoneme_col_string))
                         self.temp_phoneme.setGeometry(QtCore.QRectF(phoneme.frame * self.frame_width,
-                                                                    self.scene().height() - 10 - text_height - (text_height * (phoneme_count % 2)),
+                                                                    self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
                                                                     self.frame_width + 1,
                                                                     text_height))
                         phoneme.top = self.temp_phoneme.y()
@@ -831,11 +875,13 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.temp_play_marker = self.scene().addRect(x,
                                                      0,
                                                      self.frame_width + 1,
-                                                     self.height(),
+                                                     self.height() - self.horizontalScrollBar().height(),
                                                      QtGui.QPen(play_outline_col),
                                                      QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
         self.temp_play_marker.setOpacity(0.5)
         self.temp_play_marker.setVisible(False)
+        if self.doc.sound.is_playing():
+            self.temp_play_marker.setVisible(True)
         # if not self.doc.sound.is_playing():
         #     self.temp_play_marker.setVisible(False)
         # else:
@@ -1232,26 +1278,32 @@ class WaveformView(QtWidgets.QGraphicsView):
         #     print("Drawing took: " + str(t2.elapsed))
         pass
 
-    def OnZoomIn(self, event):
+    def on_zoom_in(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame < 16):
             self.samples_per_frame *= 2
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
             self.set_document(self.doc)
+            self.scroll_position *= 2
+            self.horizontalScrollBar().setValue(self.scroll_position)
 
-    def OnZoomOut(self, event):
+    def on_zoom_out(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame > 1):
             self.samples_per_frame /= 2
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
             self.set_document(self.doc)
+            self.scroll_position /= 2
+            self.horizontalScrollBar().setValue(self.scroll_position)
 
-    def OnZoom1(self, event):
+    def on_zoom_reset(self, event=None):
         if self.doc is not None:
+            self.scroll_position /= (self.samples_per_frame / default_samples_per_frame)
             self.sample_width = default_sample_width
             self.samples_per_frame = default_samples_per_frame
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
             self.set_document(self.doc)
+            self.horizontalScrollBar().setValue(self.scroll_position)
 
 # end of class WaveformView
