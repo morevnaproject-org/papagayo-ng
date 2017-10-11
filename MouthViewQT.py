@@ -52,13 +52,19 @@ class MouthView(QtWidgets.QGraphicsView):
                 self.current_phoneme = phoneme
         else:
             self.current_phoneme = "rest"
-        if self.current_phoneme in self.mouths[self.current_mouth]:
-            bitmap = self.mouths[self.current_mouth][self.current_phoneme]
+        if not self.current_mouth:
+            self.current_mouth = list(self.mouths)[0]
+        if self.current_mouth in self.mouths.keys():
+            print(self.mouths[self.current_mouth])
+            if self.current_phoneme in self.mouths[self.current_mouth].keys():
+                bitmap = self.mouths[self.current_mouth][self.current_phoneme]
+            else:
+                bitmap = self.mouths[self.current_mouth]["rest"]
         else:
-            bitmap = self.mouths[self.current_mouth]["rest"]
+            bitmap = self.mouths[list(self.mouths)[0]]["rest"]
         self.scene().clear()
         self.scene().addPixmap(bitmap)
-        if self.current_phoneme not in self.mouths[self.current_mouth]:
+        if self.current_phoneme not in self.mouths[self.current_mouth].keys():
             self.scene().addText("Missing Mouth: " + self.current_phoneme, QtGui.QFont("Swiss", 14))
         self.fitInView(self.x(),
                        self.y(),
@@ -69,12 +75,10 @@ class MouthView(QtWidgets.QGraphicsView):
         self.old_frame = self.cur_frame
         self.cur_frame = frame
         self.draw_me()
-        pass
 
     def set_document(self, doc):
         self.doc = doc
         self.draw_me()
-        pass
 
     def process_mouth_dir(self, dir_name, names, supported_imagetypes):
         has_images = False
@@ -86,14 +90,12 @@ class MouthView(QtWidgets.QGraphicsView):
             return
         print(os.path.normpath(dir_name), names)
         self.add_mouth(os.path.normpath(dir_name), names)
-        pass
 
     def load_mouths(self):
-        print(os.path.join(get_main_dir(), "rsrc", "mouths"))
+        # print(os.path.join(get_main_dir(), "rsrc", "mouths"))
         supported_imagetypes = QtGui.QImageReader.supportedImageFormats()
         for directory, dir_names, file_names in os.walk(os.path.join(get_main_dir(), "rsrc", "mouths")):
             self.process_mouth_dir(directory, file_names, supported_imagetypes)
-        pass
 
     def add_mouth(self, dir_name, names):
         bitmaps = {}
@@ -105,6 +107,5 @@ class MouthView(QtWidgets.QGraphicsView):
         self.mouths[os.path.basename(dir_name)] = bitmaps
         if self.current_mouth is None:
             self.current_mouth = os.path.basename(dir_name)
-        pass
 
 # end of class MouthView
