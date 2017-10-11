@@ -22,7 +22,7 @@
 # import os
 import string
 import math
-# import wx
+import time
 from qtpy import QtCore, QtGui, QtWidgets
 import qtpy.uic as uic
 
@@ -180,6 +180,7 @@ class LipsyncFrame:
         self.did_resize = False
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
+        self.start_time = time.time()
 
         self.validator = QtGui.QIntValidator(1, 999, None)
         self.main_window.fps_input.setValidator(self.validator)
@@ -399,13 +400,18 @@ class LipsyncFrame:
     def on_play_tick(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):
             if self.doc.sound.is_playing():
-                cur_frame = int(math.floor(self.doc.sound.current_time() * self.doc.fps))
-                if cur_frame != self.cur_frame:
+                cur_frame = int(self.doc.sound.current_time() * self.doc.fps)
+                if self.cur_frame != cur_frame:
                     self.cur_frame = cur_frame
                     self.main_window.mouth_view.set_frame(self.cur_frame)
                     self.main_window.waveform_view.set_frame(self.cur_frame)
-                    self.main_window.statusbar.showMessage("Frame: %d" % (cur_frame + 1))
+                    try:
+                        fps = 1.0 / (time.time() - self.start_time)
+                    except ZeroDivisionError:
+                        fps = 60
+                    self.main_window.statusbar.showMessage("Frame: %d FPS: %d" % ((cur_frame + 1), fps) )
                     self.main_window.waveform_view.scroll_position = self.main_window.waveform_view.horizontalScrollBar().value()
+                    self.start_time = time.time()
             else:
                 self.main_window.waveform_view.temp_play_marker.setVisible(False)
                 self.on_stop()
