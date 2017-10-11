@@ -78,7 +78,8 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 class MovableButton(QtWidgets.QPushButton):
     def __init__(self, title, parent, style):
-        super(MovableButton, self).__init__(title, parent, style)
+        super(MovableButton, self).__init__(title, None, style)
+        self.me = parent
         self.is_resizing = False
         self.hotspot = 0
 
@@ -99,6 +100,7 @@ class MovableButton(QtWidgets.QPushButton):
             if e.pos().x() > 0:
                 self.resize(e.pos().x(), self.height())
                 self.is_resizing = True
+
         else:
             mime_data = QtCore.QMimeData()
 
@@ -123,6 +125,7 @@ class MovableButton(QtWidgets.QPushButton):
 
     def mouseReleaseEvent(self, e):
         self.is_resizing = False
+        # We need to change the size of the original in it's list.
 
     def __del__(self):
         try:
@@ -219,18 +222,155 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def dragMoveEvent(self, e):
         print("DragMove!")
+
         position = e.pos()
+        new_x = e.pos().x() + self.horizontalScrollBar().value()
         print(e.pos())
         dropped_widget = e.source()
-        dropped_widget.move(QtCore.QPoint(position.x() - e.source().hotspot, dropped_widget.y()))  # We keep the Y-Position
+
+        previous_one = None
+        next_one = None
+        parent = None
+
+        for index, phrase in enumerate(self.doc.current_voice.phrases):
+            if dropped_widget.me == phrase:
+                print("It's a phrase: " + phrase.text)
+                if index > 0:
+                    previous_one = self.doc.current_voice.phrases[index-1]
+                try:
+                    next_one = self.doc.current_voice.phrases[index + 1]
+                except IndexError:
+                    pass
+            else:
+                parent = phrase
+                for index1, word in enumerate(phrase.words):
+                    if dropped_widget.me == word:
+                        print("It's a word: " + word.text)
+                        if index1 > 0:
+                            previous_one = phrase.words[index1 - 1]
+                        try:
+                            next_one = phrase.words[index1 + 1]
+                        except IndexError:
+                            pass
+                    else:
+                        parent = word
+                        for index2, phoneme in enumerate(word.phonemes):
+                            if dropped_widget.me == phoneme:
+                                print("It's a phoneme: " + phoneme.text)
+                                if index2 > 0:
+                                    previous_one = word.phonemes[index2 - 1]
+                                try:
+                                    next_one = word.phonemes[index2 + 1]
+                                except IndexError:
+                                    pass
+        if parent:
+            print("Parent : " + parent.text)  # The parent is not correct
+        if previous_one:
+            print("Previous one: " + previous_one.text)
+        if next_one:
+            print("Next one: " + next_one.text)
+
+        frame_pos = int((new_x - dropped_widget.hotspot) / self.frame_width)
+        frame_start = int(dropped_widget.pos().x() / self.frame_width)
+        frame_end = int((frame_start + dropped_widget.rect().width()) / self.frame_width)
+        new_pos = int(frame_pos * self.frame_width)
+        print(new_pos)
+        dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
+        if parent:
+            if frame_start >= parent.start_frame:
+                if frame_end <= parent.end_frame:
+                    dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
+                else:
+                    # dropped_widget.move(QtCore.QPoint(parent.end_frame * self.frame_width, dropped_widget.y()))  # We keep the Y-Position
+                    pass
+            else:
+                # dropped_widget.move(QtCore.QPoint(parent.start_frame * self.frame_width, dropped_widget.y()))  # We keep the Y-Position
+                pass
+        elif frame_start > 0 & frame_end < (self.scene().rect().width() / self.frame_width):
+            dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
+
         # e.setDropAction(QtCore.Qt.MoveAction)
         e.accept()
 
     def dropMoveEvent(self, e):
+        print("DropMove")
         return
 
     def dropEvent(self, e):
+        new_x = e.pos().x() + self.horizontalScrollBar().value()
+        dropped_widget = e.source()
+
+        previous_one = None
+        next_one = None
+        parent = None
+
+        # for index, phrase in enumerate(self.doc.current_voice.phrases):
+        #     if dropped_widget.me == phrase:
+        #         print("It's a phrase: " + phrase.text)
+        #         if index > 0:
+        #             previous_one = self.doc.current_voice.phrases[index - 1]
+        #         try:
+        #             next_one = self.doc.current_voice.phrases[index + 1]
+        #         except IndexError:
+        #             pass
+        #         break
+        #     else:
+        #         parent = phrase
+        #         for index1, word in enumerate(phrase.words):
+        #             if dropped_widget.me == word:
+        #                 print("It's a word: " + word.text)
+        #                 if index1 > 0:
+        #                     previous_one = phrase.words[index1 - 1]
+        #                 try:
+        #                     next_one = phrase.words[index1 + 1]
+        #                 except IndexError:
+        #                     pass
+        #                 break
+        #             else:
+        #                 parent = word
+        #                 for index2, phoneme in enumerate(word.phonemes):
+        #                     if dropped_widget.me == phoneme:
+        #                         print("It's a phoneme: " + phoneme.text)
+        #                         if index2 > 0:
+        #                             previous_one = word.phonemes[index2 - 1]
+        #                         try:
+        #                             next_one = word.phonemes[index2 + 1]
+        #                         except IndexError:
+        #                             pass
+        #                         break
+        # if parent:
+        #     print("DParent : " + parent.text)
+        # if previous_one:
+        #     print("DPrevious one: " + previous_one.text)
+        # if next_one:
+        #     print("DNext one: " + next_one.text)
+        # frame_pos = int((new_x - dropped_widget.hotspot) / self.frame_width)
+        # frame_start = int(dropped_widget.pos().x() / self.frame_width)
+        # frame_end = int((frame_start + dropped_widget.rect().width()) / self.frame_width)
+        # new_pos = int(frame_pos * self.frame_width)
+        # if parent:
+        #     if frame_start >= parent.start_frame:
+        #         if frame_end <= parent.end_frame:
+        #             dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
+        #         else:
+        #             dropped_widget.move(QtCore.QPoint(parent.end_frame * self.frame_width,
+        #                                               dropped_widget.y()))  # We keep the Y-Position
+        #     else:
+        #         dropped_widget.move(QtCore.QPoint(parent.start_frame * self.frame_width, dropped_widget.y()))  # We keep the Y-Position
+        # elif frame_start > 0 & frame_end < (self.scene().rect().width() / self.frame_width):
+        #     dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
+
         print("Dropped")
+        print(dropped_widget.pos().x() / self.frame_width)
+        # print(e.source())
+        # print(e.pos())
+        # if e.source().me.is_phoneme:
+        #     print(e.source().me.frame)
+        # else:
+        #     print(e.source().me.start_frame)
+        # print(e.source().pos().x() / self.frame_width)
+        # # We need to change the original still in the list and not this.
+        # e.source().me.start_frame = int(e.source().pos().x() / self.frame_width)
 
     def wheelEvent(self, event):
         self.scroll_position = self.horizontalScrollBar().value()+(event.delta()/1.2)
@@ -842,26 +982,26 @@ class WaveformView(QtWidgets.QGraphicsView):
             # self.word_bottom = top_border + 4 + (text_height * 3)
             # self.phoneme_top = self.height() - 4 - (text_height * 2)
             for phrase in self.doc.current_voice.phrases:
-                self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, None, phrase_col_string))
+                self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string))
                 self.temp_phrase.setGeometry(QtCore.QRectF(phrase.start_frame * self.frame_width,
                                                            top_border,
-                                                           (phrase.endFrame - phrase.start_frame + 1) * self.frame_width +1,
+                                                           (phrase.end_frame - phrase.start_frame + 1) * self.frame_width +1,
                                                            text_height))
                 phrase.top = self.temp_phrase.y()
                 phrase.bottom = self.temp_phrase.y() + text_height
                 word_count = 0
                 for word in phrase.words:
-                    self.temp_word = self.scene().addWidget(MovableButton(word.text, None, word_col_string))
+                    self.temp_word = self.scene().addWidget(MovableButton(word.text, word, word_col_string))
                     self.temp_word.setGeometry(QtCore.QRectF(word.start_frame * self.frame_width,
                                                              top_border + 4 + text_height + (text_height * (word_count % 2)),
-                                                             (word.endFrame - word.start_frame + 1) * self.frame_width + 1,
+                                                             (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
                                                              text_height))
                     word.top = self.temp_word.y()
                     word.bottom = self.temp_word.y() + text_height
                     word_count += 1
                     phoneme_count = 0
                     for phoneme in word.phonemes:
-                        self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, None, phoneme_col_string))
+                        self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string))
                         self.temp_phoneme.setGeometry(QtCore.QRectF(phoneme.frame * self.frame_width,
                                                                     self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
                                                                     self.frame_width + 1,
