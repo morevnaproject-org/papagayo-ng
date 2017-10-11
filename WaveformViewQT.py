@@ -80,6 +80,7 @@ class MovableButton(QtWidgets.QPushButton):
     def __init__(self, title, parent, style):
         super(MovableButton, self).__init__(title, parent, style)
         self.is_resizing = False
+        self.hotspot = 0
 
         # self.setStyleSheet(f"background-color:rgb({phoneme_fill_col.red()},{phoneme_fill_col.green()},{phoneme_fill_col.blue()})")
         # self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
@@ -104,6 +105,9 @@ class MovableButton(QtWidgets.QPushButton):
             drag = QtGui.QDrag(self)
             drag.setMimeData(mime_data)
             drag.setHotSpot(e.pos() - self.rect().topLeft())
+            print("HotSpot:")
+            print(drag.hotSpot())
+            self.hotspot = drag.hotSpot().x()
             # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
             # try:
             #     dropAction = drag.exec(QtCore.Qt.MoveAction)
@@ -218,7 +222,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         position = e.pos()
         print(e.pos())
         dropped_widget = e.source()
-        dropped_widget.move(QtCore.QPoint(position.x(), dropped_widget.y()))  # We keep the Y-Position
+        dropped_widget.move(QtCore.QPoint(position.x() - e.source().hotspot, dropped_widget.y()))  # We keep the Y-Position
         # e.setDropAction(QtCore.Qt.MoveAction)
         e.accept()
 
