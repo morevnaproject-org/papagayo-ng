@@ -35,8 +35,6 @@ import traceback
 #import breakdowns
 
 strip_symbols = '.,!?;-/()"'
-strip_symbols += '\N{INVERTED QUESTION MARK}'
-
 
 ###############################################################
 
