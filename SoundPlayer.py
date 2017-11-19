@@ -8,6 +8,9 @@ import pyaudio
 
 from utilities import which
 
+import subprocess
+import tempfile
+
 try:
     from pydub import AudioSegment
     from pydub.utils import make_chunks
@@ -29,25 +32,34 @@ class SoundPlayer:
         self.pydubfile = None
         self.volume = 100
 
-        if AudioSegment:
-            if which("ffmpeg") is not None:
-                AudioSegment.converter = which("ffmpeg")
-            elif which("avconv") is not None:
-                AudioSegment.converter = which("avconv")
+        if which("ffmpeg") is not None:
+            self.converter = which("ffmpeg")
+        elif which("avconv") is not None:
+            self.converter = which("avconv")
+        else:
+            if platform.system() == "Windows":
+                self.converter = os.path.join(get_main_dir(), "ffmpeg.exe")
+                #AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
             else:
-                if platform.system() == "Windows":
-                    AudioSegment.converter = os.path.join(get_main_dir(), "ffmpeg.exe")
-                    #AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
-                else:
-                    # TODO: Check if we have ffmpeg or avconv installed
-                    AudioSegment.converter = "ffmpeg"
+                # TODO: Check if we have ffmpeg or avconv installed
+                self.converter = "ffmpeg"
+
+        if AudioSegment:
+            AudioSegment.converter = self.converter
 
         try:
+            format = os.path.splitext(self.soundfile)[1][1:]
+
             if AudioSegment:
-                print(self.soundfile)
-                self.pydubfile = AudioSegment.from_file(self.soundfile, format=os.path.splitext(self.soundfile)[1][1:])
+                self.pydubfile = AudioSegment.from_file(self.soundfile, format=format)
             else:
-                self.wave_reference = wave.open(self.soundfile)
+                wave_file = self.soundfile
+
+                if format != "wav":
+                    wave_file = tempfile._get_default_tempdir() + "/" + next(tempfile._get_candidate_names()) + ".wav"
+                    subprocess.call([self.converter, '-i', self.soundfile, wave_file])
+
+                self.wave_reference = wave.open(wave_file)
 
             self.isvalid = True
 
