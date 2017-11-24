@@ -35,8 +35,13 @@ import traceback
 #import breakdowns
 
 strip_symbols = '.,!?;-/()"'
+strip_symbols += "'"
 strip_symbols += u'\N{INVERTED QUESTION MARK}'
 strip_symbols += u'\N{INVERTED EXCLAMATION MARK}'
+strip_symbols += u'\N{LEFT SINGLE QUOTATION MARK}'
+strip_symbols += u'\N{RIGHT SINGLE QUOTATION MARK}'
+strip_symbols += u'\N{LEFT DOUBLE QUOTATION MARK}'
+strip_symbols += u'\N{RIGHT DOUBLE QUOTATION MARK}'
 
 ###############################################################
 
