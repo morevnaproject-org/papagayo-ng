@@ -92,6 +92,16 @@ class MovableButton(QtWidgets.QPushButton):
         #                                                                       phoneme_outline_col.blue())
         self.setStyleSheet(style)
 
+    # def paintEvent(self, e):
+    #     QtWidgets.QPushButton.paintEvent(self, e)
+    #     painter = QtGui.QPainter(self)
+    #     background_brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 64), QtCore.Qt.SolidPattern)
+    #     pen = QtGui.QPen(QtGui.QColor(255, 255, 0, 255), 3, QtCore.Qt.DashDotLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin)
+    #     painter.setPen(pen)
+    #     rect = QtCore.QRectF(0, 0, self.width(), self.height())
+    #     # rect = QtCore.QRectF(self.x(), self.y(), self.x()+self.width(), self.y()+self.height())
+    #     painter.fillRect(rect, background_brush)
+
     def mouseMoveEvent(self, e):
 
         if e.buttons() != QtCore.Qt.LeftButton:
@@ -235,6 +245,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         for index, phrase in enumerate(self.doc.current_voice.phrases):
             if dropped_widget.me == phrase:
                 print("It's a phrase: " + phrase.text)
+                print(index)
                 if index > 0:
                     previous_one = self.doc.current_voice.phrases[index-1]
                 try:
@@ -242,34 +253,54 @@ class WaveformView(QtWidgets.QGraphicsView):
                 except IndexError:
                     pass
             else:
-                parent = phrase
                 for index1, word in enumerate(phrase.words):
                     if dropped_widget.me == word:
                         print("It's a word: " + word.text)
+                        print(index1)
+                        parent = self.doc.current_voice.phrases[index]
                         if index1 > 0:
                             previous_one = phrase.words[index1 - 1]
+                        else:
+                            if index > 0:
+                                try:
+                                    previous_one = self.doc.current_voice.phrases[index-1].words[-1]
+                                except IndexError:
+                                    pass
                         try:
                             next_one = phrase.words[index1 + 1]
                         except IndexError:
-                            pass
+                            try:
+                                next_one = self.doc.current_voice.phrases[index + 1].words[0]
+                            except IndexError:
+                                pass
                     else:
-                        parent = word
                         for index2, phoneme in enumerate(word.phonemes):
                             if dropped_widget.me == phoneme:
                                 print("It's a phoneme: " + phoneme.text)
+                                print(index2)
+                                parent = phrase.words[index1]
                                 if index2 > 0:
                                     previous_one = word.phonemes[index2 - 1]
+                                else:
+                                    if index1 > 0:
+                                        try:
+                                            previous_one = phrase.words[index1 - 1].phonemes[-1]
+                                        except IndexError:
+                                            pass
                                 try:
                                     next_one = word.phonemes[index2 + 1]
                                 except IndexError:
-                                    pass
+                                    try:
+                                        next_one = phrase.words[index1 + 1].phonemes[0]
+                                    except IndexError:
+                                        pass
         if parent:
-            print("Parent : " + parent.text)  # The parent is not correct
+            print("Parent : " + parent.text)
         if previous_one:
             print("Previous one: " + previous_one.text)
         if next_one:
             print("Next one: " + next_one.text)
-
+        # We should now have the previous and next object and it's parent here.
         frame_pos = int((new_x - dropped_widget.hotspot) / self.frame_width)
         frame_start = int(dropped_widget.pos().x() / self.frame_width)
         frame_end = int((frame_start + dropped_widget.rect().width()) / self.frame_width)
