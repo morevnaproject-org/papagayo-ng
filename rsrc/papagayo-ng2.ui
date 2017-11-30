@@ -35,6 +35,12 @@
         <layout class="QVBoxLayout" name="vertical_layout_left_1" stretch="2,0">
          <item>
           <widget class="WaveformView" name="waveform_view">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>150</height>
+            </size>
+           </property>
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
            </property>
