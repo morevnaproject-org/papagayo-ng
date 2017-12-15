@@ -77,12 +77,12 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 
 class MovableButton(QtWidgets.QPushButton):
-    def __init__(self, title, parent, style):
-        super(MovableButton, self).__init__(title, None, style)
+    def __init__(self, title, parent, style, realparent):
+        super(MovableButton, self).__init__(title, None)
         self.me = parent
         self.is_resizing = False
         self.hotspot = 0
-
+        self.realparent = realparent
         # self.setStyleSheet(f"background-color:rgb({phoneme_fill_col.red()},{phoneme_fill_col.green()},{phoneme_fill_col.blue()})")
         # self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
         #                                                                      phoneme_fill_col.green(),
@@ -109,7 +109,7 @@ class MovableButton(QtWidgets.QPushButton):
         # TODO: Restrict resizing
         if (e.pos().x() > self.width()-10) or self.is_resizing:
             if e.pos().x() > 0:
-                self.resize(e.pos().x(), self.height())
+                self.resize(e.pos().x() - (e.pos().x()%self.realparent.frame_width), self.height())
                 self.is_resizing = True
 
 
@@ -123,11 +123,11 @@ class MovableButton(QtWidgets.QPushButton):
             print(drag.hotSpot())
             self.hotspot = drag.hotSpot().x()
             # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
-            # try:
-            #     dropAction = drag.exec(QtCore.Qt.MoveAction)
-            # except AttributeError:
-            #     dropAction = drag.start(QtCore.Qt.MoveAction)
-            dropAction = drag.start(QtCore.Qt.MoveAction)
+            try:
+                exec("dropAction = drag.exec(QtCore.Qt.MoveAction)") # Otherwise we can't catch it and it will crash...
+            except SyntaxError:
+                dropAction = drag.start(QtCore.Qt.MoveAction)
+            #dropAction = drag.start(QtCore.Qt.MoveAction)
 
     def mousePressEvent(self, e):
         # QtGui.QPushButton.mousePressEvent(self, e)
@@ -1054,33 +1054,36 @@ class WaveformView(QtWidgets.QGraphicsView):
             # self.word_bottom = top_border + 4 + (text_height * 3)
             # self.phoneme_top = self.height() - 4 - (text_height * 2)
             for phrase in self.doc.current_voice.phrases:
-                self.mov_widget_list.append(self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string)))
+                self.mov_widget_list.append(self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string, self)))
                 #self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string))
                 self.mov_widget_list[-1].setGeometry(QtCore.QRectF(phrase.start_frame * self.frame_width,
                                                            top_border,
                                                            (phrase.end_frame - phrase.start_frame + 1) * self.frame_width +1,
                                                            text_height))
+                self.mov_widget_list[-1].setParent(self)                                           
                 phrase.top = self.mov_widget_list[-1].y()
                 phrase.bottom = self.mov_widget_list[-1].y() + text_height
                 word_count = 0
                 for word in phrase.words:
-                    self.mov_widget_list.append(self.scene().addWidget(MovableButton(word.text, word, word_col_string)))
+                    self.mov_widget_list.append(self.scene().addWidget(MovableButton(word.text, word, word_col_string, self)))
 
                     self.mov_widget_list[-1].setGeometry(QtCore.QRectF(word.start_frame * self.frame_width,
                                                              top_border + 4 + text_height + (text_height * (word_count % 2)),
                                                              (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
                                                              text_height))
+                    self.mov_widget_list[-1].setParent(self)                                         
                     word.top = self.mov_widget_list[-1].y()
                     word.bottom = self.mov_widget_list[-1].y() + text_height
                     word_count += 1
                     phoneme_count = 0
                     for phoneme in word.phonemes:
-                        self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string)))
+                        self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self)))
                         #self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string))
                         self.mov_widget_list[-1].setGeometry(QtCore.QRectF(phoneme.frame * self.frame_width,
                                                                     self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
                                                                     self.frame_width + 1,
                                                                     text_height))
+                        self.mov_widget_list[-1].setParent(self)                                              
                         phoneme.top = self.mov_widget_list[-1].y()
                         phoneme.bottom = self.mov_widget_list[-1].y() + text_height
                         phoneme_count += 1
