@@ -346,104 +346,9 @@ class WaveformView(QtWidgets.QGraphicsView):
         new_x = e.pos().x() + self.horizontalScrollBar().value()
         print(e.pos())
         dropped_widget = e.source()
-
-        previous_one = None
-        next_one = None
-        parent = None
-
-        for index, phrase in enumerate(self.doc.current_voice.phrases):
-            if dropped_widget.me == phrase:
-                print("It's a phrase: " + phrase.text)
-                print(index)
-                if index > 0:
-                    previous_one = self.doc.current_voice.phrases[index-1]
-                try:
-                    next_one = self.doc.current_voice.phrases[index + 1]
-                except IndexError:
-                    pass
-            else:
-                for index1, word in enumerate(phrase.words):
-                    if dropped_widget.me == word:
-                        print("It's a word: " + word.text)
-                        print(index1)
-                        parent = self.doc.current_voice.phrases[index]
-                        if index1 > 0:
-                            previous_one = phrase.words[index1 - 1]
-                        else:
-                            if index > 0:
-                                try:
-                                    previous_one = self.doc.current_voice.phrases[index-1].words[-1]
-                                except IndexError:
-                                    pass
-                        try:
-                            next_one = phrase.words[index1 + 1]
-                        except IndexError:
-                            try:
-                                next_one = self.doc.current_voice.phrases[index + 1].words[0]
-                            except IndexError:
-                                pass
-                    else:
-                        for index2, phoneme in enumerate(word.phonemes):
-                            if dropped_widget.me == phoneme:
-                                print("It's a phoneme: " + phoneme.text)
-                                print(index2)
-                                parent = phrase.words[index1]
-                                if index2 > 0:
-                                    previous_one = word.phonemes[index2 - 1]
-                                else:
-                                    if index1 > 0:
-                                        try:
-                                            previous_one = phrase.words[index1 - 1].phonemes[-1]
-                                        except IndexError:
-                                            pass
-                                try:
-                                    next_one = word.phonemes[index2 + 1]
-                                except IndexError:
-                                    try:
-                                        next_one = phrase.words[index1 + 1].phonemes[0]
-                                    except IndexError:
-                                        pass
-        # if parent:
-        #     print("Parent : " + parent.text)
-        #     print(dir(parent))
-        # if previous_one:
-        #     print("Previous one: " + previous_one.text)
-        #     print(dir(previous_one))
-        # if next_one:
-        #     print("Next one: " + next_one.text)
-        #     print(dir(next_one))
-        # We should now have the previous and next object and it's parent here.
-
-        left_edge = 0
-        right_edge = 0
-        left_most = 0
-        right_most = 0
-        for item in self.mov_widget_list:
-            try:
-                if item.widget().me == previous_one:
-                    left_edge = item.widget().x() + item.widget().width()
-            except AttributeError:
-                pass
-            try:
-                if item.widget().me == next_one:
-                    right_edge = item.widget().x()
-            except AttributeError:
-                pass
-            try:
-                if item.widget().me == parent:
-                    left_most = item.widget().x()
-                    right_most = item.widget().x() + item.widget().width()
-            except AttributeError:
-                pass
-
-        if right_edge == 0:
-            right_edge = self.scene().width()
-        left_edge = max(left_edge, left_most)
-        if right_most:
-            right_edge = min(right_edge, right_most)
-        print((left_edge, right_edge))
-        frame_pos = max(new_x - dropped_widget.hotspot, left_edge)
-        frame_pos = int(min(frame_pos, right_edge - dropped_widget.width()) / self.frame_width)
+        
+        frame_pos = max(new_x - dropped_widget.hotspot, dropped_widget.left_edge)
+        frame_pos = int(min(frame_pos, dropped_widget.right_edge - dropped_widget.width()) / self.frame_width)
 
         # temp_x = min(max(new_x - dropped_widget.hotspot, left_edge), right_edge)
         frame_start = int(frame_pos / self.frame_width)
@@ -451,8 +356,8 @@ class WaveformView(QtWidgets.QGraphicsView):
         new_pos = int(frame_pos * self.frame_width)
         dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
         # print((left_edge, new_pos, right_edge))
-        if left_edge < new_pos:
-            if new_pos + dropped_widget.width() < right_edge:
+        if dropped_widget.left_edge < new_pos:
+            if new_pos + dropped_widget.width() < dropped_widget.right_edge:
                 dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))
         # if parent:
         #     if frame_start >= parent.start_frame:
