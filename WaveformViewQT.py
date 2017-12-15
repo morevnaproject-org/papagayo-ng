@@ -77,12 +77,17 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 
 class MovableButton(QtWidgets.QPushButton):
-    def __init__(self, title, parent, style, realparent):
+    def __init__(self, title, me, style, parent):
         super(MovableButton, self).__init__(title, None)
-        self.me = parent
+        self.me = me
         self.is_resizing = False
         self.hotspot = 0
-        self.realparent = realparent
+        self.parent = parent
+        self.left_edge = 0
+        self.right_edge = 0
+        self.left_most = 0
+        self.right_most = 0
+        self.calc_edges()
         # self.setStyleSheet(f"background-color:rgb({phoneme_fill_col.red()},{phoneme_fill_col.green()},{phoneme_fill_col.blue()})")
         # self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
         #                                                                      phoneme_fill_col.green(),
@@ -108,9 +113,12 @@ class MovableButton(QtWidgets.QPushButton):
             return
         # TODO: Restrict resizing
         if (e.pos().x() > self.width()-10) or self.is_resizing:
-            if e.pos().x() > 0:
-                self.resize(e.pos().x() - (e.pos().x()%self.realparent.frame_width), self.height())
-                self.is_resizing = True
+            if e.pos().x() > self.parent.frame_width + 10:
+                
+                if e.pos().x() <= self.right_edge - self.x():
+                    self.resize(e.pos().x() - (e.pos().x()%self.parent.frame_width), self.height())
+                    self.is_resizing = True
+                    
 
 
         else:
@@ -137,6 +145,8 @@ class MovableButton(QtWidgets.QPushButton):
 
     def mouseReleaseEvent(self, e):
         self.is_resizing = False
+        print("Released")
+        self.calc_edges()
         # We need to change the size of the original in it's list.
 
     def __del__(self):
@@ -148,6 +158,102 @@ class MovableButton(QtWidgets.QPushButton):
     def mouseDoubleClickEvent(self, e):
         print("Double Click: ")
         print(self.text())
+        
+        
+    def calc_edges(self):
+        previous_one = None
+        next_one = None
+        parent = None
+
+        for index, phrase in enumerate(self.parent.doc.current_voice.phrases):
+            if self.me == phrase:
+                #print("It's a phrase: " + phrase.text)
+                #print(index)
+                if index > 0:
+                    previous_one = self.parent.doc.current_voice.phrases[index-1]
+                try:
+                    next_one = self.parent.doc.current_voice.phrases[index + 1]
+                except IndexError:
+                    pass
+            else:
+                for index1, word in enumerate(phrase.words):
+                    if self.me == word:
+                        #print("It's a word: " + word.text)
+                        #print(index1)
+                        parent = self.parent.doc.current_voice.phrases[index]
+                        if index1 > 0:
+                            previous_one = phrase.words[index1 - 1]
+                        else:
+                            if index > 0:
+                                try:
+                                    previous_one = self.parent.doc.current_voice.phrases[index-1].words[-1]
+                                except IndexError:
+                                    pass
+                        try:
+                            next_one = phrase.words[index1 + 1]
+                        except IndexError:
+                            try:
+                                next_one = self.parent.doc.current_voice.phrases[index + 1].words[0]
+                            except IndexError:
+                                pass
+                    else:
+                        for index2, phoneme in enumerate(word.phonemes):
+                            if self.me == phoneme:
+                                #print("It's a phoneme: " + phoneme.text)
+                                #print(index2)
+                                parent = phrase.words[index1]
+                                if index2 > 0:
+                                    previous_one = word.phonemes[index2 - 1]
+                                else:
+                                    if index1 > 0:
+                                        try:
+                                            previous_one = phrase.words[index1 - 1].phonemes[-1]
+                                        except IndexError:
+                                            pass
+                                try:
+                                    next_one = word.phonemes[index2 + 1]
+                                except IndexError:
+                                    try:
+                                        next_one = phrase.words[index1 + 1].phonemes[0]
+                                    except IndexError:
+                                        pass
+        # if parent:
+        #     print("Parent : " + parent.text)
+        #     print(dir(parent))
+        # if previous_one:
+        #     print("Previous one: " + previous_one.text)
+        #     print(dir(previous_one))
+        # if next_one:
+        #     print("Next one: " + next_one.text)
+        #     print(dir(next_one))
+        # We should now have the previous and next object and it's parent here.
+
+        self.left_edge = 0
+        self.right_edge = 0
+        self.left_most = 0
+        self.right_most = 0
+        for item in self.parent.mov_widget_list:
+            try:
+                if item.widget().me == previous_one:
+                    self.left_edge = item.widget().x() + item.widget().width()
+            except AttributeError:
+                pass
+            try:
+                if item.widget().me == next_one:
+                    self.right_edge = item.widget().x()
+            except AttributeError:
+                pass
+            try:
+                if item.widget().me == parent:
+                    self.left_most = item.widget().x()
+                    self.right_most = item.widget().x() + item.widget().width()
+            except AttributeError:
+                pass
+        if self.right_edge == 0:
+            self.right_edge = self.parent.scene().width()
+        self.left_edge = max(self.left_edge, self.left_most)
+        if self.right_most:
+            self.right_edge = min(self.right_edge, self.right_most)       
 
 
 class WaveformView(QtWidgets.QGraphicsView):
@@ -333,7 +439,8 @@ class WaveformView(QtWidgets.QGraphicsView):
         if right_edge == 0:
             right_edge = self.scene().width()
         left_edge = max(left_edge, left_most)
-        right_edge = min(right_edge, right_most)
+        if right_most:
+            right_edge = min(right_edge, right_most)
         print((left_edge, right_edge))
         frame_pos = max(new_x - dropped_widget.hotspot, left_edge)
         frame_pos = int(min(frame_pos, right_edge - dropped_widget.width()) / self.frame_width)
@@ -365,6 +472,7 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def dropMoveEvent(self, e):
         print("DropMove")
+        e.source().calc_edges()
         return
 
     def dropEvent(self, e):
@@ -433,6 +541,7 @@ class WaveformView(QtWidgets.QGraphicsView):
 
         print("Dropped")
         print(dropped_widget.pos().x() / self.frame_width)
+        e.source().calc_edges()
         # print(e.source())
         # print(e.pos())
         # if e.source().me.is_phoneme:
