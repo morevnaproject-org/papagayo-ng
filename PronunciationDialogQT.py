@@ -79,10 +79,12 @@ class PronunciationDialog(QtWidgets.QDialog):
 
     def on_accept(self):
         self.gave_ok = True
-        self.close()
+        self.accept()
+        #self.close()
 
     def on_reject(self):
         self.gave_ok = False
-        self.close()
+        self.reject()
+        #self.close()
 
 # end of class PronunciationDialog

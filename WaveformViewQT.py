@@ -133,15 +133,53 @@ class MovableButton(QtWidgets.QPushButton):
             # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
             try:
                 exec("dropAction = drag.exec(QtCore.Qt.MoveAction)") # Otherwise we can't catch it and it will crash...
-            except SyntaxError:
+            except (SyntaxError, AttributeError):
                 dropAction = drag.start(QtCore.Qt.MoveAction)
             #dropAction = drag.start(QtCore.Qt.MoveAction)
 
     def mousePressEvent(self, e):
         # QtGui.QPushButton.mousePressEvent(self, e)
-        if e.button() == QtCore.Qt.RightButton:
+        if e.button() == QtCore.Qt.RightButton and "phonemes" in dir(self.me):
             print('press')
             print(self.text())
+            # manually enter the pronunciation for this word
+            #self.parentWidget().doc.parent.phonemeset.set
+            dlg = PronunciationDialog(self, self.parent.doc.parent.phonemeset.set)
+
+            dlg.word_label.setText(dlg.word_label.text() + ' ' + self.text())
+            prev_phoneme_list = ""
+            for p in self.me.phonemes:
+                prev_phoneme_list += " " + p.text
+            dlg.phoneme_ctrl.setText(prev_phoneme_list)
+            if dlg.exec_():
+                self.me.phonemes = []
+                for p in dlg.phoneme_ctrl.text().split():
+                    if len(p) == 0:
+                        continue
+                    phoneme = LipsyncPhoneme()
+                    phoneme.text = p
+                    print(p)
+                    self.me.phonemes.append(phoneme)
+                # TODO: find parent_phrase and exec reposition_word
+                print(dlg.phoneme_ctrl.text())
+                print(self.me.phonemes)
+            else:
+                print("No change!")
+            # for p in self.selectedWord.phonemes:
+            #     phoneme_string += p.text + ' '
+            # dlg.phonemeCtrl.SetValue(phoneme_string.strip())
+            # if dlg.ShowModal() == wx.ID_OK:
+            #     self.doc.dirty = True
+            #     self.selectedWord.phonemes = []
+            #     for p in dlg.phonemeCtrl.GetValue().split():
+            #         if len(p) == 0:
+            #             continue
+            #         phoneme = LipsyncPhoneme()
+            #         phoneme.text = p
+            #         self.selectedWord.phonemes.append(phoneme)
+            #     self.parentPhrase.RepositionWord(self.selectedWord)
+            #     self.UpdateDrawing()
+            # dlg.Destroy()
 
     def mouseReleaseEvent(self, e):
         self.is_resizing = False
