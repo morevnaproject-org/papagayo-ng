@@ -77,12 +77,13 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 
 class MovableButton(QtWidgets.QPushButton):
-    def __init__(self, title, me, style, parent):
+    def __init__(self, title, me, style, parent, parent_obj=None):
         super(MovableButton, self).__init__(title, None)
         self.me = me
         self.is_resizing = False
         self.hotspot = 0
         self.parent = parent
+        self.parent_object = parent_obj
         self.left_edge = 0
         self.right_edge = 0
         self.left_most = 0
@@ -143,7 +144,6 @@ class MovableButton(QtWidgets.QPushButton):
             print('press')
             print(self.text())
             # manually enter the pronunciation for this word
-            #self.parentWidget().doc.parent.phonemeset.set
             dlg = PronunciationDialog(self, self.parent.doc.parent.phonemeset.set)
 
             dlg.word_label.setText(dlg.word_label.text() + ' ' + self.text())
@@ -158,28 +158,12 @@ class MovableButton(QtWidgets.QPushButton):
                         continue
                     phoneme = LipsyncPhoneme()
                     phoneme.text = p
-                    print(p)
                     self.me.phonemes.append(phoneme)
-                # TODO: find parent_phrase and exec reposition_word
-                print(dlg.phoneme_ctrl.text())
-                print(self.me.phonemes)
+                self.parent_object.reposition_word(self.me)
+                self.parent.did_resize = True
+                self.parent.idle_timer.start(500)
             else:
                 print("No change!")
-            # for p in self.selectedWord.phonemes:
-            #     phoneme_string += p.text + ' '
-            # dlg.phonemeCtrl.SetValue(phoneme_string.strip())
-            # if dlg.ShowModal() == wx.ID_OK:
-            #     self.doc.dirty = True
-            #     self.selectedWord.phonemes = []
-            #     for p in dlg.phonemeCtrl.GetValue().split():
-            #         if len(p) == 0:
-            #             continue
-            #         phoneme = LipsyncPhoneme()
-            #         phoneme.text = p
-            #         self.selectedWord.phonemes.append(phoneme)
-            #     self.parentPhrase.RepositionWord(self.selectedWord)
-            #     self.UpdateDrawing()
-            # dlg.Destroy()
 
     def mouseReleaseEvent(self, e):
         self.is_resizing = False
@@ -1117,25 +1101,27 @@ class WaveformView(QtWidgets.QGraphicsView):
                 phrase.bottom = self.mov_widget_list[-1].y() + text_height
                 word_count = 0
                 for word in phrase.words:
-                    self.mov_widget_list.append(self.scene().addWidget(MovableButton(word.text, word, word_col_string, self)))
+                    self.mov_widget_list.append(self.scene().addWidget(MovableButton(word.text, word, word_col_string, self, phrase)))
 
                     self.mov_widget_list[-1].setGeometry(QtCore.QRectF(word.start_frame * self.frame_width,
                                                              top_border + 4 + text_height + (text_height * (word_count % 2)),
                                                              (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
                                                              text_height))
-                    self.mov_widget_list[-1].setParent(self)                                         
+                    self.mov_widget_list[-1].setParent(self)
+                    # self.mov_widget_list[-1].parent_object = phrase # phrase seems to get gc'd and is then None
                     word.top = self.mov_widget_list[-1].y()
                     word.bottom = self.mov_widget_list[-1].y() + text_height
                     word_count += 1
                     phoneme_count = 0
                     for phoneme in word.phonemes:
-                        self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self)))
+                        self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word)))
                         #self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string))
                         self.mov_widget_list[-1].setGeometry(QtCore.QRectF(phoneme.frame * self.frame_width,
                                                                     self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
                                                                     self.frame_width + 1,
                                                                     text_height))
-                        self.mov_widget_list[-1].setParent(self)                                              
+                        self.mov_widget_list[-1].setParent(self)
+                        # self.mov_widget_list[-1].parent_object = word # word seems to get gc'd and is then None
                         phoneme.top = self.mov_widget_list[-1].y()
                         phoneme.bottom = self.mov_widget_list[-1].y() + text_height
                         phoneme_count += 1
