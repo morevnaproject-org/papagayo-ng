@@ -271,6 +271,7 @@ class MovableButton(QtWidgets.QPushButton):
                     self.right_most = item.widget().x() + item.widget().width()
             except AttributeError:
                 pass
+        # TODO: We actually want to use the values the user resized/dragged it to here instead of resetting them.
         if self.right_edge == 0:
             self.right_edge = self.parent.scene().width()
         self.left_edge = max(self.left_edge, self.left_most)
