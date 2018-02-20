@@ -168,8 +168,7 @@ class MovableButton(QtWidgets.QPushButton):
     def mouseReleaseEvent(self, e):
         self.is_resizing = False
         print("Released")
-        self.calc_edges()
-        # We need to change the size of the original in it's list.
+        self.calc_edges((0, round((e.globalPos().x() + (self.width() - e.pos().x())) / self.parent.frame_width)-1))
 
     def __del__(self):
         try:
@@ -180,9 +179,8 @@ class MovableButton(QtWidgets.QPushButton):
     def mouseDoubleClickEvent(self, e):
         print("Double Click: ")
         print(self.text())
-        
-        
-    def calc_edges(self):
+
+    def calc_edges(self, new_coords = None):
         previous_one = None
         next_one = None
         parent = None
@@ -271,7 +269,19 @@ class MovableButton(QtWidgets.QPushButton):
                     self.right_most = item.widget().x() + item.widget().width()
             except AttributeError:
                 pass
-        # TODO: We actually want to use the values the user resized/dragged it to here instead of resetting them.
+        # TODO: Some more testing is needed to see if dragging and resizing is correctly working
+        if new_coords:
+            print(new_coords)
+            if not self.me.is_phoneme:
+                if new_coords[0] != 0:
+                    self.me.start_frame = new_coords[0]
+                if new_coords[1] != 0:
+                    self.me.end_frame = new_coords[1]
+            else:
+                if new_coords[0] != 0:
+                    self.me.frame = new_coords[0]
+                else:
+                    self.me.frame = new_coords[1]
         if self.right_edge == 0:
             self.right_edge = self.parent.scene().width()
         self.left_edge = max(self.left_edge, self.left_most)
@@ -469,7 +479,7 @@ class WaveformView(QtWidgets.QGraphicsView):
 
         print("Dropped")
         print(dropped_widget.pos().x() / self.frame_width)
-        e.source().calc_edges()
+        e.source().calc_edges((round(dropped_widget.pos().x() / self.frame_width), 0))
         # print(e.source())
         # print(e.pos())
         # if e.source().me.is_phoneme:
