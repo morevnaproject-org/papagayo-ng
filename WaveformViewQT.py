@@ -168,7 +168,7 @@ class MovableButton(QtWidgets.QPushButton):
     def mouseReleaseEvent(self, e):
         self.is_resizing = False
         print("Released")
-        self.calc_edges((0, round((e.globalPos().x() + (self.width() - e.pos().x())) / self.parent.frame_width)-1))
+        self.calc_edges((-1, round((e.globalPos().x() + (self.width() - e.pos().x())) / self.parent.frame_width -1)))
 
     def __del__(self):
         try:
@@ -269,24 +269,34 @@ class MovableButton(QtWidgets.QPushButton):
                     self.right_most = item.widget().x() + item.widget().width()
             except AttributeError:
                 pass
-        # TODO: Some more testing is needed to see if dragging and resizing is correctly working
-        if new_coords:
-            print(new_coords)
-            if not self.me.is_phoneme:
-                if new_coords[0] != 0:
-                    self.me.start_frame = new_coords[0]
-                if new_coords[1] != 0:
-                    self.me.end_frame = new_coords[1]
-            else:
-                if new_coords[0] != 0:
-                    self.me.frame = new_coords[0]
-                else:
-                    self.me.frame = new_coords[1]
+
         if self.right_edge == 0:
             self.right_edge = self.parent.scene().width()
         self.left_edge = max(self.left_edge, self.left_most)
         if self.right_most:
-            self.right_edge = min(self.right_edge, self.right_most)       
+            self.right_edge = min(self.right_edge, self.right_most)
+
+        # TODO: Some more testing is needed to see if dragging and resizing is correctly working
+        left_frame_edge = round(self.left_edge / self.parent.frame_width)
+        right_frame_edge = round(self.right_edge / self.parent.frame_width)
+        if new_coords:
+            print(new_coords)
+            if not self.me.is_phoneme:
+                if new_coords[0] != -1:
+                    old_diff = self.me.end_frame - self.me.start_frame
+                    if (left_frame_edge < new_coords[0] < right_frame_edge) and (left_frame_edge < new_coords[0] + old_diff < right_frame_edge):
+                        self.me.start_frame = new_coords[0]
+                        self.me.end_frame = self.me.start_frame + old_diff
+                if new_coords[1] != -1:
+                    if left_frame_edge < new_coords[1] < right_frame_edge:
+                        self.me.end_frame = new_coords[1]
+            else:
+                if new_coords[0] != -1:
+                    if left_frame_edge < new_coords[0] < right_frame_edge:
+                        self.me.frame = new_coords[0]
+                else:
+                    if left_frame_edge < new_coords[1] < right_frame_edge:
+                        self.me.frame = new_coords[1]
 
 
 class WaveformView(QtWidgets.QGraphicsView):
@@ -479,7 +489,7 @@ class WaveformView(QtWidgets.QGraphicsView):
 
         print("Dropped")
         print(dropped_widget.pos().x() / self.frame_width)
-        e.source().calc_edges((round(dropped_widget.pos().x() / self.frame_width), 0))
+        e.source().calc_edges((round(dropped_widget.pos().x() / self.frame_width), -1))
         # print(e.source())
         # print(e.pos())
         # if e.source().me.is_phoneme:
