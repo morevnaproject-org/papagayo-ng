@@ -23,16 +23,15 @@
 import string
 import math
 import time
-from qtpy import QtCore, QtGui, QtWidgets
-import qtpy.uic as uic
+
+from PySide2.QtCore import QFile
+from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtUiTools import QUiLoader as uic
+
 
 import webbrowser
 import random
 import re
-# from utilities import *
-# begin wxGlade: dependencies
-# from MouthView import MouthView
-# from WaveformView import WaveformView
 from WaveformViewQT import WaveformView
 from MouthViewQT import MouthView
 # end wxGlade
@@ -158,7 +157,13 @@ class LipsyncFrame:
         self.main_window.fps_input.setValidator(self.validator)
 
     def load_ui_widget(self, ui_filename, parent=None):
-        self.ui = uic.loadUi(ui_filename, parent)
+        loader = uic()
+        file = QFile(ui_filename)
+        file.open(QFile.ReadOnly)
+        loader.registerCustomWidget(MouthView)
+        loader.registerCustomWidget(WaveformView)
+        self.ui = loader.load(file, parent)
+        file.close()
         return self.ui
 
     def test_button_event(self):

@@ -21,7 +21,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import math, random
-from qtpy import QtGui, QtCore, QtWidgets
+import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
+import PySide2.QtWidgets as QtWidgets
+#from PySide2.QtWidgets import QtGui, QtCore, QtWidgets
 # import wx
 debug_performance = False
 if debug_performance:
@@ -507,6 +510,7 @@ class WaveformView(QtWidgets.QGraphicsView):
     def on_slider_change(self, value):
         self.scroll_position = value
 
+    #@profile
     def resizeEvent(self, event):
         # for item in self.main_window.waveform_view.items():
         #     item.scale(1, self.height_scale)
@@ -522,6 +526,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.did_resize = True
             self.idle_timer.start(500)
 
+    #@profile
     def do_idle(self):
         try:
             self.update_drawing()
@@ -849,6 +854,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         update_rect = self.scene().sceneRect()
         self.scene().update(update_rect)
 
+    #@profile
     def set_document(self, doc):
         if (self.doc is None) and (doc is not None):
             self.sample_width = default_sample_width
@@ -884,7 +890,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.max_width = self.doc.sound_duration * self.frame_width
             self.wv_height = self.height() - self.horizontalScrollBar().height()
             self.max_height = self.wv_height
-        print(self.amp)
+        #print(self.amp)
         self.update_drawing()
         
         # self.SetVirtualSize((self.maxWidth, self.maxHeight))
@@ -902,6 +908,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         #     self.UpdateDrawing()
         pass
 
+    #@profile
     def update_drawing(self, redraw_all=True):
         self.draw()
         # if BUFFERED and self.buffer is None:
@@ -970,6 +977,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         #     painter.fillRect()
         pass
 
+    #@profile
     def drawBackground(self, painter, rect):
         background_brush = QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern)
         painter.fillRect(rect, background_brush)
@@ -1011,6 +1019,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             for text_marker in list_of_textmarkers:
                 painter.drawText(text_marker[0], QtCore.Qt.AlignLeft, text_marker[1])
 
+    #@profile
     def draw(self):
         print("Begin Drawing")
         # fill_color = QtGui.QColor(162, 205, 242)
