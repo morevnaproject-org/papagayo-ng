@@ -280,8 +280,10 @@ class MovableButton(QtWidgets.QPushButton):
             self.right_edge = min(self.right_edge, self.right_most)
 
         # TODO: Some more testing is needed to see if dragging and resizing is correctly working
-        left_frame_edge = round(self.left_edge / self.parent.frame_width)
-        right_frame_edge = round(self.right_edge / self.parent.frame_width)
+        real_new_x = int(round(self.pos().x() / (default_sample_width * default_samples_per_frame)))
+        real_new_end = int(round(real_new_x + (self.width() / (default_sample_width * default_samples_per_frame))))
+        left_frame_edge = real_new_x  # round(self.left_edge / self.parent.frame_width)
+        right_frame_edge = real_new_end  # round(self.right_edge / self.parent.frame_width)
         if new_coords:
             print(new_coords)
             if not self.me.is_phoneme:
@@ -348,24 +350,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.did_resize = False
         self.scroll_position = 0
         self.mov_widget_list = []
-        #
-        # # Connect event handlers
-        # # window events
-        # wx.EVT_PAINT(self, self.OnPaint)
-        # wx.EVT_SIZE(self, self.OnSize)
-        # wx.EVT_IDLE(self, self.OnIdle)
-        # # mouse events
-        # wx.EVT_LEFT_DOWN(self, self.OnMouseDown)
-        # wx.EVT_RIGHT_DOWN(self, self.OnMouseDown)
-        # wx.EVT_LEFT_DCLICK(self, self.OnMouseDown)
-        # wx.EVT_LEFT_UP(self, self.OnMouseUp)
-        # wx.EVT_RIGHT_UP(self, self.OnMouseUp)
-        # wx.EVT_MOTION(self, self.OnMouseMove)
-        # wx.EVT_MOUSEWHEEL(self, self.OnMouseWheel)
-
-        # Test drawing
-        # Force an update
-        self.OnSize()
+        # TODO: Create setup function which creates the initial view, so that it get's constructed once.
 
     def __set_properties(self):
         # begin wxGlade: WaveformView.__set_properties
@@ -510,7 +495,6 @@ class WaveformView(QtWidgets.QGraphicsView):
     def on_slider_change(self, value):
         self.scroll_position = value
 
-    #@profile
     def resizeEvent(self, event):
         # for item in self.main_window.waveform_view.items():
         #     item.scale(1, self.height_scale)
@@ -526,23 +510,22 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.did_resize = True
             self.idle_timer.start(500)
 
-    #@profile
     def do_idle(self):
-        try:
-            self.update_drawing()
-        except AttributeError:
-            pass  # Not initialized yet
-        update_rect = self.scene().sceneRect()
-        update_rect.setWidth(self.width())
-        update_rect.setHeight(
-            self.height() - self.horizontalScrollBar().height())
-        self.fitInView(update_rect, QtCore.Qt.IgnoreAspectRatio)
-        update_rect = self.scene().sceneRect()
-        self.scene().update(update_rect)
-        self.horizontalScrollBar().setValue(self.scroll_position)
-        self.idle_timer.stop()
-        self.did_resize = False
-
+        # try:
+        #     self.update_drawing()
+        # except AttributeError:
+        #     pass  # Not initialized yet
+        # update_rect = self.scene().sceneRect()
+        # update_rect.setWidth(self.width())
+        # update_rect.setHeight(
+        #     self.height() - self.horizontalScrollBar().height())
+        # self.fitInView(update_rect, QtCore.Qt.IgnoreAspectRatio)
+        # update_rect = self.scene().sceneRect()
+        # self.scene().update(update_rect)
+        # self.horizontalScrollBar().setValue(self.scroll_position)
+        # self.idle_timer.stop()
+        # self.did_resize = False
+        pass
 
     def OnIdle(self, event):
         # if self.didresize:
@@ -581,7 +564,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         #     # paint the whole window, potentially very time consuming.
         #     self.Draw(dc)
         pass
-
 
     def OnSize(self, event=None):
         # self.maxHeight = self.GetClientSize().height
@@ -854,7 +836,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         update_rect = self.scene().sceneRect()
         self.scene().update(update_rect)
 
-    #@profile
     def set_document(self, doc):
         if (self.doc is None) and (doc is not None):
             self.sample_width = default_sample_width
@@ -890,84 +871,10 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.max_width = self.doc.sound_duration * self.frame_width
             self.wv_height = self.height() - self.horizontalScrollBar().height()
             self.max_height = self.wv_height
-        #print(self.amp)
         self.update_drawing()
-        
-        # self.SetVirtualSize((self.maxWidth, self.maxHeight))
-        # # clear the current waveform
-        # dc = wx.ClientDC(self)
-        # self.PrepareDC(dc)
-        # dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        # dc.Clear()
-        # if BUFFERED:
-        #     # Initialize the buffer bitmap.  No real DC is needed at this point.
-        #     if self.maxWidth > 0 and self.maxHeight > 0:
-        #         self.buffer = wx.EmptyBitmap(self.maxWidth, self.maxHeight)
-        #     else:
-        #         self.buffer = None
-        #     self.UpdateDrawing()
-        pass
 
-    #@profile
     def update_drawing(self, redraw_all=True):
         self.draw()
-        # if BUFFERED and self.buffer is None:
-        #     print("Oh no!")
-        #     return
-        # self.clipRect = None
-        # if (self.doc is not None) and (self.doc.sound is not None):
-        #     cs = self.GetClientSize()
-        #     if self.isDragging and self.basicScrubbing and (not redrawAll):
-        #         firstSample = self.oldFrame * self.samplesPerFrame
-        #         lastSample = self.scrubFrame * self.samplesPerFrame
-        #         if firstSample > lastSample:
-        #             firstSample, lastSample = lastSample, firstSample
-        #         firstSample -= self.samplesPerFrame * 2
-        #         lastSample += self.samplesPerFrame * 3
-        #         self.clipRect = wx.Rect((firstSample + 1) * self.sampleWidth, 0,
-        #                                 (lastSample - firstSample - 2) * self.sampleWidth, cs.height)
-        #     elif self.doc.sound.IsPlaying() and (not redrawAll):
-        #         if self.curFrame >= self.oldFrame:
-        #             self.clipRect = wx.Rect(self.oldFrame * self.frameWidth, 0,
-        #                                     (self.curFrame - self.oldFrame + 2) * self.frameWidth, cs.height)
-        # if BUFFERED:
-        #     # If doing buffered drawing, create the buffered DC, giving it
-        #     # it a real DC to blit to when done.
-        #     cdc = wx.ClientDC(self)
-        #     self.PrepareDC(cdc)
-        #     # print(self.clipRect)
-        #     if self.clipRect is not None:
-        #         if not self.isWxPhoenix:
-        #             cdc.SetClippingRect(self.clipRect)
-        #         else:
-        #             # WxWidgets - Phoenix
-        #             cdc.SetClippingRegion(self.clipRect)
-        #     dc = wx.BufferedDC(cdc, self.buffer)
-        #     if self.clipRect is not None:
-        #         if not self.isWxPhoenix:
-        #             dc.SetClippingRect(self.clipRect)
-        #         else:
-        #             # WxWidgets - Phoenix
-        #             dc.SetClippingRegion(self.clipRect)
-        #     self.Draw(dc)
-        #     if ((self.doc is not None) and (self.doc.sound is not None)) and self.doc.sound.IsPlaying():
-        #         self.Draw(cdc)
-        # else:
-        #     dc = wx.ClientDC(self)
-        #     self.PrepareDC(dc)
-        #     if self.clipRect is not None:
-        #         if not self.isWxPhoenix:
-        #             dc.SetClippingRect(self.clipRect)
-        #         else:
-        #             # WxWidgets - Phoenix
-        #             dc.SetClippingRegion(self.clipRect)
-        #     self.Draw(dc)
-        pass
-
-    # def resize(self, new_height):
-    #     old_height = self.waveform_polygon.boundingRect().height()
-    #     factor = old_height / new_height
-    #     self.waveform_polygon.translate(1, factor)
 
     def drawForeground(self, painter, rect):
         # We might draw the play marker here instead.
@@ -977,7 +884,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         #     painter.fillRect()
         pass
 
-    #@profile
     def drawBackground(self, painter, rect):
         background_brush = QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern)
         painter.fillRect(rect, background_brush)
@@ -1019,24 +925,8 @@ class WaveformView(QtWidgets.QGraphicsView):
             for text_marker in list_of_textmarkers:
                 painter.drawText(text_marker[0], QtCore.Qt.AlignLeft, text_marker[1])
 
-    #@profile
     def draw(self):
         print("Begin Drawing")
-        # fill_color = QtGui.QColor(162, 205, 242)
-        # line_color = QtGui.QColor(30, 121, 198)
-        # frame_col = QtGui.QColor(192, 192, 192)
-        # frame_text_col = QtGui.QColor(64, 64, 64)
-        # play_back_col = QtGui.QColor(255, 127, 127)
-        # play_fore_col = QtGui.QColor(209, 102, 121)
-        # play_outline_col = QtGui.QColor(128, 0, 0)
-        # text_col = QtGui.QColor(64, 64, 64)
-        # phrase_fill_col = QtGui.QColor(205, 242, 162)
-        # phrase_outline_col = QtGui.QColor(121, 198, 30)
-        # word_fill_col = QtGui.QColor(242, 205, 162)
-        # word_outline_col = QtGui.QColor(198, 121, 30)
-        # phoneme_fill_col = QtGui.QColor(231, 185, 210)
-        # phoneme_outline_col = QtGui.QColor(173, 114, 146)
-        # font = QtGui.QFont("Swiss", 6)
         self.draw_play_marker = False
         # TestWaveform
         print("before clear")
@@ -1085,11 +975,6 @@ class WaveformView(QtWidgets.QGraphicsView):
             temp_polygon.append(QtCore.QPointF(coordinates[0], coordinates[1]))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
 
-        # # Here we use a Button to simulate our phonemes, currently get's regenerated.
-        # test_button = self.scene().addWidget(MovableButton("test", None))
-        # test_button.setGeometry(QtCore.QRectF(20, 20, font_metrics.width(test_button.widget().text()), font_metrics.height()))
-        # test_button2 = self.scene().addWidget(MovableButton("test2", None))
-        # test_button2.setGeometry(QtCore.QRectF(60, 20, font_metrics.width(test_button2.widget().text()), font_metrics.height()))
         self.temp_phrase = None
         self.temp_word = None
         self.temp_phoneme = None
@@ -1119,6 +1004,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             # self.phrase_bottom = top_border + text_height
             # self.word_bottom = top_border + 4 + (text_height * 3)
             # self.phoneme_top = self.height() - 4 - (text_height * 2)
+            # TODO: The appends are killing our performance, we should only need to do this once!
             for phrase in self.doc.current_voice.phrases:
                 self.mov_widget_list.append(self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string, self)))
                 #self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string))
@@ -1172,401 +1058,8 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.temp_play_marker.setVisible(False)
         if self.doc.sound.is_playing():
             self.temp_play_marker.setVisible(True)
-        # if not self.doc.sound.is_playing():
-        #     self.temp_play_marker.setVisible(False)
-        # else:
-        #     self.temp_play_marker.setVisible(True)
-        # # draw the play marker
-        # if drawPlayMarker:
-        #     x = curFrame * self.frameWidth
-        #     # foreground
-        #     height = round(cs.height * amp)
-        #     # outline
-        #     dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        #     dc.SetPen(wx.Pen(playOutlineCol))
-        #     dc.DrawRectangle(x, 0, self.frameWidth + 1, cs.height)
-        #     # Draw Big Fat Frame Marker
-        #     if self.isDragging:
-        #         dc.DestroyClippingRegion()
-        #         font.SetPointSize(16)
-        #         font.SetWeight(wx.BOLD)
-        #         dc.SetFont(font)
-        #         dc.DrawLabel(str(curFrame + 1), wx.Rect(x - 50, cs.height * 0.4, 100, 125), wx.ALIGN_CENTER)
-
-        # # draw the phrases/words/phonemes
-        # if self.doc.currentVoice is not None:
-        #     topBorder += 4
-        #     font.SetPointSize(8)
-        #     font.SetWeight(wx.BOLD)
-        #     dc.SetFont(font)
-        #     textWidth, textHeight = dc.GetTextExtent("Ojyg")
-        #     textHeight += 6
-        #     self.phraseBottom = topBorder + textHeight
-        #     self.wordBottom = topBorder + 4 + textHeight + textHeight + textHeight
-        #     self.phonemeTop = cs.height - 4 - textHeight - textHeight
-        #     dc.SetTextForeground(textCol)
-        #     for phrase in self.doc.currentVoice.phrases:
-        #         dc.SetBrush(wx.Brush(phraseFillCol))
-        #         dc.SetPen(wx.Pen(phraseOutlineCol))
-        #         r = wx.Rect(phrase.startFrame * self.frameWidth, topBorder,
-        #                     (phrase.endFrame - phrase.startFrame + 1) * self.frameWidth + 1, textHeight)
-        #         if (self.clipRect is not None) and (not r.Intersects(self.clipRect)):
-        #             continue  # speed things up by skipping off-screen phrases
-        #         phrase.top = r.y
-        #         phrase.bottom = r.y + r.height
-        #         dc.DrawRectangle(r.x, r.y, r.width, r.height)
-        #         r.Inflate(-4, 0)
-        #         if not self.isWxPhoenix:
-        #             dc.SetClippingRect(r)
-        #         else:
-        #             # WxWidgets - Phoenix
-        #             dc.SetClippingRegion(r)
-        #         dc.DrawLabel(phrase.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-        #         dc.DestroyClippingRegion()
-        #         if self.clipRect is not None:
-        #             if not self.isWxPhoenix:
-        #                 dc.SetClippingRect(self.clipRect)
-        #             else:
-        #                 # WxWidgets - Phoenix
-        #                 dc.SetClippingRegion(self.clipRect)
-        #
-        #         wordCount = 0
-        #         for word in phrase.words:
-        #             dc.SetBrush(wx.Brush(wordFillCol))
-        #             dc.SetPen(wx.Pen(wordOutlineCol))
-        #             r = wx.Rect(word.startFrame * self.frameWidth, topBorder + 4 + textHeight,
-        #                         (word.endFrame - word.startFrame + 1) * self.frameWidth + 1, textHeight)
-        #             if wordCount % 2:
-        #                 r.y += textHeight
-        #             word.top = r.y
-        #             word.bottom = r.y + r.height
-        #             dc.DrawRectangle(r.x, r.y, r.width, r.height)
-        #             r.Inflate(-4, 0)
-        #             if not self.isWxPhoenix:
-        #                 dc.SetClippingRect(r)
-        #             else:
-        #                 # WxWidgets - Phoenix
-        #                 dc.SetClippingRegion(r)
-        #             dc.DrawLabel(word.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-        #             dc.DestroyClippingRegion()
-        #             if self.clipRect is not None:
-        #                 if not self.isWxPhoenix:
-        #                     dc.SetClippingRect(self.clipRect)
-        #                 else:
-        #                     # WxWidgets - Phoenix
-        #                     dc.SetClippingRegion(self.clipRect)
-        #             dc.SetBrush(wx.Brush(phonemeFillCol))
-        #             dc.SetPen(wx.Pen(phonemeOutlineCol))
-        #             phonemeCount = 0
-        #             for phoneme in word.phonemes:
-        #                 r = wx.Rect(phoneme.frame * self.frameWidth, cs.height - 4 - textHeight, self.frameWidth + 1,
-        #                             textHeight)
-        #                 if phonemeCount % 2:
-        #                     r.y -= textHeight
-        #                 phoneme.top = r.y
-        #                 phoneme.bottom = r.y + r.height
-        #                 dc.DrawRectangle(r.x, r.y, r.width, r.height)
-        #                 dc.DrawLabel(phoneme.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-        #                 phonemeCount += 1
-        #             wordCount += 1
-
-        # self.wv_height = self.height() - self.horizontalScrollBar().height()
-        # print(self.wv_height)
-        # self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
-        # self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
-        # for i in range(5000):
-        #     self.scene().addLine(10 * i, 0, 10 * i, self.wv_height)
-        #     self.scene().addRect(10 * i, 0, 10, random.randrange(self.wv_height), self.wv_pen,
-        #                          self.wv_brush)
         print("End Drawing")
-        # if stopwatch:
-        #     t2 = stopwatch.Timer()
-        # if self.doc is None:
-        #     # dc.BeginDrawing()
-        #     dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        #     dc.Clear()
-        #     # dc.EndDrawing()
-        #     return
-        # fillColor = wx.Colour(162, 205, 242)
-        # lineColor = wx.Colour(30, 121, 198)
-        # frameCol = wx.Colour(192, 192, 192)
-        # frameTextCol = wx.Colour(64, 64, 64)
-        # playBackCol = wx.Colour(255, 127, 127)
-        # playForeCol = wx.Colour(209, 102, 121)
-        # playOutlineCol = wx.Colour(128, 0, 0)
-        # textCol = wx.Colour(64, 64, 64)
-        # phraseFillCol = wx.Colour(205, 242, 162)
-        # phraseOutlineCol = wx.Colour(121, 198, 30)
-        # wordFillCol = wx.Colour(242, 205, 162)
-        # wordOutlineCol = wx.Colour(198, 121, 30)
-        # phonemeFillCol = wx.Colour(231, 185, 210)
-        # phonemeOutlineCol = wx.Colour(173, 114, 146)
-        # font = wx.Font(6, wx.SWISS, wx.NORMAL, wx.NORMAL)
-        # drawPlayMarker = False
-        # curFrame = self.curFrame
-        # cs = self.GetClientSize()
-        # halfClientHeight = cs.height / 2
-        # # dc.BeginDrawing()
-        # dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        # dc.Clear()
-        # firstSample = 0
-        # lastSample = len(self.amp)
-        # if (self.doc is not None) and (self.doc.sound is not None) and self.doc.sound.IsPlaying() and (
-        #         not self.isDragging):
-        #     if curFrame >= self.oldFrame:
-        #         firstSample = (self.oldFrame - 1) * self.samplesPerFrame
-        #         if firstSample < 0:
-        #             firstSample = 0
-        #         lastSample = (curFrame + 2) * self.samplesPerFrame
-        #         if lastSample > len(self.amp):
-        #             lastSample = len(self.amp)
-        #     drawPlayMarker = True
-        #     x = curFrame * self.frameWidth
-        #     # print("OldFrame: ",self.oldFrame)
-        #     # print("X for cursor :", x)
-        #     # background of playback marker
-        #     dc.SetBrush(wx.Brush(playBackCol))
-        #     dc.SetPen(wx.TRANSPARENT_PEN)
-        #     dc.DrawRectangle(x, 0, self.frameWidth + 1, cs.height)
-        # elif self.isDragging:
-        #     scrollX, scrollY = self.CalcScrolledPosition(0, 0)
-        #     firstSample = int(-scrollX / self.sampleWidth) - 1
-        #     if self.basicScrubbing:
-        #         firstSample = self.oldFrame * self.samplesPerFrame
-        #     lastSample = firstSample + int(cs.width / self.sampleWidth) + 3
-        #     if self.basicScrubbing:
-        #         lastSample = self.scrubFrame * self.samplesPerFrame
-        #         if firstSample > lastSample:
-        #             firstSample, lastSample = lastSample, firstSample
-        #         firstSample -= self.samplesPerFrame * 2
-        #         lastSample += self.samplesPerFrame * 3
-        #     if firstSample < 0:
-        #         firstSample = 0
-        #     if firstSample > len(self.amp):
-        #         firstSample = len(self.amp)
-        #     if lastSample < 0:
-        #         lastSample = 0
-        #     if lastSample > len(self.amp):
-        #         lastSample = len(self.amp)
-        #     drawPlayMarker = True
-        #     curFrame = self.scrubFrame
-        #     x = curFrame * self.frameWidth
-        #     # background of playback marker
-        #     dc.SetBrush(wx.Brush(playBackCol))
-        #     dc.SetPen(wx.TRANSPARENT_PEN)
-        #     dc.DrawRectangle(x, 0, self.frameWidth + 1, cs.height)
-        # # draw the audio samples
-        # dc.SetBrush(wx.Brush(fillColor))
-        # dc.SetPen(wx.Pen(lineColor))
-        # dc.SetTextForeground(frameTextCol)
-        # dc.SetFont(font)
-        # textWidth, topBorder = dc.GetTextExtent("Ojyg")
-        # x = firstSample * self.sampleWidth
-        # frame = firstSample / self.samplesPerFrame
-        # fps = int(round(self.doc.fps))
-        # sample = firstSample
-        # lastHeight = -1
-        # lastHalfHeight = 1
-        # amp = 0
-        # faster_drawing = True
-        # for i in range(int(firstSample), int(lastSample)):
-        #     if stopwatch:
-        #         if i % 100 == 0:
-        #             print("Sample " + str(i) + " Time " + str(t2.elapsed))
-        #     if (sample + 1) % self.samplesPerFrame == 0:
-        #         # draw frame marker
-        #         dc.SetPen(wx.Pen(frameCol))  # +0.06 seconds
-        #         frameX = (frame + 1) * self.frameWidth
-        #         # print("framex: ",frameX)
-        #         if (self.frameWidth > 2) or ((frame + 2) % fps == 0):
-        #             dc.DrawLine(frameX, topBorder, frameX, cs.height)  # +0.01 seconds
-        #         # draw frame label
-        #         if (self.frameWidth > 30) or ((frame + 2) % 5 == 0):
-        #             # These three take about 0.01 seconds
-        #             dc.DrawLine(frameX, 0, frameX, topBorder)
-        #             dc.DrawLine(frameX + 1, 0, frameX + 1, cs.height)
-        #             dc.DrawLabel(str(frame + 2), wx.Rect(frameX + 1, 0, 128, 128))
-        #         dc.SetBrush(wx.Brush(fillColor))  # +0.04 seconds
-        #         dc.SetPen(wx.Pen(lineColor))  # +0.07 seconds
-        #     amp = self.amp[i]
-        #     height = round(cs.height * amp)
-        #     halfHeight = height / 2
-        #     if drawPlayMarker and (frame == curFrame):
-        #         dc.SetBrush(wx.Brush(playForeCol))
-        #         dc.SetPen(wx.TRANSPARENT_PEN)
-        #     if SIMPLE_DISPLAY:
-        #         dc.DrawLine(x, halfClientHeight - halfHeight, x, halfClientHeight + halfHeight)
-        #     else:
-        #         dc.DrawRectangle(x, halfClientHeight - halfHeight, self.sampleWidth + 1, height)  # Only doing this takes 0.12 seconds
-        #         if not faster_drawing:
-        #             if drawPlayMarker and (frame == curFrame):
-        #                 dc.SetBrush(wx.Brush(fillColor))
-        #                 dc.SetPen(wx.Pen(lineColor))
-        #             if lastHeight > 0 and not (drawPlayMarker and frame == curFrame):
-        #                 if lastHeight > height:
-        #                     lastHeight = height
-        #                     lastHalfHeight = halfHeight
-        #                 dc.SetPen(wx.Pen(fillColor))  # +0.16 seconds
-        #                 dc.DrawLine(x, halfClientHeight - lastHalfHeight + 1, x, halfClientHeight + lastHalfHeight - 1)
-        #                 dc.SetPen(wx.Pen(lineColor))  # +0.175 seconds
-        #     x += self.sampleWidth
-        #     sample += 1
-        #     if sample % self.samplesPerFrame == 0:
-        #         frame += 1
-        #         """
-        #         # draw frame markers
-        #         frameX = frame * self.frameWidth
-        #         dc.SetPen(wx.Pen(frameCol))
-        #         dc.DrawLine(frameX, topBorder, frameX, cs.height)
-        #         dc.SetBrush(wx.Brush(fillColor))
-        #         dc.SetPen(wx.Pen(lineColor))
-        #         """
-        #     lastHeight = height
-        #     lastHalfHeight = halfHeight
-        # if faster_drawing:
-        #     # This fills in the lines between samples. Doing this separately saves between 0.11 and 0.25 seconds here.
-        #     dc.SetBrush(wx.Brush(fillColor))
-        #     dc.SetPen(wx.Pen(lineColor))
-        #     dc.SetTextForeground(frameTextCol)
-        #     dc.SetFont(font)
-        #     textWidth, topBorder = dc.GetTextExtent("Ojyg")
-        #     x = firstSample * self.sampleWidth
-        #     frame = firstSample / self.samplesPerFrame
-        #     fps = int(round(self.doc.fps))
-        #     sample = firstSample
-        #     lastHeight = -1
-        #     lastHalfHeight = 1
-        #     amp = 0
-        #     dc.SetPen(wx.Pen(fillColor))
-        #     for i in range(int(firstSample), int(lastSample)):
-        #         amp = self.amp[i]
-        #         height = round(cs.height * amp)
-        #         halfHeight = height / 2
-        #         if not SIMPLE_DISPLAY:
-        #             if drawPlayMarker and (frame == curFrame):
-        #                 dc.SetBrush(wx.Brush(fillColor))
-        #                 dc.SetPen(wx.Pen(lineColor))
-        #             if lastHeight > 0 and not (drawPlayMarker and frame == curFrame):
-        #                 if lastHeight > height:
-        #                     lastHeight = height
-        #                     lastHalfHeight = halfHeight
-        #                 dc.DrawLine(x, halfClientHeight - lastHalfHeight + 1, x, halfClientHeight + lastHalfHeight - 1)
-        #         x += self.sampleWidth
-        #         sample += 1
-        #         if sample % self.samplesPerFrame == 0:
-        #             frame += 1
-        #             """
-        #             # draw frame markers
-        #             frameX = frame * self.frameWidth
-        #             dc.SetPen(wx.Pen(frameCol))
-        #             dc.DrawLine(frameX, topBorder, frameX, cs.height)
-        #             dc.SetBrush(wx.Brush(fillColor))
-        #             dc.SetPen(wx.Pen(lineColor))
-        #             """
-        #         lastHeight = height
-        #         lastHalfHeight = halfHeight
-        #     dc.SetPen(wx.Pen(lineColor))
-        #
-        # # draw the phrases/words/phonemes
-        # if self.doc.currentVoice is not None:
-        #     topBorder += 4
-        #     font.SetPointSize(8)
-        #     font.SetWeight(wx.BOLD)
-        #     dc.SetFont(font)
-        #     textWidth, textHeight = dc.GetTextExtent("Ojyg")
-        #     textHeight += 6
-        #     self.phraseBottom = topBorder + textHeight
-        #     self.wordBottom = topBorder + 4 + textHeight + textHeight + textHeight
-        #     self.phonemeTop = cs.height - 4 - textHeight - textHeight
-        #     dc.SetTextForeground(textCol)
-        #     for phrase in self.doc.currentVoice.phrases:
-        #         dc.SetBrush(wx.Brush(phraseFillCol))
-        #         dc.SetPen(wx.Pen(phraseOutlineCol))
-        #         r = wx.Rect(phrase.startFrame * self.frameWidth, topBorder,
-        #                     (phrase.endFrame - phrase.startFrame + 1) * self.frameWidth + 1, textHeight)
-        #         if (self.clipRect is not None) and (not r.Intersects(self.clipRect)):
-        #             continue  # speed things up by skipping off-screen phrases
-        #         phrase.top = r.y
-        #         phrase.bottom = r.y + r.height
-        #         dc.DrawRectangle(r.x, r.y, r.width, r.height)
-        #         r.Inflate(-4, 0)
-        #         if not self.isWxPhoenix:
-        #             dc.SetClippingRect(r)
-        #         else:
-        #             # WxWidgets - Phoenix
-        #             dc.SetClippingRegion(r)
-        #         dc.DrawLabel(phrase.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-        #         dc.DestroyClippingRegion()
-        #         if self.clipRect is not None:
-        #             if not self.isWxPhoenix:
-        #                 dc.SetClippingRect(self.clipRect)
-        #             else:
-        #                 # WxWidgets - Phoenix
-        #                 dc.SetClippingRegion(self.clipRect)
-        #
-        #         wordCount = 0
-        #         for word in phrase.words:
-        #             dc.SetBrush(wx.Brush(wordFillCol))
-        #             dc.SetPen(wx.Pen(wordOutlineCol))
-        #             r = wx.Rect(word.startFrame * self.frameWidth, topBorder + 4 + textHeight,
-        #                         (word.endFrame - word.startFrame + 1) * self.frameWidth + 1, textHeight)
-        #             if wordCount % 2:
-        #                 r.y += textHeight
-        #             word.top = r.y
-        #             word.bottom = r.y + r.height
-        #             dc.DrawRectangle(r.x, r.y, r.width, r.height)
-        #             r.Inflate(-4, 0)
-        #             if not self.isWxPhoenix:
-        #                 dc.SetClippingRect(r)
-        #             else:
-        #                 # WxWidgets - Phoenix
-        #                 dc.SetClippingRegion(r)
-        #             dc.DrawLabel(word.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-        #             dc.DestroyClippingRegion()
-        #             if self.clipRect is not None:
-        #                 if not self.isWxPhoenix:
-        #                     dc.SetClippingRect(self.clipRect)
-        #                 else:
-        #                     # WxWidgets - Phoenix
-        #                     dc.SetClippingRegion(self.clipRect)
-        #             dc.SetBrush(wx.Brush(phonemeFillCol))
-        #             dc.SetPen(wx.Pen(phonemeOutlineCol))
-        #             phonemeCount = 0
-        #             for phoneme in word.phonemes:
-        #                 r = wx.Rect(phoneme.frame * self.frameWidth, cs.height - 4 - textHeight, self.frameWidth + 1,
-        #                             textHeight)
-        #                 if phonemeCount % 2:
-        #                     r.y -= textHeight
-        #                 phoneme.top = r.y
-        #                 phoneme.bottom = r.y + r.height
-        #                 dc.DrawRectangle(r.x, r.y, r.width, r.height)
-        #                 dc.DrawLabel(phoneme.text, r, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-        #                 phonemeCount += 1
-        #             wordCount += 1
-        # # draw the play marker
-        # if drawPlayMarker:
-        #     x = curFrame * self.frameWidth
-        #     # foreground
-        #     height = round(cs.height * amp)
-        #     # outline
-        #     dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        #     dc.SetPen(wx.Pen(playOutlineCol))
-        #     dc.DrawRectangle(x, 0, self.frameWidth + 1, cs.height)
-        #     # Draw Big Fat Frame Marker
-        #     if self.isDragging:
-        #         dc.DestroyClippingRegion()
-        #         font.SetPointSize(16)
-        #         font.SetWeight(wx.BOLD)
-        #         dc.SetFont(font)
-        #         dc.DrawLabel(str(curFrame + 1), wx.Rect(x - 50, cs.height * 0.4, 100, 125), wx.ALIGN_CENTER)
-        # try:
-        #     dc.EndDrawing()
-        # except AttributeError:
-        #     pass
-        # if stopwatch:
-        #     t2.stop()
-        #     print("Drawing took: " + str(t2.elapsed))
-        pass
+
 
     def on_zoom_in(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame < 16):
