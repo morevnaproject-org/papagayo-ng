@@ -280,8 +280,9 @@ class MovableButton(QtWidgets.QPushButton):
             self.right_edge = min(self.right_edge, self.right_most)
 
         # TODO: Some more testing is needed to see if dragging and resizing is correctly working
-        real_new_x = int(round(self.pos().x() / (default_sample_width * default_samples_per_frame)))
-        real_new_end = int(round(real_new_x + (self.width() / (default_sample_width * default_samples_per_frame))))
+
+        real_new_x = int(round(self.pos().x() / (self.parent.sample_width * self.parent.samples_per_frame)))
+        real_new_end = int(round(real_new_x + (self.width() / (self.parent.sample_width * self.parent.samples_per_frame))))
         left_frame_edge = real_new_x  # round(self.left_edge / self.parent.frame_width)
         right_frame_edge = real_new_end  # round(self.right_edge / self.parent.frame_width)
         if new_coords:
@@ -350,6 +351,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.did_resize = False
         self.scroll_position = 0
         self.mov_widget_list = []
+        self.first_update = True
         # TODO: Create setup function which creates the initial view, so that it get's constructed once.
 
     def __set_properties(self):
@@ -930,8 +932,13 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.draw_play_marker = False
         # TestWaveform
         print("before clear")
-        self.scene().clear()
-        print("cleared")
+        if self.first_update:
+            self.scene().clear()
+            print("cleared")
+        else:
+            self.scene().removeItem(self.waveform_polygon)
+
+
         first_sample = 0
         last_sample = len(self.amp)
         self.wv_height = self.height()  # - self.horizontalScrollBar().height()
@@ -996,52 +1003,73 @@ class WaveformView(QtWidgets.QGraphicsView):
         phoneme_col_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
                                                                           phoneme_outline_col.green(),
                                                                           phoneme_outline_col.blue())
+        text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+        if self.first_update:
+            self.mov_widget_list = []
+            if self.doc.current_voice is not None:
+                top_border += 4
 
-        self.mov_widget_list = []
-        if self.doc.current_voice is not None:
-            top_border += 4
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
-            # self.phrase_bottom = top_border + text_height
-            # self.word_bottom = top_border + 4 + (text_height * 3)
-            # self.phoneme_top = self.height() - 4 - (text_height * 2)
-            # TODO: The appends are killing our performance, we should only need to do this once!
-            for phrase in self.doc.current_voice.phrases:
-                self.mov_widget_list.append(self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string, self)))
-                #self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string))
-                self.mov_widget_list[-1].setGeometry(QtCore.QRectF(phrase.start_frame * self.frame_width,
-                                                           top_border,
-                                                           (phrase.end_frame - phrase.start_frame + 1) * self.frame_width +1,
-                                                           text_height))
-                self.mov_widget_list[-1].setParent(self)                                           
-                phrase.top = self.mov_widget_list[-1].y()
-                phrase.bottom = self.mov_widget_list[-1].y() + text_height
-                word_count = 0
-                for word in phrase.words:
-                    self.mov_widget_list.append(self.scene().addWidget(MovableButton(word.text, word, word_col_string, self, phrase)))
+                # self.phrase_bottom = top_border + text_height
+                # self.word_bottom = top_border + 4 + (text_height * 3)
+                # self.phoneme_top = self.height() - 4 - (text_height * 2)
+                # TODO: The appends are killing our performance, we should only need to do this once!
+                for phrase in self.doc.current_voice.phrases:
+                    self.mov_widget_list.append(self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string, self)))
+                    #self.mov_widget_list.append(self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string, self)))
 
-                    self.mov_widget_list[-1].setGeometry(QtCore.QRectF(word.start_frame * self.frame_width,
-                                                             top_border + 4 + text_height + (text_height * (word_count % 2)),
-                                                             (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
-                                                             text_height))
+                    #self.temp_phrase = self.scene().addWidget(MovableButton(phrase.text, phrase, phrase_col_string))
+                    self.mov_widget_list[-1].setGeometry(QtCore.QRect(phrase.start_frame * self.frame_width,
+                                                         top_border,
+                                                         (phrase.end_frame - phrase.start_frame + 1) * self.frame_width + 1,
+                                                         text_height))
                     self.mov_widget_list[-1].setParent(self)
-                    # self.mov_widget_list[-1].parent_object = phrase # phrase seems to get gc'd and is then None
-                    word.top = self.mov_widget_list[-1].y()
-                    word.bottom = self.mov_widget_list[-1].y() + text_height
-                    word_count += 1
-                    phoneme_count = 0
-                    for phoneme in word.phonemes:
-                        self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word)))
-                        #self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string))
-                        self.mov_widget_list[-1].setGeometry(QtCore.QRectF(phoneme.frame * self.frame_width,
-                                                                    self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
-                                                                    self.frame_width + 1,
-                                                                    text_height))
-                        self.mov_widget_list[-1].setParent(self)
-                        # self.mov_widget_list[-1].parent_object = word # word seems to get gc'd and is then None
-                        phoneme.top = self.mov_widget_list[-1].y()
-                        phoneme.bottom = self.mov_widget_list[-1].y() + text_height
-                        phoneme_count += 1
+                    phrase.top = self.mov_widget_list[-1].y()
+                    phrase.bottom = self.mov_widget_list[-1].y() + text_height
+                    word_count = 0
+                    for word in phrase.words:
+                        self.mov_widget_list.append(self.scene().addWidget(MovableButton(word.text, word, word_col_string, self, phrase)))
+                        #self.mov_widget_list.append(self.scene().addWidget(MovableButton(word.text, word, word_col_string, self, phrase)))
 
+                        self.mov_widget_list[-1].setGeometry(QtCore.QRect(word.start_frame * self.frame_width,
+                                                                 top_border + 4 + text_height + (text_height * (word_count % 2)),
+                                                                 (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
+                                                                 text_height))
+                        self.mov_widget_list[-1].setParent(self)
+                        # self.mov_widget_list[-1].parent_object = phrase # phrase seems to get gc'd and is then None
+                        word.top = self.mov_widget_list[-1].y()
+                        word.bottom = self.mov_widget_list[-1].y() + text_height
+                        word_count += 1
+                        phoneme_count = 0
+                        for phoneme in word.phonemes:
+                            self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word)))
+                            #self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word)))
+                            #self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string))
+                            self.mov_widget_list[-1].setGeometry(QtCore.QRect(phoneme.frame * self.frame_width,
+                                                                        self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
+                                                                        self.frame_width + 1,
+                                                                        text_height))
+                            self.mov_widget_list[-1].setParent(self)
+                            # self.mov_widget_list[-1].parent_object = word # word seems to get gc'd and is then None
+                            phoneme.top = self.mov_widget_list[-1].y()
+                            phoneme.bottom = self.mov_widget_list[-1].y() + text_height
+                            phoneme_count += 1
+        else:
+            pass
+            for widget in self.mov_widget_list:
+                print(dir(widget.widget()))
+
+                if widget.widget().me.is_phoneme:
+                    new_width = self.frame_width + 1
+                    new_x = widget.widget().me.frame * self.frame_width
+
+                else:
+                    new_width = (widget.widget().me.end_frame - widget.widget().me.start_frame + 1) * self.frame_width + 1
+                    new_x = widget.widget().me.start_frame * self.frame_width
+                new_y = widget.widget().y()
+                widget.setGeometry(QtCore.QRect(new_x, new_y, new_width, text_height))
+                widget.setZValue(99)
+            # for i in self.mov_widget_list:
+            #     self.scene().addWidget(i.widget())
         # This doesn't do anything yet because this method is not running all the time.
         # We should create an object and make it in/visible on demand and move it.
         print("Playing, now drawing marker!")
@@ -1059,6 +1087,8 @@ class WaveformView(QtWidgets.QGraphicsView):
         if self.doc.sound.is_playing():
             self.temp_play_marker.setVisible(True)
         print("End Drawing")
+        if self.first_update:
+            self.first_update = False
 
 
     def on_zoom_in(self, event=None):
