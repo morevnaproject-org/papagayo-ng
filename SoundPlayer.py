@@ -4,7 +4,8 @@ import platform
 import traceback
 import wave
 from utilities import *
-import pyaudio
+import sounddevice as sd
+import time
 
 from utilities import which
 
@@ -25,7 +26,7 @@ class SoundPlayer:
         self.soundfile = soundfile
         self.isplaying = False
         self.time = 0  # current audio position in frames
-        self.audio = pyaudio.PyAudio()
+        self.audio = sd
         self.pydubfile = None
         self.volume = 100
 
@@ -55,6 +56,7 @@ class SoundPlayer:
             traceback.print_exc()
             self.wave_reference = None
             self.isvalid = False
+        self.audio.default.samplerate = self.pydubfile.frame_rate
 
     def IsValid(self):
         return self.isvalid
@@ -95,18 +97,16 @@ class SoundPlayer:
         self.isplaying = True
         if AudioSegment:
             millisecondchunk = 50 / 1000.0
-
-            stream = self.audio.open(format=
-                                     self.audio.get_format_from_width(self.pydubfile.sample_width),
-                                     channels=self.pydubfile.channels,
-                                     rate=self.pydubfile.frame_rate,
-                                     output=True)
-
             playchunk = self.pydubfile[start*1000.0:(start+length)*1000.0] - (60 - (60 * (self.volume/100.0)))
             self.time = start
+            self.audio.play(playchunk.get_array_of_samples(), blocking=False)
+
+            # For some reason it does not like the seperated chunks, so we play it non-
+            # We might be able to use self.audio.get_stream().time to improve accuracy
             for chunks in make_chunks(playchunk, millisecondchunk*1000):
                 self.time += millisecondchunk
-                stream.write(chunks._data)
+
+                time.sleep(millisecondchunk)
                 if not self.isplaying:
                     break
                 if self.time >= start+length:
@@ -121,12 +121,6 @@ class SoundPlayer:
             except wave.Error:
                 self.isplaying = False
                 return
-            stream = self.audio.open(format=
-                                     self.audio.get_format_from_width(self.wave_reference.getsampwidth()),
-                                     channels=self.wave_reference.getnchannels(),
-                                     rate=self.wave_reference.getframerate(),
-                                     output=True)
-            # read data
 
             if remaining >= 1024:
                 data = audioop.mul(self.wave_reference.readframes(chunk),self.wave_reference.getsampwidth(), self.volume/100.0)
@@ -136,8 +130,11 @@ class SoundPlayer:
                 remaining = 0
 
             # play stream
+            self.audio.play(data.get_array_of_samples(), blocking=False)
+
             while len(data) > 0 and self.isplaying:
-                stream.write(data)
+
+                time.sleep(float(self.wave_reference.getframerate()))
                 self.time = float(self.wave_reference.tell()) / float(self.wave_reference.getframerate())
                 if remaining >= 1024:
                     data = audioop.mul(self.wave_reference.readframes(chunk),self.wave_reference.getsampwidth(), self.volume/100.0)
@@ -145,7 +142,8 @@ class SoundPlayer:
                 else:
                     data = audioop.mul(self.wave_reference.readframes(remaining),self.wave_reference.getsampwidth(), self.volume/100.0)
                     remaining = 0
-        stream.close()
+
+        self.audio.stop()
         self.isplaying = False
 
     def play(self, arg):
