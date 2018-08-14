@@ -171,7 +171,8 @@ class MovableButton(QtWidgets.QPushButton):
     def mouseReleaseEvent(self, e):
         self.is_resizing = False
         print("Released")
-        self.calc_edges((-1, round((e.globalPos().x() + (self.width() - e.pos().x())) / self.parent.frame_width -1)))
+        new_right_edge = round((self.x() + self.width()) / self.parent.frame_width) - 1
+        self.calc_edges((-1, new_right_edge))
 
     def __del__(self):
         try:
@@ -286,22 +287,21 @@ class MovableButton(QtWidgets.QPushButton):
         left_frame_edge = real_new_x  # round(self.left_edge / self.parent.frame_width)
         right_frame_edge = real_new_end  # round(self.right_edge / self.parent.frame_width)
         if new_coords:
-            print(new_coords)
             if not self.me.is_phoneme:
                 if new_coords[0] != -1:
                     old_diff = self.me.end_frame - self.me.start_frame
-                    if (left_frame_edge < new_coords[0] < right_frame_edge) and (left_frame_edge < new_coords[0] + old_diff < right_frame_edge):
+                    if True:  # (left_frame_edge < new_coords[0] < right_frame_edge) and (left_frame_edge < new_coords[0] + old_diff < right_frame_edge):
                         self.me.start_frame = new_coords[0]
                         self.me.end_frame = self.me.start_frame + old_diff
                 if new_coords[1] != -1:
-                    if left_frame_edge < new_coords[1] < right_frame_edge:
+                    if True:  # left_frame_edge < new_coords[1] < right_frame_edge:
                         self.me.end_frame = new_coords[1]
             else:
                 if new_coords[0] != -1:
-                    if left_frame_edge < new_coords[0] < right_frame_edge:
+                    if True:  # left_frame_edge < new_coords[0] < right_frame_edge:
                         self.me.frame = new_coords[0]
                 else:
-                    if left_frame_edge < new_coords[1] < right_frame_edge:
+                    if True:  # left_frame_edge < new_coords[1] < right_frame_edge:
                         self.me.frame = new_coords[1]
 
 
@@ -981,7 +981,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         for coordinates in (frame_rectangle_polygon_upper + frame_rectangle_polygon_lower):
             temp_polygon.append(QtCore.QPointF(coordinates[0], coordinates[1]))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
-
+        self.waveform_polygon.setZValue(1)
         self.temp_phrase = None
         self.temp_word = None
         self.temp_phoneme = None
@@ -1023,6 +1023,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                                                          (phrase.end_frame - phrase.start_frame + 1) * self.frame_width + 1,
                                                          text_height))
                     self.mov_widget_list[-1].setParent(self)
+                    self.mov_widget_list[-1].setZValue(99)
                     phrase.top = self.mov_widget_list[-1].y()
                     phrase.bottom = self.mov_widget_list[-1].y() + text_height
                     word_count = 0
@@ -1035,6 +1036,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                                                                  (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
                                                                  text_height))
                         self.mov_widget_list[-1].setParent(self)
+                        self.mov_widget_list[-1].setZValue(99)
                         # self.mov_widget_list[-1].parent_object = phrase # phrase seems to get gc'd and is then None
                         word.top = self.mov_widget_list[-1].y()
                         word.bottom = self.mov_widget_list[-1].y() + text_height
@@ -1049,14 +1051,13 @@ class WaveformView(QtWidgets.QGraphicsView):
                                                                         self.frame_width + 1,
                                                                         text_height))
                             self.mov_widget_list[-1].setParent(self)
+                            self.mov_widget_list[-1].setZValue(99)
                             # self.mov_widget_list[-1].parent_object = word # word seems to get gc'd and is then None
                             phoneme.top = self.mov_widget_list[-1].y()
                             phoneme.bottom = self.mov_widget_list[-1].y() + text_height
                             phoneme_count += 1
         else:
-            pass
             for widget in self.mov_widget_list:
-                print(dir(widget.widget()))
 
                 if widget.widget().me.is_phoneme:
                     new_width = self.frame_width + 1
