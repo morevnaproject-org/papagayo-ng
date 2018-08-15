@@ -80,7 +80,7 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 
 class MovableButton(QtWidgets.QPushButton):
-    def __init__(self, title, me, style, parent, parent_obj=None):
+    def __init__(self, title, me, style, parent, parent_obj=None, phoneme_offset=None):
         super(MovableButton, self).__init__(title, None)
         self.me = me
         self.is_resizing = False
@@ -91,6 +91,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.right_edge = 0
         self.left_most = 0
         self.right_most = 0
+        self.phoneme_offset = phoneme_offset
         self.calc_edges()
         # self.setStyleSheet(f"background-color:rgb({phoneme_fill_col.red()},{phoneme_fill_col.green()},{phoneme_fill_col.blue()})")
         # self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
@@ -498,79 +499,15 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.scroll_position = value
 
     def resizeEvent(self, event):
-        # for item in self.main_window.waveform_view.items():
-        #     item.scale(1, self.height_scale)
-
         update_rect = self.scene().sceneRect()
         update_rect.setWidth(self.width())
-        update_rect.setHeight(self.scene().height())
+        update_rect.setHeight(event.size().height())
+        if self.doc:
+            self.set_document(self.doc)
         self.fitInView(update_rect, QtCore.Qt.IgnoreAspectRatio)
-
-        # This is buggy if we increase the window size after decreasing it, but the redraw after works.
         self.horizontalScrollBar().setValue(self.scroll_position)
-        if not self.did_resize:
-            self.did_resize = True
-            self.idle_timer.start(500)
 
     def do_idle(self):
-        # try:
-        #     self.update_drawing()
-        # except AttributeError:
-        #     pass  # Not initialized yet
-        # update_rect = self.scene().sceneRect()
-        # update_rect.setWidth(self.width())
-        # update_rect.setHeight(
-        #     self.height() - self.horizontalScrollBar().height())
-        # self.fitInView(update_rect, QtCore.Qt.IgnoreAspectRatio)
-        # update_rect = self.scene().sceneRect()
-        # self.scene().update(update_rect)
-        # self.horizontalScrollBar().setValue(self.scroll_position)
-        # self.idle_timer.stop()
-        # self.did_resize = False
-        pass
-
-    def OnIdle(self, event):
-        # if self.didresize:
-        #     if BUFFERED:
-        #         # Initialize the buffer bitmap.  No real DC is needed at this point.
-        #         if self.maxWidth > 0 and self.maxHeight > 0:
-        #             self.buffer = wx.EmptyBitmap(self.maxWidth, self.maxHeight)
-        #         else:
-        #             self.buffer = None
-        #         if stopwatch:
-        #             t = stopwatch.Timer()
-        #         self.UpdateDrawing()
-        #         if stopwatch:
-        #             t.stop()
-        #             print("Updating took: " +str(t.elapsed))
-        #     self.didresize = 0
-        pass
-
-    def OnPaint(self, event):
-        # if BUFFERED:
-        #     # Create a buffered paint DC.  It will create the real
-        #     # wx.PaintDC and then blit the bitmap to it when dc is
-        #     # deleted.  Since we don't need to draw anything else
-        #     # here that's all there is to it.
-        #     if self.buffer is not None:
-        #         if 1:
-        #             dc = wx.BufferedPaintDC(self, self.buffer, wx.BUFFER_VIRTUAL_AREA)
-        #         else:
-        #             dc = wx.BufferedPaintDC(self, self.buffer)
-        #     else:
-        #         event.Skip()
-        # else:
-        #     dc = wx.PaintDC(self)
-        #     self.PrepareDC(dc)
-        #     # since we're not buffering in this case, we have to
-        #     # paint the whole window, potentially very time consuming.
-        #     self.Draw(dc)
-        pass
-
-    def OnSize(self, event=None):
-        # self.maxHeight = self.GetClientSize().height
-        # self.SetVirtualSize((self.maxWidth, self.maxHeight))
-        # self.didresize = 1
         pass
 
     def OnMouseDown(self, event):
@@ -1043,7 +980,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         word_count += 1
                         phoneme_count = 0
                         for phoneme in word.phonemes:
-                            self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word)))
+                            self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word, phoneme_offset=phoneme_count % 2)))
                             #self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word)))
                             #self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string))
                             self.mov_widget_list[-1].setGeometry(QtCore.QRect(phoneme.frame * self.frame_width,
@@ -1062,11 +999,12 @@ class WaveformView(QtWidgets.QGraphicsView):
                 if widget.widget().me.is_phoneme:
                     new_width = self.frame_width + 1
                     new_x = widget.widget().me.frame * self.frame_width
+                    new_y = self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (widget.widget().phoneme_offset)))
 
                 else:
                     new_width = (widget.widget().me.end_frame - widget.widget().me.start_frame + 1) * self.frame_width + 1
                     new_x = widget.widget().me.start_frame * self.frame_width
-                new_y = widget.widget().y()
+                    new_y = widget.widget().y()
                 widget.setGeometry(QtCore.QRect(new_x, new_y, new_width, text_height))
                 widget.setZValue(99)
             # for i in self.mov_widget_list:
@@ -1083,6 +1021,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                                                      self.height() - self.horizontalScrollBar().height(),
                                                      QtGui.QPen(play_outline_col),
                                                      QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+        self.temp_play_marker.setZValue(1000)
         self.temp_play_marker.setOpacity(0.5)
         self.temp_play_marker.setVisible(False)
         if self.doc.sound.is_playing():
@@ -1090,7 +1029,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         print("End Drawing")
         if self.first_update:
             self.first_update = False
-
 
     def on_zoom_in(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame < 16):
