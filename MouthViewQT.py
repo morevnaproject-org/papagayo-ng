@@ -56,7 +56,6 @@ class MouthView(QtWidgets.QGraphicsView):
         if not self.current_mouth:
             self.current_mouth = list(self.mouths)[0]
         if self.current_mouth in self.mouths.keys():
-            print(self.mouths[self.current_mouth])
             if self.current_phoneme in self.mouths[self.current_mouth].keys():
                 bitmap = self.mouths[self.current_mouth][self.current_phoneme]
             else:

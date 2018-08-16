@@ -25,17 +25,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 #from PySide2.QtWidgets import QtGui, QtCore, QtWidgets
-# import wx
-debug_performance = False
-if debug_performance:
-    import simplestopwatch as stopwatch
-else:
-    stopwatch = None
 
 from LipsyncDoc import *
-
-BUFFERED = 1
-SIMPLE_DISPLAY = 0
 
 fill_color = QtGui.QColor(162, 205, 242)
 line_color = QtGui.QColor(30, 121, 198)
@@ -116,19 +107,15 @@ class MovableButton(QtWidgets.QPushButton):
 
         if e.buttons() != QtCore.Qt.LeftButton:
             return
-        # TODO: Restrict resizing
         if (e.pos().x() > self.width()-10) or self.is_resizing:
             if e.pos().x() > self.parent.frame_width + 10:
                 
                 if e.pos().x() <= self.right_edge - self.x():
-                    self.resize(e.pos().x() - (e.pos().x()%self.parent.frame_width), self.height())
+                    self.resize(e.pos().x() - (e.pos().x() % self.parent.frame_width), self.height())
                     self.is_resizing = True
-                    
-
 
         else:
             mime_data = QtCore.QMimeData()
-
             drag = QtGui.QDrag(self)
             drag.setMimeData(mime_data)
             drag.setHotSpot(e.pos() - self.rect().topLeft())
@@ -137,19 +124,15 @@ class MovableButton(QtWidgets.QPushButton):
             self.hotspot = drag.hotSpot().x()
             # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
             try:
-                exec("dropAction = drag.exec(QtCore.Qt.MoveAction)") # Otherwise we can't catch it and it will crash...
+                exec("dropAction = drag.exec(QtCore.Qt.MoveAction)")  # Otherwise we can't catch it and it will crash...
             except (SyntaxError, AttributeError):
                 dropAction = drag.start(QtCore.Qt.MoveAction)
-            #dropAction = drag.start(QtCore.Qt.MoveAction)
 
     def mousePressEvent(self, e):
         # QtGui.QPushButton.mousePressEvent(self, e)
         if e.button() == QtCore.Qt.RightButton and "phonemes" in dir(self.me):
-            print('press')
-            print(self.text())
             # manually enter the pronunciation for this word
             dlg = PronunciationDialog(self, self.parent.doc.parent.phonemeset.set)
-
             dlg.word_label.setText(dlg.word_label.text() + ' ' + self.text())
             prev_phoneme_list = ""
             for p in self.me.phonemes:
@@ -164,8 +147,10 @@ class MovableButton(QtWidgets.QPushButton):
                     phoneme.text = p
                     self.me.phonemes.append(phoneme)
                 self.parent_object.reposition_word(self.me)
-                self.parent.did_resize = True
-                self.parent.idle_timer.start(500)
+                self.parent.first_update = True
+                self.parent.update_drawing()
+                # Works quite good in theory but it seems to crash randomly. Debugging did not help.
+                # self.parent.set_document(self.parent.doc)
             else:
                 print("No change!")
 
@@ -315,8 +300,6 @@ class WaveformView(QtWidgets.QGraphicsView):
 
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
-        self.__set_properties()
-        self.__do_layout()
 
         # Other initialization
         self.doc = None
@@ -345,29 +328,10 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.num_samples = 0
         self.amp = []
         self.temp_play_marker = None
-        self.idle_timer = QtCore.QTimer()
-        self.idle_timer.setSingleShot(True)
-        # self.idle_timer.singleShot(1000, self.do_idle)
-        self.idle_timer.timeout.connect(self.do_idle)
         self.did_resize = False
         self.scroll_position = 0
         self.mov_widget_list = []
         self.first_update = True
-        # TODO: Create setup function which creates the initial view, so that it get's constructed once.
-
-    def __set_properties(self):
-        # begin wxGlade: WaveformView.__set_properties
-        # self.SetMinSize((200, 200))
-        # self.SetBackgroundColour(wx.Colour(255, 255, 255))
-        # self.SetScrollRate(10, 0)
-        pass
-        # end wxGlade
-
-    def __do_layout(self):
-        # begin wxGlade: WaveformView.__do_layout
-        # self.Layout()
-        pass
-        # end wxGlade
 
     def dragEnterEvent(self, e):
         print("DragEnter!")
@@ -892,12 +856,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         frame_rectangle_list = []
         frame_rectangle_polygon_upper = []
         frame_rectangle_polygon_lower = []
-        if stopwatch:
-            t2 = stopwatch.Timer()
         for i in range(int(first_sample), int(last_sample)):
-            if stopwatch:
-                if i % 100 == 0:
-                    print("Sample " + str(i) + " Time " + str(t2.elapsed))
             height = round(self.wv_height * self.amp[i])
             half_height = height / 2
             if self.draw_play_marker and (frame == self.cur_frame):
@@ -1007,10 +966,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                     new_y = widget.widget().y()
                 widget.setGeometry(QtCore.QRect(new_x, new_y, new_width, text_height))
                 widget.setZValue(99)
-            # for i in self.mov_widget_list:
-            #     self.scene().addWidget(i.widget())
-        # This doesn't do anything yet because this method is not running all the time.
-        # We should create an object and make it in/visible on demand and move it.
         print("Playing, now drawing marker!")
         x = self.cur_frame * self.frame_width
         #     foreground_brush = QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern)

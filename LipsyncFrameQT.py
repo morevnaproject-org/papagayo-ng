@@ -63,7 +63,7 @@ class LipsyncFrame:
         self.config = QtCore.QSettings(app_title, "Lost Marble")
 
         # TODO: need a good description for this stuff
-
+        print(dir(self.main_window))
         mouth_list = list(self.main_window.mouth_view.mouths.keys())
         mouth_list.sort()
         print(mouth_list)
@@ -247,6 +247,7 @@ class LipsyncFrame:
                     pass
         if self.doc is not None:
             self.main_window.setWindowTitle("%s [%s] - %s" % (self.doc.name, path, app_title))
+            self.main_window.waveform_view.first_update = True
             self.main_window.waveform_view.set_document(self.doc)
             self.main_window.mouth_view.set_document(self.doc)
             # Reenable all disabled widgets TODO: Can likely be reduced
@@ -300,6 +301,7 @@ class LipsyncFrame:
             self.config.setValue("LastFPS", str(self.doc.fps))
             del self.doc
         self.doc = None
+        self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc)
         # clear voice controls
         self.main_window.voice_name_input.clear()
@@ -416,6 +418,7 @@ class LipsyncFrame:
             self.doc.dirty = True
             self.doc.current_voice.run_breakdown(self.doc.soundDuration, self, language, self.langman,
                                                  self.phonemeset)
+            self.main_window.waveform_view.first_update = True
             self.main_window.waveform_view.update_drawing()
             self.ignore_text_changes = True
             self.main_window.text_edit.setText(self.doc.current_voice.text)
@@ -478,6 +481,7 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
+        self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.update_drawing()
         self.main_window.mouth_view.draw_me()
 
@@ -493,6 +497,7 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
+        self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.update_drawing()
         self.main_window.mouth_view.draw_me()
 
@@ -513,6 +518,7 @@ class LipsyncFrame:
         self.main_window.voice_list.setCurrentRow(new_index)
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
+        self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.update_drawing()
         self.main_window.mouth_view.draw_me()
 
