@@ -120,6 +120,7 @@ class LipsyncFrame:
         self.main_window.action_exit.triggered.connect(self.quit_application)
         self.main_window.action_open.triggered.connect(self.on_open)
         self.main_window.action_save.triggered.connect(self.on_save)
+        self.main_window.action_save_as.triggered.connect(self.on_save_as)
         self.main_window.action_zoom_in.triggered.connect(self.main_window.waveform_view.on_zoom_in)
         self.main_window.action_zoom_out.triggered.connect(self.main_window.waveform_view.on_zoom_out)
         self.main_window.action_reset_zoom.triggered.connect(self.main_window.waveform_view.on_zoom_reset)

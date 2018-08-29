@@ -328,7 +328,7 @@ class LipsyncVoice:
             outFile.write("\t\t%d\n" % phrase.end_frame)
             outFile.write("\t\t%d\n" % len(phrase.words))
             for word in phrase.words:
-                outFile.write("\t\t\t%s %d %d %d\n" % (word.text, word.start_frame, word.endFrame, len(word.phonemes)))
+                outFile.write("\t\t\t%s %d %d %d\n" % (word.text, word.start_frame, word.end_frame, len(word.phonemes)))
                 for phoneme in word.phonemes:
                     outFile.write("\t\t\t\t%d %s\n" % (phoneme.frame, phoneme.text))
 
