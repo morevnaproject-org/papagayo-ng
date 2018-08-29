@@ -26,6 +26,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 # import wx
+import PySide2.QtCore as QtCore
 
 from utilities import *
 from PronunciationDialogQT import PronunciationDialog
@@ -376,11 +377,10 @@ class LipsyncVoice:
         outFile.close()
 
     def export_images(self, path, currentmouth):
-        # TODO: self.config still relies on wx!
         try:
             self.config
         except AttributeError:
-            self.config = wx.Config("Papagayo-NG", "Lost Marble")
+            self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
         phoneme = ""
         if len(self.phrases) > 0:
             start_frame = self.phrases[0].start_frame
@@ -388,7 +388,7 @@ class LipsyncVoice:
         else:
             start_frame = 0
             end_frame = 1
-        if not self.config.Read("MouthDir"):
+        if not self.config.value("MouthDir"):
             print("Use normal procedure.\n")
             phonemedict = {}
             for files in os.listdir(
@@ -404,14 +404,14 @@ class LipsyncVoice:
                     print("Phoneme '" + phoneme + "' does not exist in chosen directory.")
 
         else:
-            print("Use this dir:" + self.config.Read("MouthDir") + "\n")
+            print("Use this dir:" + self.config.value("MouthDir") + "\n")
             phonemedict = {}
-            for files in os.listdir(self.config.Read("MouthDir")):
+            for files in os.listdir(self.config.value("MouthDir")):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
             for frame in range(start_frame, end_frame + 1):
                 phoneme = self.get_phoneme_at_frame(frame)
                 try:
-                    shutil.copy(self.config.Read("MouthDir") + "/" + phoneme + phonemedict[phoneme],
+                    shutil.copy(self.config.value("MouthDir") + "/" + phoneme + phonemedict[phoneme],
                                 path + str(frame).rjust(6, '0') + phoneme + phonemedict[phoneme])
                 except KeyError:
                     print("Phoneme '" + phoneme + "' does not exist in chosen directory.")

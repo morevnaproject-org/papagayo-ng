@@ -60,7 +60,7 @@ class LipsyncFrame:
         self.ui = None
         self.doc = None
         self.about_dlg = None
-        self.config = QtCore.QSettings(app_title, "Lost Marble")
+        self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
 
         # TODO: need a good description for this stuff
         print(dir(self.main_window))
