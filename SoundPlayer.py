@@ -56,7 +56,10 @@ class SoundPlayer:
             traceback.print_exc()
             self.wave_reference = None
             self.isvalid = False
-        self.audio.default.samplerate = self.pydubfile.frame_rate
+        if AudioSegment:
+            self.audio.default.samplerate = self.pydubfile.frame_rate
+        else:
+            self.audio.default.samplerate = self.wave_reference.getframerate()
 
     def IsValid(self):
         return self.isvalid
