@@ -1,17 +1,15 @@
 To work with the Papagayo-NG source code, you need some special software installed. This software is not necessary to run the installer-based version of Papagayo-NG, but you do need it if you want to use this source code package.
 
-Python - the programming language that Papagayo is written in.
-http://www.python.org/
+Requirements:
 
-wxPython - a cross-platform user interface library for Python, based on wxWidgets.
-http://www.wxpython.org/
+* Python 3 - http://www.python.org/
+* PySide2 - https://wiki.qt.io/Qt_for_Python
+* python3-numpy (required by python-sounddevice) - http://www.numpy.org/
+* python-sounddevice - https://python-sounddevice.readthedocs.io/
 
-wxGlade - a user interface builder for wxWidgets. This program is not strictly necessary, but is helpful if you want to modify the user interface of Papagayo.
-http://wxglade.sourceforge.net/
+To run Papagayo-NG, double-click the papagayo-ng.py file, or run the following command:
 
-Papagayo-NG is written in Python, and requires no special tools to work with the source - a basic text editor is good enough. To run Papagayo-NG, double-click the papagayo-ng.py file, or run the following command:
-
-python papagayo-ng.py
+python3 papagayo-ng.py
 
 -----------------------------
 
