@@ -881,19 +881,19 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.temp_phrase = None
         self.temp_word = None
         self.temp_phoneme = None
-        phrase_col_string = "background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
+        phrase_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
                                                                         phrase_fill_col.green(),
                                                                         phrase_fill_col.blue())
         phrase_col_string += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                          phrase_outline_col.green(),
                                                                          phrase_outline_col.blue())
-        word_col_string = "background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
+        word_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
                                                                       word_fill_col.green(),
                                                                       word_fill_col.blue())
         word_col_string += "border:1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
                                                                        word_outline_col.green(),
                                                                        word_outline_col.blue())
-        phoneme_col_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
+        phoneme_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
                                                                          phoneme_fill_col.green(),
                                                                          phoneme_fill_col.blue())
         phoneme_col_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
