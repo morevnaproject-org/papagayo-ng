@@ -107,7 +107,7 @@ class MovableButton(QtWidgets.QPushButton):
 
         if e.buttons() != QtCore.Qt.LeftButton:
             return
-        if (e.pos().x() > self.width()-10) or self.is_resizing:
+        if ((e.pos().x() > self.width()-10) or self.is_resizing) and not self.me.is_phoneme:
             if e.pos().x() > self.parent.frame_width + 10:
                 
                 if e.pos().x() <= self.right_edge - self.x():
@@ -884,12 +884,16 @@ class WaveformView(QtWidgets.QGraphicsView):
         phrase_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
                                                                         phrase_fill_col.green(),
                                                                         phrase_fill_col.blue())
+        phrase_col_string += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
         phrase_col_string += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                          phrase_outline_col.green(),
                                                                          phrase_outline_col.blue())
+
         word_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
                                                                       word_fill_col.green(),
                                                                       word_fill_col.blue())
+        word_col_string += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
+
         word_col_string += "border:1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
                                                                        word_outline_col.green(),
                                                                        word_outline_col.blue())

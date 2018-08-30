@@ -9,5 +9,6 @@
     <file>rsrc/zoom_1.png</file>
     <file>rsrc/zoom_in.png</file>
     <file>rsrc/zoom_out.png</file>
+    <file>rsrc/marker.png</file>
   </qresource>
 </RCC>
