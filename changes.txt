@@ -1,8 +1,15 @@
 History
 
 
+setup_ubuntu.sh
+    File relocatation. \\setup_ubuntu.sh -> \\_setup\setup_ubuntu.sh
+    has ZERO references to it in the enteir repsitory.
+    This file sets up module dependecies on linux
+    No Depencencies
+
+
 lipsync.wxg
     File relocatation. \\lipsyn.wxg -> \\resources\lipsyn.wxg
-    has only 1 reference to it in the entier repsitory. (in the \\readme.txt)
+    has only 1 reference to it in the enteir repsitory. (in the \\readme.txt)
     This file is the configuration data for wxGlade design of the GUI
     No Depencencies
