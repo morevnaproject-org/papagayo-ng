@@ -78,7 +78,8 @@ papagayo-ng.icns            - MacOS X icons
 
 _setup/setup.py             - a script to build Papagayo-NG as a standalone Windows application
 _setup/setup_mac.py         - a script to build Papagayo-NG as a standalone MacOS X application
-
+_setup/setup_ubuntu.sh      - ### TODO (Confirm ???)
+_setup/package-linux.sh     - ### TODO (Confirm ???)
 -----------------------------
 
 Here are a couple tips for source code that you may want to modify:
