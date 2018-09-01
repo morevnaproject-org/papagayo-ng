@@ -9,6 +9,8 @@
 
 import warnings
 try:
+    # as of wxPython v4.0.3 it seems that all is working (few depreciation warnings to be heeded)
+
     import wxversion
 
     if wxversion.checkInstalled('2.8'):
@@ -17,6 +19,8 @@ try:
         warnings.warn("You are running an unsupported Version of wx. Please test this with wx Version 2.8 before reporting errors!")
 except ImportError:
     warnings.warn("You either don't have wx installed or you are using wxphoenix. Please test this with wx Version 2.8 before reporting errors!")
+
+
 import wx
 import os
 import sys
