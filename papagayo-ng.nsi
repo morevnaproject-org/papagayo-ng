@@ -5,8 +5,8 @@ Name "Papagayo-NG"
 SetCompressor /final lzma
 !include MUI2.nsh
 
-Icon "papagayo-ng.ico"
-UninstallIcon "papagayo-ng.ico"
+Icon "resources\papagayo-ng.ico"
+UninstallIcon "resources\papagayo-ng.ico"
 
 LicenseData gpl.txt
 !insertmacro MUI_PAGE_LICENSE "gpl.txt"
@@ -31,8 +31,8 @@ SectionEnd
 Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\$(^Name)"  
-  CreateShortCut "$SMPROGRAMS\$(^Name)\$(^Name).lnk" "$INSTDIR\papagayo-ng.exe" "" "$INSTDIR\papagayo-ng.ico"
-  CreateShortCut "$SMPROGRAMS\$(^Name)\Uninstall $(^Name).lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\papagayo-ng.ico"
+  CreateShortCut "$SMPROGRAMS\$(^Name)\$(^Name).lnk" "$INSTDIR\papagayo-ng.exe" "" "$INSTDIR\resources\papagayo-ng.ico"
+  CreateShortCut "$SMPROGRAMS\$(^Name)\Uninstall $(^Name).lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\resources\papagayo-ng.ico"
 SectionEnd
 
 Section "Uninstall"
