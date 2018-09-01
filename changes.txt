@@ -1,0 +1,8 @@
+History
+
+
+lipsync.wxg
+    File relocatation. \\lipsyn.wxg -> \\resources\lipsyn.wxg
+    has only 1 reference to it in the entier repsitory. (in the \\readme.txt)
+    This file is the configuration data for wxGlade design of the GUI
+    No Depencencies
