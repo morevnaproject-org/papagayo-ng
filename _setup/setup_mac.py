@@ -30,13 +30,13 @@ py2app_options = dict(
     # This is a shortcut that will place MyApplication.icns
     # in the Contents/Resources folder of the application bundle,
     # and make sure the CFBundleIcon plist key is set appropriately.
-    iconfile="papagayo-ng.icns",
+    iconfile="resources\papagayo-ng.icns",
 ),
 
 setup(
     app=["papagayo-ng.py"],
     options={"py2app": {
-        "iconfile": "papagayo-ng.icns",
+        "iconfile": "resources\papagayo-ng.icns",
     }},
     name="Papagayo-NG",
     version="1.1"
