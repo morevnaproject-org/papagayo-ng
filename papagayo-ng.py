@@ -28,7 +28,7 @@ import sys
 # ### TODO : feature request : Add international support.
 
 # UNUSED MODULE
-import gettext
+##import gettext
 ##    Internationalization and localization support.
 ##
 ##    https://docs.python.org/3/library/gettext.html?highlight=gettext#module-gettext
@@ -64,13 +64,14 @@ class LipsyncApp(wx.App):
 
 if __name__ == "__main__":
 
-    # UNUSED module gettext
-    # Setup for GNU (I18N) and (L10N)
-    try:
-        gettext.install("papagayo-ng", unicode=True)
-    except TypeError:
-        gettext.install("papagayo-ng")
-    # END OF UNUSED BLOCK
+
+##    # UNUSED module gettext ####################################################
+##    # Setup for GNU (I18N) and (L10N)
+##    try:
+##        gettext.install("papagayo-ng", unicode=True)
+##    except TypeError:
+##        gettext.install("papagayo-ng")
+##    # END OF UNUSED BLOCK ######################################################
 
     papagayo = LipsyncApp(0)
     papagayo.mainFrame.TheApp = papagayo

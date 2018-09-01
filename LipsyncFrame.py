@@ -92,24 +92,37 @@ class LipsyncFrame(wx.Frame):
         # Menu Bar
         self.mainFrame_menubar = wx.MenuBar()
         wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(wx.ID_OPEN, _("&Open...\tCtrl+O"), _("Open a sound file or Papagayo-NG project"),
-                                wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_SAVE, _("&Save\tCtrl+S"), _("Save this lipsync project"), wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_SAVEAS, _("Save &As..."), _("Save this Papagayo-NG project under a new name"),
-                                wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_EXIT, _("Exit"), _("Quit Papagayo-NG"), wx.ITEM_NORMAL)
-        self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&File"))
+        ## DEPRECIATED wxGlade.gettext._()
+        ##wxglade_tmp_menu.Append(wx.ID_OPEN, _("&Open...\tCtrl+O"), _("Open a sound file or Papagayo-NG project"), wx.ITEM_NORMAL)
+        ##wxglade_tmp_menu.Append(wx.ID_SAVE, _("&Save\tCtrl+S"), _("Save this lipsync project"), wx.ITEM_NORMAL)
+        ##wxglade_tmp_menu.Append(wx.ID_SAVEAS, _("Save &As..."), _("Save this Papagayo-NG project under a new name"), wx.ITEM_NORMAL)
+        ##wxglade_tmp_menu.Append(wx.ID_EXIT, _("Exit"), _("Quit Papagayo-NG"), wx.ITEM_NORMAL)
+        ##self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&File"))
+        wxglade_tmp_menu.Append(wx.ID_OPEN, "&Open...\tCtrl+O", "Open a sound file or Papagayo-NG project", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_SAVE, "&Save\tCtrl+S", "Save this lipsync project", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_SAVEAS, "Save &As...", "Save this Papagayo-NG project under a new name", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_EXIT, "Exit", "Quit Papagayo-NG", wx.ITEM_NORMAL)
+        self.mainFrame_menubar.Append(wxglade_tmp_menu, "&File")
         wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(wx.ID_UNDO, _("&Undo\tCtrl+Z"), "", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_CUT, _("Cu&t\tCtrl+X"), "", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_COPY, _("&Copy\tCtrl+C"), "", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_PASTE, _("&Paste\tCtrl+V"), "", wx.ITEM_NORMAL)
-        self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&Edit"))
+        ## DEPRECIATED wxGlade.gettext._()
+        ##wxglade_tmp_menu.Append(wx.ID_UNDO, _("&Undo\tCtrl+Z"), "", wx.ITEM_NORMAL)
+        ##wxglade_tmp_menu.Append(wx.ID_CUT, _("Cu&t\tCtrl+X"), "", wx.ITEM_NORMAL)
+        ##wxglade_tmp_menu.Append(wx.ID_COPY, _("&Copy\tCtrl+C"), "", wx.ITEM_NORMAL)
+        ##wxglade_tmp_menu.Append(wx.ID_PASTE, _("&Paste\tCtrl+V"), "", wx.ITEM_NORMAL)
+        ##self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&Edit"))
+        wxglade_tmp_menu.Append(wx.ID_UNDO, "&Undo\tCtrl+Z", "", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_CUT, "Cu&t\tCtrl+X", "", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_COPY, "&Copy\tCtrl+C", "", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_PASTE, "&Paste\tCtrl+V", "", wx.ITEM_NORMAL)
+        self.mainFrame_menubar.Append(wxglade_tmp_menu, "&Edit")
         wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(wx.ID_HELP, _("&Help Topics"), _("Open the user's manual"), wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.ID_ABOUT, _("&About Papagayo-NG..."), _("Display information about Papagayo-NG"),
-                                wx.ITEM_NORMAL)
-        self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&Help"))
+        ## DEPRECIATED wxGlade.gettext._()
+        ##wxglade_tmp_menu.Append(wx.ID_HELP, _("&Help Topics"), _("Open the user's manual"), wx.ITEM_NORMAL)
+        ##wxglade_tmp_menu.Append(wx.ID_ABOUT, _("&About Papagayo-NG..."), _("Display information about Papagayo-NG"), wx.ITEM_NORMAL)
+        ##self.mainFrame_menubar.Append(wxglade_tmp_menu, _("&Help"))
+        wxglade_tmp_menu.Append(wx.ID_HELP, "&Help Topics", "Open the user's manual", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(wx.ID_ABOUT, "&About Papagayo-NG...", "Display information about Papagayo-NG", wx.ITEM_NORMAL)
+        self.mainFrame_menubar.Append(wxglade_tmp_menu, "&Help")
         self.SetMenuBar(self.mainFrame_menubar)
         # Menu Bar end
         self.mainFrame_statusbar = self.CreateStatusBar(2)
@@ -127,41 +140,68 @@ class LipsyncFrame(wx.Frame):
         ID_ZOOMOUT = wx.NewId()
         global ID_ZOOM1
         ID_ZOOM1 = wx.NewId()
-        self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, _("Open"),
+        ## DEPRECIATED wxGlade.gettext._()
+        ##self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, _("Open"),
+        ##                                    wx.Bitmap(os.path.join(get_main_dir(), "rsrc/open.png")), wx.NullBitmap,
+        ##                                    wx.ITEM_NORMAL, _("Open"), _("Open a sound file or Papagayo-NG project"))
+        ##self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, _("Save"),
+        ##                                    wx.Bitmap(os.path.join(get_main_dir(), "rsrc/save.png")), wx.NullBitmap,
+        ##                                    wx.ITEM_NORMAL, _("Save"), _("Save this Papagayo-NG project"))
+        self.mainFrame_toolbar.AddLabelTool(wx.ID_OPEN, "Open",
                                             wx.Bitmap(os.path.join(get_main_dir(), "rsrc/open.png")), wx.NullBitmap,
-                                            wx.ITEM_NORMAL, _("Open"), _("Open a sound file or Papagayo-NG project"))
-        self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, _("Save"),
+                                            wx.ITEM_NORMAL, "Open", "Open a sound file or Papagayo-NG project")
+        self.mainFrame_toolbar.AddLabelTool(wx.ID_SAVE, "Save",
                                             wx.Bitmap(os.path.join(get_main_dir(), "rsrc/save.png")), wx.NullBitmap,
-                                            wx.ITEM_NORMAL, _("Save"), _("Save this Papagayo-NG project"))
+                                            wx.ITEM_NORMAL, "Save", "Save this Papagayo-NG project")
         self.mainFrame_toolbar.AddSeparator()
-        self.mainFrame_toolbar.AddLabelTool(ID_PLAY, _("Play"),
+        ## DEPRECIATED wxGlade.gettext._()
+        #3self.mainFrame_toolbar.AddLabelTool(ID_PLAY, _("Play"),
+        #3                                    wx.Bitmap(os.path.join(get_main_dir(), "rsrc/play.png")), wx.NullBitmap,
+        #3                                    wx.ITEM_NORMAL, _("Play"), _("Play the sound clip"))
+        #3self.mainFrame_toolbar.AddLabelTool(ID_STOP, _("Stop"),
+        ##                                    wx.Bitmap(os.path.join(get_main_dir(), "rsrc/stop.png")), wx.NullBitmap,
+        ##                                    wx.ITEM_NORMAL, _("Stop"), _("Stop playing audio"))
+        self.mainFrame_toolbar.AddLabelTool(ID_PLAY, "Play",
                                             wx.Bitmap(os.path.join(get_main_dir(), "rsrc/play.png")), wx.NullBitmap,
-                                            wx.ITEM_NORMAL, _("Play"), _("Play the sound clip"))
-        self.mainFrame_toolbar.AddLabelTool(ID_STOP, _("Stop"),
+                                            wx.ITEM_NORMAL, "Play", "Play the sound clip")
+        self.mainFrame_toolbar.AddLabelTool(ID_STOP, "Stop",
                                             wx.Bitmap(os.path.join(get_main_dir(), "rsrc/stop.png")), wx.NullBitmap,
-                                            wx.ITEM_NORMAL, _("Stop"), _("Stop playing audio"))
+                                            wx.ITEM_NORMAL, "Stop", "Stop playing audio")
         self.mainFrame_toolbar.AddSeparator()
-        self.mainFrame_toolbar.AddLabelTool(ID_ZOOMIN, _("Zoom In"),
+        ## DEPRECIATED wxGlade.gettext._()
+        ##self.mainFrame_toolbar.AddLabelTool(ID_ZOOMIN, _("Zoom In"),
+        ##                                    wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_in.png")), wx.NullBitmap,
+        ##                                    wx.ITEM_NORMAL, _("Zoom In"), _("Zoom in on the waveform"))
+        ##self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, _("Zoom Out"),
+        ##                                    wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_out.png")), wx.NullBitmap,
+        ##                                    wx.ITEM_NORMAL, _("Zoom Out"), _("Zoom out of the waveform"))
+        ##self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, _("Reset Zoom"),
+        ##                                    wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_1.png")), wx.NullBitmap,
+        ##                                    wx.ITEM_NORMAL, _("Reset Zoom"), _("Reset the zoomed view of the waveform"))
+        self.mainFrame_toolbar.AddLabelTool(ID_ZOOMIN, "Zoom In",
                                             wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_in.png")), wx.NullBitmap,
-                                            wx.ITEM_NORMAL, _("Zoom In"), _("Zoom in on the waveform"))
-        self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, _("Zoom Out"),
+                                            wx.ITEM_NORMAL, "Zoom In", "Zoom in on the waveform")
+        self.mainFrame_toolbar.AddLabelTool(ID_ZOOMOUT, "Zoom Out",
                                             wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_out.png")), wx.NullBitmap,
-                                            wx.ITEM_NORMAL, _("Zoom Out"), _("Zoom out of the waveform"))
-        self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, _("Reset Zoom"),
+                                            wx.ITEM_NORMAL, "Zoom Out", "Zoom out of the waveform")
+        self.mainFrame_toolbar.AddLabelTool(ID_ZOOM1, "Reset Zoom",
                                             wx.Bitmap(os.path.join(get_main_dir(), "rsrc/zoom_1.png")), wx.NullBitmap,
-                                            wx.ITEM_NORMAL, _("Reset Zoom"), _("Reset the zoomed view of the waveform"))
+                                            wx.ITEM_NORMAL, "Reset Zoom", "Reset the zoomed view of the waveform")
         # Tool Bar end
         self.panel_2 = wx.Panel(self, wx.ID_ANY)
         self.waveformView = WaveformView(self.panel_2, wx.ID_ANY)
-        self.label_2 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Voice name:"))
+        ##self.label_2 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Voice name:"))  ## DEPRECIATED wxGlade.gettext._()
+        self.label_2 = wx.StaticText(self.panel_2, wx.ID_ANY, "Voice name:")
         global ID_VOICENAME
         ID_VOICENAME = wx.NewId()
         self.voiceName = wx.TextCtrl(self.panel_2, ID_VOICENAME, "")
-        self.label_1 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Spoken text:"))
+        ##self.label_1 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Spoken text:"))  ## DEPRECIATED wxGlade.gettext._()
+        self.label_1 = wx.StaticText(self.panel_2, wx.ID_ANY, "Spoken text:")
         global ID_VOICETEXT
         ID_VOICETEXT = wx.NewId()
         self.voiceText = wx.TextCtrl(self.panel_2, ID_VOICETEXT, "", style=wx.TE_MULTILINE)
-        self.label_4 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Phonetic breakdown:"))
+        ##self.label_4 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Phonetic breakdown:"))  ## DEPRECIATED wxGlade.gettext._()
+        self.label_4 = wx.StaticText(self.panel_2, wx.ID_ANY, "Phonetic breakdown:")
         global ID_LANGUAGECHOICE
         ID_LANGUAGECHOICE = wx.NewId()
         self.languageChoice = wx.Choice(self.panel_2, ID_LANGUAGECHOICE, choices=[])
@@ -170,22 +210,29 @@ class LipsyncFrame(wx.Frame):
         self.phonemesetChoice = wx.Choice(self.panel_2, ID_PHONEMESETCHOICE, choices=[])
         global ID_BREAKDOWN
         ID_BREAKDOWN = wx.NewId()
-        self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, _("Breakdown"))
+        ##self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, _("Breakdown"))  ## DEPRECIATED wxGlade.gettext._()
+        self.breakdownBut = wx.Button(self.panel_2, ID_BREAKDOWN, "Breakdown")
         global ID_RELOADDICT
         ID_RELOADDICT = wx.NewId()
-        self.reloaddictBut = wx.Button(self.panel_2, ID_RELOADDICT, _("Reload Dictionary"))
-        self.label_5 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Export:"))
+        ##self.reloaddictBut = wx.Button(self.panel_2, ID_RELOADDICT, _("Reload Dictionary"))  ## DEPRECIATED wxGlade.gettext._()
+        ##self.label_5 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Export:"))  ## DEPRECIATED wxGlade.gettext._()
+        self.reloaddictBut = wx.Button(self.panel_2, ID_RELOADDICT, "Reload Dictionary")
+        self.label_5 = wx.StaticText(self.panel_2, wx.ID_ANY, "Export:")
         global ID_EXPORTCHOICE
         ID_EXPORTCHOICE = wx.NewId()
         self.exportChoice = wx.Choice(self.panel_2, ID_EXPORTCHOICE, choices=[])
         global ID_EXPORT
         ID_EXPORT = wx.NewId()
-        self.exportBut = wx.Button(self.panel_2, ID_EXPORT, _("Export..."))
+        ##self.exportBut = wx.Button(self.panel_2, ID_EXPORT, _("Export..."))  ## DEPRECIATED wxGlade.gettext._()
+        self.exportBut = wx.Button(self.panel_2, ID_EXPORT, "Export...")
         global ID_VOICEIMAGE
         ID_VOICEIMAGE = wx.NewId()
-        self.voiceimageBut = wx.Button(self.panel_2, ID_VOICEIMAGE, _("Choose image set..."))
-        self.sizer_7_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, _("Current Voice"))
-        self.label_3 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Fps:"))
+        ##self.voiceimageBut = wx.Button(self.panel_2, ID_VOICEIMAGE, _("Choose image set..."))  ## DEPRECIATED wxGlade.gettext._()
+        ##self.sizer_7_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, _("Current Voice"))  ## DEPRECIATED wxGlade.gettext._()
+        ##self.label_3 = wx.StaticText(self.panel_2, wx.ID_ANY, _("Fps:"))  ## DEPRECIATED wxGlade.gettext._()
+        self.voiceimageBut = wx.Button(self.panel_2, ID_VOICEIMAGE, "Choose image set...")
+        self.sizer_7_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, "Current Voice")
+        self.label_3 = wx.StaticText(self.panel_2, wx.ID_ANY, "Fps:")
         global ID_FPS
         ID_FPS = wx.NewId()
         self.fpsCtrl = wx.TextCtrl(self.panel_2, ID_FPS, "")
@@ -198,11 +245,14 @@ class LipsyncFrame(wx.Frame):
         self.voiceList = wx.ListBox(self.panel_2, ID_VOICELIST, choices=[])
         global ID_NEWVOICE
         ID_NEWVOICE = wx.NewId()
-        self.newVoiceBut = wx.Button(self.panel_2, ID_NEWVOICE, _("New"))
+        ##self.newVoiceBut = wx.Button(self.panel_2, ID_NEWVOICE, _("New"))  ## DEPRECIATED wxGlade.gettext._()
+        self.newVoiceBut = wx.Button(self.panel_2, ID_NEWVOICE, "New")
         global ID_DELVOICE
         ID_DELVOICE = wx.NewId()
-        self.delVoiceBut = wx.Button(self.panel_2, ID_DELVOICE, _("Delete"))
-        self.sizer_5_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, _("Voice List"))
+        ##self.delVoiceBut = wx.Button(self.panel_2, ID_DELVOICE, _("Delete"))  ## DEPRECIATED wxGlade.gettext._()
+        ##self.sizer_5_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, _("Voice List"))    ## DEPRECIATED wxGlade.gettext._()
+        self.delVoiceBut = wx.Button(self.panel_2, ID_DELVOICE, "Delete")
+        self.sizer_5_staticbox = wx.StaticBox(self.panel_2, wx.ID_ANY, "Voice List")
         global ID_VOLSLIDER
         ID_VOLSLIDER = wx.NewId()
         self.volume_slider = wx.Slider(self.panel_2, ID_VOLSLIDER, value=50, minValue=0, maxValue=100, style=wx.SL_VERTICAL | wx.SL_INVERSE)
@@ -304,7 +354,8 @@ class LipsyncFrame(wx.Frame):
 
     def __set_properties(self):
         # begin wxGlade: LipsyncFrame.__set_properties
-        self.SetTitle(_("Papagayo-NG"))
+        ##self.SetTitle(_("Papagayo-NG"))  ## DEPRECIATED wxGlade.gettext._()
+        self.SetTitle("Papagayo-NG")
         _icon = wx.EmptyIcon()
         _icon.CopyFromBitmap(wx.Bitmap(os.path.join(get_main_dir(), "rsrc/window_icon.bmp")))
         self.SetIcon(_icon)
@@ -312,7 +363,8 @@ class LipsyncFrame(wx.Frame):
         self.mainFrame_statusbar.SetStatusWidths([-1, 96])
 
         # statusbar fields
-        mainFrame_statusbar_fields = [_("Papagayo-NG"), _("Stopped")]
+        ##mainFrame_statusbar_fields = [_("Papagayo-NG"), _("Stopped")]  ## DEPRECIATED wxGlade.gettext._()
+        mainFrame_statusbar_fields = ["Papagayo-NG", "Stopped"]
         for i in range(len(mainFrame_statusbar_fields)):
             self.mainFrame_statusbar.SetStatusText(mainFrame_statusbar_fields[i], i)
         self.mainFrame_toolbar.SetToolBitmapSize((16, 16))
@@ -399,7 +451,8 @@ class LipsyncFrame(wx.Frame):
         if self.doc is not None:
             if not self.doc.dirty:
                 return True
-            dlg = wx.MessageDialog(self, _('Save changes to this project?'), appTitle,
+            ##dlg = wx.MessageDialog(self, _('Save changes to this project?'), appTitle,  ## DEPRECIATED wxGlade.gettext._()
+            dlg = wx.MessageDialog(self, 'Save changes to this project?', appTitle,
                                    wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_QUESTION)
             result = dlg.ShowModal()
             dlg.Destroy()
@@ -439,7 +492,8 @@ class LipsyncFrame(wx.Frame):
             self.doc.Open(path)
             while self.doc.sound is None:
                 # if no sound file found, then ask user to specify one
-                dlg = wx.MessageDialog(self, _('Please load correct audio file'), appTitle,
+                ##dlg = wx.MessageDialog(self, _('Please load correct audio file'), appTitle,  ## DEPRECIATED wxGlade.gettext._()
+                dlg = wx.MessageDialog(self, 'Please load correct audio file', appTitle,
                                        wx.OK | wx.ICON_WARNING)
                 result = dlg.ShowModal()
                 dlg.Destroy()
@@ -664,7 +718,8 @@ class LipsyncFrame(wx.Frame):
             elif exporter == "ALELO":
                 fps = int(self.fpsCtrl.GetValue())
                 if fps != 100:
-                    dlg = wx.MessageDialog(self, _('FPS is NOT 100 continue? (You will have issues downstream.)'),
+                    ##dlg = wx.MessageDialog(self, _('FPS is NOT 100 continue? (You will have issues downstream.)'),  ## DEPRECIATED wxGlade.gettext._()
+                    dlg = wx.MessageDialog(self, 'FPS is NOT 100 continue? (You will have issues downstream.)',
                                            appTitle,
                                            wx.YES_NO | wx.CANCEL | wx.YES_DEFAULT | wx.ICON_WARNING)
                     result = dlg.ShowModal()

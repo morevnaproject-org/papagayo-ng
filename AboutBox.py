@@ -47,7 +47,9 @@ class AboutBox(wx.Dialog):
         kwds["style"] = wx.DEFAULT_DIALOG_STYLE
         wx.Dialog.__init__(self, *args, **kwds)
         self.htmlView = MyHtmlWindow(self, wx.ID_ANY, style=wx.SUNKEN_BORDER)
-        self.button_12 = wx.Button(self, wx.ID_OK, _("OK"))
+        
+        ##self.button_12 = wx.Button(self, wx.ID_OK, _("OK"))  ## DEPRICIATED wxGlade.gettext._()
+        self.button_12 = wx.Button(self, wx.ID_OK, "OK")
 
         self.__set_properties()
         self.__do_layout()
@@ -56,7 +58,8 @@ class AboutBox(wx.Dialog):
 
     def __set_properties(self):
         # begin wxGlade: AboutBox.__set_properties
-        self.SetTitle(_("About Papagayo-NG"))
+        ##self.SetTitle(_("About Papagayo-NG"))  ## DEPRICIATED wxGlade.gettext._()
+        self.SetTitle("About Papagayo-NG")
         self.htmlView.SetMinSize((400, 380))
         # end wxGlade
 
