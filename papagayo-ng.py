@@ -7,23 +7,42 @@
 # This is an automatically generated file.
 # Manual changes will be overwritten without warning!
 
-import warnings
-try:
-    # as of wxPython v4.0.3 it seems that all is working (few depreciation warnings to be heeded)
 
-    import wxversion
+# UNUSED MODULE
+##import warnings
+# only used by wxversion (now discontinued)
 
-    if wxversion.checkInstalled('2.8'):
-        wxversion.select('2.8')
-    else:
-        warnings.warn("You are running an unsupported Version of wx. Please test this with wx Version 2.8 before reporting errors!")
-except ImportError:
-    warnings.warn("You either don't have wx installed or you are using wxphoenix. Please test this with wx Version 2.8 before reporting errors!")
+
+# as of wxPython v4.0.3 it seems that all is working (few depreciation warnings to be heeded)
+
+# UNSUPPORTED MODULE
+##try:
+##
+##    # UNSUPPORTED MODULE the wxversion module is Discontinued
+##    # and so this import will always throe an exception
+##    import wxversion
+##
+##    if wxversion.checkInstalled('2.8'):
+##        wxversion.select('2.8')
+##    else:
+##        warnings.warn("You are running an unsupported Version of wx. Please test this with wx Version 2.8 before reporting errors!")
+##except ImportError:
+##    warnings.warn("You either don't have wx installed or you are using wxphoenix. Please test this with wx Version 2.8 before reporting errors!")
 
 
 import wx
+#   wx.App
+#   wx.ID_ANY
+#   wx.PYAPP_ASSERT_SUPPRESS
+#   wx.InitAllImageHandlers()
+
 import os
+#   os.path.abspath()
+
 import sys
+#   sys.argv
+
+
 
 # ### TODO : feature request : Add international support.
 
