@@ -70,11 +70,11 @@ MouthView.py                - view handler for the mouth in the main window
 
 
 resources/lipsync.wxg       - a wxGlade file defining the user interface layout for Papagayo-NG
+resources/papagayo-ng.icns  - MacOS X icons
 rsrc/                       - various resources for Papagayo-NG, including button pictures, mouths, and language configuration/data
 rsrc/mouths/                - a folder containing the mouth pictures
 rsrc/languages/             - a folder containing the configuration and data for different languages
 papagayo-ng.ico             - Windows icons
-papagayo-ng.icns            - MacOS X icons
 
 _setup/setup.py             - a script to build Papagayo-NG as a standalone Windows application
 _setup/setup_mac.py         - a script to build Papagayo-NG as a standalone MacOS X application
