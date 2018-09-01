@@ -23,3 +23,8 @@ lipsync.wxg
     has only 1 reference to it in the enteir repsitory. (in the \\readme.txt)
     This file is the configuration data for wxGlade design of the GUI
     No Depencencies
+    
+papagayo-ng.icns
+    File relocation \\papagayo-ng.icns -> \\resources\papagayo-ng.icns
+    1 referenc in readme.txt changed
+    2 refrences in setup_mac.py changed to reflect subdirectoy
