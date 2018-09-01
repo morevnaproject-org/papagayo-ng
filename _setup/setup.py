@@ -29,7 +29,7 @@ import sys
 
 ### TODO : Verify still works with new folder structure.
 
-resources = [("", ["papagayo-ng.nsi", "papagayo-ng.ico", "gpl.txt"])]
+resources = [("", ["papagayo-ng.nsi", "resources\papagayo-ng.ico", "gpl.txt"])]
 for root, dirs, files in os.walk('rsrc'):
     if ".svn" in root:
         continue
@@ -49,7 +49,7 @@ for root, dirs, files in os.walk('dlls'):
 setup(
     windows=[{
         "script": "papagayo-ng.py",
-        "icon_resources": [(1, "papagayo-ng.ico")],
+        "icon_resources": [(1, "resources\papagayo-ng.ico")],
     }],
     options={"py2exe": {
         "compressed": 1,
