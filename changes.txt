@@ -28,3 +28,10 @@ papagayo-ng.icns
     File relocation \\papagayo-ng.icns -> \\resources\papagayo-ng.icns
     1 referenc in readme.txt changed
     2 refrences in setup_mac.py changed to reflect subdirectoy
+
+papagayo-ng.ico
+    File relocation \\papagayo-ng.ico -> \\resources\papagayo-ng.ico
+    1 referenc in readme.txt changed
+    2 refrences in setup.py changed to reflect subdirectoy
+    4 refrences in papagayo-ng.nsi changed to reflect subdirectory
+    
