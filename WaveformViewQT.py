@@ -139,15 +139,60 @@ class MovableButton(QtWidgets.QPushButton):
                 prev_phoneme_list += " " + p.text
             dlg.phoneme_ctrl.setText(prev_phoneme_list)
             if dlg.exec_():
+                # Stupid workaround for the random crash, we add it here instead of in the draw routine.
+                # If we did change the phonemes we delete here the existing ones from both lists
+                for item in self.parent.scene().items():
+                    try:
+                        if item.widget().parent_object == self.me:
+                            self.parent.scene().removeItem(item)
+                    except AttributeError:
+                        pass
+
+                for item in self.parent.mov_widget_list:
+                    if item.widget().parent_object == self.me:
+                        self.parent.mov_widget_list.remove(item)
+
                 self.me.phonemes = []
-                for p in dlg.phoneme_ctrl.text().split():
+                for phoneme_count, p in enumerate(dlg.phoneme_ctrl.text().split()):
                     if len(p) == 0:
                         continue
                     phoneme = LipsyncPhoneme()
                     phoneme.text = p
+                    phoneme.frame = self.me.end_frame
                     self.me.phonemes.append(phoneme)
+                    # Here we add the new phonemes for this word to both lists
+                    font_metrics = QtGui.QFontMetrics(font)
+                    phoneme_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(
+                        phoneme_fill_col.red(),
+                        phoneme_fill_col.green(),
+                        phoneme_fill_col.blue())
+                    phoneme_col_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
+                                                                                      phoneme_outline_col.green(),
+                                                                                      phoneme_outline_col.blue())
+                    text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+
+                    self.parent.mov_widget_list.append(self.parent.scene().addWidget(
+                        MovableButton(phoneme.text, phoneme, phoneme_col_string, self.parent, self.me,
+                                      phoneme_offset=phoneme_count % 2)))
+                    # self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word)))
+                    # self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string))
+                    self.parent.mov_widget_list[-1].setGeometry(QtCore.QRect(phoneme.frame * self.parent.frame_width,
+                                                                             self.height() - (
+                                                                                     self.parent.horizontalScrollBar().height() + 10 + text_height + (
+                                                                                     text_height * (
+                                                                                     phoneme_count % 2))),
+                                                                             self.parent.frame_width + 1,
+                                                                             text_height))
+                    self.parent.mov_widget_list[-1].setParent(self.parent)
+                    self.parent.mov_widget_list[-1].setZValue(99)
+                    # self.mov_widget_list[-1].parent_object = word # word seems to get gc'd and is then None
+                    phoneme.top = self.parent.mov_widget_list[-1].y()
+                    phoneme.bottom = self.parent.mov_widget_list[-1].y() + text_height
+                    #
+
                 self.parent_object.reposition_word(self.me)
-                self.parent.first_update = True
+                # This might be the culprit
+                self.parent.first_update = False
                 self.parent.update_drawing()
                 # Works quite good in theory but it seems to crash randomly. Debugging did not help.
                 # self.parent.set_document(self.parent.doc)
