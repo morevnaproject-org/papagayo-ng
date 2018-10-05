@@ -289,7 +289,7 @@ class LipsyncVoice:
             else:
                 word.start_frame = word.phonemes[0].frame
                 word.end_frame = word.phonemes[-1].frame + int(round(framesPerPhoneme)) - 1
-            phrase.RepositionWord(word)
+            phrase.reposition_word(word)
 
     def open(self, inFile):
         self.name = inFile.readline().strip()

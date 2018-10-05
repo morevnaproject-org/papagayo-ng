@@ -204,6 +204,12 @@ class MovableButton(QtWidgets.QPushButton):
         print("Released")
         new_right_edge = round((self.x() + self.width()) / self.parent.frame_width) - 1
         self.calc_edges((-1, new_right_edge))
+        try:
+            self.parent_object.reposition_word(self.me)
+        except AttributeError:
+            self.parent.doc.current_voice.reposition_phrase(self.me, self.me.end_frame)
+        self.parent.first_update = False
+        self.parent.update_drawing()
 
     def __del__(self):
         try:
