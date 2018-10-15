@@ -108,10 +108,9 @@ class MovableButton(QtWidgets.QPushButton):
         if e.buttons() != QtCore.Qt.LeftButton:
             return
         if ((e.pos().x() > self.width()-10) or self.is_resizing) and not self.me.is_phoneme:
-            if e.pos().x() > self.parent.frame_width + 10:
-                
-                if e.pos().x() <= self.right_edge - self.x():
-                    self.resize(e.pos().x() - (e.pos().x() % self.parent.frame_width), self.height())
+            if e.pos().x() > self.parent.frame_width + 10:  # TODO: Is this even needed? Seems Useless.
+                if e.pos().x() <= self.right_edge:
+                    self.resize(e.pos().x(), self.height())
                     self.is_resizing = True
 
         else:
@@ -200,14 +199,15 @@ class MovableButton(QtWidgets.QPushButton):
                 print("No change!")
 
     def mouseReleaseEvent(self, e):
-        self.is_resizing = False
         print("Released")
         new_right_edge = round((self.x() + self.width()) / self.parent.frame_width) - 1
         self.calc_edges((-1, new_right_edge))
-        try:
-            self.parent_object.reposition_word(self.me)
-        except AttributeError:
-            self.parent.doc.current_voice.reposition_phrase(self.me, self.me.end_frame)
+        if self.is_resizing:
+            try:
+                self.parent_object.reposition_word(self.me)
+            except AttributeError:
+                self.parent.doc.current_voice.reposition_phrase(self.me, self.me.end_frame)
+        self.is_resizing = False
         self.parent.first_update = False
         self.parent.update_drawing()
 
@@ -293,23 +293,20 @@ class MovableButton(QtWidgets.QPushButton):
         self.right_edge = 0
         self.left_most = 0
         self.right_most = 0
-        for item in self.parent.mov_widget_list:
-            try:
-                if item.widget().me == previous_one:
-                    self.left_edge = item.widget().x() + item.widget().width()
-            except AttributeError:
-                pass
-            try:
-                if item.widget().me == next_one:
-                    self.right_edge = item.widget().x()
-            except AttributeError:
-                pass
-            try:
-                if item.widget().me == parent:
-                    self.left_most = item.widget().x()
-                    self.right_most = item.widget().x() + item.widget().width()
-            except AttributeError:
-                pass
+
+        if previous_one:
+            if previous_one.is_phoneme:
+                self.left_edge = previous_one.frame * self.parent.frame_width
+            else:
+                self.left_edge = previous_one.end_frame * self.parent.frame_width
+        if next_one:
+            if next_one.is_phoneme:
+                self.right_edge = next_one.frame * self.parent.frame_width
+            else:
+                self.right_edge = next_one.start_frame * self.parent.frame_width
+        if parent:
+            self.left_most = parent.start_frame * self.parent.frame_width
+            self.right_most = parent.end_frame * self.parent.frame_width
 
         if self.right_edge == 0:
             self.right_edge = self.parent.scene().width()
@@ -336,10 +333,10 @@ class MovableButton(QtWidgets.QPushButton):
             else:
                 if new_coords[0] != -1:
                     if True:  # left_frame_edge < new_coords[0] < right_frame_edge:
-                        self.me.frame = new_coords[0]
-                else:
-                    if True:  # left_frame_edge < new_coords[1] < right_frame_edge:
-                        self.me.frame = new_coords[1]
+                        self.me.frame = new_coords[0] -1
+                #else:
+                #    if True:  # left_frame_edge < new_coords[1] < right_frame_edge:
+                #        self.me.frame = new_coords[1]
 
 
 class WaveformView(QtWidgets.QGraphicsView):
@@ -395,33 +392,13 @@ class WaveformView(QtWidgets.QGraphicsView):
         new_x = e.pos().x() + self.horizontalScrollBar().value()
         print(e.pos())
         dropped_widget = e.source()
-        
-        frame_pos = max(new_x - dropped_widget.hotspot, dropped_widget.left_edge)
-        frame_pos = int(min(frame_pos, dropped_widget.right_edge - dropped_widget.width()) / self.frame_width)
-
-        # temp_x = min(max(new_x - dropped_widget.hotspot, left_edge), right_edge)
-        frame_start = int(frame_pos / self.frame_width)
-        frame_end = int((frame_start + dropped_widget.rect().width()) / self.frame_width)
-        new_pos = int(frame_pos * self.frame_width)
-        dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
-        # print((left_edge, new_pos, right_edge))
-        if dropped_widget.left_edge < new_pos:
-            if new_pos + dropped_widget.width() < dropped_widget.right_edge:
-                dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))
-        # if parent:
-        #     if frame_start >= parent.start_frame:
-        #         if frame_end <= parent.end_frame:
-        #             dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
-        #         else:
-        #             # dropped_widget.move(QtCore.QPoint(parent.end_frame * self.frame_width, dropped_widget.y()))  # We keep the Y-Position
-        #             pass
-        #     else:
-        #         # dropped_widget.move(QtCore.QPoint(parent.start_frame * self.frame_width, dropped_widget.y()))  # We keep the Y-Position
-        #         pass
-        # elif frame_start > 0 & frame_end < (self.scene().rect().width() / self.frame_width):
-        #     dropped_widget.move(QtCore.QPoint(new_pos, dropped_widget.y()))  # We keep the Y-Position
-
-        # e.setDropAction(QtCore.Qt.MoveAction)
+        if new_x < dropped_widget.left_edge:
+            new_x = dropped_widget.left_edge
+        if new_x + dropped_widget.width() > dropped_widget.right_edge:
+            new_x = dropped_widget.right_edge - dropped_widget.width()
+        rastered_x = int((round(new_x / self.frame_width) + 1) * self.frame_width)
+        dropped_widget.move(QtCore.QPoint(rastered_x, dropped_widget.y()))
+        dropped_widget.calc_edges()
         e.accept()
 
     def dropMoveEvent(self, e):
@@ -495,7 +472,8 @@ class WaveformView(QtWidgets.QGraphicsView):
 
         print("Dropped")
         print(dropped_widget.pos().x() / self.frame_width)
-        e.source().calc_edges((round(dropped_widget.pos().x() / self.frame_width), -1))
+        e.source().calc_edges((round(dropped_widget.pos().x() / self.frame_width), round((dropped_widget.pos().x() + dropped_widget.width()) / self.frame_width)))
+
         # print(e.source())
         # print(e.pos())
         # if e.source().me.is_phoneme:
