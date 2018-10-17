@@ -310,9 +310,9 @@ class MovableButton(QtWidgets.QPushButton):
 
         if self.right_edge == 0:
             self.right_edge = self.parent.scene().width()
-        self.left_edge = max(self.left_edge, self.left_most)
+        self.left_edge = max(self.left_edge, self.left_most) + (1 * self.parent.frame_width)
         if self.right_most:
-            self.right_edge = min(self.right_edge, self.right_most)
+            self.right_edge = min(self.right_edge, self.right_most) + (1 * self.parent.frame_width)
 
         # TODO: Some more testing is needed to see if dragging and resizing is correctly working
 
