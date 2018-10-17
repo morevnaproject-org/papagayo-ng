@@ -396,7 +396,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             new_x = dropped_widget.left_edge
         if new_x + dropped_widget.width() > dropped_widget.right_edge:
             new_x = dropped_widget.right_edge - dropped_widget.width()
-        rastered_x = int((round(new_x / self.frame_width) + 1) * self.frame_width)
+        rastered_x = int((round(new_x / self.frame_width)) * self.frame_width)
         dropped_widget.move(QtCore.QPoint(rastered_x, dropped_widget.y()))
         dropped_widget.calc_edges()
         e.accept()
