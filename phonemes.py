@@ -24,5 +24,6 @@
 
 phoneme_sets = [
     'preston_blair',
-    'fleming_dobbs'
+    'fleming_dobbs',
+    'rhubarb'
 ]

@@ -32,6 +32,8 @@ from PySide2.QtUiTools import QUiLoader as uic
 import webbrowser
 import random
 import re
+
+from Rhubarb import Rhubarb, RhubarbTimeoutException
 from WaveformViewQT import WaveformView
 from MouthViewQT import MouthView
 # end wxGlade
@@ -210,6 +212,7 @@ class LipsyncFrame:
             self.open(file_path)
 
     def open(self, path):
+        # TODO: rhubarb
         self.doc = LipsyncDoc(self.langman, self)
         if path.endswith(lipsync_extension[1:]):
             # open a lipsync project
@@ -239,6 +242,30 @@ class LipsyncFrame:
             else:
                 self.doc.voices.append(LipsyncVoice("Voice 1"))
                 self.doc.current_voice = self.doc.voices[0]
+                try:
+                    phonemes = Rhubarb(path).run()
+                    end_frame = math.floor(self.doc.fps * phonemes[-1]['end'])
+                    phrase = LipsyncPhrase()
+                    phrase.text = 'Auto detection rhubarb'
+                    phrase.start_frame = 0
+                    phrase.end_frame = end_frame
+
+                    word = LipsyncWord()
+                    word.text = 'rhubarb'
+                    word.start_frame = 0
+                    word.end_frame = end_frame
+
+                    for phoneme in phonemes:
+                        pg_phoneme = LipsyncPhoneme()
+                        pg_phoneme.frame = math.floor(self.doc.fps * phoneme['start'])
+                        pg_phoneme.text = phoneme['value'] if phoneme['value'] != 'X' else 'rest'
+                        word.phonemes.append(pg_phoneme)
+
+                    phrase.words.append(word)
+
+                    self.doc.current_voice.phrases.append(phrase)
+                except RhubarbTimeoutException:
+                    pass
                 # check for a .trans file with the same name as the doc
                 try:
                     txt_file = open(path[0].rsplit('.', 1)[0] + ".trans", 'r')  # TODO: Check if path is correct
