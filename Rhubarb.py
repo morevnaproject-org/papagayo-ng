@@ -1,6 +1,7 @@
 import json
 import signal
 import subprocess
+import os
 
 RHUBARB_PATH = './rhubarb/rhubarb'
 
@@ -38,6 +39,8 @@ class Rhubarb:
         return json.loads(result)
 
     def run(self):
+        if not os.path.exists(RHUBARB_PATH):
+            return None
         args = [RHUBARB_PATH, self.file_path, '--machineReadable', '-f', 'json']
 
         self.process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

@@ -17,9 +17,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #import os
+import math
 import shutil
 import codecs
 import importlib
+
+from Rhubarb import Rhubarb, RhubarbTimeoutException
 
 try:
     import configparser
@@ -542,6 +545,34 @@ class LipsyncDoc:
             voice.save(outFile)
         outFile.close()
         self.dirty = False
+
+    def auto_recognize_phoneme(self):
+        try:
+            phonemes = Rhubarb(self.soundPath).run()
+            if not phonemes:
+                return
+            end_frame = math.floor(self.fps * phonemes[-1]['end'])
+            phrase = LipsyncPhrase()
+            phrase.text = 'Auto detection rhubarb'
+            phrase.start_frame = 0
+            phrase.end_frame = end_frame
+
+            word = LipsyncWord()
+            word.text = 'rhubarb'
+            word.start_frame = 0
+            word.end_frame = end_frame
+
+            for phoneme in phonemes:
+                pg_phoneme = LipsyncPhoneme()
+                pg_phoneme.frame = math.floor(self.fps * phoneme['start'])
+                pg_phoneme.text = phoneme['value'] if phoneme['value'] != 'X' else 'rest'
+                word.phonemes.append(pg_phoneme)
+
+            phrase.words.append(word)
+            self.current_voice.phrases.append(phrase)
+
+        except RhubarbTimeoutException:
+            pass
 
 
 from phonemes import *
