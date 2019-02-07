@@ -33,7 +33,7 @@ import PySide2.QtCore as QtCore
 
 from utilities import *
 from PronunciationDialogQT import PronunciationDialog
-import SoundPlayer
+import SoundPlayerQT as SoundPlayer
 import traceback
 #import sys
 #import breakdowns
