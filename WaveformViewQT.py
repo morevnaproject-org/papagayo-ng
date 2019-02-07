@@ -218,11 +218,12 @@ class MovableButton(QtWidgets.QPushButton):
             pass
 
     def mouseDoubleClickEvent(self, e):
-        print("Double Click: ")
-        print(self.text())
-        start = self.me.start_frame / self.parent.doc.fps
-        length = (self.me.end_frame - self.me.start_frame) / self.parent.doc.fps
-        self.parent.doc.sound.play_segment(start, length)
+        if not self.me.is_phoneme:
+            print("Double Click: ")
+            print(self.text())
+            start = self.me.start_frame / self.parent.doc.fps
+            length = (self.me.end_frame - self.me.start_frame) / self.parent.doc.fps
+            self.parent.doc.sound.play_segment(start, length)
 
     def calc_edges(self, new_coords = None):
         previous_one = None
