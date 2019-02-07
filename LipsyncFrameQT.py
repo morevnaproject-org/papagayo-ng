@@ -384,7 +384,7 @@ class LipsyncFrame:
 
     def change_volume(self, e):
         if self.doc and self.doc.sound:
-            self.doc.sound.volume = int(self.main_window.volume_slider.value())
+            self.doc.sound.set_volume(int(self.main_window.volume_slider.value()))
 
     def on_mouth_choice(self, event=None):
         self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()

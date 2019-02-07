@@ -78,7 +78,7 @@ class SoundPlayer:
 
     def set_volume(self, newvolume):
         self.volume = newvolume
-        self.audio.volume(self.volume)
+        self.audio.setVolume(self.volume)
 
     def play(self, arg):
         self.isplaying = True  # TODO: We should be able to replace isplaying with queries to self.audio.state()
