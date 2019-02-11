@@ -7,7 +7,7 @@ from utilities import *
 
 import time
 
-from PySide2.QtMultimedia import QMediaPlayer, QAudioProbe, QAudioBuffer
+from PySide2.QtMultimedia import QMediaPlayer, QAudioProbe, QAudioBuffer, QAudioDecoder
 from PySide2.QtMultimedia import QAudioOutput
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtCore import QUrl
@@ -26,23 +26,40 @@ class SoundPlayer:
         self.isplaying = False
         self.time = 0  # current audio position in frames
         self.audio = QMediaPlayer()
-        self.probe = QAudioProbe()
+        self.decoder = QAudioDecoder()
         self.is_loaded = False
         self.volume = 100
         self.isplaying = False
+        self.decoded_audio = {}
+        self.decoding_is_finished = False
         # File Loading is Asynchronous, so we need to be creative here, doesn't need to be duration but it works
         self.audio.durationChanged.connect(self.on_durationChanged)
+        self.decoder.finished.connect(self.decode_finished_signal)
         self.audio.setMedia(QUrl.fromLocalFile(soundfile))
+        self.decoder.setSourceFilename(soundfile)  # strangely inconsistent file-handling
         # It will hang here forever if we don't process the events.
         while not self.is_loaded:
             QCoreApplication.processEvents()
             time.sleep(0.1)
 
+        self.decode_audio()
+        print(self.decoded_audio)
         self.isvalid = True
-        self.probe.setSource(self.audio)
-        self.probe.audioBufferProbed.connect(self.get_audio_buffer)
 
         #self.audio.play()
+
+    def decode_audio(self):
+        self.decoder.start()
+        while not self.decoding_is_finished:
+            QCoreApplication.processEvents()
+            if self.decoder.bufferAvailable():
+                tempdata = self.decoder.read()
+                self.decoded_audio[self.decoder.position()] = [tempdata.constData(), tempdata.byteCount(),
+                                                               tempdata.format()]
+                # TODO: constData and data give are giving us a shiboken2.libshiboken.VoidPtr which is not very useful
+
+    def decode_finished_signal(self):
+        self.decoding_is_finished = True
 
     def on_durationChanged(self, duration):
         print("Changed!")
