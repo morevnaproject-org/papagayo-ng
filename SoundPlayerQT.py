@@ -1,8 +1,8 @@
-
+import audioop
 import os
 import platform
 import traceback
-
+import wave
 from utilities import *
 
 import time
@@ -13,6 +13,12 @@ from PySide2.QtCore import QCoreApplication
 from PySide2.QtCore import QUrl
 
 from utilities import which
+
+try:
+    from pydub import AudioSegment
+    from pydub.utils import make_chunks
+except ImportError:
+    AudioSegment = None
 
 try:
     import thread
@@ -27,6 +33,7 @@ class SoundPlayer:
         self.time = 0  # current audio position in frames
         self.audio = QMediaPlayer()
         self.probe = QAudioProbe()
+        self.pydubfile = None
         self.is_loaded = False
         self.volume = 100
         self.isplaying = False
@@ -41,8 +48,37 @@ class SoundPlayer:
         self.isvalid = True
         self.probe.setSource(self.audio)
         self.probe.audioBufferProbed.connect(self.get_audio_buffer)
-
+        
         #self.audio.play()
+        
+        if AudioSegment:
+            if which("ffmpeg") is not None:
+                AudioSegment.converter = which("ffmpeg")
+            elif which("avconv") is not None:
+                AudioSegment.converter = which("avconv")
+            else:
+                if platform.system() == "Windows":
+                    AudioSegment.converter = os.path.join(get_main_dir(), "ffmpeg.exe")
+                    #AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
+                else:
+                    # TODO: Check if we have ffmpeg or avconv installed
+                    AudioSegment.converter = "ffmpeg"
+
+        
+        
+        try:
+            if AudioSegment:
+                print(self.soundfile)
+                self.pydubfile = AudioSegment.from_file(self.soundfile, format=os.path.splitext(self.soundfile)[1][1:])
+            else:
+                self.wave_reference = wave.open(self.soundfile)
+
+            self.isvalid = True
+
+        except:
+            traceback.print_exc()
+            self.wave_reference = None
+            self.isvalid = False
 
     def on_durationChanged(self, duration):
         print("Changed!")
@@ -59,7 +95,15 @@ class SoundPlayer:
         return self.audio.duration() / 1000.0
 
     def GetRMSAmplitude(self, time, sampleDur):
-        return 1  # TODO: Somehow get the raw sampledata from QT here...
+        if AudioSegment:
+            return self.pydubfile[time*1000.0:(time+sampleDur)*1000.0].rms
+        else:
+            startframe = int(round(time * self.wave_reference.getframerate()))
+            samplelen = int(round(sampleDur * self.wave_reference.getframerate()))
+            self.wave_reference.setpos(startframe)
+            frame = self.wave_reference.readframes(samplelen)
+            width = self.wave_reference.getsampwidth()
+            return audioop.rms(frame, width)
 
     def is_playing(self):
         return self.isplaying
