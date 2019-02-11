@@ -15,6 +15,9 @@ from PySide2.QtCore import QUrl
 from utilities import which
 from cffi import FFI
 ffi = FFI()
+
+import numpy as np
+
 try:
     import thread
 except ImportError:
@@ -32,6 +35,7 @@ class SoundPlayer:
         self.volume = 100
         self.isplaying = False
         self.decoded_audio = {}
+        self.only_samples = []
         self.decoding_is_finished = False
         # File Loading is Asynchronous, so we need to be creative here, doesn't need to be duration but it works
         self.audio.durationChanged.connect(self.on_durationChanged)
@@ -44,7 +48,21 @@ class SoundPlayer:
             time.sleep(0.1)
 
         self.decode_audio()
-        print(self.decoded_audio)
+
+        # A simple normalisation, with this the samples should all be between 0 and 1
+        for i in self.decoded_audio.items():
+            self.only_samples.extend(i[1][0])
+        t = []
+        for i in self.only_samples:
+            if i != []:
+                t.append(i + -(min(self.only_samples)))
+
+        t2 = []
+        for i in t:
+            t2.append(i / max(t))
+        self.only_samples = t2
+        print(len(self.only_samples))
+
         self.isvalid = True
 
         #self.audio.play()
@@ -60,7 +78,7 @@ class SoundPlayer:
 
                 current_sample_data = []
                 for i in possible_data:
-                    current_sample_data.append(int(ffi.cast("int16_t", i)))  # We might need to change this depending on tempdata.format()
+                    current_sample_data.append(int(ffi.cast("uint16_t", i)))  # We might need to change this depending on tempdata.format()
                 #x = int(ffi.cast("int16_t", possible_data[0]))
 
                 self.decoded_audio[self.decoder.position()] = [current_sample_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
@@ -83,7 +101,13 @@ class SoundPlayer:
         return self.audio.duration() / 1000.0
 
     def GetRMSAmplitude(self, time, sampleDur):
-        return 1  # TODO: Somehow get the raw sampledata from QT here...
+        time_start = time * (len(self.only_samples)/self.Duration())
+        time_end = (time + sampleDur) * (len(self.only_samples)/self.Duration())
+        samples = self.only_samples[int(time_start):int(time_end)]
+        if len(samples):
+            return sum(samples) / len(samples)  # TODO: We likely have the data in self.only_samples, try doing a rms
+        else:
+            return 1
 
     def is_playing(self):
         return self.isplaying
