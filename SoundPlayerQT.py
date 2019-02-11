@@ -13,7 +13,8 @@ from PySide2.QtCore import QCoreApplication
 from PySide2.QtCore import QUrl
 
 from utilities import which
-
+from cffi import FFI
+ffi = FFI()
 try:
     import thread
 except ImportError:
@@ -54,9 +55,15 @@ class SoundPlayer:
             QCoreApplication.processEvents()
             if self.decoder.bufferAvailable():
                 tempdata = self.decoder.read()
-                self.decoded_audio[self.decoder.position()] = [tempdata.constData(), tempdata.byteCount(),
-                                                               tempdata.format()]
-                # TODO: constData and data give are giving us a shiboken2.libshiboken.VoidPtr which is not very useful
+                # We use the Pointer Address to get a cffi Pointer to the data (hopefully)
+                possible_data = ffi.cast("intptr_t[{0}]".format(tempdata.sampleCount()), int(tempdata.constData()))
+
+                current_sample_data = []
+                for i in possible_data:
+                    current_sample_data.append(int(ffi.cast("int16_t", i)))  # We might need to change this depending on tempdata.format()
+                #x = int(ffi.cast("int16_t", possible_data[0]))
+
+                self.decoded_audio[self.decoder.position()] = [current_sample_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
 
     def decode_finished_signal(self):
         self.decoding_is_finished = True
