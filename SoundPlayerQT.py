@@ -37,6 +37,7 @@ class SoundPlayer:
         self.decoded_audio = {}
         self.only_samples = []
         self.decoding_is_finished = False
+        self.max_bits = 32768
         # File Loading is Asynchronous, so we need to be creative here, doesn't need to be duration but it works
         self.audio.durationChanged.connect(self.on_durationChanged)
         self.decoder.finished.connect(self.decode_finished_signal)
@@ -49,7 +50,7 @@ class SoundPlayer:
 
         self.decode_audio()
         self.np_data = np.array(self.only_samples)
-        self.np_data = np.abs(self.np_data / 32768)
+        self.np_data = np.abs(self.np_data / self.max_bits)
         # A simple normalisation, with this the samples should all be between 0 and 1
         # for i in self.decoded_audio.items():
         #     self.only_samples.extend(i[1][0])
@@ -68,18 +69,29 @@ class SoundPlayer:
 
         #self.audio.play()
 
+    def audioformat_to_datatype(self, audioformat):
+        num_bits = audioformat.split()[1].split("b")[0]
+        signed = audioformat.split()[3].split("=")[1]
+        self.max_bits = 2 ** int(num_bits)
+        if signed == "UnSignedInt,":
+            return "uint" + str(num_bits) + "_t"
+        elif signed == "SignedInt,":
+            self.max_bits = self.max_bits / 2
+            return "int" + str(num_bits) + "_t"
+
     def decode_audio(self):
         self.decoder.start()
         while not self.decoding_is_finished:
             QCoreApplication.processEvents()
             if self.decoder.bufferAvailable():
                 tempdata = self.decoder.read()
+                #print(tempdata.format())
                 # We use the Pointer Address to get a cffi Pointer to the data (hopefully)
-                possible_data = ffi.cast("int16_t[{0}]".format(tempdata.sampleCount()), int(tempdata.constData()))
+                possible_data = ffi.cast("{1}[{0}]".format(tempdata.sampleCount(), self.audioformat_to_datatype(str(tempdata.format()))), int(tempdata.constData()))
 
                 current_sample_data = []
                 for i in possible_data:
-                    current_sample_data.append(int(ffi.cast("int16_t", i)))  # We might need to change this depending on tempdata.format()
+                    current_sample_data.append(int(ffi.cast(self.audioformat_to_datatype(str(tempdata.format())), i)))
                 #x = int(ffi.cast("int16_t", possible_data[0]))
                 self.only_samples.extend(current_sample_data)
                 self.decoded_audio[self.decoder.position()] = [current_sample_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
