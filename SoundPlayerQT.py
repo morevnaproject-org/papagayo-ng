@@ -48,19 +48,20 @@ class SoundPlayer:
             time.sleep(0.1)
 
         self.decode_audio()
-
+        self.np_data = np.array(self.only_samples)
+        self.np_data = np.abs(self.np_data / 32768)
         # A simple normalisation, with this the samples should all be between 0 and 1
-        for i in self.decoded_audio.items():
-            self.only_samples.extend(i[1][0])
-        t = []
-        for i in self.only_samples:
-            if i != []:
-                t.append(i + -(min(self.only_samples)))
-
-        t2 = []
-        for i in t:
-            t2.append(i / max(t))
-        self.only_samples = t2
+        # for i in self.decoded_audio.items():
+        #     self.only_samples.extend(i[1][0])
+        # t = []
+        # for i in self.only_samples:
+        #     if i != []:
+        #         t.append(i + -(min(self.only_samples)))
+        #
+        # t2 = []
+        # for i in t:
+        #     t2.append(i / max(t))
+        # self.only_samples = t2
         print(len(self.only_samples))
 
         self.isvalid = True
@@ -74,13 +75,13 @@ class SoundPlayer:
             if self.decoder.bufferAvailable():
                 tempdata = self.decoder.read()
                 # We use the Pointer Address to get a cffi Pointer to the data (hopefully)
-                possible_data = ffi.cast("intptr_t[{0}]".format(tempdata.sampleCount()), int(tempdata.constData()))
+                possible_data = ffi.cast("int16_t[{0}]".format(tempdata.sampleCount()), int(tempdata.constData()))
 
                 current_sample_data = []
                 for i in possible_data:
-                    current_sample_data.append(int(ffi.cast("uint16_t", i)))  # We might need to change this depending on tempdata.format()
+                    current_sample_data.append(int(ffi.cast("int16_t", i)))  # We might need to change this depending on tempdata.format()
                 #x = int(ffi.cast("int16_t", possible_data[0]))
-
+                self.only_samples.extend(current_sample_data)
                 self.decoded_audio[self.decoder.position()] = [current_sample_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
 
     def decode_finished_signal(self):
@@ -101,11 +102,15 @@ class SoundPlayer:
         return self.audio.duration() / 1000.0
 
     def GetRMSAmplitude(self, time, sampleDur):
-        time_start = time * (len(self.only_samples)/self.Duration())
-        time_end = (time + sampleDur) * (len(self.only_samples)/self.Duration())
-        samples = self.only_samples[int(time_start):int(time_end)]
+        # time_start = time * (len(self.only_samples)/self.Duration())
+        # time_end = (time + sampleDur) * (len(self.only_samples)/self.Duration())
+        # samples = self.only_samples[int(time_start):int(time_end)]
+        time_start = time * (len(self.np_data) / self.Duration())
+        time_end = (time + sampleDur) * (len(self.np_data) / self.Duration())
+        samples = self.np_data[int(time_start):int(time_end)]
+
         if len(samples):
-            return sum(samples) / len(samples)  # TODO: We likely have the data in self.only_samples, try doing a rms
+            return np.sqrt(np.mean(samples ** 2))  # TODO: We likely have the data in self.only_samples, try doing a rms
         else:
             return 1
 
