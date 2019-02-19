@@ -7,7 +7,7 @@ from utilities import *
 
 import time
 
-from PySide2.QtMultimedia import QMediaPlayer, QAudioProbe, QAudioBuffer, QAudioDecoder
+from PySide2.QtMultimedia import QMediaPlayer, QAudioFormat, QAudioBuffer, QAudioDecoder
 from PySide2.QtMultimedia import QAudioOutput
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtCore import QUrl
@@ -64,19 +64,21 @@ class SoundPlayer:
         #     t2.append(i / max(t))
         # self.only_samples = t2
         print(len(self.only_samples))
+        print(self.max_bits)
+
 
         self.isvalid = True
 
         #self.audio.play()
 
     def audioformat_to_datatype(self, audioformat):
-        num_bits = audioformat.split()[1].split("b")[0]
-        signed = audioformat.split()[3].split("=")[1]
+        num_bits = audioformat.sampleSize()
+        signed = audioformat.sampleType()
         self.max_bits = 2 ** int(num_bits)
-        if signed == "UnSignedInt,":
+        if signed == QAudioFormat.SampleType.UnSignedInt:
             return "uint" + str(num_bits) + "_t"
-        elif signed == "SignedInt,":
-            self.max_bits = self.max_bits / 2
+        elif signed == QAudioFormat.SampleType.SignedInt:
+            self.max_bits = int(self.max_bits / 2)
             return "int" + str(num_bits) + "_t"
 
     def decode_audio(self):
@@ -85,13 +87,13 @@ class SoundPlayer:
             QCoreApplication.processEvents()
             if self.decoder.bufferAvailable():
                 tempdata = self.decoder.read()
-                #print(tempdata.format())
                 # We use the Pointer Address to get a cffi Pointer to the data (hopefully)
-                possible_data = ffi.cast("{1}[{0}]".format(tempdata.sampleCount(), self.audioformat_to_datatype(str(tempdata.format()))), int(tempdata.constData()))
+                cast_data = self.audioformat_to_datatype(tempdata.format())
+                possible_data = ffi.cast("{1}[{0}]".format(tempdata.sampleCount(), cast_data), int(tempdata.constData()))
 
                 current_sample_data = []
                 for i in possible_data:
-                    current_sample_data.append(int(ffi.cast(self.audioformat_to_datatype(str(tempdata.format())), i)))
+                    current_sample_data.append(int(ffi.cast(cast_data, i)))
                 #x = int(ffi.cast("int16_t", possible_data[0]))
                 self.only_samples.extend(current_sample_data)
                 self.decoded_audio[self.decoder.position()] = [current_sample_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
@@ -122,12 +124,15 @@ class SoundPlayer:
         samples = self.np_data[int(time_start):int(time_end)]
 
         if len(samples):
-            return np.sqrt(np.mean(samples ** 2))  # TODO: We likely have the data in self.only_samples, try doing a rms
+            return np.sqrt(np.mean(samples ** 2))
         else:
             return 1
 
     def is_playing(self):
-        return self.isplaying
+        if self.audio.state() == QMediaPlayer.PlayingState:
+            return True
+        else:
+            return False
 
     def set_cur_time(self, newtime):
         self.time = newtime * 1000.0
