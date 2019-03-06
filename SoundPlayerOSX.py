@@ -19,6 +19,14 @@ ffi = FFI()
 import numpy as np
 
 try:
+    from pydub import AudioSegment
+    from pydub.utils import make_chunks
+except ImportError:
+    import wave
+    import audioop
+    AudioSegment = None
+
+try:
     import thread
 except ImportError:
     import _thread as thread
@@ -40,17 +48,17 @@ class SoundPlayer:
         self.max_bits = 32768
         # File Loading is Asynchronous, so we need to be creative here, doesn't need to be duration but it works
         self.audio.durationChanged.connect(self.on_durationChanged)
-        self.decoder.finished.connect(self.decode_finished_signal)
+        #self.decoder.finished.connect(self.decode_finished_signal)
         self.audio.setMedia(QUrl.fromLocalFile(soundfile))
-        self.decoder.setSourceFilename(soundfile)  # strangely inconsistent file-handling
+        #self.decoder.setSourceFilename(soundfile)  # strangely inconsistent file-handling
         # It will hang here forever if we don't process the events.
         while not self.is_loaded:
             QCoreApplication.processEvents()
             time.sleep(0.1)
 
-        self.decode_audio()
-        self.np_data = np.array(self.only_samples)
-        self.np_data = np.abs(self.np_data / self.max_bits)
+        #self.decode_audio()
+        #self.np_data = np.array(self.only_samples)
+        #self.np_data = np.abs(self.np_data / self.max_bits)
         # A simple normalisation, with this the samples should all be between 0 and 1
         # for i in self.decoded_audio.items():
         #     self.only_samples.extend(i[1][0])
@@ -63,11 +71,38 @@ class SoundPlayer:
         # for i in t:
         #     t2.append(i / max(t))
         # self.only_samples = t2
-        print(len(self.only_samples))
-        print(self.max_bits)
+        #print(len(self.only_samples))
+        #print(self.max_bits)
 
 
         self.isvalid = True
+        self.pydubfile = None
+        if AudioSegment:
+            if which("ffmpeg") is not None:
+                AudioSegment.converter = which("ffmpeg")
+            elif which("avconv") is not None:
+                AudioSegment.converter = which("avconv")
+            else:
+                if platform.system() == "Windows":
+                    AudioSegment.converter = os.path.join(get_main_dir(), "ffmpeg.exe")
+                    #AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
+                else:
+                    # TODO: Check if we have ffmpeg or avconv installed
+                    AudioSegment.converter = "ffmpeg"
+
+        try:
+            if AudioSegment:
+                print(self.soundfile)
+                self.pydubfile = AudioSegment.from_file(self.soundfile, format=os.path.splitext(self.soundfile)[1][1:])
+            else:
+                self.wave_reference = wave.open(self.soundfile)
+
+            self.isvalid = True
+
+        except:
+            traceback.print_exc()
+            self.wave_reference = None
+            self.isvalid = False
 
         #self.audio.play()
 
@@ -116,17 +151,15 @@ class SoundPlayer:
         return self.audio.duration() / 1000.0
 
     def GetRMSAmplitude(self, time, sampleDur):
-        # time_start = time * (len(self.only_samples)/self.Duration())
-        # time_end = (time + sampleDur) * (len(self.only_samples)/self.Duration())
-        # samples = self.only_samples[int(time_start):int(time_end)]
-        time_start = time * (len(self.np_data) / self.Duration())
-        time_end = (time + sampleDur) * (len(self.np_data) / self.Duration())
-        samples = self.np_data[int(time_start):int(time_end)]
-
-        if len(samples):
-            return np.sqrt(np.mean(samples ** 2))
+        if AudioSegment:
+            return self.pydubfile[time*1000.0:(time+sampleDur)*1000.0].rms
         else:
-            return 1
+            startframe = int(round(time * self.wave_reference.getframerate()))
+            samplelen = int(round(sampleDur * self.wave_reference.getframerate()))
+            self.wave_reference.setpos(startframe)
+            frame = self.wave_reference.readframes(samplelen)
+            width = self.wave_reference.getsampwidth()
+            return audioop.rms(frame, width)
 
     def is_playing(self):
         if self.audio.state() == QMediaPlayer.PlayingState:

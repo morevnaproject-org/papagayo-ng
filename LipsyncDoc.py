@@ -33,7 +33,11 @@ import PySide2.QtCore as QtCore
 
 from utilities import *
 from PronunciationDialogQT import PronunciationDialog
-import SoundPlayerQT as SoundPlayer
+
+if sys.platform != "darwin":
+    import SoundPlayerQT as SoundPlayer
+else:
+    import SoundPlayerOSX as SoundPlayer
 import traceback
 #import sys
 #import breakdowns
