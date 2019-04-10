@@ -32,7 +32,7 @@ import webbrowser
 import random
 import re
 
-from WaveformViewQT import WaveformView
+from WaveformViewRewrite import WaveformView
 from MouthViewQT import MouthView
 # end wxGlade
 
