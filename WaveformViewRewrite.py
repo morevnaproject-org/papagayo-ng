@@ -458,7 +458,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.amp = []
         self.temp_play_marker = None
         self.scroll_position = 0
-        self.mov_widget_list = []
         self.first_update = True
         self.node = None
         self.did_resize = None
@@ -468,7 +467,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         print("LoadedWaveFormView")
 
     def drawBackground(self, painter, rect):
-        self.scene().setSceneRect(0, 0, self.width(), self.height())  # If we update this in __init__ the dimensions are wrong.
         background_brush = QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern)
         painter.fillRect(rect, background_brush)
         if self.doc is not None:
@@ -551,7 +549,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.waveform_polygon.setZValue(1)
 
     def create_movbuttons(self):
-        self.mov_widget_list = []
         if self.doc is not None:
             phrase_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
                                                                                             phrase_fill_col.green(),
@@ -585,37 +582,37 @@ class WaveformView(QtWidgets.QGraphicsView):
             for phrase in self.doc.current_voice.phrases:
                 self.temp_button = MovableButton(phrase, phrase_col_string)
                 self.temp_button.node = Node(self.temp_button, parent=self.main_node)
-                self.mov_widget_list.append(self.scene().addWidget(self.temp_button))
-                self.mov_widget_list[-1].setParent(self)
-                self.mov_widget_list[-1].setGeometry(QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
-                                                     (phrase.end_frame - phrase.start_frame + 1) * self.frame_width + 1,
-                                                     text_height))
-                self.mov_widget_list[-1].setZValue(99)
+                temp_scene_widget = self.scene().addWidget(self.temp_button)
+                temp_scene_widget.setParent(self)
+                temp_scene_widget.setGeometry(QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
+                                              (phrase.end_frame - phrase.start_frame + 1) * self.frame_width + 1,
+                                              text_height))
+                temp_scene_widget.setZValue(99)
                 self.temp_phrase = self.temp_button
                 word_count = 0
                 for word in phrase.words:
                     self.temp_button = MovableButton(word, word_col_string)
                     self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
-                    self.mov_widget_list.append(self.scene().addWidget(self.temp_button))
-                    self.mov_widget_list[-1].setParent(self)
-                    self.mov_widget_list[-1].setGeometry(QtCore.QRect(word.start_frame * self.frame_width,
-                                                         top_border + 4 + text_height + (text_height * (word_count % 2)),
-                                                         (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
-                                                         text_height))
-                    self.mov_widget_list[-1].setZValue(99)
+                    temp_scene_widget = self.scene().addWidget(self.temp_button)
+                    temp_scene_widget.setParent(self)
+                    temp_scene_widget.setGeometry(QtCore.QRect(word.start_frame * self.frame_width,
+                                                  top_border + 4 + text_height + (text_height * (word_count % 2)),
+                                                  (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
+                                                  text_height))
+                    temp_scene_widget.setZValue(99)
                     self.temp_word = self.temp_button
                     word_count += 1
                     phoneme_count = 0
                     for phoneme in word.phonemes:
                         self.temp_button = MovableButton(phoneme, phoneme_col_string, phoneme_count % 2)
                         self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
-                        self.mov_widget_list.append(self.scene().addWidget(self.temp_button))
-                        self.mov_widget_list[-1].setParent(self)
-                        self.mov_widget_list[-1].setGeometry(QtCore.QRect(phoneme.frame * self.frame_width,
-                                                             self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
-                                                             self.frame_width + 1,
-                                                             text_height))
-                        self.mov_widget_list[-1].setZValue(99)
+                        temp_scene_widget = self.scene().addWidget(self.temp_button)
+                        temp_scene_widget.setParent(self)
+                        temp_scene_widget.setGeometry(QtCore.QRect(phoneme.frame * self.frame_width,
+                                                      self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
+                                                      self.frame_width + 1,
+                                                      text_height))
+                        temp_scene_widget.setZValue(99)
                         self.temp_phoneme = self.temp_button
                         phoneme_count += 1
 
@@ -627,6 +624,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             time = 0.0
             sample_dur = 1.0 / self.samples_per_sec
             max_amp = 0.0
+            self.amp = []
             while time < duration:
                 self.num_samples += 1
                 amp = self.doc.sound.GetRMSAmplitude(time, sample_dur)
@@ -655,21 +653,20 @@ class WaveformView(QtWidgets.QGraphicsView):
         update_rect = self.scene().sceneRect()
         update_rect.setWidth(self.width())
         update_rect.setHeight(event.size().height())
-        #if self.doc:
-        #    self.set_document(self.doc)
         if self.doc:
             self.create_waveform()
-        # We need to at least update the Y Position of the Phonemes
-        font_metrics = QtGui.QFontMetrics(font)
-        text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-        text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
-        top_border += 4
-        for widget in self.mov_widget_list:
-            if widget.widget().lipsync_object.is_phoneme:
-                widget.widget().setGeometry(widget.x(),
-                                            self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * widget.widget().phoneme_offset)),
-                                            self.frame_width + 5,
-                                            text_height)
+            # We need to at least update the Y Position of the Phonemes
+            font_metrics = QtGui.QFontMetrics(font)
+            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            top_border += 4
+            for phoneme_node in self.main_node.leaves: # this should be all phonemes
+                widget = phoneme_node.name
+                if widget.lipsync_object.is_phoneme: # shouldn't be needed, just to be sure
+                    widget.setGeometry(widget.x(),
+                                       self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * widget.phoneme_offset)),
+                                       self.frame_width + 5,
+                                       text_height)
 
         self.scene().update(self.scene().sceneRect())
         self.fitInView(update_rect, QtCore.Qt.IgnoreAspectRatio)
