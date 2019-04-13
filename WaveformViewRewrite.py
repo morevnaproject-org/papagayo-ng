@@ -424,6 +424,7 @@ class MovableButton(QtWidgets.QPushButton):
 #                 #    if True:  # left_frame_edge < new_coords[1] < right_frame_edge:
 #                 #        self.me.frame = new_coords[1]
 
+
 class WaveformView(QtWidgets.QGraphicsView):
     def __init__(self, parent=None):
         super(WaveformView, self).__init__(parent)
@@ -477,7 +478,7 @@ class WaveformView(QtWidgets.QGraphicsView):
 
             first_sample = 0
             last_sample = len(self.amp)
-            self.wv_height = self.scene().height()  # - self.horizontalScrollBar().height()
+            self.wv_height = self.scene().height() + self.horizontalScrollBar().height()
             half_client_height = self.wv_height / 2
             font_metrics = QtGui.QFontMetrics(font)
             text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
@@ -518,7 +519,8 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.scene().removeItem(self.waveform_polygon)
         first_sample = 0
         last_sample = len(self.amp)
-        self.wv_height = self.height()  # - self.horizontalScrollBar().height()
+        top_and_bottom_space = 4  # This should in theory provide a bit of space at the top and bottom
+        self.wv_height = self.height() + self.horizontalScrollBar().height() - top_and_bottom_space
         half_client_height = self.wv_height / 2
         x = first_sample * self.sample_width
         frame = first_sample / self.samples_per_frame
@@ -526,7 +528,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         frame_rectangle_polygon_upper = []
         frame_rectangle_polygon_lower = []
         for i in range(int(first_sample), int(last_sample)):
-            height = round(self.wv_height * self.amp[i])
+            height = round(self.wv_height * self.amp[i]) + (top_and_bottom_space / 2)
             half_height = height / 2
             if self.draw_play_marker and (frame == self.cur_frame):
                 pass
@@ -609,7 +611,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         temp_scene_widget = self.scene().addWidget(self.temp_button)
                         temp_scene_widget.setParent(self)
                         temp_scene_widget.setGeometry(QtCore.QRect(phoneme.frame * self.frame_width,
-                                                      self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * (phoneme_count % 2))),
+                                                      self.height() - (text_height + (text_height * (phoneme_count % 2))),
                                                       self.frame_width + 1,
                                                       text_height))
                         temp_scene_widget.setZValue(99)
@@ -641,7 +643,6 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.scene().clear()
             self.create_movbuttons()
         self.create_waveform()
-
     def on_slider_change(self, value):
         self.scroll_position = value
 
@@ -651,10 +652,23 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def resizeEvent(self, event):
         update_rect = self.scene().sceneRect()
+        width_factor = 1  # Only the height needs to change.
+        # try:
+        #     width_factor = self.width() / update_rect.width()
+        # except ZeroDivisionError:
+        #     width_factor = 1
+
+        try:
+            height_factor = event.size().height() / event.oldSize().height()
+        except ZeroDivisionError:
+            height_factor = 1
         update_rect.setWidth(self.width())
         update_rect.setHeight(event.size().height())
         if self.doc:
-            self.create_waveform()
+            origin_x, origin_y = 0, 0
+            height_factor = height_factor * self.waveform_polygon.transform().m22()  # We need to add the factors
+            self.waveform_polygon.setTransform(QtGui.QTransform().translate(
+                origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
             # We need to at least update the Y Position of the Phonemes
             font_metrics = QtGui.QFontMetrics(font)
             text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
@@ -664,12 +678,12 @@ class WaveformView(QtWidgets.QGraphicsView):
                 widget = phoneme_node.name
                 if widget.lipsync_object.is_phoneme: # shouldn't be needed, just to be sure
                     widget.setGeometry(widget.x(),
-                                       self.height() - (self.horizontalScrollBar().height() + 10 + text_height + (text_height * widget.phoneme_offset)),
+                                       self.height() - (text_height + (text_height * widget.phoneme_offset)),
                                        self.frame_width + 5,
                                        text_height)
-
-        self.scene().update(self.scene().sceneRect())
-        self.fitInView(update_rect, QtCore.Qt.IgnoreAspectRatio)
+        #self.scene().update(self.scene().sceneRect())
+        #self.scene().update(self.sceneRect())
+        self.fitInView(0, 0, event.oldSize().width(), self.height(), QtCore.Qt.IgnoreAspectRatio)
         self.horizontalScrollBar().setValue(self.scroll_position)
 
     def on_zoom_in(self, event=None):
@@ -677,6 +691,8 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.samples_per_frame *= 2
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
+            self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
+                                      self.scene().sceneRect().width() * 2, self.scene().sceneRect().height())
             self.set_document(self.doc)
             self.scroll_position *= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
@@ -686,6 +702,10 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.samples_per_frame /= 2
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
+            self.scene().setSceneRect(self.scene().sceneRect().x(),
+                                      self.scene().sceneRect().y(),
+                                      self.scene().sceneRect().width()/2,
+                                      self.scene().sceneRect().height())
             self.set_document(self.doc)
             self.scroll_position /= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
@@ -693,10 +713,15 @@ class WaveformView(QtWidgets.QGraphicsView):
     def on_zoom_reset(self, event=None):
         if self.doc is not None:
             self.scroll_position /= (self.samples_per_frame / default_samples_per_frame)
+            factor = (self.samples_per_frame / default_samples_per_frame)
             self.sample_width = default_sample_width
             self.samples_per_frame = default_samples_per_frame
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
+            self.scene().setSceneRect(self.scene().sceneRect().x(),
+                                      self.scene().sceneRect().y(),
+                                      self.scene().sceneRect().width()/factor,
+                                      self.scene().sceneRect().height())
             self.set_document(self.doc)
             self.horizontalScrollBar().setValue(self.scroll_position)
 
