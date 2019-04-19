@@ -81,6 +81,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.phoneme_offset = phoneme_offset
         self.lipsync_object = lipsync_object
         self.setStyleSheet(style)
+        self.is_resizing = False
         # We need the parent element if it exists, and the previous and next element if they exist
         # When we move we need to check for the boundaries dictated by the parent and neighbours.
         # Inform our neighbours after we finished moving, should be automatic if references are used for that.
@@ -137,9 +138,17 @@ class MovableButton(QtWidgets.QPushButton):
         return pixel_pos * factor
 
     def mouseMoveEvent(self, event):
-        pass
+        if self.is_resizing:
+            if round(self.convert_to_frames(event.x() + self.x())) >= self.lipsync_object.start_frame:
+                if round(self.convert_to_frames(event.x() + self.x())) <= self.get_right_max():
+                    self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x()))
+                    self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
+                                self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
+        else:
+            pass  # Add dragging logic here
 
     def mousePressEvent(self, event):
+        # Some debugging output
         try:
             print("MyLeftSibling: " + self.get_left_sibling().name.title)
         except AttributeError:
@@ -152,15 +161,29 @@ class MovableButton(QtWidgets.QPushButton):
         print("RightMax: " + str(self.get_right_max()))
         print("BeginningPixel: " + str(self.x()))
         if self.lipsync_object.is_phoneme:
-            print("BeginninFrame: " + str(self.lipsync_object.frame))
+            print("BeginningFrame: " + str(self.lipsync_object.frame))
         else:
-            print("BeginninFrame: " + str(self.lipsync_object.start_frame))
+            print("BeginningFrame: " + str(self.lipsync_object.start_frame))
+        print("EndPixel: " + str(self.x() + self.width()))
+        if self.lipsync_object.is_phoneme:
+            print("EndFrame: " + str(self.lipsync_object.frame))
+        else:
+            print("EndFrame: " + str(self.lipsync_object.end_frame))
         if self.lipsync_object.is_phoneme:
             print("Converted_to_Pixel: " + str(self.convert_to_pixels(self.lipsync_object.frame)))
         else:
             print("Converted_to_Pixel: " + str(self.convert_to_pixels(self.lipsync_object.start_frame)))
         print("Converted_to_frame: " + str(self.convert_to_frames(self.x())))
+        print("ClickedPixel: " + str(self.x() + event.x()))
+        print("ClickedFrame: " + str(self.convert_to_frames(self.x() + event.x())))
 
+        # End of debugging output
+        if event.buttons() == QtCore.Qt.LeftButton:
+            if (self.width() - event.x()) < 10:
+                if not self.lipsync_object.is_phoneme:
+                    self.is_resizing = True
+            else:
+                self.is_resizing = False
 
     def mouseReleaseEvent(self, event):
         pass
@@ -619,7 +642,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 temp_scene_widget = self.scene().addWidget(self.temp_button)
                 temp_scene_widget.setParent(self)
                 temp_scene_widget.setGeometry(QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
-                                              (phrase.end_frame - phrase.start_frame + 1) * self.frame_width + 1,
+                                              (phrase.end_frame - phrase.start_frame) * self.frame_width + 1,
                                               text_height))
                 temp_scene_widget.setZValue(99)
                 self.temp_phrase = self.temp_button
@@ -631,7 +654,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     temp_scene_widget.setParent(self)
                     temp_scene_widget.setGeometry(QtCore.QRect(word.start_frame * self.frame_width,
                                                   top_border + 4 + text_height + (text_height * (word_count % 2)),
-                                                  (word.end_frame - word.start_frame + 1) * self.frame_width + 1,
+                                                  (word.end_frame - word.start_frame ) * self.frame_width + 1,
                                                   text_height))
                     temp_scene_widget.setZValue(99)
                     self.temp_word = self.temp_button
@@ -644,7 +667,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         temp_scene_widget.setParent(self)
                         temp_scene_widget.setGeometry(QtCore.QRect(phoneme.frame * self.frame_width,
                                                       self.height() - (self.horizontalScrollBar().height()*1.5) - (text_height + (text_height * (phoneme_count % 2))),
-                                                      self.frame_width + 1,
+                                                      self.frame_width,
                                                       text_height))
                         temp_scene_widget.setZValue(99)
                         self.temp_phoneme = self.temp_button
