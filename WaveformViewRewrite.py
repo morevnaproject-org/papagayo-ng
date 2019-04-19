@@ -120,8 +120,25 @@ class MovableButton(QtWidgets.QPushButton):
                 right_most_pos = self.lipsync_object.end_frame  # Last Phrase
         return right_most_pos
 
+    def convert_to_pixels(self, frame_pos):
+        if self.lipsync_object.is_phoneme:
+            current_frame_pos = self.lipsync_object.frame
+        else:
+            current_frame_pos = self.lipsync_object.start_frame
+        factor = self.x() / current_frame_pos
+        return frame_pos * factor
+
+    def convert_to_frames(self, pixel_pos):
+        if self.lipsync_object.is_phoneme:
+            current_frame_pos = self.lipsync_object.frame
+        else:
+            current_frame_pos = self.lipsync_object.start_frame
+        factor = current_frame_pos / self.x()
+        return pixel_pos * factor
+
     def mouseMoveEvent(self, event):
         pass
+
     def mousePressEvent(self, event):
         try:
             print("MyLeftSibling: " + self.get_left_sibling().name.title)
@@ -133,6 +150,17 @@ class MovableButton(QtWidgets.QPushButton):
             pass
         print("LeftMax: " + str(self.get_left_max()))
         print("RightMax: " + str(self.get_right_max()))
+        print("BeginningPixel: " + str(self.x()))
+        if self.lipsync_object.is_phoneme:
+            print("BeginninFrame: " + str(self.lipsync_object.frame))
+        else:
+            print("BeginninFrame: " + str(self.lipsync_object.start_frame))
+        if self.lipsync_object.is_phoneme:
+            print("Converted_to_Pixel: " + str(self.convert_to_pixels(self.lipsync_object.frame)))
+        else:
+            print("Converted_to_Pixel: " + str(self.convert_to_pixels(self.lipsync_object.start_frame)))
+        print("Converted_to_frame: " + str(self.convert_to_frames(self.x())))
+
 
     def mouseReleaseEvent(self, event):
         pass
@@ -492,15 +520,15 @@ class WaveformView(QtWidgets.QGraphicsView):
             for i in range(int(first_sample), int(last_sample)):
                 if (i + 1) % self.samples_per_frame == 0:
                     frame_x = (frame + 1) * self.frame_width
-                    if (self.frame_width > 2) or ((frame + 2) % fps == 0):
+                    if (self.frame_width > 2) or ((frame + 1) % fps == 0):
                         self.list_of_lines.append(QtCore.QLineF(frame_x, top_border, frame_x, bg_height))
                     # draw frame label
-                    if (self.frame_width > 30) or ((int(frame) + 2) % 5 == 0):
+                    if (self.frame_width > 30) or ((int(frame) + 1) % 5 == 0):
                         self.list_of_lines.append(QtCore.QLineF(frame_x, 0, frame_x, top_border))
                         self.list_of_lines.append(QtCore.QLineF(frame_x + 1, 0, frame_x + 1, bg_height))
                         temp_rect = QtCore.QRectF(int(frame_x + 4), font_metrics.height() - 2, text_width, top_border)
                         # Positioning is a bit different in QT here
-                        list_of_textmarkers.append((temp_rect, str(int(frame + 2))))
+                        list_of_textmarkers.append((temp_rect, str(int(frame + 1))))
                 x += self.sample_width
                 sample += 1
                 if sample % self.samples_per_frame == 0:
