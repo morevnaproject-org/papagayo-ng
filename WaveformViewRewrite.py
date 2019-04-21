@@ -74,7 +74,7 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 
 class MovableButton(QtWidgets.QPushButton):
-    def __init__(self, lipsync_object, style, phoneme_offset=None):
+    def __init__(self, lipsync_object, style, wfv_parent,  phoneme_offset=None):
         super(MovableButton, self).__init__(lipsync_object.text, None)
         self.title = lipsync_object.text
         self.node = None
@@ -82,7 +82,8 @@ class MovableButton(QtWidgets.QPushButton):
         self.lipsync_object = lipsync_object
         self.setStyleSheet(style)
         self.is_resizing = False
-        self.resize_origin = 0 # 0 = left 1 = right
+        self.resize_origin = 0  # 0 = left 1 = right
+        self.wfv_parent = wfv_parent
         # We need the parent element if it exists, and the previous and next element if they exist
         # When we move we need to check for the boundaries dictated by the parent and neighbours.
         # Inform our neighbours after we finished moving, should be automatic if references are used for that.
@@ -91,6 +92,38 @@ class MovableButton(QtWidgets.QPushButton):
         # It should somehow represent the actual data so that we can find our neighbours...
         # So the mov_widget_list should maybe be a list of lists instead
         # But to find our position in that we would have to parse through the whole list then...
+
+    def is_phoneme(self):
+        # voice = 0, phrase = 1, word = 2, phoneme = 3
+        if self.node.depth == 3:
+            return True
+        else:
+            return False
+
+    def is_word(self):
+        # voice = 0, phrase = 1, word = 2, phoneme = 3
+        if self.node.depth == 2:
+            return True
+        else:
+            return False
+
+    def is_phrase(self):
+        # voice = 0, phrase = 1, word = 2, phoneme = 3
+        if self.node.depth == 1:
+            return True
+        else:
+            return False
+
+    def get_min_size(self):
+        # An object should be at least be able to contain all it's phonemes since only 1 phoneme per frame is allowed.
+        if self.is_phoneme():
+            num_of_phonemes = 1
+        else:
+            num_of_phonemes = 0
+            for descendant in self.node.descendants:
+                if descendant.name.is_phoneme():
+                    num_of_phonemes += 1
+        return num_of_phonemes
 
     def get_left_max(self):
         left_most_pos = 0
@@ -123,25 +156,27 @@ class MovableButton(QtWidgets.QPushButton):
         return right_most_pos
 
     def convert_to_pixels(self, frame_pos):
-        if self.lipsync_object.is_phoneme:
-            current_frame_pos = self.lipsync_object.frame
-        else:
-            current_frame_pos = self.lipsync_object.start_frame
-        factor = self.x() / current_frame_pos
-        return frame_pos * factor
+        return frame_pos * self.wfv_parent.frame_width
+        # if self.lipsync_object.is_phoneme:
+        #     current_frame_pos = self.lipsync_object.frame
+        # else:
+        #     current_frame_pos = self.lipsync_object.start_frame
+        # factor = self.x() / current_frame_pos
+        # return frame_pos * factor
 
     def convert_to_frames(self, pixel_pos):
-        if self.lipsync_object.is_phoneme:
-            current_frame_pos = self.lipsync_object.frame
-        else:
-            current_frame_pos = self.lipsync_object.start_frame
-        factor = current_frame_pos / self.x()
-        return pixel_pos * factor
+        return pixel_pos / self.wfv_parent.frame_width
+        # if self.lipsync_object.is_phoneme:
+        #     current_frame_pos = self.lipsync_object.frame
+        # else:
+        #     current_frame_pos = self.lipsync_object.start_frame
+        # factor = current_frame_pos / self.x()
+        # return pixel_pos * factor
 
     def mouseMoveEvent(self, event):
         if self.is_resizing:
             if self.resize_origin == 1:  # start resize from right side
-                if round(self.convert_to_frames(event.x() + self.x())) >= self.lipsync_object.start_frame:
+                if round(self.convert_to_frames(event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
                     if round(self.convert_to_frames(event.x() + self.x())) <= self.get_right_max():
                         self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x()))
                         self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
@@ -563,6 +598,42 @@ class WaveformView(QtWidgets.QGraphicsView):
                     dropped_widget.lipsync_object.start_frame = round(dropped_widget.x() / self.frame_width)
                     dropped_widget.lipsync_object.end_frame = round((dropped_widget.x() + dropped_widget.width()) / self.frame_width)
                     dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width, dropped_widget.y())
+                    # Move the children!
+                    # for child_node in dropped_widget.node.children:
+                    #     child_widget = child_node.name
+                    #     if child_widget.lipsync_object.is_phoneme:
+                    #         if child_widget.lipsync_object.frame < dropped_widget.lipsync_object.start_frame:
+                    #             child_widget.lipsync_object.frame = dropped_widget.lipsync_object.start_frame
+                    #             child_widget.move(child_widget.lipsync_object.frame * self.frame_width, child_widget.y())
+                    #         elif child_widget.lipsync_object.frame > dropped_widget.lipsync_object.end_frame:
+                    #             child_widget.lipsync_object.frame = dropped_widget.lipsync_object.end_frame -1
+                    #             child_widget.move(child_widget.lipsync_object.frame * self.frame_width, child_widget.y())
+                    #     else:  # has to be a word then
+                    #         if child_widget.lipsync_object.start_frame < dropped_widget.lipsync_object.start_frame:
+                    #             child_widget.lipsync_object.start_frame = dropped_widget.lipsync_object.start_frame
+                    #         if child_widget.lipsync_object.start_frame > dropped_widget.lipsync_object.end_frame:
+                    #             child_widget.lipsync_object.start_frame = dropped_widget.lipsync_object.start_frame
+                    #         if child_widget.lipsync_object.end_frame < dropped_widget.lipsync_object.start_frame:
+                    #             child_widget.lipsync_object.end_frame = dropped_widget.lipsync_object.start_frame
+                    #         if child_widget.lipsync_object.end_frame > dropped_widget.lipsync_object.end_frame:
+                    #             child_widget.lipsync_object.end_frame = dropped_widget.lipsync_object.end_frame
+                    #         new_width = (child_widget.lipsync_object.end_frame - child_widget.lipsync_object.start_frame) * self.frame_width
+                    #         child_widget.setGeometry(child_widget.lipsync_object.start_frame * self.frame_width,
+                    #                                  child_widget.y(), new_width, child_widget.height())
+                    #         # and it has to have it's own children
+                    #         for sub_child_node in child_node.children:
+                    #             sub_child_widget = sub_child_node.name
+                    #             if sub_child_widget.lipsync_object.frame < child_widget.lipsync_object.start_frame:
+                    #                 sub_child_widget.lipsync_object.frame = child_widget.lipsync_object.start_frame
+                    #                 sub_child_widget.move(sub_child_widget.lipsync_object.frame * self.frame_width,
+                    #                                       sub_child_widget.y())
+                    #             elif sub_child_widget.lipsync_object.frame > child_widget.lipsync_object.end_frame:
+                    #                 sub_child_widget.lipsync_object.frame = child_widget.lipsync_object.end_frame - 1
+                    #                 sub_child_widget.move(sub_child_widget.lipsync_object.frame * self.frame_width,
+                    #                                       sub_child_widget.y())
+
+
+
         e.accept()
 
     def drawBackground(self, painter, rect):
@@ -683,7 +754,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.main_node = Node(self.doc.current_voice.text)  # Not actually needed, but should make everything a bit easier
 
             for phrase in self.doc.current_voice.phrases:
-                self.temp_button = MovableButton(phrase, phrase_col_string)
+                self.temp_button = MovableButton(phrase, phrase_col_string, self)
                 self.temp_button.node = Node(self.temp_button, parent=self.main_node)
                 temp_scene_widget = self.scene().addWidget(self.temp_button)
                 temp_scene_widget.setParent(self)
@@ -694,7 +765,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.temp_phrase = self.temp_button
                 word_count = 0
                 for word in phrase.words:
-                    self.temp_button = MovableButton(word, word_col_string)
+                    self.temp_button = MovableButton(word, word_col_string, self)
                     self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
                     temp_scene_widget = self.scene().addWidget(self.temp_button)
                     temp_scene_widget.setParent(self)
@@ -707,7 +778,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     word_count += 1
                     phoneme_count = 0
                     for phoneme in word.phonemes:
-                        self.temp_button = MovableButton(phoneme, phoneme_col_string, phoneme_count % 2)
+                        self.temp_button = MovableButton(phoneme, phoneme_col_string, self, phoneme_count % 2)
                         self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
                         temp_scene_widget = self.scene().addWidget(self.temp_button)
                         temp_scene_widget.setParent(self)
