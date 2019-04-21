@@ -82,6 +82,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.lipsync_object = lipsync_object
         self.setStyleSheet(style)
         self.is_resizing = False
+        self.resize_origin = 0 # 0 = left 1 = right
         # We need the parent element if it exists, and the previous and next element if they exist
         # When we move we need to check for the boundaries dictated by the parent and neighbours.
         # Inform our neighbours after we finished moving, should be automatic if references are used for that.
@@ -98,7 +99,7 @@ class MovableButton(QtWidgets.QPushButton):
             if not temp.lipsync_object.is_phoneme:
                 left_most_pos = temp.lipsync_object.end_frame
             else:
-                left_most_pos = temp.lipsync_object.frame
+                left_most_pos = temp.lipsync_object.frame + 1
         except AttributeError:
             if self.node.depth > 1:
                 left_most_pos = self.node.parent.name.lipsync_object.start_frame
@@ -139,13 +140,32 @@ class MovableButton(QtWidgets.QPushButton):
 
     def mouseMoveEvent(self, event):
         if self.is_resizing:
-            if round(self.convert_to_frames(event.x() + self.x())) >= self.lipsync_object.start_frame:
-                if round(self.convert_to_frames(event.x() + self.x())) <= self.get_right_max():
-                    self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x()))
-                    self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
-                                self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
+            if self.resize_origin == 1:  # start resize from right side
+                if round(self.convert_to_frames(event.x() + self.x())) >= self.lipsync_object.start_frame:
+                    if round(self.convert_to_frames(event.x() + self.x())) <= self.get_right_max():
+                        self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x()))
+                        self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
+                                    self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
+            # elif self.resize_origin == 0:  # start resize from left side
+            #     if round(self.convert_to_frames(event.x() + self.x())) < self.lipsync_object.end_frame:
+            #         if round(self.convert_to_frames(event.x() + self.x())) >= self.get_left_max():
+            #             self.lipsync_object.start_frame = round(self.convert_to_frames(event.x() + self.x()))
+            #             new_length = self.convert_to_pixels(self.lipsync_object.end_frame) - self.convert_to_pixels(self.lipsync_object.start_frame)
+            #             self.resize(new_length, self.height())
+            #             self.move(self.convert_to_pixels(self.lipsync_object.start_frame), self.y())
         else:
-            pass  # Add dragging logic here
+            mime_data = QtCore.QMimeData()
+            drag = QtGui.QDrag(self)
+            drag.setMimeData(mime_data)
+            drag.setHotSpot(event.pos() - self.rect().topLeft())
+            print("HotSpot:")
+            print(drag.hotSpot())
+            self.hotspot = drag.hotSpot().x()
+            # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
+            try:
+                exec("dropAction = drag.exec(QtCore.Qt.MoveAction)")  # Otherwise we can't catch it and it will crash...
+            except (SyntaxError, AttributeError):
+                dropAction = drag.start(QtCore.Qt.MoveAction)
 
     def mousePressEvent(self, event):
         # Some debugging output
@@ -182,6 +202,11 @@ class MovableButton(QtWidgets.QPushButton):
             if (self.width() - event.x()) < 10:
                 if not self.lipsync_object.is_phoneme:
                     self.is_resizing = True
+                    self.resize_origin = 1
+            # elif event.x() < 10:
+            #     if not self.lipsync_object.is_phoneme:
+            #         self.is_resizing = True
+            #         self.resize_origin = 0
             else:
                 self.is_resizing = False
 
@@ -518,6 +543,27 @@ class WaveformView(QtWidgets.QGraphicsView):
         # self.scene().setSceneRect(0,0,self.width(),self.height())
 
         print("LoadedWaveFormView")
+
+    def dragEnterEvent(self, e):
+        print("DragEnter!")
+        e.accept()
+
+    def dragMoveEvent(self, e):
+        position = e.pos()
+        new_x = e.pos().x() + self.horizontalScrollBar().value()
+        dropped_widget = e.source()
+        if new_x > dropped_widget.get_left_max() * self.frame_width:
+            if new_x + dropped_widget.width() < dropped_widget.get_right_max() * self.frame_width:
+                dropped_widget.move(new_x, dropped_widget.y())
+                # after moving save the position and align to the grid based on that. Hacky but works!
+                if dropped_widget.lipsync_object.is_phoneme:
+                    dropped_widget.lipsync_object.frame = round(new_x / self.frame_width)
+                    dropped_widget.move(dropped_widget.lipsync_object.frame * self.frame_width, dropped_widget.y())
+                else:
+                    dropped_widget.lipsync_object.start_frame = round(dropped_widget.x() / self.frame_width)
+                    dropped_widget.lipsync_object.end_frame = round((dropped_widget.x() + dropped_widget.width()) / self.frame_width)
+                    dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width, dropped_widget.y())
+        e.accept()
 
     def drawBackground(self, painter, rect):
         background_brush = QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern)
