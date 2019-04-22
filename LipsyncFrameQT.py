@@ -404,6 +404,7 @@ class LipsyncFrame:
             self.doc.current_voice.name = self.main_window.voice_name_input.text()
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
             self.main_window.voice_list.currentItem().setText(self.doc.current_voice.name)
+            self.main_window.waveform_view.set_document(self.doc)
 
     def on_voice_text(self, event=None):
         print(self.main_window.text_edit.toPlainText())
@@ -426,6 +427,7 @@ class LipsyncFrame:
             self.ignore_text_changes = True
             self.main_window.text_edit.setText(self.doc.current_voice.text)
             self.ignore_text_changes = False
+            self.main_window.waveform_view.set_document(self.doc)
 
     def on_voice_export(self, event=None):
         language = self.main_window.language_choice.currentText()
