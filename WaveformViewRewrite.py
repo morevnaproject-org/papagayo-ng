@@ -84,6 +84,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.is_resizing = False
         self.resize_origin = 0  # 0 = left 1 = right
         self.wfv_parent = wfv_parent
+        self.hotspot = None
         # We need the parent element if it exists, and the previous and next element if they exist
         # When we move we need to check for the boundaries dictated by the parent and neighbours.
         # Inform our neighbours after we finished moving, should be automatic if references are used for that.
@@ -114,6 +115,15 @@ class MovableButton(QtWidgets.QPushButton):
         else:
             return False
 
+    def after_reposition(self):
+        if self.is_phoneme():
+            self.setGeometry(self.convert_to_pixels(self.lipsync_object.frame),
+                             self.y(),self.convert_to_pixels(self.get_frame_size()), self.height())
+        else:
+            self.setGeometry(self.convert_to_pixels(self.lipsync_object.start_frame),
+                             self.y(), self.convert_to_pixels(self.get_frame_size()), self.height())
+        self.update()
+
     def get_min_size(self):
         # An object should be at least be able to contain all it's phonemes since only 1 phoneme per frame is allowed.
         if self.is_phoneme():
@@ -124,6 +134,37 @@ class MovableButton(QtWidgets.QPushButton):
                 if descendant.name.is_phoneme():
                     num_of_phonemes += 1
         return num_of_phonemes
+
+    def get_frame_size(self):
+        if self.is_phoneme():
+            return 1
+        else:
+            return self.lipsync_object.end_frame - self.lipsync_object.start_frame
+
+    def has_shrink_room(self):
+        if self.is_phoneme():
+            return False
+        else:
+            if self.get_min_size() >= self.get_frame_size():
+                return False
+            else:
+                return True
+
+    def has_left_sibling(self):
+        left_sibling = False
+        try:
+            left_sibling = bool(self.get_left_sibling())
+        except AttributeError:
+            left_sibling = False
+        return left_sibling
+
+    def has_right_sibling(self):
+        right_sibling = False
+        try:
+            right_sibling = bool(self.get_right_sibling())
+        except AttributeError:
+            right_sibling = False
+        return right_sibling
 
     def get_left_max(self):
         left_most_pos = 0
@@ -246,7 +287,25 @@ class MovableButton(QtWidgets.QPushButton):
                 self.is_resizing = False
 
     def mouseReleaseEvent(self, event):
-        pass
+        if self.is_resizing:
+            self.reposition_descendants()
+            self.is_resizing = False
+
+    def reposition_descendants(self):
+        # These reposition_word and phoneme methods are not really taking account their parent
+        # We have to run through the children ourselves and reposition and resize them to fit.
+        repositioned = False
+        if self.is_phrase():
+            repositioned = True
+            for word in self.node.children:
+                self.lipsync_object.reposition_word(word.name.lipsync_object)
+        elif self.is_word():
+            repositioned = True
+            for phoneme in self.node.children:
+                self.lipsync_object.reposition_phoneme(phoneme.name.lipsync_object)
+        if repositioned:
+            for descendant in self.node.descendants:
+                descendant.name.after_reposition()
 
     def mouseDoubleClickEvent(self, event):
         pass
@@ -599,6 +658,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     dropped_widget.lipsync_object.end_frame = round((dropped_widget.x() + dropped_widget.width()) / self.frame_width)
                     dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width, dropped_widget.y())
                     # Move the children!
+                    dropped_widget.reposition_descendants()
                     # for child_node in dropped_widget.node.children:
                     #     child_widget = child_node.name
                     #     if child_widget.lipsync_object.is_phoneme:
@@ -677,8 +737,10 @@ class WaveformView(QtWidgets.QGraphicsView):
             for text_marker in list_of_textmarkers:
                 painter.drawText(text_marker[0], QtCore.Qt.AlignLeft, text_marker[1])
             if self.first_update:
-                self.setSceneRect(self.scene().sceneRect())
-                self.first_update = False
+                if self.waveform_polygon:
+                    self.setSceneRect(self.waveform_polygon.polygon().boundingRect())
+                    self.scene().setSceneRect(self.waveform_polygon.polygon().boundingRect())
+                    self.first_update = False
 
     def update_drawing(self, redraw_all=True):
         self.draw()
@@ -835,8 +897,10 @@ class WaveformView(QtWidgets.QGraphicsView):
         except ZeroDivisionError:
             height_factor = 1
         update_rect.setHeight(event.size().height())
-        self.setSceneRect(update_rect)
         if self.doc:
+            update_rect.setWidth(self.waveform_polygon.polygon().boundingRect().width())
+            self.setSceneRect(update_rect)
+            self.scene().setSceneRect(update_rect)
             origin_x, origin_y = 0, 0
             height_factor = height_factor * self.waveform_polygon.transform().m22()  # We need to add the factors
             self.waveform_polygon.setTransform(QtGui.QTransform().translate(
@@ -866,7 +930,6 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.setSceneRect(self.scene().sceneRect())
             self.scroll_position *= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
-            self.scene().update()
 
     def on_zoom_out(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame > 1):
@@ -880,7 +943,6 @@ class WaveformView(QtWidgets.QGraphicsView):
 
             self.scroll_position /= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
-            self.scene().update()
 
     def on_zoom_reset(self, event=None):
         if self.doc is not None:
@@ -895,6 +957,5 @@ class WaveformView(QtWidgets.QGraphicsView):
                                       self.scene().sceneRect().width() / factor, self.scene().sceneRect().height())
             self.setSceneRect(self.scene().sceneRect())
             self.horizontalScrollBar().setValue(self.scroll_position)
-            self.scene().update()
 
 # end of class WaveformView
