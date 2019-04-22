@@ -360,6 +360,7 @@ class LipsyncFrame:
             self.main_window.action_play.setEnabled(True)
             self.main_window.statusbar.showMessage("Stopped")
             self.main_window.waveform_view.horizontalScrollBar().setValue(self.main_window.waveform_view.scroll_position)
+            self.main_window.waveform_view.update()
 
     def on_play_tick(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):
