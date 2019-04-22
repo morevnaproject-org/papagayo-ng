@@ -118,7 +118,7 @@ class MovableButton(QtWidgets.QPushButton):
     def after_reposition(self):
         if self.is_phoneme():
             self.setGeometry(self.convert_to_pixels(self.lipsync_object.frame),
-                             self.y(),self.convert_to_pixels(self.get_frame_size()), self.height())
+                             self.y(), self.convert_to_pixels(self.get_frame_size()), self.height())
         else:
             self.setGeometry(self.convert_to_pixels(self.lipsync_object.start_frame),
                              self.y(), self.convert_to_pixels(self.get_frame_size()), self.height())
@@ -286,6 +286,57 @@ class MovableButton(QtWidgets.QPushButton):
             else:
                 self.is_resizing = False
 
+        elif event.button() == QtCore.Qt.RightButton and self.is_word():
+            # manually enter the pronunciation for this word
+            dlg = PronunciationDialog(self, self.wfv_parent.doc.parent.phonemeset.set)
+            dlg.word_label.setText(dlg.word_label.text() + ' ' + self.text())
+            prev_phoneme_list = ""
+            for p in self.node.children:
+                prev_phoneme_list += " " + p.name.lipsync_object.text
+            dlg.phoneme_ctrl.setText(prev_phoneme_list)
+            if dlg.exec_():
+                list_of_new_phonemes = dlg.phoneme_ctrl.text().split()
+                if list_of_new_phonemes:
+                    if list_of_new_phonemes != prev_phoneme_list.split():
+                        old_childnodes = self.node.children
+                        print(self.wfv_parent.items())
+                        for old_node in old_childnodes:
+                            for proxy in self.wfv_parent.items():
+                                try:
+                                    if proxy.widget() == old_node.name:
+                                        self.wfv_parent.scene().removeItem(proxy)
+                                except AttributeError:
+                                    pass
+                        old_childnodes = []
+                        self.node.children = []
+                        self.lipsync_object.phonemes = []
+                        font_metrics = QtGui.QFontMetrics(font)
+                        text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+                        phoneme_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(
+                            phoneme_fill_col.red(),
+                            phoneme_fill_col.green(),
+                            phoneme_fill_col.blue())
+                        phoneme_col_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
+                                                                                          phoneme_outline_col.green(),
+                                                                                          phoneme_outline_col.blue())
+                        for phoneme_count, p in enumerate(list_of_new_phonemes):
+                            phoneme = LipsyncPhoneme()
+                            phoneme.text = p
+                            phoneme.frame = self.lipsync_object.start_frame + phoneme_count
+                            self.lipsync_object.phonemes.append(phoneme)
+                            temp_button = MovableButton(phoneme, phoneme_col_string, self.wfv_parent, phoneme_count % 2)
+                            temp_button.node = Node(temp_button, parent=self.node)
+                            temp_scene_widget = self.wfv_parent.scene().addWidget(temp_button)
+                            temp_scene_widget.setParent(self.wfv_parent)
+                            temp_scene_widget.setGeometry(QtCore.QRect(phoneme.frame * self.wfv_parent.frame_width,
+                                                                       self.wfv_parent.height() - (
+                                                                                   self.wfv_parent.horizontalScrollBar().height() * 1.5) - (
+                                                                                   text_height + (text_height * (phoneme_count % 2))),
+                                                                       self.wfv_parent.frame_width,
+                                                                       text_height))
+                            temp_scene_widget.setZValue(99)
+
+
     def mouseReleaseEvent(self, event):
         if self.is_resizing:
             self.reposition_descendants()
@@ -321,278 +372,6 @@ class MovableButton(QtWidgets.QPushButton):
             self.deleteLater()
         except RuntimeError:
             pass
-
-# class MovableButton(QtWidgets.QPushButton):
-#     def __init__(self, title, me, style, parent, parent_obj=None, phoneme_offset=None):
-#         super(MovableButton, self).__init__(title, None)
-#         self.me = me
-#         self.is_resizing = False
-#         self.hotspot = 0
-#         self.parent = parent
-#         self.parent_object = parent_obj
-#         self.left_edge = 0
-#         self.right_edge = 0
-#         self.left_most = 0
-#         self.right_most = 0
-#         self.phoneme_offset = phoneme_offset
-#         self.calc_edges()
-#         # self.setStyleSheet(f"background-color:rgb({phoneme_fill_col.red()},{phoneme_fill_col.green()},{phoneme_fill_col.blue()})")
-#         # self.background_string = "background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
-#         #                                                                      phoneme_fill_col.green(),
-#         #                                                                      phoneme_fill_col.blue())
-#         # self.background_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
-#         #                                                                       phoneme_outline_col.green(),
-#         #                                                                       phoneme_outline_col.blue())
-#         self.setStyleSheet(style)
-#
-#     # def paintEvent(self, e):
-#     #     QtWidgets.QPushButton.paintEvent(self, e)
-#     #     painter = QtGui.QPainter(self)
-#     #     background_brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 64), QtCore.Qt.SolidPattern)
-#     #     pen = QtGui.QPen(QtGui.QColor(255, 255, 0, 255), 3, QtCore.Qt.DashDotLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin)
-#     #     painter.setPen(pen)
-#     #     rect = QtCore.QRectF(0, 0, self.width(), self.height())
-#     #     # rect = QtCore.QRectF(self.x(), self.y(), self.x()+self.width(), self.y()+self.height())
-#     #     painter.fillRect(rect, background_brush)
-#
-#     def mouseMoveEvent(self, e):
-#
-#         if e.buttons() != QtCore.Qt.LeftButton:
-#             return
-#         if ((e.pos().x() > self.width()-10) or self.is_resizing) and not self.me.is_phoneme:
-#             if e.pos().x() > self.parent.frame_width + 10:  # TODO: Is this even needed? Seems Useless.
-#                 if e.pos().x() <= self.right_edge:
-#                     self.resize(e.pos().x(), self.height())
-#                     self.is_resizing = True
-#
-#         else:
-#             mime_data = QtCore.QMimeData()
-#             drag = QtGui.QDrag(self)
-#             drag.setMimeData(mime_data)
-#             drag.setHotSpot(e.pos() - self.rect().topLeft())
-#             print("HotSpot:")
-#             print(drag.hotSpot())
-#             self.hotspot = drag.hotSpot().x()
-#             # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
-#             try:
-#                 exec("dropAction = drag.exec(QtCore.Qt.MoveAction)")  # Otherwise we can't catch it and it will crash...
-#             except (SyntaxError, AttributeError):
-#                 dropAction = drag.start(QtCore.Qt.MoveAction)
-#
-#     def mousePressEvent(self, e):
-#         # QtGui.QPushButton.mousePressEvent(self, e)
-#         if e.button() == QtCore.Qt.RightButton and "phonemes" in dir(self.me):
-#             # manually enter the pronunciation for this word
-#             dlg = PronunciationDialog(self, self.parent.doc.parent.phonemeset.set)
-#             dlg.word_label.setText(dlg.word_label.text() + ' ' + self.text())
-#             prev_phoneme_list = ""
-#             for p in self.me.phonemes:
-#                 prev_phoneme_list += " " + p.text
-#             dlg.phoneme_ctrl.setText(prev_phoneme_list)
-#             if dlg.exec_():
-#                 # Stupid workaround for the random crash, we add it here instead of in the draw routine.
-#                 # If we did change the phonemes we delete here the existing ones from both lists
-#                 for item in self.parent.scene().items():
-#                     try:
-#                         if item.widget().parent_object == self.me:
-#                             self.parent.scene().removeItem(item)
-#                     except AttributeError:
-#                         pass
-#
-#                 for item in self.parent.mov_widget_list:
-#                     if item.widget().parent_object == self.me:
-#                         self.parent.mov_widget_list.remove(item)
-#
-#                 self.me.phonemes = []
-#                 for phoneme_count, p in enumerate(dlg.phoneme_ctrl.text().split()):
-#                     if len(p) == 0:
-#                         continue
-#                     phoneme = LipsyncPhoneme()
-#                     phoneme.text = p
-#                     phoneme.frame = self.me.end_frame
-#                     self.me.phonemes.append(phoneme)
-#                     # Here we add the new phonemes for this word to both lists
-#                     font_metrics = QtGui.QFontMetrics(font)
-#                     phoneme_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(
-#                         phoneme_fill_col.red(),
-#                         phoneme_fill_col.green(),
-#                         phoneme_fill_col.blue())
-#                     phoneme_col_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
-#                                                                                       phoneme_outline_col.green(),
-#                                                                                       phoneme_outline_col.blue())
-#                     text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
-#
-#                     self.parent.mov_widget_list.append(self.parent.scene().addWidget(
-#                         MovableButton(phoneme.text, phoneme, phoneme_col_string, self.parent, self.me,
-#                                       phoneme_offset=phoneme_count % 2)))
-#                     # self.mov_widget_list.append(self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string, self, word)))
-#                     # self.temp_phoneme = self.scene().addWidget(MovableButton(phoneme.text, phoneme, phoneme_col_string))
-#                     self.parent.mov_widget_list[-1].setGeometry(QtCore.QRect(phoneme.frame * self.parent.frame_width,
-#                                                                              self.height() - (
-#                                                                                      self.parent.horizontalScrollBar().height() + 10 + text_height + (
-#                                                                                      text_height * (
-#                                                                                      phoneme_count % 2))),
-#                                                                              self.parent.frame_width + 1,
-#                                                                              text_height))
-#                     self.parent.mov_widget_list[-1].setParent(self.parent)
-#                     self.parent.mov_widget_list[-1].setZValue(99)
-#                     # self.mov_widget_list[-1].parent_object = word # word seems to get gc'd and is then None
-#                     phoneme.top = self.parent.mov_widget_list[-1].y()
-#                     phoneme.bottom = self.parent.mov_widget_list[-1].y() + text_height
-#                     #
-#
-#                 self.parent_object.reposition_word(self.me)
-#                 # This might be the culprit
-#                 self.parent.first_update = False
-#                 self.parent.update_drawing()
-#                 # Works quite good in theory but it seems to crash randomly. Debugging did not help.
-#                 # self.parent.set_document(self.parent.doc)
-#             else:
-#                 print("No change!")
-#
-#     def mouseReleaseEvent(self, e):
-#         print("Released")
-#         new_right_edge = round((self.x() + self.width()) / self.parent.frame_width) - 1
-#         self.calc_edges((-1, new_right_edge))
-#         if self.is_resizing:
-#             try:
-#                 self.parent_object.reposition_word(self.me)
-#             except AttributeError:
-#                 self.parent.doc.current_voice.reposition_phrase(self.me, self.me.end_frame)
-#         self.is_resizing = False
-#         self.parent.first_update = False
-#         self.parent.update_drawing()
-#
-#     def __del__(self):
-#         try:
-#             self.deleteLater()
-#         except RuntimeError:
-#             pass
-#
-#     def mouseDoubleClickEvent(self, e):
-#         if not self.me.is_phoneme:
-#             print("Double Click: ")
-#             print(self.text())
-#             start = self.me.start_frame / self.parent.doc.fps
-#             length = (self.me.end_frame - self.me.start_frame) / self.parent.doc.fps
-#             self.parent.doc.sound.play_segment(start, length)
-#
-#     def calc_edges(self, new_coords = None):
-#         previous_one = None
-#         next_one = None
-#         parent = None
-#
-#         for index, phrase in enumerate(self.parent.doc.current_voice.phrases):
-#             if self.me == phrase:
-#                 #print("It's a phrase: " + phrase.text)
-#                 #print(index)
-#                 if index > 0:
-#                     previous_one = self.parent.doc.current_voice.phrases[index-1]
-#                 try:
-#                     next_one = self.parent.doc.current_voice.phrases[index + 1]
-#                 except IndexError:
-#                     pass
-#             else:
-#                 for index1, word in enumerate(phrase.words):
-#                     if self.me == word:
-#                         #print("It's a word: " + word.text)
-#                         #print(index1)
-#                         parent = self.parent.doc.current_voice.phrases[index]
-#                         if index1 > 0:
-#                             previous_one = phrase.words[index1 - 1]
-#                         else:
-#                             if index > 0:
-#                                 try:
-#                                     previous_one = self.parent.doc.current_voice.phrases[index-1].words[-1]
-#                                 except IndexError:
-#                                     pass
-#                         try:
-#                             next_one = phrase.words[index1 + 1]
-#                         except IndexError:
-#                             try:
-#                                 next_one = self.parent.doc.current_voice.phrases[index + 1].words[0]
-#                             except IndexError:
-#                                 pass
-#                     else:
-#                         for index2, phoneme in enumerate(word.phonemes):
-#                             if self.me == phoneme:
-#                                 #print("It's a phoneme: " + phoneme.text)
-#                                 #print(index2)
-#                                 parent = phrase.words[index1]
-#                                 if index2 > 0:
-#                                     previous_one = word.phonemes[index2 - 1]
-#                                 else:
-#                                     if index1 > 0:
-#                                         try:
-#                                             previous_one = phrase.words[index1 - 1].phonemes[-1]
-#                                         except IndexError:
-#                                             pass
-#                                 try:
-#                                     next_one = word.phonemes[index2 + 1]
-#                                 except IndexError:
-#                                     try:
-#                                         next_one = phrase.words[index1 + 1].phonemes[0]
-#                                     except IndexError:
-#                                         pass
-#         # if parent:
-#         #     print("Parent : " + parent.text)
-#         #     print(dir(parent))
-#         # if previous_one:
-#         #     print("Previous one: " + previous_one.text)
-#         #     print(dir(previous_one))
-#         # if next_one:
-#         #     print("Next one: " + next_one.text)
-#         #     print(dir(next_one))
-#         # We should now have the previous and next object and it's parent here.
-#
-#         self.left_edge = 0
-#         self.right_edge = 0
-#         self.left_most = 0
-#         self.right_most = 0
-#
-#         if previous_one:
-#             if previous_one.is_phoneme:
-#                 self.left_edge = previous_one.frame * self.parent.frame_width
-#             else:
-#                 self.left_edge = previous_one.end_frame * self.parent.frame_width
-#         if next_one:
-#             if next_one.is_phoneme:
-#                 self.right_edge = next_one.frame * self.parent.frame_width
-#             else:
-#                 self.right_edge = next_one.start_frame * self.parent.frame_width
-#         if parent:
-#             self.left_most = parent.start_frame * self.parent.frame_width
-#             self.right_most = parent.end_frame * self.parent.frame_width
-#
-#         if self.right_edge == 0:
-#             self.right_edge = self.parent.scene().width()
-#         self.left_edge = max(self.left_edge, self.left_most) + (1 * self.parent.frame_width)
-#         if self.right_most:
-#             self.right_edge = min(self.right_edge, self.right_most) + (1 * self.parent.frame_width)
-#
-#         # TODO: Some more testing is needed to see if dragging and resizing is correctly working
-#
-#         real_new_x = int(round(self.pos().x() / (self.parent.sample_width * self.parent.samples_per_frame)))
-#         real_new_end = int(round(real_new_x + (self.width() / (self.parent.sample_width * self.parent.samples_per_frame))))
-#         left_frame_edge = real_new_x  # round(self.left_edge / self.parent.frame_width)
-#         right_frame_edge = real_new_end  # round(self.right_edge / self.parent.frame_width)
-#         if new_coords:
-#             if not self.me.is_phoneme:
-#                 if new_coords[0] != -1:
-#                     old_diff = self.me.end_frame - self.me.start_frame
-#                     if True:  # (left_frame_edge < new_coords[0] < right_frame_edge) and (left_frame_edge < new_coords[0] + old_diff < right_frame_edge):
-#                         self.me.start_frame = new_coords[0]
-#                         self.me.end_frame = self.me.start_frame + old_diff
-#                 if new_coords[1] != -1:
-#                     if True:  # left_frame_edge < new_coords[1] < right_frame_edge:
-#                         self.me.end_frame = new_coords[1]
-#             else:
-#                 if new_coords[0] != -1:
-#                     if True:  # left_frame_edge < new_coords[0] < right_frame_edge:
-#                         self.me.frame = new_coords[0] -1
-#                 #else:
-#                 #    if True:  # left_frame_edge < new_coords[1] < right_frame_edge:
-#                 #        self.me.frame = new_coords[1]
 
 
 class WaveformView(QtWidgets.QGraphicsView):

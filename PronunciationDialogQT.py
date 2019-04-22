@@ -50,7 +50,6 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.phoneme_buttons = {}
 
         for phoneme in phoneme_set:
-            print(phoneme)
             if phoneme != "rest":
                 phoneme_ids[phoneme] = QtWidgets.QPushButton(phoneme, self)
                 phoneme_ids[phoneme].clicked.connect(self.on_phoneme_click)
@@ -72,7 +71,6 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.phoneme_ctrl.setText(text.strip())
 
     def on_phoneme_click(self, event=None):
-        print(self.sender().text())
         phoneme = self.sender().text()
         text = "%s %s" % (self.phoneme_ctrl.text().strip(), phoneme)
         self.phoneme_ctrl.setText(text.strip())
