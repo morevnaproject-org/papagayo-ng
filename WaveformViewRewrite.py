@@ -74,46 +74,66 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 
 class MovableButton(QtWidgets.QPushButton):
-    def __init__(self, lipsync_object, style, wfv_parent,  phoneme_offset=None):
+    def __init__(self, lipsync_object, wfv_parent,  phoneme_offset=None):
         super(MovableButton, self).__init__(lipsync_object.text, None)
         self.title = lipsync_object.text
         self.node = None
         self.phoneme_offset = phoneme_offset
         self.lipsync_object = lipsync_object
-        self.setStyleSheet(style)
+        self.style = None
         self.is_resizing = False
         self.resize_origin = 0  # 0 = left 1 = right
         self.wfv_parent = wfv_parent
         self.hotspot = None
-        # We need the parent element if it exists, and the previous and next element if they exist
-        # When we move we need to check for the boundaries dictated by the parent and neighbours.
-        # Inform our neighbours after we finished moving, should be automatic if references are used for that.
-        # Getting new neighbours or loosing some is problematic.
-        # Maybe a structure with all elements makes sense, it's a bit circular but should work.
-        # It should somehow represent the actual data so that we can find our neighbours...
-        # So the mov_widget_list should maybe be a list of lists instead
-        # But to find our position in that we would have to parse through the whole list then...
+        self.create_and_set_style()
+
+    def create_and_set_style(self):
+        if not self.style:
+            if self.is_phrase():
+
+                self.style = "color: #000000; background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
+                                                                                         phrase_fill_col.green(),
+                                                                                         phrase_fill_col.blue())
+                self.style += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
+                self.style += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
+                                                                          phrase_outline_col.green(),
+                                                                          phrase_outline_col.blue())
+            elif self.is_word():
+                self.style = "color: #000000; background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
+                                                                                         word_fill_col.green(),
+                                                                                         word_fill_col.blue())
+                self.style += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
+                self.style += "border:1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
+                                                                          word_outline_col.green(),
+                                                                          word_outline_col.blue())
+            elif self.is_phoneme():
+                self.style = "color: #000000; background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
+                                                                                         phoneme_fill_col.green(),
+                                                                                         phoneme_fill_col.blue())
+                self.style += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
+                                                                          phoneme_outline_col.green(),
+                                                                          phoneme_outline_col.blue())
+            self.setStyleSheet(self.style)
 
     def is_phoneme(self):
-        # voice = 0, phrase = 1, word = 2, phoneme = 3
-        if self.node.depth == 3:
+        if self.lipsync_object.is_phoneme:
             return True
         else:
             return False
 
     def is_word(self):
-        # voice = 0, phrase = 1, word = 2, phoneme = 3
-        if self.node.depth == 2:
-            return True
-        else:
+        try:
+            self.lipsync_object.phonemes
+        except AttributeError:
             return False
+        return True
 
     def is_phrase(self):
-        # voice = 0, phrase = 1, word = 2, phoneme = 3
-        if self.node.depth == 1:
-            return True
-        else:
+        try:
+            self.lipsync_object.words
+        except AttributeError:
             return False
+        return True
 
     def after_reposition(self):
         if self.is_phoneme():
@@ -312,19 +332,12 @@ class MovableButton(QtWidgets.QPushButton):
                         self.lipsync_object.phonemes = []
                         font_metrics = QtGui.QFontMetrics(font)
                         text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
-                        phoneme_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(
-                            phoneme_fill_col.red(),
-                            phoneme_fill_col.green(),
-                            phoneme_fill_col.blue())
-                        phoneme_col_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
-                                                                                          phoneme_outline_col.green(),
-                                                                                          phoneme_outline_col.blue())
                         for phoneme_count, p in enumerate(list_of_new_phonemes):
                             phoneme = LipsyncPhoneme()
                             phoneme.text = p
                             phoneme.frame = self.lipsync_object.start_frame + phoneme_count
                             self.lipsync_object.phonemes.append(phoneme)
-                            temp_button = MovableButton(phoneme, phoneme_col_string, self.wfv_parent, phoneme_count % 2)
+                            temp_button = MovableButton(phoneme, self.wfv_parent, phoneme_count % 2)
                             temp_button.node = Node(temp_button, parent=self.node)
                             temp_scene_widget = self.wfv_parent.scene().addWidget(temp_button)
                             temp_scene_widget.setParent(self.wfv_parent)
@@ -540,28 +553,6 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def create_movbuttons(self):
         if self.doc is not None:
-            phrase_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
-                                                                                            phrase_fill_col.green(),
-                                                                                            phrase_fill_col.blue())
-            phrase_col_string += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
-            phrase_col_string += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
-                                                                             phrase_outline_col.green(),
-                                                                             phrase_outline_col.blue())
-
-            word_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
-                                                                                          word_fill_col.green(),
-                                                                                          word_fill_col.blue())
-            word_col_string += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
-
-            word_col_string += "border:1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
-                                                                           word_outline_col.green(),
-                                                                           word_outline_col.blue())
-            phoneme_col_string = "color: #000000; background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
-                                                                                             phoneme_fill_col.green(),
-                                                                                             phoneme_fill_col.blue())
-            phoneme_col_string += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
-                                                                              phoneme_outline_col.green(),
-                                                                              phoneme_outline_col.blue())
             font_metrics = QtGui.QFontMetrics(font)
             text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
             text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
@@ -570,7 +561,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.main_node = Node(self.doc.current_voice.text)  # Not actually needed, but should make everything a bit easier
 
             for phrase in self.doc.current_voice.phrases:
-                self.temp_button = MovableButton(phrase, phrase_col_string, self)
+                self.temp_button = MovableButton(phrase, self)
                 self.temp_button.node = Node(self.temp_button, parent=self.main_node)
                 temp_scene_widget = self.scene().addWidget(self.temp_button)
                 temp_scene_widget.setParent(self)
@@ -581,7 +572,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.temp_phrase = self.temp_button
                 word_count = 0
                 for word in phrase.words:
-                    self.temp_button = MovableButton(word, word_col_string, self)
+                    self.temp_button = MovableButton(word, self)
                     self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
                     temp_scene_widget = self.scene().addWidget(self.temp_button)
                     temp_scene_widget.setParent(self)
@@ -594,7 +585,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     word_count += 1
                     phoneme_count = 0
                     for phoneme in word.phonemes:
-                        self.temp_button = MovableButton(phoneme, phoneme_col_string, self, phoneme_count % 2)
+                        self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
                         self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
                         temp_scene_widget = self.scene().addWidget(self.temp_button)
                         temp_scene_widget.setParent(self)
