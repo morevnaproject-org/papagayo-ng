@@ -82,9 +82,9 @@ class MovableButton(QtWidgets.QPushButton):
         self.lipsync_object = lipsync_object
         self.style = None
         self.is_resizing = False
+        self.is_moving = False
         self.resize_origin = 0  # 0 = left 1 = right
         self.wfv_parent = wfv_parent
-        self.hotspot = None
         self.create_and_set_style()
 
     def create_and_set_style(self):
@@ -236,17 +236,20 @@ class MovableButton(QtWidgets.QPushButton):
 
     def mouseMoveEvent(self, event):
         if event.buttons() == QtCore.Qt.LeftButton:
-            if (self.width() - event.x()) < 10:
-                if not self.lipsync_object.is_phoneme:
-                    self.is_resizing = True
-                    self.resize_origin = 1
-            # elif event.x() < 10:
-            #     if not self.lipsync_object.is_phoneme:
-            #         self.is_resizing = True
-            #         self.resize_origin = 0
+            if not self.is_phoneme():
+                if (round(self.convert_to_frames(self.x() + event.x())) + 1 >= self.lipsync_object.end_frame) and not self.is_moving:
+                    if not self.lipsync_object.is_phoneme:
+                        self.is_resizing = True
+                        self.resize_origin = 1
+                # elif event.x() < 10:
+                #     if not self.lipsync_object.is_phoneme:
+                #         self.is_resizing = True
+                #         self.resize_origin = 0
+                else:
+                    self.is_resizing = False
             else:
                 self.is_resizing = False
-        if self.is_resizing:
+        if self.is_resizing and not self.is_moving:
             if self.resize_origin == 1:  # start resize from right side
                 if round(self.convert_to_frames(event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
                     if round(self.convert_to_frames(event.x() + self.x())) <= self.get_right_max():
@@ -261,13 +264,10 @@ class MovableButton(QtWidgets.QPushButton):
             #             self.resize(new_length, self.height())
             #             self.move(self.convert_to_pixels(self.lipsync_object.start_frame), self.y())
         else:
+            self.is_moving = True
             mime_data = QtCore.QMimeData()
             drag = QtGui.QDrag(self)
             drag.setMimeData(mime_data)
-            drag.setHotSpot(event.pos() - self.rect().topLeft())
-            print("HotSpot:")
-            print(drag.hotSpot())
-            self.hotspot = drag.hotSpot().x()
             # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
             try:
                 exec("dropAction = drag.exec(QtCore.Qt.MoveAction)")  # Otherwise we can't catch it and it will crash...
@@ -340,7 +340,7 @@ class MovableButton(QtWidgets.QPushButton):
                             temp_button = MovableButton(phoneme, self.wfv_parent, phoneme_count % 2)
                             temp_button.node = Node(temp_button, parent=self.node)
                             temp_scene_widget = self.wfv_parent.scene().addWidget(temp_button)
-                            temp_scene_widget.setParent(self.wfv_parent)
+                            #temp_scene_widget.setParent(self.wfv_parent)
                             temp_scene_widget.setGeometry(QtCore.QRect(phoneme.frame * self.wfv_parent.frame_width,
                                                                        self.wfv_parent.height() - (
                                                                                    self.wfv_parent.horizontalScrollBar().height() * 1.5) - (
@@ -358,25 +358,35 @@ class MovableButton(QtWidgets.QPushButton):
             self.wfv_parent.doc.sound.play_segment(start, length)
 
     def mouseReleaseEvent(self, event):
+        print("Release")
+        if self.is_moving:
+            self.is_moving = False
         if self.is_resizing:
             self.reposition_descendants()
             self.is_resizing = False
 
     def reposition_descendants(self):
-        # These reposition_word and phoneme methods are not really taking account their parent
-        # We have to run through the children ourselves and reposition and resize them to fit.
-        repositioned = False
-        if self.is_phrase():
-            repositioned = True
-            for word in self.node.children:
-                self.lipsync_object.reposition_word(word.name.lipsync_object)
-        elif self.is_word():
-            repositioned = True
-            for phoneme in self.node.children:
-                self.lipsync_object.reposition_phoneme(phoneme.name.lipsync_object)
-        if repositioned:
-            for descendant in self.node.descendants:
-                descendant.name.after_reposition()
+        for child in self.node.children:
+            child.name.reposition_to_left()
+
+    def reposition_to_left(self):
+        if self.has_left_sibling():
+            if self.is_phoneme():
+                self.lipsync_object.frame = self.get_left_sibling().name.lipsync_object.frame + 1
+            else:
+                self.lipsync_object.start_frame = self.get_left_sibling().name.lipsync_object.end_frame
+                self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
+                for child in self.node.children:
+                    child.name.reposition_to_left()
+        else:
+            if self.is_phoneme():
+                self.lipsync_object.frame = self.node.parent.name.lipsync_object.start_frame
+            else:
+                self.lipsync_object.start_frame = self.node.parent.name.lipsync_object.start_frame
+                self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
+                for child in self.node.children:
+                    child.name.reposition_to_left()
+        self.after_reposition()
 
     def get_left_sibling(self):
         return anytree.util.leftsibling(self.node)
@@ -433,6 +443,11 @@ class WaveformView(QtWidgets.QGraphicsView):
         # self.scene().setSceneRect(0,0,self.width(),self.height())
 
         print("LoadedWaveFormView")
+
+    def dropEvent(self, event):
+        print("DragLeave") # Strangely no dragLeaveEvent fires but a dropEvent instead...
+        event.source().is_moving = False
+        event.accept()
 
     def dragEnterEvent(self, e):
         print("DragEnter!")
@@ -564,7 +579,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.temp_button = MovableButton(phrase, self)
                 self.temp_button.node = Node(self.temp_button, parent=self.main_node)
                 temp_scene_widget = self.scene().addWidget(self.temp_button)
-                temp_scene_widget.setParent(self)
                 temp_scene_widget.setGeometry(QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
                                               (phrase.end_frame - phrase.start_frame) * self.frame_width + 1,
                                               text_height))
@@ -575,7 +589,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                     self.temp_button = MovableButton(word, self)
                     self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
                     temp_scene_widget = self.scene().addWidget(self.temp_button)
-                    temp_scene_widget.setParent(self)
                     temp_scene_widget.setGeometry(QtCore.QRect(word.start_frame * self.frame_width,
                                                   top_border + 4 + text_height + (text_height * (word_count % 2)),
                                                   (word.end_frame - word.start_frame ) * self.frame_width + 1,
@@ -588,7 +601,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                         self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
                         self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
                         temp_scene_widget = self.scene().addWidget(self.temp_button)
-                        temp_scene_widget.setParent(self)
                         temp_scene_widget.setGeometry(QtCore.QRect(phoneme.frame * self.frame_width,
                                                       self.height() - (self.horizontalScrollBar().height()*1.5) - (text_height + (text_height * (phoneme_count % 2))),
                                                       self.frame_width,
