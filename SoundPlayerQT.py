@@ -50,26 +50,11 @@ class SoundPlayer:
 
         self.decode_audio()
         self.np_data = np.array(self.only_samples)
-        self.np_data = np.abs(self.np_data / self.max_bits)
-        # A simple normalisation, with this the samples should all be between 0 and 1
-        # for i in self.decoded_audio.items():
-        #     self.only_samples.extend(i[1][0])
-        # t = []
-        # for i in self.only_samples:
-        #     if i != []:
-        #         t.append(i + -(min(self.only_samples)))
-        #
-        # t2 = []
-        # for i in t:
-        #     t2.append(i / max(t))
-        # self.only_samples = t2
+        if self.max_bits == 256:  # don't ask me why this fixes 8 bit samples...
+            self.np_data = self.np_data - self.max_bits / 2
         print(len(self.only_samples))
         print(self.max_bits)
-
-
         self.isvalid = True
-
-        #self.audio.play()
 
     def audioformat_to_datatype(self, audioformat):
         num_bits = audioformat.sampleSize()
@@ -90,13 +75,8 @@ class SoundPlayer:
                 # We use the Pointer Address to get a cffi Pointer to the data (hopefully)
                 cast_data = self.audioformat_to_datatype(tempdata.format())
                 possible_data = ffi.cast("{1}[{0}]".format(tempdata.sampleCount(), cast_data), int(tempdata.constData()))
-
-                current_sample_data = []
-                for i in possible_data:
-                    current_sample_data.append(int(ffi.cast(cast_data, i)))
-                #x = int(ffi.cast("int16_t", possible_data[0]))
-                self.only_samples.extend(current_sample_data)
-                self.decoded_audio[self.decoder.position()] = [current_sample_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
+                self.only_samples.extend(possible_data)
+                self.decoded_audio[self.decoder.position()] = [possible_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
 
     def decode_finished_signal(self):
         self.decoding_is_finished = True
