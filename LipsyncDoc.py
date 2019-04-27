@@ -494,21 +494,21 @@ class LipsyncDoc:
         self.sound = None
         self.voices = []
         self.current_voice = None
-        inFile = codecs.open(self.path, 'r', 'utf-8', 'replace')
-        inFile.readline()  # discard the header
-        self.soundPath = inFile.readline().strip()
+        in_file = open(self.path, 'r')
+        in_file.readline()  # discard the header
+        self.soundPath = in_file.readline().strip()
         if not os.path.isabs(self.soundPath):
             self.soundPath = os.path.normpath(os.path.dirname(self.path) + '/' + self.soundPath)
-        self.fps = int(inFile.readline())
+        self.fps = int(in_file.readline())
         print(("self.path: %s" % self.path))
-        self.soundDuration = int(inFile.readline())
+        self.soundDuration = int(in_file.readline())
         print(("self.soundDuration: %d" % self.soundDuration))
-        numVoices = int(inFile.readline())
-        for i in range(numVoices):
+        num_voices = int(in_file.readline())
+        for i in range(num_voices):
             voice = LipsyncVoice()
-            voice.open(inFile)
+            voice.open(in_file)
             self.voices.append(voice)
-        inFile.close()
+        in_file.close()
         self.open_audio(self.soundPath)
         if len(self.voices) > 0:
             self.current_voice = self.voices[0]
