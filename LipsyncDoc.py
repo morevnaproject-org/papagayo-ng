@@ -539,7 +539,7 @@ class LipsyncDoc:
             savedSoundPath = os.path.basename(self.soundPath)
         else:
             savedSoundPath = self.soundPath
-        outFile = codecs.open(self.path, 'w', 'utf-8', 'replace')
+        outFile = open(self.path, "w")
         outFile.write("lipsync version 1\n")
         outFile.write("%s\n" % savedSoundPath)
         outFile.write("%d\n" % self.fps)
