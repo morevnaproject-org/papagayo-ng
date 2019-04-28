@@ -354,6 +354,7 @@ class LipsyncFrame:
         if (self.doc is not None) and (self.doc.sound is not None):
             self.doc.sound.stop()
             self.doc.sound.set_cur_time(0)
+            self.main_window.waveform_view.temp_play_marker.setVisible(False)
             self.main_window.mouth_view.set_frame(0)
             self.main_window.waveform_view.set_frame(0)
             self.main_window.action_stop.setEnabled(False)
@@ -361,6 +362,7 @@ class LipsyncFrame:
             self.main_window.statusbar.showMessage("Stopped")
             self.main_window.waveform_view.horizontalScrollBar().setValue(self.main_window.waveform_view.scroll_position)
             self.main_window.waveform_view.update()
+            QtCore.QCoreApplication.processEvents()
 
     def on_play_tick(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):

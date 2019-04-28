@@ -38,6 +38,7 @@ class SoundPlayer:
         self.only_samples = []
         self.decoding_is_finished = False
         self.max_bits = 32768
+        self.signed = False
         # File Loading is Asynchronous, so we need to be creative here, doesn't need to be duration but it works
         self.audio.durationChanged.connect(self.on_durationChanged)
         self.decoder.finished.connect(self.decode_finished_signal)
@@ -50,7 +51,7 @@ class SoundPlayer:
 
         self.decode_audio()
         self.np_data = np.array(self.only_samples)
-        if self.max_bits == 256:  # don't ask me why this fixes 8 bit samples...
+        if not self.signed:  # don't ask me why this fixes 8 bit samples...
             self.np_data = self.np_data - self.max_bits / 2
         print(len(self.only_samples))
         print(self.max_bits)
@@ -61,8 +62,10 @@ class SoundPlayer:
         signed = audioformat.sampleType()
         self.max_bits = 2 ** int(num_bits)
         if signed == QAudioFormat.SampleType.UnSignedInt:
+            self.signed = False
             return "uint" + str(num_bits) + "_t"
         elif signed == QAudioFormat.SampleType.SignedInt:
+            self.signed = True
             self.max_bits = int(self.max_bits / 2)
             return "int" + str(num_bits) + "_t"
 
@@ -136,7 +139,7 @@ class SoundPlayer:
 
     def play_segment(self, start, length):
         print("Playing Segment")
-        if not self.isplaying:  # otherwise this get's kinda echo-y
+        if not self.is_playing():  # otherwise this get's kinda echo-y
             self.isplaying = True
             self.audio.setPosition(start * 1000.0)
             self.audio.play()
@@ -150,6 +153,8 @@ class SoundPlayer:
         print(length)
         print(end)
         while self.audio.position() < end:
+            if not self.isplaying:
+                return 0
             QCoreApplication.processEvents()
             print(self.audio.position())
             time.sleep(0.001)
