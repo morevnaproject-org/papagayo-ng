@@ -7,8 +7,7 @@ from utilities import *
 
 import time
 
-from PySide2.QtMultimedia import QMediaPlayer, QAudioFormat, QAudioBuffer, QAudioDecoder
-from PySide2.QtMultimedia import QAudioOutput
+from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtCore import QUrl
 
@@ -38,13 +37,9 @@ class SoundPlayer:
         self.isplaying = False
         self.time = 0  # current audio position in frames
         self.audio = QMediaPlayer()
-        self.decoder = QAudioDecoder()
         self.is_loaded = False
         self.volume = 100
         self.isplaying = False
-        self.decoded_audio = {}
-        self.only_samples = []
-        self.decoding_is_finished = False
         self.max_bits = 32768
         # File Loading is Asynchronous, so we need to be creative here, doesn't need to be duration but it works
         self.audio.durationChanged.connect(self.on_durationChanged)
@@ -55,24 +50,6 @@ class SoundPlayer:
         while not self.is_loaded:
             QCoreApplication.processEvents()
             time.sleep(0.1)
-
-        #self.decode_audio()
-        #self.np_data = np.array(self.only_samples)
-        #self.np_data = np.abs(self.np_data / self.max_bits)
-        # A simple normalisation, with this the samples should all be between 0 and 1
-        # for i in self.decoded_audio.items():
-        #     self.only_samples.extend(i[1][0])
-        # t = []
-        # for i in self.only_samples:
-        #     if i != []:
-        #         t.append(i + -(min(self.only_samples)))
-        #
-        # t2 = []
-        # for i in t:
-        #     t2.append(i / max(t))
-        # self.only_samples = t2
-        #print(len(self.only_samples))
-        #print(self.max_bits)
 
 
         self.isvalid = True
@@ -105,36 +82,6 @@ class SoundPlayer:
             self.isvalid = False
 
         #self.audio.play()
-
-    def audioformat_to_datatype(self, audioformat):
-        num_bits = audioformat.sampleSize()
-        signed = audioformat.sampleType()
-        self.max_bits = 2 ** int(num_bits)
-        if signed == QAudioFormat.SampleType.UnSignedInt:
-            return "uint" + str(num_bits) + "_t"
-        elif signed == QAudioFormat.SampleType.SignedInt:
-            self.max_bits = int(self.max_bits / 2)
-            return "int" + str(num_bits) + "_t"
-
-    def decode_audio(self):
-        self.decoder.start()
-        while not self.decoding_is_finished:
-            QCoreApplication.processEvents()
-            if self.decoder.bufferAvailable():
-                tempdata = self.decoder.read()
-                # We use the Pointer Address to get a cffi Pointer to the data (hopefully)
-                cast_data = self.audioformat_to_datatype(tempdata.format())
-                possible_data = ffi.cast("{1}[{0}]".format(tempdata.sampleCount(), cast_data), int(tempdata.constData()))
-
-                current_sample_data = []
-                for i in possible_data:
-                    current_sample_data.append(int(ffi.cast(cast_data, i)))
-                #x = int(ffi.cast("int16_t", possible_data[0]))
-                self.only_samples.extend(current_sample_data)
-                self.decoded_audio[self.decoder.position()] = [current_sample_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
-
-    def decode_finished_signal(self):
-        self.decoding_is_finished = True
 
     def on_durationChanged(self, duration):
         print("Changed!")
@@ -203,6 +150,8 @@ class SoundPlayer:
         print(length)
         print(end)
         while self.audio.position() < end:
+            if not self.isplaying:
+                return 0
             QCoreApplication.processEvents()
             print(self.audio.position())
             time.sleep(0.001)
