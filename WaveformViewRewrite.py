@@ -21,15 +21,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import math, random, time
+import numpy as np
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
-#from PySide2.QtWidgets import QtGui, QtCore, QtWidgets
-
 from anytree import Node
 import anytree.util
 
 from LipsyncDoc import *
+
+
+def normalize(x):
+    x = np.asarray(x)
+    return ((x - x.min()) / (np.ptp(x))) * 0.8
+
 
 fill_color = QtGui.QColor(162, 205, 242)
 line_color = QtGui.QColor(30, 121, 198)
@@ -380,13 +385,13 @@ class MovableButton(QtWidgets.QPushButton):
                         main_window.statusbar.showMessage("Frame: %d FPS: %d" % ((cur_frame + 1), fps))
                         self.wfv_parent.scroll_position = self.wfv_parent.horizontalScrollBar().value()
                         start_time = time.time()
+                    self.wfv_parent.update()
                 self.wfv_parent.temp_play_marker.setVisible(False)
                 main_window.action_stop.setEnabled(False)
                 main_window.action_play.setEnabled(True)
                 main_window.statusbar.showMessage("Stopped")
                 main_window.waveform_view.horizontalScrollBar().setValue(main_window.waveform_view.scroll_position)
                 main_window.waveform_view.update()
-
 
     def mouseReleaseEvent(self, event):
         print("Release")
@@ -438,7 +443,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setScene(SceneWithDrag(self))
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
 
@@ -556,12 +561,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                     self.scene().setSceneRect(self.waveform_polygon.polygon().boundingRect())
                     self.first_update = False
 
-    def update_drawing(self, redraw_all=True):
-        self.draw()
-
-    def draw(self):
-        print("Begin Drawing")
-
     def create_waveform(self):
         if self.waveform_polygon in self.scene().items():
             self.scene().removeItem(self.waveform_polygon)
@@ -641,36 +640,36 @@ class WaveformView(QtWidgets.QGraphicsView):
                         self.temp_phoneme = self.temp_button
                         phoneme_count += 1
 
-    def set_document(self, document):
-        self.doc = document
-        if (self.doc is not None) and (self.doc.sound is not None):
-            self.frame_width = self.sample_width * self.samples_per_frame
-            duration = self.doc.sound.Duration()
-            time = 0.0
-            sample_dur = 1.0 / self.samples_per_sec
-            max_amp = 0.0
-            self.amp = []
-            while time < duration:
-                self.num_samples += 1
-                amp = self.doc.sound.GetRMSAmplitude(time, sample_dur)
-                self.amp.append(amp)
-                if amp > max_amp:
-                    max_amp = amp
-                time += sample_dur
-            # normalize amplitudes
-            max_amp = 0.95 / max_amp
-            for i in range(len(self.amp)):
-                self.amp[i] *= max_amp
-            self.scene().clear()
-            self.scene().update()
-            self.create_movbuttons()
-        self.create_waveform()
-        self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
-                                                     QtGui.QPen(play_outline_col),
-                                                     QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
-        self.temp_play_marker.setZValue(1000)
-        self.temp_play_marker.setOpacity(0.5)
-        self.temp_play_marker.setVisible(False)
+    def recalc_waveform(self):
+        duration = self.doc.sound.Duration()
+        time = 0.0
+        sample_dur = 1.0 / self.samples_per_sec
+        max_amp = 0.0
+        self.amp = []
+        while time < duration:
+            self.num_samples += 1
+            amp = self.doc.sound.GetRMSAmplitude(time, sample_dur)
+            self.amp.append(amp)
+            if amp > max_amp:
+                max_amp = amp
+            time += sample_dur
+        self.amp = normalize(self.amp)
+
+    def set_document(self, document, force=False):
+        if document != self.doc or force:
+            self.doc = document
+            if (self.doc is not None) and (self.doc.sound is not None):
+                self.recalc_waveform()
+                self.scene().clear()
+                self.scene().update()
+                self.create_movbuttons()
+                self.create_waveform()
+                self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
+                                                             QtGui.QPen(play_outline_col),
+                                                             QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+                self.temp_play_marker.setZValue(1000)
+                self.temp_play_marker.setOpacity(0.5)
+                self.temp_play_marker.setVisible(False)
 
     def on_slider_change(self, value):
         self.scroll_position = value
@@ -722,26 +721,34 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.samples_per_frame *= 2
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
-            self.set_document(self.doc)
+            for node in self.main_node.descendants:
+                node.name.after_reposition()
+            self.recalc_waveform()
+            self.create_waveform()
+            if self.temp_play_marker:
+                self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
             self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
                                       self.sceneRect().width() * 2, self.scene().sceneRect().height())
             self.setSceneRect(self.scene().sceneRect())
             self.scroll_position *= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
-            QtCore.QCoreApplication.processEvents()
 
     def on_zoom_out(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame > 1):
             self.samples_per_frame /= 2
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
-            self.set_document(self.doc)
+            for node in self.main_node.descendants:
+                node.name.after_reposition()
+            self.recalc_waveform()
+            self.create_waveform()
+            if self.temp_play_marker:
+                self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
             self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
                                       self.scene().sceneRect().width() / 2, self.scene().sceneRect().height())
             self.setSceneRect(self.scene().sceneRect())
             self.scroll_position /= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
-            QtCore.QCoreApplication.processEvents()
 
     def on_zoom_reset(self, event=None):
         if self.doc is not None:
@@ -751,11 +758,15 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.samples_per_frame = default_samples_per_frame
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
-            self.set_document(self.doc)
+            for node in self.main_node.descendants:
+                node.name.after_reposition()
+            self.recalc_waveform()
+            self.create_waveform()
+            if self.temp_play_marker:
+                self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
             self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
                                       self.scene().sceneRect().width() / factor, self.scene().sceneRect().height())
             self.setSceneRect(self.scene().sceneRect())
             self.horizontalScrollBar().setValue(self.scroll_position)
-            QtCore.QCoreApplication.processEvents()
 
 # end of class WaveformView

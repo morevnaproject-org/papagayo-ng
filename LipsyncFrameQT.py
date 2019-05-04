@@ -406,6 +406,7 @@ class LipsyncFrame:
             self.doc.current_voice.name = self.main_window.voice_name_input.text()
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
             self.main_window.voice_list.currentItem().setText(self.doc.current_voice.name)
+            self.main_window.waveform_view.first_update = True
             self.main_window.waveform_view.set_document(self.doc)
 
     def on_voice_text(self, event=None):
@@ -489,7 +490,8 @@ class LipsyncFrame:
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
         self.main_window.waveform_view.first_update = True
-        self.main_window.waveform_view.update_drawing()
+        self.main_window.waveform_view.set_document(self.doc, True)
+        self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
 
     def on_new_voice(self, event=None):
@@ -505,7 +507,8 @@ class LipsyncFrame:
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
         self.main_window.waveform_view.first_update = True
-        self.main_window.waveform_view.update_drawing()
+        self.main_window.waveform_view.set_document(self.doc, True)
+        self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
 
     def on_del_voice(self, event=None):
@@ -526,7 +529,8 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.main_window.waveform_view.first_update = True
-        self.main_window.waveform_view.update_drawing()
+        self.main_window.waveform_view.set_document(self.doc, True)
+        self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
 
     def on_voice_image_choose(self, event=None):
