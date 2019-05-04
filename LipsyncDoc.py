@@ -195,6 +195,7 @@ class LipsyncVoice:
         self.name = name
         self.text = ""
         self.phrases = []
+        self.num_children = 0
 
     def run_breakdown(self, frameDuration, parentWindow, language, languagemanager, phonemeset):
         # make sure there is a space after all punctuation marks
@@ -304,12 +305,14 @@ class LipsyncVoice:
         self.text = tempText.replace('|', '\n')
         numPhrases = int(inFile.readline())
         for p in range(numPhrases):
+            self.num_children += 1
             phrase = LipsyncPhrase()
             phrase.text = inFile.readline().strip()
             phrase.start_frame = int(inFile.readline())
             phrase.end_frame = int(inFile.readline())
             numWords = int(inFile.readline())
             for w in range(numWords):
+                self.num_children += 1
                 word = LipsyncWord()
                 wordLine = inFile.readline().split()
                 word.text = wordLine[0]
@@ -317,6 +320,7 @@ class LipsyncVoice:
                 word.end_frame = int(wordLine[2])
                 numPhonemes = int(wordLine[3])
                 for p in range(numPhonemes):  # TODO: Might want to rename p to make it clearer
+                    self.num_children += 1
                     phoneme = LipsyncPhoneme()
                     phonemeLine = inFile.readline().split()
                     phoneme.frame = int(phonemeLine[0])

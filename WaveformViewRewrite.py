@@ -443,7 +443,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setScene(SceneWithDrag(self))
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
 
@@ -557,9 +557,16 @@ class WaveformView(QtWidgets.QGraphicsView):
                 painter.drawText(text_marker[0], QtCore.Qt.AlignLeft, text_marker[1])
             if self.first_update:
                 if self.waveform_polygon:
-                    self.setSceneRect(self.waveform_polygon.polygon().boundingRect())
-                    self.scene().setSceneRect(self.waveform_polygon.polygon().boundingRect())
-                    self.first_update = False
+                    # because of QT Shenanigans we can't only check that is exists, but this should make sure it does
+                    exists = True
+                    try:
+                        print(self.waveform_polygon)
+                    except RuntimeError:
+                        exists = False
+                    if exists:
+                        self.setSceneRect(self.waveform_polygon.polygon().boundingRect())
+                        self.scene().setSceneRect(self.waveform_polygon.polygon().boundingRect())
+                        self.first_update = False
 
     def create_waveform(self):
         if self.waveform_polygon in self.scene().items():
@@ -574,7 +581,11 @@ class WaveformView(QtWidgets.QGraphicsView):
         sample = first_sample
         frame_rectangle_polygon_upper = []
         frame_rectangle_polygon_lower = []
+        main_window = self.parentWidget().parentWidget().parentWidget()
         for i in range(int(first_sample), int(last_sample)):
+            main_window.statusbar.showMessage(
+                "Preparing Waveform: " + str(int((i / int(last_sample)) * 100)) + "%")
+            QtCore.QCoreApplication.processEvents()
             height = round(self.wv_height * self.amp[i]) + (top_and_bottom_space / 2)
             half_height = height / 2
             if self.draw_play_marker and (frame == self.cur_frame):
@@ -596,6 +607,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             temp_polygon.append(QtCore.QPointF(coordinates[0], coordinates[1]))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
         self.waveform_polygon.setZValue(1)
+        main_window.statusbar.showMessage("Papagayo-NG")
 
     def create_movbuttons(self):
         if self.doc is not None:
@@ -603,7 +615,9 @@ class WaveformView(QtWidgets.QGraphicsView):
             text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
             text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
             top_border += 4
-
+            main_window = self.parentWidget().parentWidget().parentWidget()
+            current_num = 0
+            main_window.statusbar.showMessage(str((current_num / self.doc.current_voice.num_children) * 100) + "%")
             self.main_node = Node(self.doc.current_voice.text)  # Not actually needed, but should make everything a bit easier
 
             for phrase in self.doc.current_voice.phrases:
@@ -616,6 +630,9 @@ class WaveformView(QtWidgets.QGraphicsView):
                 temp_scene_widget.setZValue(99)
                 self.temp_phrase = self.temp_button
                 word_count = 0
+                current_num += 1
+                main_window.statusbar.showMessage(
+                    "Preparing Buttons: " + str(int((current_num / self.doc.current_voice.num_children) * 100)) + "%")
                 for word in phrase.words:
                     self.temp_button = MovableButton(word, self)
                     self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
@@ -628,6 +645,9 @@ class WaveformView(QtWidgets.QGraphicsView):
                     self.temp_word = self.temp_button
                     word_count += 1
                     phoneme_count = 0
+                    current_num += 1
+                    main_window.statusbar.showMessage(
+                        "Preparing Buttons: " + str(int((current_num / self.doc.current_voice.num_children) * 100)) + "%")
                     for phoneme in word.phonemes:
                         self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
                         self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
@@ -639,6 +659,11 @@ class WaveformView(QtWidgets.QGraphicsView):
                         temp_scene_widget.setZValue(99)
                         self.temp_phoneme = self.temp_button
                         phoneme_count += 1
+                        current_num += 1
+                        main_window.statusbar.showMessage(
+                            "Preparing Buttons: " + str(int((current_num / self.doc.current_voice.num_children) * 100)) + "%")
+                        QtCore.QCoreApplication.processEvents()
+            main_window.statusbar.showMessage("Papagayo-NG")
 
     def recalc_waveform(self):
         duration = self.doc.sound.Duration()
@@ -670,6 +695,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.temp_play_marker.setZValue(1000)
                 self.temp_play_marker.setOpacity(0.5)
                 self.temp_play_marker.setVisible(False)
+                self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
 
     def on_slider_change(self, value):
         self.scroll_position = value
