@@ -585,40 +585,29 @@ class WaveformView(QtWidgets.QGraphicsView):
     def create_waveform(self):
         if self.waveform_polygon in self.scene().items():
             self.scene().removeItem(self.waveform_polygon)
-        first_sample = 0
-        last_sample = len(self.amp)
-        offset = 15
-        self.wv_height = self.height() + self.horizontalScrollBar().height()
-        half_client_height = (self.wv_height / 2) - offset
-        x = first_sample * self.sample_width
-        frame = first_sample / self.samples_per_frame
-        sample = first_sample
-        frame_rectangle_polygon_upper = []
-        frame_rectangle_polygon_lower = []
-        main_window = self.parentWidget().parentWidget().parentWidget()
-        for i in range(int(first_sample), int(last_sample)):
-            main_window.statusbar.showMessage(
-                "Preparing Waveform: " + str(int((i / int(last_sample)) * 100)) + "%")
-            QtCore.QCoreApplication.processEvents()
-            height = round(self.wv_height * self.amp[i])
-            half_height = height / 2
-            if self.draw_play_marker and (frame == self.cur_frame):
-                pass
-            else:
-                # frame_rectangle_list.append((x, half_client_height - half_height, self.sample_width+1, height))
-                # self.scene().addRect(x, half_client_height - half_height, self.sample_width+1, height, line_color, fill_color)
-                frame_rectangle_polygon_upper.append((x, half_client_height - half_height))
-                frame_rectangle_polygon_upper.append((x + self.sample_width, half_client_height - half_height))
-                frame_rectangle_polygon_lower.append((x, half_client_height + half_height))
-                frame_rectangle_polygon_lower.append((x + self.sample_width, half_client_height + half_height))
-            x += self.sample_width
-            sample += 1
-            if sample % self.samples_per_frame == 0:
-                frame += 1
-        frame_rectangle_polygon_lower.reverse()
+        available_height = self.height() / 2
+        fitted_samples = self.amp * available_height
+        offset = 0  # available_height / 2
         temp_polygon = QtGui.QPolygonF()
-        for coordinates in (frame_rectangle_polygon_upper + frame_rectangle_polygon_lower):
-            temp_polygon.append(QtCore.QPointF(coordinates[0], coordinates[1]))
+        main_window = self.parentWidget().parentWidget().parentWidget()
+        for x, y in enumerate(fitted_samples):
+            main_window.statusbar.showMessage(
+                "Preparing Waveform: " + str(int(((x / 2) / len(fitted_samples)) * 100)) + "%")
+            QtCore.QCoreApplication.processEvents()
+            temp_polygon.append(QtCore.QPointF(x * self.sample_width,
+                                               available_height - y + offset))
+            if x < len(fitted_samples):
+                temp_polygon.append(QtCore.QPointF((x+1) * self.sample_width,
+                                                   available_height - y + offset))
+        for x, y in enumerate(fitted_samples[::-1]):
+            main_window.statusbar.showMessage(
+                "Preparing Waveform: " + str(int(((x / 2) / len(fitted_samples)) * 100) + 50) + "%")
+            QtCore.QCoreApplication.processEvents()
+            temp_polygon.append(QtCore.QPointF((len(fitted_samples) - x) * self.sample_width,
+                                               available_height + y + offset))
+            if x > 0:
+                temp_polygon.append(QtCore.QPointF((len(fitted_samples) - x - 1) * self.sample_width,
+                                                   available_height + y + offset))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
         self.waveform_polygon.setZValue(1)
         main_window.statusbar.showMessage("Papagayo-NG")
@@ -631,7 +620,6 @@ class WaveformView(QtWidgets.QGraphicsView):
             top_border += 4
             main_window = self.parentWidget().parentWidget().parentWidget()
             current_num = 0
-            main_window.statusbar.showMessage(str((current_num / self.doc.current_voice.num_children) * 100) + "%")
             self.main_node = Node(self.doc.current_voice.text)  # Not actually needed, but should make everything a bit easier
 
             for phrase in self.doc.current_voice.phrases:
