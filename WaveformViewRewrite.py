@@ -90,34 +90,55 @@ class MovableButton(QtWidgets.QPushButton):
         self.is_moving = False
         self.resize_origin = 0  # 0 = left 1 = right
         self.wfv_parent = wfv_parent
+        self.setToolTip(lipsync_object.text)
         self.create_and_set_style()
+        self.fit_text_to_size()
+
+    def text_size(self):
+        font_metrics = QtGui.QFontMetrics(self.font())
+        return font_metrics.width(self.title)
+
+    def text_fits_in_button(self):
+        if not self.is_phoneme():
+            return self.text_size() < self.convert_to_pixels(self.get_frame_size()) + self.convert_to_pixels(0.5)
+        else:
+            return self.text_size() < self.convert_to_pixels(self.get_frame_size()) - self.convert_to_pixels(0.5)
+
+    def fit_text_to_size(self):
+        self.title = self.lipsync_object.text
+        while not self.text_fits_in_button():
+            if len(self.title) > 1:
+                self.title = self.title[:-1]
+            else:
+                break
+        self.setText(self.title)
 
     def create_and_set_style(self):
         if not self.style:
             if self.is_phrase():
 
-                self.style = "color: #000000; background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
-                                                                                         phrase_fill_col.green(),
-                                                                                         phrase_fill_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
+                                                                                                       phrase_fill_col.green(),
+                                                                                                       phrase_fill_col.blue())
                 self.style += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
-                self.style += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
-                                                                          phrase_outline_col.green(),
-                                                                          phrase_outline_col.blue())
+                self.style += "border:1px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
+                                                                             phrase_outline_col.green(),
+                                                                             phrase_outline_col.blue())
             elif self.is_word():
-                self.style = "color: #000000; background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
-                                                                                         word_fill_col.green(),
-                                                                                         word_fill_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
+                                                                                                       word_fill_col.green(),
+                                                                                                       word_fill_col.blue())
                 self.style += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
-                self.style += "border:1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
-                                                                          word_outline_col.green(),
-                                                                          word_outline_col.blue())
+                self.style += "border:1px solid rgb({0},{1},{2});}};".format(word_outline_col.red(),
+                                                                             word_outline_col.green(),
+                                                                             word_outline_col.blue())
             elif self.is_phoneme():
-                self.style = "color: #000000; background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
-                                                                                         phoneme_fill_col.green(),
-                                                                                         phoneme_fill_col.blue())
-                self.style += "border:1px solid rgb({0},{1},{2});".format(phoneme_outline_col.red(),
-                                                                          phoneme_outline_col.green(),
-                                                                          phoneme_outline_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
+                                                                                                       phoneme_fill_col.green(),
+                                                                                                       phoneme_fill_col.blue())
+                self.style += "border:1px solid rgb({0},{1},{2});}};".format(phoneme_outline_col.red(),
+                                                                             phoneme_outline_col.green(),
+                                                                             phoneme_outline_col.blue())
             self.setStyleSheet(self.style)
 
     def is_phoneme(self):
@@ -556,26 +577,19 @@ class WaveformView(QtWidgets.QGraphicsView):
             for text_marker in list_of_textmarkers:
                 painter.drawText(text_marker[0], QtCore.Qt.AlignLeft, text_marker[1])
             if self.first_update:
-                if self.waveform_polygon:
-                    # because of QT Shenanigans we can't only check that is exists, but this should make sure it does
-                    exists = True
-                    try:
-                        print(self.waveform_polygon)
-                    except RuntimeError:
-                        exists = False
-                    if exists:
-                        self.setSceneRect(self.waveform_polygon.polygon().boundingRect())
-                        self.scene().setSceneRect(self.waveform_polygon.polygon().boundingRect())
-                        self.first_update = False
+                new_scene_rect = QtCore.QRectF(0, 0, self.list_of_lines[-1].p2().x(), self.list_of_lines[0].p2().y())
+                self.setSceneRect(new_scene_rect)
+                self.scene().setSceneRect(new_scene_rect)
+                self.first_update = False
 
     def create_waveform(self):
         if self.waveform_polygon in self.scene().items():
             self.scene().removeItem(self.waveform_polygon)
         first_sample = 0
         last_sample = len(self.amp)
-        top_and_bottom_space = 4  # This should in theory provide a bit of space at the top and bottom
-        self.wv_height = self.height() + self.horizontalScrollBar().height() - top_and_bottom_space
-        half_client_height = self.wv_height / 2
+        offset = 15
+        self.wv_height = self.height() + self.horizontalScrollBar().height()
+        half_client_height = (self.wv_height / 2) - offset
         x = first_sample * self.sample_width
         frame = first_sample / self.samples_per_frame
         sample = first_sample
@@ -586,7 +600,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             main_window.statusbar.showMessage(
                 "Preparing Waveform: " + str(int((i / int(last_sample)) * 100)) + "%")
             QtCore.QCoreApplication.processEvents()
-            height = round(self.wv_height * self.amp[i]) + (top_and_bottom_space / 2)
+            height = round(self.wv_height * self.amp[i])
             half_height = height / 2
             if self.draw_play_marker and (frame == self.cur_frame):
                 pass
@@ -749,6 +763,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.frame_width = self.sample_width * self.samples_per_frame
             for node in self.main_node.descendants:
                 node.name.after_reposition()
+                node.name.fit_text_to_size()
             self.recalc_waveform()
             self.create_waveform()
             if self.temp_play_marker:
@@ -766,6 +781,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.frame_width = self.sample_width * self.samples_per_frame
             for node in self.main_node.descendants:
                 node.name.after_reposition()
+                node.name.fit_text_to_size()
             self.recalc_waveform()
             self.create_waveform()
             if self.temp_play_marker:
@@ -786,6 +802,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.frame_width = self.sample_width * self.samples_per_frame
             for node in self.main_node.descendants:
                 node.name.after_reposition()
+                node.name.fit_text_to_size()
             self.recalc_waveform()
             self.create_waveform()
             if self.temp_play_marker:
