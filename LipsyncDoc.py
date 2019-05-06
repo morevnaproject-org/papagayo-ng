@@ -49,10 +49,24 @@ strip_symbols += '\N{INVERTED QUESTION MARK}'
 ###############################################################
 
 class LipsyncPhoneme:
-    def __init__(self):
-        self.text = ""
-        self.frame = 0
+    def __init__(self, text="", frame=0):
+        self.text = text
+        self._orig_frame = frame
+        self._frame = frame
+        self.dirty = False
         self.is_phoneme = True
+
+        @property
+        def frame(self):
+            return self._frame
+
+        @frame.setter
+        def frame(self, value):
+            if self._frame != value:
+                self.dirty = True
+                self._frame = value
+            if self._frame == self._orig_frame:
+                self.dirty = False
 
 
 ###############################################################

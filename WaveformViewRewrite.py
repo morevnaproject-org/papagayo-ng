@@ -419,10 +419,10 @@ class MovableButton(QtWidgets.QPushButton):
         if self.is_moving:
             self.is_moving = False
         if self.is_resizing:
-            self.reposition_descendants()
+            self.reposition_descendants(True)
             self.is_resizing = False
 
-    def reposition_descendants(self):
+    def reposition_descendants(self, did_resize=False, x_diff=0):
         for child in self.node.children:
             child.name.reposition_to_left()
 
@@ -517,17 +517,20 @@ class WaveformView(QtWidgets.QGraphicsView):
             dropped_widget = e.source()
             if new_x > dropped_widget.get_left_max() * self.frame_width:
                 if new_x + dropped_widget.width() < dropped_widget.get_right_max() * self.frame_width:
+                    x_diff = 0
                     dropped_widget.move(new_x, dropped_widget.y())
                     # after moving save the position and align to the grid based on that. Hacky but works!
                     if dropped_widget.lipsync_object.is_phoneme:
+                        x_diff = round(dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.frame
                         dropped_widget.lipsync_object.frame = round(new_x / self.frame_width)
                         dropped_widget.move(dropped_widget.lipsync_object.frame * self.frame_width, dropped_widget.y())
                     else:
+                        x_diff = round(dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
                         dropped_widget.lipsync_object.start_frame = round(dropped_widget.x() / self.frame_width)
                         dropped_widget.lipsync_object.end_frame = round((dropped_widget.x() + dropped_widget.width()) / self.frame_width)
                         dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width, dropped_widget.y())
                         # Move the children!
-                        dropped_widget.reposition_descendants()
+                        dropped_widget.reposition_descendants(False, x_diff)
         e.accept()
 
     def set_frame(self, frame):
