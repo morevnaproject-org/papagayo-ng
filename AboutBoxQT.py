@@ -36,7 +36,7 @@ from utilities import *
 class WebEnginePage(QWebEnginePage):
     def acceptNavigationRequest(self, url,  _type, isMainFrame):
         if _type == QWebEnginePage.NavigationTypeLinkClicked:
-            QDesktopServices.openUrl(url);
+            QDesktopServices.openUrl(url)
             return False
         return True
 
@@ -60,9 +60,12 @@ class AboutBox:
         self.main_window.about_ok_button.clicked.connect(self.close)
 
         with open(os.path.join(get_main_dir(), r"rsrc\about.html"), "r") as html_file:
-            html_file_fixed_paths = html_file.read().replace("papagayo-ng.png", r"file:///%s" % os.path.join(get_main_dir(), r"rsrc\papagayo-ng.png"))
-            html_file_fixed_paths = html_file_fixed_paths.replace("gpl.html", r"file:///%s" % os.path.join(get_main_dir(), r"rsrc\gpl.html"))
-            self.main_window.about_window_group.html_view.setHtml(html_file_fixed_paths, baseUrl=QtCore.QUrl(r"file:///%s" % os.path.join(get_main_dir(), r"rsrc\about.html")))
+            html_file_fixed_paths = html_file.read().replace("papagayo-ng.png", r"file:///{}".format(
+                os.path.join(get_main_dir(), r"rsrc\papagayo-ng.png")))
+            html_file_fixed_paths = html_file_fixed_paths.replace("gpl.html", r"file:///{}".format(
+                os.path.join(get_main_dir(), r"rsrc\gpl.html")))
+            self.main_window.about_window_group.html_view.setHtml(html_file_fixed_paths, baseUrl=QtCore.QUrl(
+                r"file:///{}".format(os.path.join(get_main_dir(), r"rsrc\about.html"))))
 
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()

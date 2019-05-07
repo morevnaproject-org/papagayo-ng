@@ -20,13 +20,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import math, random, time
-import numpy as np
-import PySide2.QtCore as QtCore
+import time
+
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
-from anytree import Node
 import anytree.util
+import numpy as np
+from anytree import Node
 
 from LipsyncDoc import *
 
@@ -79,7 +79,7 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 
 
 class MovableButton(QtWidgets.QPushButton):
-    def __init__(self, lipsync_object, wfv_parent,  phoneme_offset=None):
+    def __init__(self, lipsync_object, wfv_parent, phoneme_offset=None):
         super(MovableButton, self).__init__(lipsync_object.text, None)
         self.title = lipsync_object.text
         self.node = None
@@ -117,25 +117,28 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.style:
             if self.is_phrase():
 
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(phrase_fill_col.red(),
-                                                                                                       phrase_fill_col.green(),
-                                                                                                       phrase_fill_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
+                    phrase_fill_col.red(),
+                    phrase_fill_col.green(),
+                    phrase_fill_col.blue())
                 self.style += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
             elif self.is_word():
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(word_fill_col.red(),
-                                                                                                       word_fill_col.green(),
-                                                                                                       word_fill_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
+                    word_fill_col.red(),
+                    word_fill_col.green(),
+                    word_fill_col.blue())
                 self.style += "background-image: url(:/rsrc/marker.png); background-repeat: repeat-y; background-position: right;"
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(word_outline_col.red(),
                                                                              word_outline_col.green(),
                                                                              word_outline_col.blue())
             elif self.is_phoneme():
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(phoneme_fill_col.red(),
-                                                                                                       phoneme_fill_col.green(),
-                                                                                                       phoneme_fill_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
+                    phoneme_fill_col.red(),
+                    phoneme_fill_col.green(),
+                    phoneme_fill_col.blue())
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(phoneme_outline_col.red(),
                                                                              phoneme_outline_col.green(),
                                                                              phoneme_outline_col.blue())
@@ -264,7 +267,8 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.wfv_parent.doc.sound.is_playing():
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
-                    if (round(self.convert_to_frames(self.x() + event.x())) + 1 >= self.lipsync_object.end_frame) and not self.is_moving:
+                    if (round(self.convert_to_frames(
+                            self.x() + event.x())) + 1 >= self.lipsync_object.end_frame) and not self.is_moving:
                         if not self.lipsync_object.is_phoneme:
                             self.is_resizing = True
                             self.resize_origin = 1
@@ -278,7 +282,8 @@ class MovableButton(QtWidgets.QPushButton):
                     self.is_resizing = False
             if self.is_resizing and not self.is_moving:
                 if self.resize_origin == 1:  # start resize from right side
-                    if round(self.convert_to_frames(event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
+                    if round(self.convert_to_frames(
+                            event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
                         if round(self.convert_to_frames(event.x() + self.x())) <= self.get_right_max():
                             self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x()))
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
@@ -297,7 +302,8 @@ class MovableButton(QtWidgets.QPushButton):
                 drag.setMimeData(mime_data)
                 # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
                 try:
-                    exec("dropAction = drag.exec(QtCore.Qt.MoveAction)")  # Otherwise we can't catch it and it will crash...
+                    exec(
+                        "dropAction = drag.exec(QtCore.Qt.MoveAction)")  # Otherwise we can't catch it and it will crash...
                 except (SyntaxError, AttributeError):
                     dropAction = drag.start(QtCore.Qt.MoveAction)
 
@@ -368,11 +374,12 @@ class MovableButton(QtWidgets.QPushButton):
                                 temp_button = MovableButton(phoneme, self.wfv_parent, phoneme_count % 2)
                                 temp_button.node = Node(temp_button, parent=self.node)
                                 temp_scene_widget = self.wfv_parent.scene().addWidget(temp_button)
-                                #temp_scene_widget.setParent(self.wfv_parent)
+                                # temp_scene_widget.setParent(self.wfv_parent)
                                 temp_scene_widget.setGeometry(QtCore.QRect(phoneme.frame * self.wfv_parent.frame_width,
                                                                            self.wfv_parent.height() - (
-                                                                                       self.wfv_parent.horizontalScrollBar().height() * 1.5) - (
-                                                                                       text_height + (text_height * (phoneme_count % 2))),
+                                                                                   self.wfv_parent.horizontalScrollBar().height() * 1.5) - (
+                                                                                   text_height + (text_height * (
+                                                                                       phoneme_count % 2))),
                                                                            self.wfv_parent.frame_width,
                                                                            text_height))
                                 temp_scene_widget.setZValue(99)
@@ -403,7 +410,7 @@ class MovableButton(QtWidgets.QPushButton):
                             fps = 1.0 / (time.time() - start_time)
                         except ZeroDivisionError:
                             fps = 60
-                        main_window.statusbar.showMessage("Frame: %d FPS: %d" % ((cur_frame + 1), fps))
+                        main_window.statusbar.showMessage("Frame: {:d} FPS: {:d}".format((cur_frame + 1), fps))
                         self.wfv_parent.scroll_position = self.wfv_parent.horizontalScrollBar().value()
                         start_time = time.time()
                     self.wfv_parent.update()
@@ -502,7 +509,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         print("LoadedWaveFormView")
 
     def dropEvent(self, event):
-        print("DragLeave") # Strangely no dragLeaveEvent fires but a dropEvent instead...
+        print("DragLeave")  # Strangely no dragLeaveEvent fires but a dropEvent instead...
         event.source().is_moving = False
         event.accept()
 
@@ -525,10 +532,13 @@ class WaveformView(QtWidgets.QGraphicsView):
                         dropped_widget.lipsync_object.frame = round(new_x / self.frame_width)
                         dropped_widget.move(dropped_widget.lipsync_object.frame * self.frame_width, dropped_widget.y())
                     else:
-                        x_diff = round(dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
+                        x_diff = round(
+                            dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
                         dropped_widget.lipsync_object.start_frame = round(dropped_widget.x() / self.frame_width)
-                        dropped_widget.lipsync_object.end_frame = round((dropped_widget.x() + dropped_widget.width()) / self.frame_width)
-                        dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width, dropped_widget.y())
+                        dropped_widget.lipsync_object.end_frame = round(
+                            (dropped_widget.x() + dropped_widget.width()) / self.frame_width)
+                        dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width,
+                                            dropped_widget.y())
                         # Move the children!
                         dropped_widget.reposition_descendants(False, x_diff)
         e.accept()
@@ -595,16 +605,16 @@ class WaveformView(QtWidgets.QGraphicsView):
         main_window = self.parentWidget().parentWidget().parentWidget()
         for x, y in enumerate(fitted_samples):
             main_window.statusbar.showMessage(
-                "Preparing Waveform: " + str(int(((x / 2) / len(fitted_samples)) * 100)) + "%")
+                "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100))))
             QtCore.QCoreApplication.processEvents()
             temp_polygon.append(QtCore.QPointF(x * self.sample_width,
                                                available_height - y + offset))
             if x < len(fitted_samples):
-                temp_polygon.append(QtCore.QPointF((x+1) * self.sample_width,
+                temp_polygon.append(QtCore.QPointF((x + 1) * self.sample_width,
                                                    available_height - y + offset))
         for x, y in enumerate(fitted_samples[::-1]):
             main_window.statusbar.showMessage(
-                "Preparing Waveform: " + str(int(((x / 2) / len(fitted_samples)) * 100) + 50) + "%")
+                "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100) + 50)))
             QtCore.QCoreApplication.processEvents()
             temp_polygon.append(QtCore.QPointF((len(fitted_samples) - x) * self.sample_width,
                                                available_height + y + offset))
@@ -630,8 +640,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.temp_button.node = Node(self.temp_button, parent=self.main_node)
                 temp_scene_widget = self.scene().addWidget(self.temp_button)
                 temp_scene_widget.setGeometry(QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
-                                              (phrase.end_frame - phrase.start_frame) * self.frame_width + 1,
-                                              text_height))
+                                                           (phrase.end_frame - phrase.start_frame) * self.frame_width + 1,
+                                                           text_height))
                 temp_scene_widget.setZValue(99)
                 self.temp_phrase = self.temp_button
                 word_count = 0
@@ -643,46 +653,53 @@ class WaveformView(QtWidgets.QGraphicsView):
                     self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
                     temp_scene_widget = self.scene().addWidget(self.temp_button)
                     temp_scene_widget.setGeometry(QtCore.QRect(word.start_frame * self.frame_width,
-                                                  top_border + 4 + text_height + (text_height * (word_count % 2)),
-                                                  (word.end_frame - word.start_frame ) * self.frame_width + 1,
-                                                  text_height))
+                                                               top_border + 4 + text_height + (
+                                                                           text_height * (word_count % 2)),
+                                                               (
+                                                                           word.end_frame - word.start_frame) * self.frame_width + 1,
+                                                               text_height))
                     temp_scene_widget.setZValue(99)
                     self.temp_word = self.temp_button
                     word_count += 1
                     phoneme_count = 0
                     current_num += 1
                     main_window.statusbar.showMessage(
-                        "Preparing Buttons: " + str(int((current_num / self.doc.current_voice.num_children) * 100)) + "%")
+                        "Preparing Buttons: {0}%".format(str(
+                            int((current_num / self.doc.current_voice.num_children) * 100))))
                     for phoneme in word.phonemes:
                         self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
                         self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
                         temp_scene_widget = self.scene().addWidget(self.temp_button)
                         temp_scene_widget.setGeometry(QtCore.QRect(phoneme.frame * self.frame_width,
-                                                      self.height() - (self.horizontalScrollBar().height()*1.5) - (text_height + (text_height * (phoneme_count % 2))),
-                                                      self.frame_width,
-                                                      text_height))
+                                                                   self.height() - (
+                                                                               self.horizontalScrollBar().height() * 1.5) - (
+                                                                               text_height + (
+                                                                                   text_height * (phoneme_count % 2))),
+                                                                   self.frame_width,
+                                                                   text_height))
                         temp_scene_widget.setZValue(99)
                         self.temp_phoneme = self.temp_button
                         phoneme_count += 1
                         current_num += 1
                         main_window.statusbar.showMessage(
-                            "Preparing Buttons: " + str(int((current_num / self.doc.current_voice.num_children) * 100)) + "%")
+                            "Preparing Buttons: {0}%".format(str(
+                                int((current_num / self.doc.current_voice.num_children) * 100))))
                         QtCore.QCoreApplication.processEvents()
             main_window.statusbar.showMessage("Papagayo-NG")
 
     def recalc_waveform(self):
         duration = self.doc.sound.Duration()
-        time = 0.0
+        time_pos = 0.0
         sample_dur = 1.0 / self.samples_per_sec
         max_amp = 0.0
         self.amp = []
-        while time < duration:
+        while time_pos < duration:
             self.num_samples += 1
-            amp = self.doc.sound.GetRMSAmplitude(time, sample_dur)
+            amp = self.doc.sound.GetRMSAmplitude(time_pos, sample_dur)
             self.amp.append(amp)
             if amp > max_amp:
                 max_amp = amp
-            time += sample_dur
+            time_pos += sample_dur
         self.amp = normalize(self.amp)
 
     def set_document(self, document, force=False):
@@ -706,7 +723,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.scroll_position = value
 
     def wheelEvent(self, event):
-        self.scroll_position = self.horizontalScrollBar().value()+(event.delta()/1.2)
+        self.scroll_position = self.horizontalScrollBar().value() + (event.delta() / 1.2)
         self.horizontalScrollBar().setValue(self.scroll_position)
 
     def resizeEvent(self, event):
@@ -739,7 +756,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                 widget = phoneme_node.name
                 if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
                     widget.setGeometry(widget.x(),
-                                       self.height() - (self.horizontalScrollBar().height()*1.5) - (text_height + (text_height * widget.phoneme_offset)),
+                                       self.height() - (self.horizontalScrollBar().height() * 1.5) - (
+                                                   text_height + (text_height * widget.phoneme_offset)),
                                        self.frame_width + 5,
                                        text_height)
         self.horizontalScrollBar().setValue(self.scroll_position)

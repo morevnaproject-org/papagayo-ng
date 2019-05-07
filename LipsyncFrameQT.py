@@ -200,9 +200,9 @@ class LipsyncFrame:
             return
         print(self.config.value("WorkingDir", get_main_dir()))
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
-                                                         "Open Audio or %s File" % app_title,
-                                                         self.config.value("WorkingDir", get_main_dir()),
-                                                         open_wildcard)
+                                                             "Open Audio or {} File".format(app_title),
+                                                             self.config.value("WorkingDir", get_main_dir()),
+                                                             open_wildcard)
         if file_path:
             print(file_path)
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
@@ -224,9 +224,9 @@ class LipsyncFrame:
                 dlg.destroy()  # Untested, might not need it
                 print(self.config.value("WorkingDir", get_main_dir()))
                 file_path, _ = QtWidgets.QFileDialog(self.main_window,
-                                                 "Open Audio",
-                                                 self.config.value("WorkingDir", get_main_dir()),
-                                                 open_wildcard)
+                                                     "Open Audio",
+                                                     self.config.value("WorkingDir", get_main_dir()),
+                                                     open_wildcard)
                 if file_path:
                     self.config.setValue("WorkingDir", os.path.dirname(file_path))
                     self.doc.open(file_path)
@@ -248,7 +248,7 @@ class LipsyncFrame:
                 except:
                     pass
         if self.doc is not None:
-            self.main_window.setWindowTitle("%s [%s] - %s" % (self.doc.name, path, app_title))
+            self.main_window.setWindowTitle("{} [{}] - {}".format(self.doc.name, path, app_title))
             self.main_window.waveform_view.first_update = True
             self.main_window.waveform_view.set_document(self.doc)
             self.main_window.mouth_view.set_document(self.doc)
@@ -291,13 +291,13 @@ class LipsyncFrame:
             return
         print(self.config.value("WorkingDir", get_main_dir()))
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
-                                                             "Save %s File" % app_title,
+                                                             "Save {} File".format(app_title),
                                                              self.config.value("WorkingDir", get_main_dir()),
                                                              save_wildcard)
         if file_path:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
             self.doc.save(file_path)
-            self.main_window.setWindowTitle("%s [%s] - %s" % (self.doc.name, file_path, app_title))
+            self.main_window.setWindowTitle("{} [{}] - {}".format(self.doc.name, file_path, app_title))
 
     def on_close(self):
         if self.doc is not None:
@@ -330,8 +330,8 @@ class LipsyncFrame:
 
     def on_help(self, event=None):
         github_path = "https://github.com/morevnaproject/papagayo-ng/issues"
-        test_path = "file://%s" % r"D:\Program Files (x86)\Papagayo\help\index.html"
-        real_path = "file://%s" % os.path.join(get_main_dir(), r"help\index.html")
+        test_path = "file://{}".format(r"D:\Program Files (x86)\Papagayo\help\index.html")
+        real_path = "file://{}".format(os.path.join(get_main_dir(), r"help\index.html"))
         webbrowser.open(github_path)  # TODO: Fix path
 
     def on_about(self, event=None):
@@ -377,7 +377,7 @@ class LipsyncFrame:
                         fps = 1.0 / (time.time() - self.start_time)
                     except ZeroDivisionError:
                         fps = 60
-                    self.main_window.statusbar.showMessage("Frame: %d FPS: %d" % ((cur_frame + 1), fps) )
+                    self.main_window.statusbar.showMessage("Frame: {:d} FPS: {:d}".format((cur_frame + 1), fps))
                     self.main_window.waveform_view.scroll_position = self.main_window.waveform_view.horizontalScrollBar().value()
                     self.start_time = time.time()
             else:
@@ -427,7 +427,6 @@ class LipsyncFrame:
             self.doc.current_voice.run_breakdown(self.doc.soundDuration, self, language, self.langman,
                                                  self.phonemeset)
             self.main_window.waveform_view.first_update = True
-            self.main_window.waveform_view.update_drawing()
             self.ignore_text_changes = True
             self.main_window.text_edit.setText(self.doc.current_voice.text)
             self.ignore_text_changes = False
@@ -442,7 +441,7 @@ class LipsyncFrame:
             wildcard = ""
             if exporter == "MOHO":
                 message = "Export Lipsync Data (MOHO)"
-                default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".dat"
+                default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".dat"
                 wildcard = "Moho switch files (*.dat)|*.dat"
             elif exporter == "ALELO":
                 fps = int(self.config.value("FPS", 24))
@@ -455,7 +454,7 @@ class LipsyncFrame:
                     result = dlg.exec_()
                     if result == QtWidgets.QMessageBox.Yes:
                         message = "Export Lipsync Data (ALELO)"
-                        default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".txt"
+                        default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".txt"
                         wildcard = "Alelo timing files (*.txt)|*.txt"
                     elif result == QtWidgets.QMessageBox.No:
                         return
@@ -463,16 +462,16 @@ class LipsyncFrame:
                         return
                 else:
                     message = "Export Lipsync Data (ALELO)"
-                    default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0] + ".txt"
+                    default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".txt"
                     wildcard = "Alelo timing files (*.txt)|*.txt"
             elif exporter == "Images":
                     message = "Export Image Strip"
-                    default_file = "%s" % self.doc.soundPath.rsplit('.', 1)[0]
+                    default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0])
                     wildcard = ""
             file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
-                                                             message,
-                                                             self.config.value("WorkingDir", get_main_dir()),
-                                                             wildcard)
+                                                                 message,
+                                                                 self.config.value("WorkingDir", get_main_dir()),
+                                                                 wildcard)
             if file_path:
                 self.config.setValue("WorkingDir", os.path.dirname(file_path))
                 if exporter == "MOHO":
@@ -499,7 +498,7 @@ class LipsyncFrame:
         if not self.doc:
             return
         self.doc.dirty = True
-        self.doc.voices.append(LipsyncVoice("Voice %d" % (len(self.doc.voices) + 1)))
+        self.doc.voices.append(LipsyncVoice("Voice {:d}".format(len(self.doc.voices) + 1)))
         self.doc.current_voice = self.doc.voices[-1]
         self.main_window.voice_list.addItem(self.doc.current_voice.name)
         self.main_window.voice_list.setCurrentRow(self.main_window.voice_list.count() - 1)
@@ -538,15 +537,16 @@ class LipsyncFrame:
         language = self.main_window.language_choice.currentText()
         if (self.doc is not None) and (self.doc.current_voice is not None):
             voiceimage_path = QtWidgets.QFileDialog.getExistingDirectory(self.main_window,
-                                                                     "Choose Path for Images",
-                                                                     self.config.value("MouthDir",
-                                                                                       os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/")))
+                                                                         "Choose Path for Images",
+                                                                         self.config.value("MouthDir",
+                                                                                           os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                                                                        "rsrc/mouths/")))
             if voiceimage_path:
                 self.config.setValue("MouthDir", voiceimage_path)
                 print(voiceimage_path)
                 supported_imagetypes = QtGui.QImageReader.supportedImageFormats()
                 for directory, dir_names, file_names in os.walk(voiceimage_path):
-                    print(str(directory) + ":" + str(dir_names) + ":" + str(file_names))
+                    print("{0}:{1}:{2}".format(str(directory), str(dir_names), str(file_names)))
                     self.main_window.mouth_view.process_mouth_dir(directory, file_names, supported_imagetypes)
                 mouth_list = list(self.main_window.mouth_view.mouths.keys())
                 mouth_list.sort()

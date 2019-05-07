@@ -1,21 +1,16 @@
-
-import os
 import platform
+import time
 import traceback
 
-from utilities import *
-
-import time
-
-from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtCore import QUrl
-
-from utilities import which
+from PySide2.QtMultimedia import QMediaPlayer
 from cffi import FFI
-ffi = FFI()
 
-import numpy as np
+from utilities import *
+from utilities import which
+
+ffi = FFI()
 
 try:
     from pydub import AudioSegment
@@ -43,14 +38,13 @@ class SoundPlayer:
         self.max_bits = 32768
         # File Loading is Asynchronous, so we need to be creative here, doesn't need to be duration but it works
         self.audio.durationChanged.connect(self.on_durationChanged)
-        #self.decoder.finished.connect(self.decode_finished_signal)
+        # self.decoder.finished.connect(self.decode_finished_signal)
         self.audio.setMedia(QUrl.fromLocalFile(soundfile))
-        #self.decoder.setSourceFilename(soundfile)  # strangely inconsistent file-handling
+        # self.decoder.setSourceFilename(soundfile)  # strangely inconsistent file-handling
         # It will hang here forever if we don't process the events.
         while not self.is_loaded:
             QCoreApplication.processEvents()
             time.sleep(0.1)
-
 
         self.isvalid = True
         self.pydubfile = None
@@ -62,7 +56,7 @@ class SoundPlayer:
             else:
                 if platform.system() == "Windows":
                     AudioSegment.converter = os.path.join(get_main_dir(), "ffmpeg.exe")
-                    #AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
+                    # AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
                 else:
                     # TODO: Check if we have ffmpeg or avconv installed
                     AudioSegment.converter = "ffmpeg"
@@ -81,7 +75,7 @@ class SoundPlayer:
             self.wave_reference = None
             self.isvalid = False
 
-        #self.audio.play()
+        # self.audio.play()
 
     def on_durationChanged(self, duration):
         print("Changed!")
@@ -97,12 +91,12 @@ class SoundPlayer:
     def Duration(self):
         return self.audio.duration() / 1000.0
 
-    def GetRMSAmplitude(self, time, sampleDur):
+    def GetRMSAmplitude(self, time_pos, sample_dur):
         if AudioSegment:
-            return self.pydubfile[time*1000.0:(time+sampleDur)*1000.0].rms
+            return self.pydubfile[time_pos * 1000.0:(time_pos + sample_dur) * 1000.0].rms
         else:
-            startframe = int(round(time * self.wave_reference.getframerate()))
-            samplelen = int(round(sampleDur * self.wave_reference.getframerate()))
+            startframe = int(round(time_pos * self.wave_reference.getframerate()))
+            samplelen = int(round(sample_dur * self.wave_reference.getframerate()))
             self.wave_reference.setpos(startframe)
             frame = self.wave_reference.readframes(samplelen)
             width = self.wave_reference.getsampwidth()

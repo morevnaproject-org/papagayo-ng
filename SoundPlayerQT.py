@@ -1,8 +1,3 @@
-
-import os
-import platform
-import traceback
-
 from utilities import *
 
 import time
@@ -14,6 +9,7 @@ from PySide2.QtCore import QUrl
 
 from utilities import which
 from cffi import FFI
+
 ffi = FFI()
 
 import numpy as np
@@ -77,9 +73,11 @@ class SoundPlayer:
                 tempdata = self.decoder.read()
                 # We use the Pointer Address to get a cffi Pointer to the data (hopefully)
                 cast_data = self.audioformat_to_datatype(tempdata.format())
-                possible_data = ffi.cast("{1}[{0}]".format(tempdata.sampleCount(), cast_data), int(tempdata.constData()))
+                possible_data = ffi.cast("{1}[{0}]".format(tempdata.sampleCount(), cast_data),
+                                         int(tempdata.constData()))
                 self.only_samples.extend(possible_data)
-                self.decoded_audio[self.decoder.position()] = [possible_data, len(possible_data), tempdata.byteCount(), tempdata.format()]
+                self.decoded_audio[self.decoder.position()] = [possible_data, len(possible_data), tempdata.byteCount(),
+                                                               tempdata.format()]
 
     def decode_finished_signal(self):
         self.decoding_is_finished = True
@@ -98,12 +96,12 @@ class SoundPlayer:
     def Duration(self):
         return self.audio.duration() / 1000.0
 
-    def GetRMSAmplitude(self, time, sampleDur):
-        # time_start = time * (len(self.only_samples)/self.Duration())
-        # time_end = (time + sampleDur) * (len(self.only_samples)/self.Duration())
+    def GetRMSAmplitude(self, time_pos, sample_dur):
+        # time_start = time_pos * (len(self.only_samples)/self.Duration())
+        # time_end = (time_pos + sample_dur) * (len(self.only_samples)/self.Duration())
         # samples = self.only_samples[int(time_start):int(time_end)]
-        time_start = time * (len(self.np_data) / self.Duration())
-        time_end = (time + sampleDur) * (len(self.np_data) / self.Duration())
+        time_start = time_pos * (len(self.np_data) / self.Duration())
+        time_end = (time_pos + sample_dur) * (len(self.np_data) / self.Duration())
         samples = self.np_data[int(time_start):int(time_end)]
 
         if len(samples):
