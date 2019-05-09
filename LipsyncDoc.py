@@ -382,7 +382,7 @@ class LipsyncVoice:
             end_frame = self.phrases[-1].end_frame
             if start_frame != 0:
                 phoneme = "rest"
-                out_file.write("%d %s\n" % (1, phoneme))
+                out_file.write("{:d} {}\n".format(1, phoneme))
         else:
             start_frame = 0
             end_frame = 1

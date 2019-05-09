@@ -59,11 +59,11 @@ class SoundPlayer:
         self.max_bits = 2 ** int(num_bits)
         if signed == QAudioFormat.SampleType.UnSignedInt:
             self.signed = False
-            return "uint" + str(num_bits) + "_t"
+            return "uint{0}_t".format(str(num_bits))
         elif signed == QAudioFormat.SampleType.SignedInt:
             self.signed = True
             self.max_bits = int(self.max_bits / 2)
-            return "int" + str(num_bits) + "_t"
+            return "int{0}_t".format(str(num_bits))
 
     def decode_audio(self):
         self.decoder.start()

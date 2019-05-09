@@ -714,7 +714,11 @@ class WaveformView(QtWidgets.QGraphicsView):
         sample_dur = 1.0 / self.samples_per_sec
         max_amp = 0.0
         self.amp = []
+        progress = QtWidgets.QProgressDialog("Calculating Waveform", "Cancel", 0.0, duration, self)
+        progress.setWindowTitle("Progress")
+        progress.setModal(True)
         while time_pos < duration:
+            progress.setValue(time_pos)
             self.num_samples += 1
             amp = self.doc.sound.GetRMSAmplitude(time_pos, sample_dur)
             self.amp.append(amp)
@@ -722,6 +726,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 max_amp = amp
             time_pos += sample_dur
         self.amp = normalize(self.amp)
+        progress.setValue(duration)
 
     def set_document(self, document, force=False):
         if document != self.doc or force:
