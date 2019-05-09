@@ -52,7 +52,7 @@ class AboutBox:
         self.loader = None
         self.ui = None
         self.ui_file = None
-        self.main_window = self.load_ui_widget("./rsrc/about_box.ui")
+        self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "./rsrc/about_box.ui"))
         self.main_window.about_window_group.html_view = HtmlView(self.main_window)
         self.main_window.about_window_group.html_view.setMinimumHeight(450)
         self.main_window.about_window_group.insertWidget(0, self.main_window.about_window_group.html_view)

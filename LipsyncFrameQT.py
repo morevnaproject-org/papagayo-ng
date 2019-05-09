@@ -53,7 +53,8 @@ save_wildcard = "%s files (%s)" % (app_title, lipsync_extension)
 class LipsyncFrame:
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
-        self.main_window = self.load_ui_widget("./rsrc/papagayo-ng2.ui")
+        ui_path = os.path.join(get_main_dir(), "rsrc/papagayo-ng2.ui")
+        self.main_window = self.load_ui_widget(ui_path)
         self.main_window.setWindowTitle("%s" % app_title)
         self.loader = None
         self.ui_file = None
@@ -377,7 +378,7 @@ class LipsyncFrame:
                         fps = 1.0 / (time.time() - self.start_time)
                     except ZeroDivisionError:
                         fps = 60
-                    self.main_window.statusbar.showMessage("Frame: {:d} FPS: {:d}".format((cur_frame + 1), fps))
+                    self.main_window.statusbar.showMessage("Frame: {:d} FPS: {:d}".format((cur_frame + 1), int(fps)))
                     self.main_window.waveform_view.scroll_position = self.main_window.waveform_view.horizontalScrollBar().value()
                     self.start_time = time.time()
             else:
@@ -430,7 +431,7 @@ class LipsyncFrame:
             self.ignore_text_changes = True
             self.main_window.text_edit.setText(self.doc.current_voice.text)
             self.ignore_text_changes = False
-            self.main_window.waveform_view.set_document(self.doc)
+            self.main_window.waveform_view.set_document(self.doc, True)
 
     def on_voice_export(self, event=None):
         language = self.main_window.language_choice.currentText()

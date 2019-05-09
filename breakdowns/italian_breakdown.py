@@ -47,7 +47,7 @@ vowels = u'aeiou' + \
 
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys(vowels).has_key
+    isvowel = dict.fromkeys(vowels)
     phonemes = []
     simple_convert = {
         'b': 'B',
@@ -127,7 +127,7 @@ def breakdownWord(word, recursive=False):
             pass
         elif letter in ['i', u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH GRAVE}',
                         u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}']:
-            if previous == 'c' and len(word) > pos + 1 and isvowel(word[pos + 1]):
+            if previous == 'c' and len(word) > pos + 1 and word[pos + 1] in isvowel:
                 pass
             elif previous == 'g':
                 if len(word) > pos + 1 and word[pos + 1] in ['a', 'o', 'u', u'\N{LATIN SMALL LETTER A WITH ACUTE}',
@@ -163,7 +163,7 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('L')
         elif letter == 'n':
             if previous == 'g':
-                if len(word) > pos + 1 and isvowel(word[pos + 1]):
+                if len(word) > pos + 1 and word[pos + 1] in isvowel:
                     phonemes.append('N')
                     phonemes.append('Y')
                 else:
@@ -177,10 +177,10 @@ def breakdownWord(word, recursive=False):
         elif letter == 's':
             if len(word) > pos + 1 and word[pos + 1] == 'c':
                 pass  # handled under c
-            elif isvowel(previous) and len(word) > pos + 1 and isvowel(word[pos + 1]):
+            elif previous in isvowel and len(word) > pos + 1 and word[pos + 1] in isvowel:
                 phonemes.append('Z')
             elif pos == 0:
-                if len(word) > pos + 1 and isvowel(word[pos + 1]):
+                if len(word) > pos + 1 and word[pos + 1] in isvowel:
                     phonemes.append('S')
                 elif len(word) > pos + 1 and word[pos + 1] in ['c', 'f', 'p', 'q', 's', 't']:
                     phonemes.append('S')
