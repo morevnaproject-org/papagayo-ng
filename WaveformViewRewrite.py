@@ -612,7 +612,11 @@ class WaveformView(QtWidgets.QGraphicsView):
         offset = 0  # available_height / 2
         temp_polygon = QtGui.QPolygonF()
         main_window = self.parentWidget().parentWidget().parentWidget()
+        progress = QtWidgets.QProgressDialog("Creating Waveform", "Cancel", 0, len(fitted_samples), self)
+        progress.setWindowTitle("Progress")
+        progress.setModal(True)
         for x, y in enumerate(fitted_samples):
+            progress.setValue((x / 2))
             main_window.statusbar.showMessage(
                 "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100))))
             QtCore.QCoreApplication.processEvents()
@@ -622,6 +626,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 temp_polygon.append(QtCore.QPointF((x + 1) * self.sample_width,
                                                    available_height - y + offset))
         for x, y in enumerate(fitted_samples[::-1]):
+            progress.setValue((len(fitted_samples)/2)+(x / 2))
             main_window.statusbar.showMessage(
                 "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100) + 50)))
             QtCore.QCoreApplication.processEvents()
@@ -632,6 +637,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                                                    available_height + y + offset))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
         self.waveform_polygon.setZValue(1)
+        progress.setValue(len(fitted_samples))
         main_window.statusbar.showMessage("Papagayo-NG")
 
     def create_movbuttons(self):
@@ -643,7 +649,9 @@ class WaveformView(QtWidgets.QGraphicsView):
             main_window = self.parentWidget().parentWidget().parentWidget()
             current_num = 0
             self.main_node = Node(self.doc.current_voice.text)  # Not actually needed, but should make everything a bit easier
-
+            progress = QtWidgets.QProgressDialog("Creating Buttons", "Cancel", 0, self.doc.current_voice.num_children, self)
+            progress.setWindowTitle("Progress")
+            progress.setModal(True)
             for phrase in self.doc.current_voice.phrases:
                 self.temp_button = MovableButton(phrase, self)
                 self.temp_button.node = Node(self.temp_button, parent=self.main_node)
@@ -655,6 +663,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.temp_phrase = self.temp_button
                 word_count = 0
                 current_num += 1
+                progress.setValue(current_num)
                 main_window.statusbar.showMessage(
                     "Preparing Buttons: " + str(int((current_num / self.doc.current_voice.num_children) * 100)) + "%")
                 for word in phrase.words:
@@ -672,6 +681,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     word_count += 1
                     phoneme_count = 0
                     current_num += 1
+                    progress.setValue(current_num)
                     main_window.statusbar.showMessage(
                         "Preparing Buttons: {0}%".format(str(
                             int((current_num / self.doc.current_voice.num_children) * 100))))
@@ -690,10 +700,12 @@ class WaveformView(QtWidgets.QGraphicsView):
                         self.temp_phoneme = self.temp_button
                         phoneme_count += 1
                         current_num += 1
+                        progress.setValue(current_num)
                         main_window.statusbar.showMessage(
                             "Preparing Buttons: {0}%".format(str(
                                 int((current_num / self.doc.current_voice.num_children) * 100))))
                         QtCore.QCoreApplication.processEvents()
+            progress.setValue(self.doc.current_voice.num_children)
             main_window.statusbar.showMessage("Papagayo-NG")
 
     def recalc_waveform(self):
