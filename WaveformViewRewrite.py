@@ -410,7 +410,7 @@ class MovableButton(QtWidgets.QPushButton):
                             fps = 1.0 / (time.time() - start_time)
                         except ZeroDivisionError:
                             fps = 60
-                        main_window.statusbar.showMessage("Frame: {:d} FPS: {:d}".format((cur_frame + 1), fps))
+                        main_window.statusbar.showMessage("Frame: {:d} FPS: {:d}".format((cur_frame + 1), int(fps)))
                         self.wfv_parent.scroll_position = self.wfv_parent.horizontalScrollBar().value()
                         start_time = time.time()
                     self.wfv_parent.update()
@@ -430,8 +430,17 @@ class MovableButton(QtWidgets.QPushButton):
             self.is_resizing = False
 
     def reposition_descendants(self, did_resize=False, x_diff=0):
-        for child in self.node.children:
-            child.name.reposition_to_left()
+        if did_resize:
+            for child in self.node.children:
+                child.name.reposition_to_left()
+        else:
+            for child in self.node.descendants:
+                if child.name.is_phoneme():
+                    child.name.lipsync_object.frame += x_diff
+                else:
+                    child.name.lipsync_object.start_frame += x_diff
+                    child.name.lipsync_object.end_frame += x_diff
+                child.name.after_reposition()
 
     def reposition_to_left(self):
         if self.has_left_sibling():
