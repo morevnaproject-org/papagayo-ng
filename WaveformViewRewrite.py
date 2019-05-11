@@ -275,8 +275,8 @@ class MovableButton(QtWidgets.QPushButton):
                 else:
                     self.is_resizing = False
             if self.is_resizing and not self.is_moving:
-                while self.get_frame_size() < self.get_min_size():
-                    self.lipsync_object.end_frame += 1
+                if self.get_frame_size() < self.get_min_size():
+                    self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
                 self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
                     if round(self.convert_to_frames(
