@@ -272,15 +272,12 @@ class MovableButton(QtWidgets.QPushButton):
                         if not self.lipsync_object.is_phoneme:
                             self.is_resizing = True
                             self.resize_origin = 1
-                    # elif event.x() < 10:
-                    #     if not self.lipsync_object.is_phoneme:
-                    #         self.is_resizing = True
-                    #         self.resize_origin = 0
-                    else:
-                        self.is_resizing = False
                 else:
                     self.is_resizing = False
             if self.is_resizing and not self.is_moving:
+                while self.get_frame_size() < self.get_min_size():
+                    self.lipsync_object.end_frame += 1
+                self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
                     if round(self.convert_to_frames(
                             event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
@@ -426,13 +423,71 @@ class MovableButton(QtWidgets.QPushButton):
         if self.is_moving:
             self.is_moving = False
         if self.is_resizing:
-            self.reposition_descendants(True)
+            self.reposition_descendants2(True)
             self.is_resizing = False
 
     def reposition_descendants(self, did_resize=False, x_diff=0):
         if did_resize:
             for child in self.node.children:
                 child.name.reposition_to_left()
+        else:
+            for child in self.node.descendants:
+                if child.name.is_phoneme():
+                    child.name.lipsync_object.frame += x_diff
+                else:
+                    child.name.lipsync_object.start_frame += x_diff
+                    child.name.lipsync_object.end_frame += x_diff
+                child.name.after_reposition()
+
+    def reposition_descendants2(self, did_resize=False, x_diff=0):
+        if did_resize:
+            if self.is_word():
+                for position, child in enumerate(self.node.children):
+                    child.name.lipsync_object.frame = round(self.lipsync_object.start_frame + ((self.get_frame_size() / self.get_min_size()) * position))
+                    child.name.after_reposition()
+            elif self.is_phrase():
+                extra_space = self.get_frame_size() - self.get_min_size()
+                for child in self.node.children:
+                    if child.name.has_left_sibling():
+                        child.name.lipsync_object.start_frame = child.name.get_left_sibling().name.lipsync_object.end_frame
+                        child.name.lipsync_object.end_frame = child.name.lipsync_object.start_frame + child.name.get_min_size()
+                    else:
+                        child.name.lipsync_object.start_frame = child.name.node.parent.name.lipsync_object.start_frame
+                        child.name.lipsync_object.end_frame = child.name.lipsync_object.start_frame + child.name.get_min_size()
+                last_position = -1
+                moved_child = False
+                while extra_space > 0:
+                    if last_position == len(self.node.children)-1:
+                        last_position = -1
+                    if not moved_child:
+                        last_position = -1
+                    moved_child = False
+                    for position, child in enumerate(self.node.children):
+                        if child.name.has_left_sibling():
+                            if child.name.lipsync_object.start_frame < child.name.get_left_sibling().name.lipsync_object.end_frame:
+                                child.name.lipsync_object.start_frame += 1
+                                child.name.lipsync_object.end_frame += 1
+                            else:
+                                if extra_space:
+                                    if not moved_child:
+                                        if (position > last_position):
+                                            child.name.lipsync_object.end_frame += 1
+                                            extra_space -= 1
+                                            moved_child = True
+                                            last_position = position
+                        else:
+                            if extra_space:
+                                if not moved_child:
+                                    if (position > last_position):
+                                        child.name.lipsync_object.end_frame += 1
+                                        extra_space -= 1
+                                        moved_child = True
+                                        last_position = position
+                    if not moved_child and extra_space == 0:
+                        break
+                for child in self.node.children:
+                    child.name.after_reposition()
+                    child.name.reposition_descendants2(True, 0)
         else:
             for child in self.node.descendants:
                 if child.name.is_phoneme():
