@@ -234,7 +234,7 @@ class MovableButton(QtWidgets.QPushButton):
         right_most_pos = 0
         try:
             temp = self.get_right_sibling().name
-            if not temp.lipsync_object.is_phoneme:
+            if not temp.is_phoneme():
                 right_most_pos = temp.lipsync_object.start_frame
             else:
                 right_most_pos = temp.lipsync_object.frame
@@ -242,7 +242,7 @@ class MovableButton(QtWidgets.QPushButton):
             if self.node.depth > 1:
                 right_most_pos = self.node.parent.name.lipsync_object.end_frame
             else:
-                right_most_pos = self.lipsync_object.end_frame  # Last Phrase
+                right_most_pos = self.convert_to_frames(self.wfv_parent.list_of_lines[-1].p2().x())
         return right_most_pos
 
     def convert_to_pixels(self, frame_pos):
@@ -585,10 +585,13 @@ class WaveformView(QtWidgets.QGraphicsView):
     def dragMoveEvent(self, e):
         if not self.doc.sound.is_playing():
             position = e.pos()
-            new_x = e.pos().x() + self.horizontalScrollBar().value()
+            if self.width() > self.sceneRect().width():
+                new_x = e.pos().x() + self.horizontalScrollBar().value() - (self.width() - self.sceneRect().width()) / 2
+            else:
+                new_x = e.pos().x() + self.horizontalScrollBar().value()
             dropped_widget = e.source()
-            if new_x > dropped_widget.get_left_max() * self.frame_width:
-                if new_x + dropped_widget.width() < dropped_widget.get_right_max() * self.frame_width:
+            if new_x >= dropped_widget.get_left_max() * self.frame_width:
+                if new_x + dropped_widget.width() <= dropped_widget.get_right_max() * self.frame_width:
                     x_diff = 0
                     dropped_widget.move(new_x, dropped_widget.y())
                     # after moving save the position and align to the grid based on that. Hacky but works!
