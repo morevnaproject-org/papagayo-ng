@@ -267,11 +267,9 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.wfv_parent.doc.sound.is_playing():
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
-                    if (round(self.convert_to_frames(
-                            self.x() + event.x())) + 1 >= self.lipsync_object.end_frame) and not self.is_moving:
-                        if not self.lipsync_object.is_phoneme:
-                            self.is_resizing = True
-                            self.resize_origin = 1
+                    if (round(self.convert_to_frames(self.x() + event.x())) + 1 >= self.lipsync_object.end_frame) and not self.is_moving:
+                        self.is_resizing = True
+                        self.resize_origin = 1
                 else:
                     self.is_resizing = False
             if self.is_resizing and not self.is_moving:
@@ -280,9 +278,9 @@ class MovableButton(QtWidgets.QPushButton):
                 self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
                     if round(self.convert_to_frames(
-                            event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
+                            event.x() + self.x())) + 1 >= self.lipsync_object.start_frame + self.get_min_size():
                         if round(self.convert_to_frames(event.x() + self.x())) <= self.get_right_max():
-                            self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x()))
+                            self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x())) + 1
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
                 # elif self.resize_origin == 0:  # start resize from left side
