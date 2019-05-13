@@ -92,6 +92,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.wfv_parent = wfv_parent
         self.setToolTip(lipsync_object.text)
         self.create_and_set_style()
+        self.setMinimumWidth(self.convert_to_pixels(1))
         self.fit_text_to_size()
 
     def text_size(self):
