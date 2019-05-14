@@ -89,6 +89,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.is_resizing = False
         self.is_moving = False
         self.resize_origin = 0  # 0 = left 1 = right
+        self.hot_spot = 0
         self.wfv_parent = wfv_parent
         self.setToolTip(lipsync_object.text)
         self.create_and_set_style()
@@ -299,6 +300,8 @@ class MovableButton(QtWidgets.QPushButton):
                 mime_data = QtCore.QMimeData()
                 drag = QtGui.QDrag(self)
                 drag.setMimeData(mime_data)
+                drag.setHotSpot(event.pos() - self.rect().topLeft())
+                self.hot_spot = drag.hotSpot().x()
                 # PyQt5 and PySide use different function names here, likely a Qt4 vs Qt5 problem.
                 try:
                     exec(
@@ -587,9 +590,9 @@ class WaveformView(QtWidgets.QGraphicsView):
         if not self.doc.sound.is_playing():
             position = e.pos()
             if self.width() > self.sceneRect().width():
-                new_x = e.pos().x() + self.horizontalScrollBar().value() - (self.width() - self.sceneRect().width()) / 2
+                new_x = e.pos().x() + self.horizontalScrollBar().value() - ((self.width() - self.sceneRect().width()) / 2) - e.source().hot_spot
             else:
-                new_x = e.pos().x() + self.horizontalScrollBar().value()
+                new_x = e.pos().x() + self.horizontalScrollBar().value() - e.source().hot_spot
             dropped_widget = e.source()
             if new_x >= dropped_widget.get_left_max() * self.frame_width:
                 if new_x + dropped_widget.width() <= dropped_widget.get_right_max() * self.frame_width:
