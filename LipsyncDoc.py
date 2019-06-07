@@ -101,7 +101,7 @@ class LipsyncWord:
             for i in range(len(pronunciation_raw)):
                 try:
                     pronunciation.append(phonemeset.conversion[pronunciation_raw[i]])
-                except:
+                except KeyError:
                     print(("Unknown phoneme:", pronunciation_raw[i], "in word:", text))
 
             for p in pronunciation:
@@ -114,7 +114,7 @@ class LipsyncWord:
             # this word was not found in the phoneme dictionary
             # TODO: This now depends on QT, make it neutral!
             dlg = PronunciationDialog(parent_window, phonemeset.set)
-            dlg.word_label.setText(dlg.word_label.text() + ' ' + self.text)
+            dlg.word_label.setText("{} {}".format(dlg.word_label.text(), self.text))
             dlg.exec_()
             if dlg.gave_ok:
                 for p in dlg.phoneme_ctrl.text().split():
@@ -214,7 +214,7 @@ class LipsyncVoice:
             repeat_loop = False
             for i in range(len(self.text) - 1):
                 if (self.text[i] in ".,!?;-/()") and (not self.text[i + 1].isspace()):
-                    self.text = self.text[:i + 1] + ' ' + self.text[i + 1:]
+                    self.text = "{} {}".format(self.text[:i + 1], self.text[i + 1:])
                     repeat_loop = True
                     break
         # break text into phrases
@@ -413,28 +413,28 @@ class LipsyncVoice:
         if not self.config.value("MouthDir"):
             print("Use normal procedure.\n")
             phonemedict = {}
-            for files in os.listdir(
-                            os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/") + currentmouth):
+            for files in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                 "rsrc/mouths/") + currentmouth):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
             for frame in range(start_frame, end_frame + 1):
                 phoneme = self.get_phoneme_at_frame(frame)
                 try:
-                    shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                             "rsrc/mouths/") + currentmouth + "/" + phoneme + phonemedict[phoneme],
+                    shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/") +
+                                currentmouth + "/" + phoneme + phonemedict[phoneme],
                                 path + str(frame).rjust(6, '0') + phoneme + phonemedict[phoneme])
                 except KeyError:
                     print("Phoneme \'{0}\' does not exist in chosen directory.".format(phoneme))
 
         else:
-            print("Use this dir:" + self.config.value("MouthDir") + "\n")
+            print("Use this dir: {}\n".format(self.config.value("MouthDir")))
             phonemedict = {}
             for files in os.listdir(self.config.value("MouthDir")):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
             for frame in range(start_frame, end_frame + 1):
                 phoneme = self.get_phoneme_at_frame(frame)
                 try:
-                    shutil.copy(self.config.value("MouthDir") + "/" + phoneme + phonemedict[phoneme],
-                                path + str(frame).rjust(6, '0') + phoneme + phonemedict[phoneme])
+                    shutil.copy("{}/{}{}".format(self.config.value("MouthDir"), phoneme, phonemedict[phoneme]),
+                                "{}{}{}{}".format(path, str(frame).rjust(6, "0"), phoneme, phonemedict[phoneme]))
                 except KeyError:
                     print("Phoneme \'{0}\' does not exist in chosen directory.".format(phoneme))
 
@@ -463,7 +463,7 @@ class LipsyncVoice:
                     else:
                         try:
                             out_file.write("{:d} {:d} {}\n".format(last_phoneme.frame, phoneme.frame - 1,
-                                                                  languagemanager.export_conversion[last_phoneme_text]))
+                                                                   languagemanager.export_conversion[last_phoneme_text]))
                         except KeyError:
                             pass
                     if phoneme.text.lower() == "sil":
@@ -475,7 +475,7 @@ class LipsyncVoice:
                     last_phoneme = phoneme
                 try:
                     out_file.write("{:d} {:d} {}\n".format(last_phoneme.frame, word.end_frame,
-                                                          languagemanager.export_conversion[last_phoneme_text]))
+                                                           languagemanager.export_conversion[last_phoneme_text]))
                 except KeyError:
                     pass
         out_file.close()
@@ -513,7 +513,7 @@ class LipsyncDoc:
         in_file.readline()  # discard the header
         self.soundPath = in_file.readline().strip()
         if not os.path.isabs(self.soundPath):
-            self.soundPath = os.path.normpath(os.path.dirname(self.path) + '/' + self.soundPath)
+            self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
         self.fps = int(in_file.readline())
         print(("self.path: {}".format(self.path)))
         self.soundDuration = int(in_file.readline())
@@ -637,7 +637,7 @@ class LanguageManager:
         try:
             in_file = open(path, 'r')
         except FileNotFoundError:
-            print(("Unable to open phoneme dictionary!:", path))
+            print("Unable to open phoneme dictionary!:{}".format(path))
             return
         # process dictionary entries
         for line in in_file.readlines():

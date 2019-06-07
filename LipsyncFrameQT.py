@@ -42,9 +42,9 @@ from LipsyncDoc import *
 app_title = "Papagayo-NG"
 lipsync_extension = "*.pgo"
 audio_extensions = "*.wav *.mp3 *.aiff *.aif *.au *.snd *.mov *.m4a"
-open_wildcard = "%s and sound files (%s %s)" % (app_title, audio_extensions, lipsync_extension)
+open_wildcard = "{} and sound files ({} {})".format(app_title, audio_extensions, lipsync_extension)
 audioExtensions = "*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a"
-save_wildcard = "%s files (%s)" % (app_title, lipsync_extension)
+save_wildcard = "{} files ({})".format(app_title, lipsync_extension)
 # openWildcard = "%s and sound files|*%s;%s" % (appTitle, lipsyncExtension, audioExtensions)
 # openAudioWildcard = "Sound files|%s" % (audioExtensions)
 # saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
@@ -243,7 +243,7 @@ class LipsyncFrame:
                 self.doc.auto_recognize_phoneme()
                 # check for a .trans file with the same name as the doc
                 try:
-                    txt_file = open(path[0].rsplit('.', 1)[0] + ".trans", 'r')  # TODO: Check if path is correct
+                    txt_file = open("{}.trans".format(path[0].rsplit('.', 1)[0]), 'r')  # TODO: Check if path is correct
                     for line in txt_file:
                         self.main_window.voice_list.appendRow(QtGui.QStandardItem(line))
                 except:
@@ -455,7 +455,7 @@ class LipsyncFrame:
                     result = dlg.exec_()
                     if result == QtWidgets.QMessageBox.Yes:
                         message = "Export Lipsync Data (ALELO)"
-                        default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".txt"
+                        default_file = "{}.txt".format(self.doc.soundPath.rsplit('.', 1)[0])
                         wildcard = "Alelo timing files (*.txt)|*.txt"
                     elif result == QtWidgets.QMessageBox.No:
                         return
@@ -463,7 +463,7 @@ class LipsyncFrame:
                         return
                 else:
                     message = "Export Lipsync Data (ALELO)"
-                    default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".txt"
+                    default_file = "{}.txt".format(self.doc.soundPath.rsplit('.', 1)[0])
                     wildcard = "Alelo timing files (*.txt)|*.txt"
             elif exporter == "Images":
                     message = "Export Image Strip"

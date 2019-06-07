@@ -18,7 +18,7 @@ def get_main_dir():
 def which(program):
     def is_exe(fpath):
         if os.name == 'nt':
-            return os.path.isfile(fpath) or os.path.isfile(fpath + ".exe") or os.path.isfile(fpath + ".bat")
+            return os.path.isfile(fpath) or os.path.isfile("{}.exe".format(fpath)) or os.path.isfile("{}.bat".format(fpath))
         else:
             return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 

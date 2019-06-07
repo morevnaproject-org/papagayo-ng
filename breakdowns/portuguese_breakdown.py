@@ -54,7 +54,7 @@ setvowels = u'aeiou' + \
 
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys(setvowels).has_key
+    isvowel = dict.fromkeys(setvowels)
     phonemes = []
     simple_convert = {
         'b': 'B',
@@ -188,7 +188,7 @@ def breakdownWord(word, recursive=False):
                             u'\N{LATIN SMALL LETTER O WITH ACUTE}', u'\N{LATIN SMALL LETTER U WITH ACUTE}',
                             u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}',
                             u'\N{LATIN SMALL LETTER O WITH TILDE}'] and word[-1] == ('m') or len(
-                word) > pos + 1 and not isvowel(word[pos + 1]):
+                word) > pos + 1 and word[pos + 1] not in isvowel:
                 pass  # digraphs vowel am em im om um
             else:
                 phonemes.append('M')
@@ -197,7 +197,7 @@ def breakdownWord(word, recursive=False):
         elif letter == 'n':
             if len(word) > pos + 1 and word[pos + 1] == 'h':
                 pass  # Nh handled under #H
-            elif isvowel(previous) and word[-1] == ('n') or len(word) > pos + 1 and not isvowel(word[pos + 1]):
+            elif previous in isvowel and word[-1] == ('n') or len(word) > pos + 1 and word[pos + 1] not in isvowel:
                 pass  # digraphs vowel an en in on un
             else:
                 phonemes.append('N')
@@ -205,8 +205,7 @@ def breakdownWord(word, recursive=False):
         elif letter == 's':
             if len(word) > pos + 1 and word[pos + 1] == 'c':
                 pass  # sC handled under #C
-            elif isvowel(previous) and len(word) > pos + 1 and isvowel(
-                    word[pos + 1]):  # check if have vowel before and after S #caSa
+            elif previous in isvowel and len(word) > pos + 1 and word[pos + 1] in isvowel:  # check if have vowel before and after S #caSa
                 phonemes.append('Z')
             else:
                 phonemes.append('S')

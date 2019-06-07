@@ -62,7 +62,7 @@ def suffixen(word):
 # er, en, ee ??
 
 def prefixen(word):
-    isvowel = dict.fromkeys('aeiou').has_key
+    isvowel = dict.fromkeys('aeiou')
     prefix = False
     prefix_pronunciation = {
         'ge': ['HH', 'AH0'],  # HH EH0 ???
@@ -127,20 +127,20 @@ def breakdownWord(word):
 
 
 def getSyllableCount(word):
-    isvowel = dict.fromkeys('aeiou').has_key
-    istrema = dict.fromkeys('δλοφό').has_key
+    isvowel = dict.fromkeys('aeiou')
+    istrema = dict.fromkeys('δλοφό')
     previous_letter = ' '
     syllable_count = 0
     vowel_count = 0
     for letter in word:
-        if isvowel(letter):
+        if letter in isvowel:
             vowel_count += 1
         if vowel_count == 3:  # 3-vowel dipthongs
             syllable_count += 1
             vowel_count = 1
-        if isvowel(letter) and not isvowel(previous_letter):
+        if letter in isvowel and previous_letter not in isvowel:
             syllable_count += 1
-        if istrema(letter):
+        if letter in istrema:
             syllable_count += 1
         previous_letter = letter
     return syllable_count
@@ -148,8 +148,8 @@ def getSyllableCount(word):
 
 def wordToSyllables(word):
     word = word.lower()
-    isvowel = dict.fromkeys('aeiou').has_key
-    istrema = dict.fromkeys('δλοφό').has_key
+    isvowel = dict.fromkeys('aeiou')
+    istrema = dict.fromkeys('δλοφό')
     syllable_count = getSyllableCount(word)
     syllables = [[]]
     previous_letter = ' '
@@ -159,7 +159,7 @@ def wordToSyllables(word):
     vowel_count = 0
     for letter in word:
         # vowels automatically continue a syllable, except for 3-vowel diphthongs
-        if isvowel(letter):
+        if letter in isvowel:
             vowel_count += 1
             if vowel_count == 2 and word[pos] == word[pos - 1]:  # second vowel in mooi
                 syllables[-1].append(letter)  # second "o" in mooi continues the syllable
@@ -172,19 +172,17 @@ def wordToSyllables(word):
             else:
                 syllables[-1].append(letter)  # just a vowel
         # except for vowels with a trema (looks like German Umlaut, but different meaning), which start a new syllable
-        elif istrema(letter):
+        elif letter in istrema:
             syllables.append([letter])
             syllable_check += 1
             vowel_count = 0
         # if this is a consonant, the previous letter is a vowel and the next letter is a vowel, start a new syllable
-        elif len(word) > pos + 1 and isvowel(previous_letter) and isvowel(
-                word[pos + 1]) and syllable_check < syllable_count:
+        elif len(word) > pos + 1 and previous_letter in isvowel and word[pos + 1] in isvowel and syllable_check < syllable_count:
             syllables.append([letter])
             syllable_check += 1
             vowel_count = 0
         # if this is a consonant, and the previous letter was a consonant, and the letter before that was a vowel, start a new syllable
-        elif not isvowel(previous_letter) and len(syllables[-1]) > 1 and isvowel(
-                syllables[-1][-2]) and syllable_check < syllable_count:
+        elif previous_letter not in isvowel and len(syllables[-1]) > 1 and syllables[-1][-2] in isvowel and syllable_check < syllable_count:
             syllables.append([letter])
             syllable_check += 1
             vowel_count = 0
@@ -197,7 +195,7 @@ def wordToSyllables(word):
 
 
 def syllablesToPhonemes(syllables, recursive=False):
-    isvowel = dict.fromkeys('aeiou').has_key
+    isvowel = dict.fromkeys('aeiou')
     phonemes = []
     simple_convert = {
         'b': 'B',
@@ -223,7 +221,7 @@ def syllablesToPhonemes(syllables, recursive=False):
     previous_letter = ' '
     for syllable in syllables:
         for letter in syllable:
-            if letter == previous_letter and not isvowel(letter):  # double consonants
+            if letter == previous_letter and letter not in isvowel:  # double consonants
                 pass
             # ===================== consonants ==========================
             elif letter == "b" and pos[syllable_pos] == len(syllables) and pos[letter_pos] == len(

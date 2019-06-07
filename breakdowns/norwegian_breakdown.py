@@ -41,7 +41,7 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 def breakdownWord(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys(
-        u'aeiouy\N{LATIN SMALL LETTER A WITH RING ABOVE}\N{LATIN SMALL LETTER AE}\N{LATIN SMALL LETTER O WITH STROKE}').has_key
+        u'aeiouy\N{LATIN SMALL LETTER A WITH RING ABOVE}\N{LATIN SMALL LETTER AE}\N{LATIN SMALL LETTER O WITH STROKE}')
     phonemes = []
     simple_convert = {
         'b': 'B',
@@ -81,7 +81,7 @@ def breakdownWord(word, recursive=False):
     pos = 0
     previous = ' '
     for letter in word:
-        if isvowel(letter):
+        if letter in isvowel:
             if len(word) == pos + 3 and word[pos + 1] == 'r' and word[pos + 1] == 'd':
                 phonemes.append(long_vowels[letter])
             elif letter == 'a' and len(word) > pos + 1 and word[pos + 1] == 'i':
@@ -102,18 +102,18 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('IY0')
             elif len(word) == pos + 2 and word[pos + 1] == 'm':
                 phonemes.append(short_vowels[letter])
-            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not isvowel(word[pos + 1]):
+            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and word[pos + 1] not in isvowel:
                 phonemes.append(short_vowels[letter])
             elif len(word) == pos + 3 and word[pos + 1] == 'r' and word[pos + 2] == 'd':
                 phonemes.append(long_vowels[letter])
-            elif len(word) > pos + 2 and word[pos + 1] != word[pos + 2] and not isvowel(word[pos + 1]):
+            elif len(word) > pos + 2 and word[pos + 1] != word[pos + 2] and word[pos + 1] not in isvowel:
                 phonemes.append(long_vowels[letter])
             else:
                 phonemes.append(long_vowels[letter])
         elif letter == 'd':
             if len(word) == pos + 1 and previous == 'r':  # ends in d, e.g. jord
                 pass
-            elif len(word) == pos + 1 and isvowel(previous):  # ends in long vowel then d, e.g. god
+            elif len(word) == pos + 1 and previous in isvowel:  # ends in long vowel then d, e.g. god
                 pass
             elif previous in ['l', 'n']:  # holde, land
                 pass

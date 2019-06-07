@@ -42,7 +42,7 @@ def breakdownWord(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys(u'aeiou\N{LATIN SMALL LETTER DOTLESS I}'
                             u'\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH DIAERESIS}'
-                            u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}').has_key
+                            u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}')
     phonemes = []
     simple_convert = {
         'b': 'B',
@@ -137,7 +137,7 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('UH0')
         elif letter == 'v':
-            if isvowel(previous):
+            if previous in isvowel:
                 phonemes.append('W')
             else:
                 phonemes.append('V')

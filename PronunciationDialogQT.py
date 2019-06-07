@@ -67,12 +67,12 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.show()
 
     def add_phoneme(self, phoneme):
-        text = "%s %s" % (self.phoneme_ctrl.text().strip(), phoneme)
+        text = "{} {}".format(self.phoneme_ctrl.text().strip(), phoneme)
         self.phoneme_ctrl.setText(text.strip())
 
     def on_phoneme_click(self, event=None):
         phoneme = self.sender().text()
-        text = "%s %s" % (self.phoneme_ctrl.text().strip(), phoneme)
+        text = "{} {}".format(self.phoneme_ctrl.text().strip(), phoneme)
         self.phoneme_ctrl.setText(text.strip())
 
     def on_accept(self):

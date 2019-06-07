@@ -39,7 +39,7 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 
 def breakdownWord(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys('aeiouäöü').has_key
+    isvowel = dict.fromkeys('aeiouäöü')
     phonemes = []
     simple_convert = {
         'f': 'F',
@@ -60,7 +60,7 @@ def breakdownWord(word, recursive=False):
     pos = 0
     previous = ' '
     for letter in word:
-        if letter == previous and not isvowel(letter):
+        if letter == previous and letter not in isvowel:
             pass
         elif letter == 'a':
             if len(word) > pos + 1 and word[pos + 1] == 'i':  # ai
@@ -69,18 +69,18 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('AW0')
             elif previous == 'a':
                 pass
-            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not isvowel(word[pos + 1]):
+            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and word[pos + 1] not in isvowel:
                 phonemes.append('AH0')
             elif len(word) > pos + 1 and word[pos + 1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('AH0')
-            elif len(word) == pos + 1 and not isvowel(previous):
+            elif len(word) == pos + 1 and previous not in isvowel:
                 phonemes.append('AA0')
             else:
                 phonemes.append('AA0')
         elif letter == u'\N{LATIN SMALL LETTER A WITH DIAERESIS}':
             if len(word) > pos + 1 and word[pos + 1] == 'u':  # äu
                 phonemes.append('OY0')
-            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not isvowel(word[pos + 1]):
+            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and word[pos + 1] not in isvowel:
                 phonemes.append('EH0')
             elif len(word) > pos + 1 and word[pos + 1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('EH0')
@@ -122,11 +122,11 @@ def breakdownWord(word, recursive=False):
                 phonemes.append('EY0')
             elif previous == 'e':
                 pass
-            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not isvowel(word[pos + 1]):
+            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and word[pos + 1] not in isvowel:
                 phonemes.append('EH0')
             elif len(word) > pos + 1 and word[pos + 1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('EH0')
-            elif len(word) == pos + 1 and not isvowel(previous):
+            elif len(word) == pos + 1 and previous not in isvowel:
                 phonemes.append('EH0')
             else:
                 phonemes.append('EY0')
@@ -142,7 +142,7 @@ def breakdownWord(word, recursive=False):
             else:
                 phonemes.append('G')
         elif letter == 'h':
-            if isvowel(previous):
+            if previous in isvowel:
                 pass  # silent
             elif previous == 'c':
                 pass  # covered under 'c'
@@ -153,11 +153,11 @@ def breakdownWord(word, recursive=False):
                 pass  # covered under other vowel
             elif len(word) > pos + 1 and word[pos + 1] == 'e':  # ie
                 phonemes.append('IY0')
-            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not isvowel(word[pos + 1]):
+            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not word[pos + 1] in isvowel:
                 phonemes.append('IH0')
             elif len(word) > pos + 1 and word[pos + 1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('IH0')
-            elif len(word) == pos + 1 and not isvowel(previous):
+            elif len(word) == pos + 1 and previous not in isvowel:
                 phonemes.append('IY0')  # also use IH0 here instead?
             elif pos == 0:
                 phonemes.append('IH0')
@@ -171,7 +171,7 @@ def breakdownWord(word, recursive=False):
         elif letter == 'o':
             if previous == 'o':
                 pass
-            elif len(word) == pos + 1 and not isvowel(previous):
+            elif len(word) == pos + 1 and previous not in isvowel:
                 phonemes.append('AO0')
             else:
                 phonemes.append('AO0')  # somtimes o in on, not covered in CMU/USA
@@ -193,11 +193,11 @@ def breakdownWord(word, recursive=False):
                 pass
             elif previous == 'q':
                 phonemes.append('V')
-            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not isvowel(word[pos + 1]):
+            elif len(word) > pos + 2 and word[pos + 1] == word[pos + 2] and not word[pos + 1] in isvowel:
                 phonemes.append('UH0')
             elif len(word) > pos + 1 and word[pos + 1] == u'\N{LATIN SMALL LETTER SHARP S}':
                 phonemes.append('UH0')
-            elif len(word) == pos + 1 and not isvowel(previous):
+            elif len(word) == pos + 1 and previous not in isvowel:
                 phonemes.append('UW0')
             else:
                 phonemes.append('UW0')
