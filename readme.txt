@@ -2,10 +2,15 @@ To work with the Papagayo-NG source code, you need some special software install
 
 Requirements:
 
-* Python 3 - http://www.python.org/
-* PySide2 - https://wiki.qt.io/Qt_for_Python
-* python3-numpy (required by python-sounddevice) - http://www.numpy.org/
-* python-sounddevice - https://python-sounddevice.readthedocs.io/
+sounddevice>=0.3.13
+cffi>=1.12.2
+numpy>=1.16.2
+pydub>=0.23.1
+anytree>=2.6.0
+PySide2>=5.12.3
+
+You can use the included requirements.txt with pip to install these, like this for example:
+pip install -r requirements.txt
 
 To run Papagayo-NG, double-click the papagayo-ng.py file, or run the following command:
 
@@ -63,7 +68,7 @@ Modifications (C) 2010 Benjamin Lau
 Contact:
 http://code.google.com/p/papagayo/
 
-Papagayo-NG (C) 2016
+Papagayo-NG (C) 2019
 - Konstantin Dmitriev
 - Stefan Murawski
 - Azia Giles Abuara
