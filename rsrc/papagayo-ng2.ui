@@ -85,7 +85,16 @@
                </sizepolicy>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_4">
-               <property name="margin">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
                 <number>0</number>
                </property>
                <item>
@@ -327,14 +336,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="fps_input">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
+             <widget class="QSpinBox" name="fps_input"/>
             </item>
             <item>
              <spacer name="fps_spacer_right">
@@ -435,7 +437,16 @@
             <string>Voice List</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
-            <property name="margin">
+            <property name="leftMargin">
+             <number>1</number>
+            </property>
+            <property name="topMargin">
+             <number>1</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
+            <property name="bottomMargin">
              <number>1</number>
             </property>
             <item>

@@ -500,8 +500,10 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.basic_scrubbing = False
         self.cur_frame = 0
         self.old_frame = 0
-        self.sample_width = default_sample_width
-        self.samples_per_frame = default_samples_per_frame
+        self.default_sample_width = default_sample_width
+        self.default_samples_per_frame = default_samples_per_frame
+        self.sample_width = self.default_sample_width
+        self.samples_per_frame = self.default_samples_per_frame
         self.samples_per_sec = 24 * self.samples_per_frame
         self.frame_width = self.sample_width * self.samples_per_frame
         self.phrase_bottom = 16
@@ -839,10 +841,10 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def on_zoom_reset(self, event=None):
         if self.doc is not None:
-            self.scroll_position /= (self.samples_per_frame / default_samples_per_frame)
-            factor = (self.samples_per_frame / default_samples_per_frame)
-            self.sample_width = default_sample_width
-            self.samples_per_frame = default_samples_per_frame
+            self.scroll_position /= (self.samples_per_frame / self.default_samples_per_frame)
+            factor = (self.samples_per_frame / self.default_samples_per_frame)
+            self.sample_width = self.default_sample_width
+            self.samples_per_frame = self.default_samples_per_frame
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
             for node in self.main_node.descendants:

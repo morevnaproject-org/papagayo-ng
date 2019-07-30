@@ -154,9 +154,7 @@ class LipsyncFrame:
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
-
-        self.validator = QtGui.QIntValidator(1, 999, None)
-        self.main_window.fps_input.setValidator(self.validator)
+        self.main_window.fps_input.valueChanged.connect(self.fps_changed)
 
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()
@@ -168,8 +166,34 @@ class LipsyncFrame:
         file.close()
         return self.ui
 
-    def test_button_event(self):
-        self.play_status.setText("Running")
+    def fps_changed(self, new_fps_value):
+        print('FPS changed to: {0}'.format(str(new_fps_value)))
+        old_fps_value = self.doc.fps
+        resize_multiplier = new_fps_value / old_fps_value
+        self.doc.fps = new_fps_value
+        # wfv = self.main_window.waveform_view
+        # wfv.default_samples_per_frame *= resize_multiplier
+        # wfv.default_sample_width *= resize_multiplier
+        #
+        # wfv.sample_width = wfv.default_sample_width
+        # wfv.samples_per_frame = wfv.default_samples_per_frame
+        # wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
+        # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
+        #
+        # for node in wfv.main_node.descendants:
+        #     node.name.after_reposition()
+        #     node.name.fit_text_to_size()
+        # #self.main_window.waveform_view.recalc_waveform()
+        # #self.main_window.waveform_view.create_waveform()
+        # if wfv.temp_play_marker:
+        #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
+        # wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
+        #                          wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
+        # wfv.setSceneRect(wfv.scene().sceneRect())
+        # wfv.scroll_position *= resize_multiplier
+        # wfv.horizontalScrollBar().setValue(wfv.scroll_position)
+        #
+        # wfv.set_document(self.doc)
 
     def close_doc_ok(self):
         if self.doc is not None:
@@ -273,7 +297,7 @@ class LipsyncFrame:
             for voice in self.doc.voices:
                 self.main_window.voice_list.addItem(voice.name)
             self.main_window.voice_list.setCurrentRow(0)
-            self.main_window.fps_input.setText(str(self.doc.fps))
+            self.main_window.fps_input.setValue(self.doc.fps)
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
             self.main_window.text_edit.setText(self.doc.current_voice.text)
             # reload dictionary
