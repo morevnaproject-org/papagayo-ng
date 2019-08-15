@@ -143,6 +143,8 @@ class LipsyncFrame:
         self.main_window.delete_button.clicked.connect(self.on_del_voice)
         self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
         self.main_window.text_edit.textChanged.connect(self.on_voice_text)
+        self.main_window.apply_fps.clicked.connect(self.apply_changed_fps)
+        self.main_window.spread_out.clicked.connect(self.spread_out)
 
         self.cur_frame = 0
         self.timer = None
@@ -154,7 +156,7 @@ class LipsyncFrame:
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
-        self.main_window.apply_fps.clicked.connect(self.apply_changed_fps)
+
 
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()
@@ -166,6 +168,17 @@ class LipsyncFrame:
         file.close()
         return self.ui
 
+    def spread_out(self):
+        wfv = self.main_window.waveform_view
+        top_nodes = wfv.main_node.children
+        num_frames = wfv.waveform_polygon.polygon().boundingRect().width() / wfv.frame_width
+        frames_per_top_level = num_frames / len(top_nodes)
+        for num, top_node in enumerate(top_nodes):
+            top_node.name.lipsync_object.start_frame = (num * frames_per_top_level) + int(bool(num))
+            top_node.name.lipsync_object.end_frame = (num * frames_per_top_level) + frames_per_top_level
+            top_node.name.after_reposition()
+            top_node.name.reposition_descendants2(True)
+            
     def apply_changed_fps(self):
         new_fps_value = self.main_window.fps_input.value()
         print('FPS changed to: {0}'.format(str(new_fps_value)))

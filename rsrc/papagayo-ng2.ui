@@ -197,6 +197,13 @@
                 </widget>
                </item>
                <item>
+                <widget class="QPushButton" name="spread_out">
+                 <property name="text">
+                  <string>Spread Out</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <spacer name="phoneme_spacer_right">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
