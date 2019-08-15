@@ -339,6 +339,13 @@
              <widget class="QSpinBox" name="fps_input"/>
             </item>
             <item>
+             <widget class="QPushButton" name="apply_fps">
+              <property name="text">
+               <string>Apply</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="fps_spacer_right">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
