@@ -157,7 +157,6 @@ class LipsyncFrame:
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
 
-
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()
         file = QFile(ui_filename)
@@ -207,7 +206,8 @@ class LipsyncFrame:
         wfv.scroll_position *= resize_multiplier
         wfv.scroll_position = 0
         wfv.horizontalScrollBar().setValue(wfv.scroll_position)
-        wfv.set_document(self.doc, force=True)
+        wfv.recalc_waveform()
+        wfv.create_waveform()
 
     def close_doc_ok(self):
         if self.doc is not None:
