@@ -103,7 +103,7 @@ class LipsyncFrame:
                 select = c
             c += 1
         self.main_window.export_combo.setCurrentIndex(select)
-
+        self.app.aboutToQuit.connect(self.on_close)
         self.ignore_text_changes = False
         # This adds our statuses to the statusbar
         self.mainframe_statusbar_fields = [app_title, "Stopped"]
@@ -132,7 +132,6 @@ class LipsyncFrame:
         self.main_window.action_about_papagayo_ng.triggered.connect(self.on_about)
         self.main_window.export_combo.currentIndexChanged.connect(self.on_export_choice)
         self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
-        self.main_window.text_edit.textChanged.connect(self.on_voice_text)
         self.main_window.export_button.clicked.connect(self.on_voice_export)
         self.main_window.breakdown_button.clicked.connect(self.on_voice_breakdown)
         self.main_window.choose_imageset_button.clicked.connect(self.on_voice_image_choose)
@@ -141,7 +140,6 @@ class LipsyncFrame:
         self.main_window.volume_slider.valueChanged.connect(self.change_volume)
         self.main_window.new_button.clicked.connect(self.on_new_voice)
         self.main_window.delete_button.clicked.connect(self.on_del_voice)
-        self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
         self.main_window.text_edit.textChanged.connect(self.on_voice_text)
         self.main_window.apply_fps.clicked.connect(self.apply_changed_fps)
         self.main_window.spread_out.clicked.connect(self.spread_out)
@@ -316,6 +314,7 @@ class LipsyncFrame:
             self.main_window.text_edit.setText(self.doc.current_voice.text)
             # reload dictionary
             self.on_reload_dictionary()
+            self.doc.dirty = False
 
     def on_save(self):
         if self.doc is None:
@@ -340,6 +339,7 @@ class LipsyncFrame:
 
     def on_close(self):
         if self.doc is not None:
+            self.close_doc_ok()
             self.config.setValue("LastFPS", str(self.doc.fps))
             del self.doc
         self.doc = None

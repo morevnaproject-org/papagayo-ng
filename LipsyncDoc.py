@@ -485,7 +485,7 @@ class LipsyncVoice:
 
 class LipsyncDoc:
     def __init__(self, langman, parent):
-        self.dirty = False
+        self._dirty = False
         self.name = "Untitled"
         self.path = None
         self.fps = 24
@@ -497,13 +497,21 @@ class LipsyncDoc:
         self.language_manager = langman
         self.parent = parent
 
+    @property
+    def dirty(self):
+        return self._dirty
+
+    @dirty.setter
+    def dirty(self, value):
+        self._dirty = value
+
     def __del__(self):
         # Properly close down the sound object
         if self.sound is not None:
             del self.sound
 
     def open(self, path):
-        self.dirty = False
+        self._dirty = False
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
         self.sound = None
@@ -563,7 +571,7 @@ class LipsyncDoc:
         for voice in self.voices:
             voice.save(out_file)
         out_file.close()
-        self.dirty = False
+        self._dirty = False
 
     def auto_recognize_phoneme(self):
         try:

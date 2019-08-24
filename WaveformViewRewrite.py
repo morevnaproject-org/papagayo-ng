@@ -266,12 +266,14 @@ class MovableButton(QtWidgets.QPushButton):
             if self.is_resizing and not self.is_moving:
                 if self.get_frame_size() < self.get_min_size():
                     self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
+                    self.wfv_parent.doc.dirty = True
                 self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
                     if round(self.convert_to_frames(
                             event.x() + self.x())) + 1 >= self.lipsync_object.start_frame + self.get_min_size():
                         if round(self.convert_to_frames(event.x() + self.x())) + 1 <= self.get_right_max():
                             self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x())) + 1
+                            self.wfv_parent.doc.dirty = True
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
                 # elif self.resize_origin == 0:  # start resize from left side
@@ -339,6 +341,7 @@ class MovableButton(QtWidgets.QPushButton):
                                                          self.wfv_parent.frame_width, text_height)
                                 temp_scene_widget.setGeometry(temp_rect)
                                 temp_scene_widget.setZValue(99)
+                            self.wfv_parent.doc.dirty = True
 
     def mouseDoubleClickEvent(self, event):
         if not self.wfv_parent.doc.sound.is_playing() and not self.is_phoneme():
@@ -396,6 +399,7 @@ class MovableButton(QtWidgets.QPushButton):
                     child.name.lipsync_object.start_frame += x_diff
                     child.name.lipsync_object.end_frame += x_diff
                 child.name.after_reposition()
+            self.wfv_parent.doc.dirty = True
 
     def reposition_descendants2(self, did_resize=False, x_diff=0):
         if did_resize:
@@ -404,6 +408,7 @@ class MovableButton(QtWidgets.QPushButton):
                     child.name.lipsync_object.frame = round(self.lipsync_object.start_frame +
                                                             ((self.get_frame_size() / self.get_min_size()) * position))
                     child.name.after_reposition()
+                self.wfv_parent.doc.dirty = True
             elif self.is_phrase():
                 extra_space = self.get_frame_size() - self.get_min_size()
                 for child in self.node.children:
@@ -443,6 +448,7 @@ class MovableButton(QtWidgets.QPushButton):
                 for child in self.node.children:
                     child.name.after_reposition()
                     child.name.reposition_descendants2(True, 0)
+                self.wfv_parent.doc.dirty = True
         else:
             for child in self.node.descendants:
                 if child.name.is_phoneme():
@@ -451,6 +457,7 @@ class MovableButton(QtWidgets.QPushButton):
                     child.name.lipsync_object.start_frame += x_diff
                     child.name.lipsync_object.end_frame += x_diff
                 child.name.after_reposition()
+                self.wfv_parent.doc.dirty = True
 
     def reposition_to_left(self):
         if self.has_left_sibling():
@@ -470,6 +477,7 @@ class MovableButton(QtWidgets.QPushButton):
                 for child in self.node.children:
                     child.name.reposition_to_left()
         self.after_reposition()
+        self.wfv_parent.doc.dirty = True
 
     def get_left_sibling(self):
         return anytree.util.leftsibling(self.node)
@@ -566,6 +574,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                                             dropped_widget.y())
                         # Move the children!
                         dropped_widget.reposition_descendants(False, x_diff)
+                    self.doc.dirty = True
         e.accept()
 
     def set_frame(self, frame):
