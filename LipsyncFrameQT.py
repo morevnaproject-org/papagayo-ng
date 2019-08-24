@@ -94,7 +94,7 @@ class LipsyncFrame:
         self.main_window.phoneme_set.setCurrentIndex(0)
 
         # setup export initialisation here
-        exporter_list = ["MOHO", "ALELO", "Images"]
+        exporter_list = ["MOHO", "ALELO", "Images", "JSON"]
         c = 0
         select = 0
         for exporter in exporter_list:
@@ -507,6 +507,10 @@ class LipsyncFrame:
                     message = "Export Image Strip"
                     default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0])
                     wildcard = ""
+            elif exporter == "JSON":
+                message = "Export JSON Object"
+                default_file = "{}.json".format(self.doc.soundPath.rsplit('.', 1)[0])
+                wildcard = "JSON object files (*.json)|*.json"
             file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                                  message,
                                                                  self.config.value("WorkingDir", get_main_dir()),
@@ -519,6 +523,8 @@ class LipsyncFrame:
                     self.doc.current_voice.export_alelo(file_path, language, self.langman)
                 elif exporter == "Images":
                     self.doc.current_voice.export_images(file_path, self.main_window.mouth_choice.currentText())
+                elif exporter == "JSON":
+                    self.doc.current_voice.export_json(file_path)
 
     def on_sel_voice(self, e):
         if not self.doc:

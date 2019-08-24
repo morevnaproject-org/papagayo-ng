@@ -20,6 +20,7 @@ import math
 import shutil
 import codecs
 import importlib
+import json
 
 from Rhubarb import Rhubarb, RhubarbTimeoutException
 
@@ -479,6 +480,32 @@ class LipsyncVoice:
                 except KeyError:
                     pass
         out_file.close()
+
+    def export_json(self, path):
+        if len(self.phrases) > 0:
+            start_frame = self.phrases[0].start_frame
+            end_frame = self.phrases[-1].end_frame
+        else:  # No phrases means no data, so do nothing
+            return
+        json_data = {"name": self.name, "start_frame": start_frame, "end_frame": end_frame, "text": self.text}
+        list_of_phrases = []
+        for phr_id, phrase in enumerate(self.phrases):
+            dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame, "end_frame": end_frame}
+            list_of_words = []
+            for wor_id, word in enumerate(phrase.words):
+                dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame, "end_frame": word.end_frame}
+                list_of_phonemes = []
+                for pho_id, phoneme in enumerate(word.phonemes):
+                    dict_phoneme = {"id": pho_id, "text": phoneme.text, "frame": phoneme.frame}
+                    list_of_phonemes.append(dict_phoneme)
+                dict_word["phonemes"] = list_of_phonemes
+                list_of_words.append(dict_word)
+            dict_phrase["words"] = list_of_words
+            list_of_phrases.append(dict_phrase)
+        json_data["phrases"] = list_of_phrases
+        file_path = open(path, "w")
+        json.dump(json_data, file_path, indent=True)
+        file_path.close()
 
 
 ###############################################################
