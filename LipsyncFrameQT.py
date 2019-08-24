@@ -40,7 +40,7 @@ from AboutBoxQT import AboutBox
 from LipsyncDoc import *
 
 app_title = "Papagayo-NG"
-lipsync_extension = "*.pgo"
+lipsync_extension = "*.pgo *.pg2"
 audio_extensions = "*.wav *.mp3 *.aiff *.aif *.au *.snd *.mov *.m4a"
 open_wildcard = "{} and sound files ({} {})".format(app_title, audio_extensions, lipsync_extension)
 audioExtensions = "*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a"
@@ -248,9 +248,13 @@ class LipsyncFrame:
 
     def open(self, path):
         self.doc = LipsyncDoc(self.langman, self)
-        if path.endswith(lipsync_extension[1:]):
-            # open a lipsync project
-            self.doc.open(path)
+        if path.endswith((lipsync_extension.split(" ")[0][1:], lipsync_extension.split(" ")[1][1:])):
+            if path.endswith(lipsync_extension.split(" ")[0][1:]):
+                # open a lipsync project
+                self.doc.open(path)
+            elif path.endswith(lipsync_extension.split(" ")[1][1:]):
+                # open a json based lipsync project
+                self.doc.open2(path)
             while self.doc.sound is None:
                 # if no sound file found, then ask user to specify one
                 dlg = QtWidgets.QMessageBox(self.main_window)
@@ -322,7 +326,10 @@ class LipsyncFrame:
         if self.doc.path is None:
             self.on_save_as()
             return
-        self.doc.save(self.doc.path)
+        if self.doc.path.endswith(lipsync_extension.split(" ")[0][1:]):
+            self.doc.save(self.doc.path)
+        elif self.doc.path.endswith(lipsync_extension.split(" ")[1][1:]):
+            self.doc.save2(self.doc.path)
 
     def on_save_as(self):
         if self.doc is None:
@@ -334,7 +341,10 @@ class LipsyncFrame:
                                                              save_wildcard)
         if file_path:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
-            self.doc.save(file_path)
+            if file_path.endswith(lipsync_extension.split(" ")[0][1:]):
+                self.doc.save(file_path)
+            elif file_path.endswith(lipsync_extension.split(" ")[1][1:]):
+                self.doc.save2(file_path)
             self.main_window.setWindowTitle("{} [{}] - {}".format(self.doc.name, file_path, app_title))
 
     def on_close(self):

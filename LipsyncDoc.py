@@ -490,11 +490,12 @@ class LipsyncVoice:
             end_frame = self.phrases[-1].end_frame
         else:  # No phrases means no data, so do nothing
             return
-        json_data = {"name": self.name, "start_frame": start_frame, "end_frame": end_frame, "text": self.text}
+        json_data = {"name": self.name, "start_frame": start_frame, "end_frame": end_frame,
+                     "text": self.text, "num_children": self.num_children}
         list_of_phrases = []
         for phr_id, phrase in enumerate(self.phrases):
             dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
-                           "end_frame": end_frame, "tags": phrase.tags}
+                           "end_frame": phrase.end_frame, "tags": phrase.tags}
             list_of_words = []
             for wor_id, word in enumerate(phrase.words):
                 dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
@@ -543,6 +544,53 @@ class LipsyncDoc:
         if self.sound is not None:
             del self.sound
 
+    def open2(self, path):
+        self._dirty = False
+        self.path = os.path.normpath(path)
+        self.name = os.path.basename(path)
+        self.sound = None
+        self.voices = []
+        self.current_voice = None
+        file_data = open(self.path, "r")
+        json_data = json.load(file_data)
+        self.soundPath = json_data["sound_path"]
+        if not os.path.isabs(self.soundPath):
+            self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
+        self.fps = json_data["fps"]
+        self.soundDuration = json_data["sound_duration"]
+        num_voices = json_data["num_voices"]
+        for voice in json_data["voices"]:
+            temp_voice = LipsyncVoice()
+            temp_voice.name = voice["name"]
+            temp_voice.text = voice["text"]
+            temp_voice.num_children = voice["num_children"]
+            for phrase in voice["phrases"]:
+                temp_phrase = LipsyncPhrase()
+                temp_phrase.text = phrase["text"]
+                temp_phrase.start_frame = phrase["start_frame"]
+                temp_phrase.end_frame = phrase["end_frame"]
+                temp_phrase.tags = phrase["tags"]
+                for word in phrase["words"]:
+                    temp_word = LipsyncWord()
+                    temp_word.text = word["text"]
+                    temp_word.start_frame = word["start_frame"]
+                    temp_word.end_frame = word["end_frame"]
+                    temp_word.tags = word["tags"]
+                    for phoneme in word["phonemes"]:
+                        temp_phoneme = LipsyncPhoneme()
+                        temp_phoneme.text = phoneme["text"]
+                        temp_phoneme.frame = phoneme["frame"]
+                        temp_phoneme.tags = phoneme["tags"]
+                        temp_word.phonemes.append(temp_phoneme)
+                    temp_phrase.words.append(temp_word)
+                temp_voice.phrases.append(temp_phrase)
+            self.voices.append(temp_voice)
+        file_data.close()
+        self.open_audio(self.soundPath)
+        if len(self.voices) > 0:
+            self.current_voice = self.voices[0]
+
+
     def open(self, path):
         self._dirty = False
         self.path = os.path.normpath(path)
@@ -587,6 +635,47 @@ class LipsyncDoc:
                 print(("soundDuration2: {:d}".format(self.soundDuration)))
         else:
             self.sound = None
+
+    def save2(self, path):
+        self.path = os.path.normpath(path)
+        self.name = os.path.basename(path)
+        if os.path.dirname(self.path) == os.path.dirname(self.soundPath):
+            saved_sound_path = os.path.basename(self.soundPath)
+        else:
+            saved_sound_path = self.soundPath
+        out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration, "num_voices": len(self.voices)}
+        list_of_voices = []
+        for voi_id, voice in enumerate(self.voices):
+            start_frame = 0
+            end_frame = 1
+            if len(voice.phrases) > 0:
+                start_frame = voice.phrases[0].start_frame
+                end_frame = voice.phrases[-1].end_frame
+            json_data = {"name": voice.name, "start_frame": start_frame, "end_frame": end_frame,
+                         "text": voice.text, "num_children": voice.num_children}
+            list_of_phrases = []
+            for phr_id, phrase in enumerate(voice.phrases):
+                dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
+                               "end_frame": phrase.end_frame, "tags": phrase.tags}
+                list_of_words = []
+                for wor_id, word in enumerate(phrase.words):
+                    dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
+                                 "end_frame": word.end_frame, "tags": word.tags}
+                    list_of_phonemes = []
+                    for pho_id, phoneme in enumerate(word.phonemes):
+                        dict_phoneme = {"id": pho_id, "text": phoneme.text,
+                                        "frame": phoneme.frame, "tags": phoneme.tags}
+                        list_of_phonemes.append(dict_phoneme)
+                    dict_word["phonemes"] = list_of_phonemes
+                    list_of_words.append(dict_word)
+                dict_phrase["words"] = list_of_words
+                list_of_phrases.append(dict_phrase)
+            json_data["phrases"] = list_of_phrases
+            list_of_voices.append(json_data)
+        out_json["voices"] = list_of_voices
+        file_path = open(self.path, "w")
+        json.dump(out_json, file_path, indent=True)
+        file_path.close()
 
     def save(self, path):
         self.path = os.path.normpath(path)
