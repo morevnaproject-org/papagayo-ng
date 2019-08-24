@@ -529,6 +529,7 @@ class LipsyncFrame:
     def on_sel_voice(self, e):
         if not self.doc:
             return
+        prev_dirty = self.doc.dirty
         self.ignore_text_changes = True
         self.doc.current_voice = self.doc.voices[self.main_window.voice_list.row(self.main_window.voice_list.currentItem())]
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
@@ -538,6 +539,8 @@ class LipsyncFrame:
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
+        self.doc.dirty = prev_dirty
+
 
     def on_new_voice(self, event=None):
         if not self.doc:
