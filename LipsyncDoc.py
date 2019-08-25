@@ -418,12 +418,12 @@ class LipsyncVoice:
             print("Use normal procedure.\n")
             phonemedict = {}
             for files in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                 "rsrc/mouths/") + currentmouth):
+                                                 "rsrc", "mouths/") + currentmouth):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
             for frame in range(start_frame, end_frame + 1):
                 phoneme = self.get_phoneme_at_frame(frame)
                 try:
-                    shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/") +
+                    shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc", "mouths/") +
                                 currentmouth + "/" + phoneme + phonemedict[phoneme],
                                 path + str(frame).rjust(6, '0') + phoneme + phonemedict[phoneme])
                 except KeyError:
@@ -832,6 +832,6 @@ class LanguageManager:
     def init_languages(self):
         if len(self.language_table) > 0:
             return
-        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc/languages")):
+        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc", "languages")):
             if "language.ini" in files:
                 self.language_details(path, files)

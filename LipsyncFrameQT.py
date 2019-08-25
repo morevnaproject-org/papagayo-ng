@@ -53,7 +53,7 @@ save_wildcard = "{} files ({})".format(app_title, lipsync_extension)
 class LipsyncFrame:
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
-        ui_path = os.path.join(get_main_dir(), "rsrc/papagayo-ng2.ui")
+        ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
         self.main_window = self.load_ui_widget(ui_path)
         self.main_window.setWindowTitle("%s" % app_title)
         self.loader = None
@@ -380,7 +380,7 @@ class LipsyncFrame:
     def on_help(self, event=None):
         github_path = "https://github.com/morevnaproject/papagayo-ng/issues"
         test_path = "file://{}".format(r"D:\Program Files (x86)\Papagayo\help\index.html")
-        real_path = "file://{}".format(os.path.join(get_main_dir(), r"help\index.html"))
+        real_path = "file://{}".format(os.path.join(get_main_dir(), "help", "index.html"))
         webbrowser.open(github_path)  # TODO: Fix path
 
     def on_about(self, event=None):
@@ -598,7 +598,7 @@ class LipsyncFrame:
                                                                          "Choose Path for Images",
                                                                          self.config.value("MouthDir",
                                                                                            os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                                                                        "rsrc/mouths/")))
+                                                                                                        "rsrc", r"mouths/")))
             if voiceimage_path:
                 self.config.setValue("MouthDir", voiceimage_path)
                 print(voiceimage_path)
