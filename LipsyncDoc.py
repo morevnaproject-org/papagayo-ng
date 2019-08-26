@@ -34,10 +34,12 @@ import PySide2.QtCore as QtCore
 from utilities import *
 from PronunciationDialogQT import PronunciationDialog
 
-if sys.platform != "darwin":
+if sys.platform == "win32":
     import SoundPlayerQT as SoundPlayer
-else:
+elif sys.platform == "darwin":
     import SoundPlayerOSX as SoundPlayer
+else:
+    import SoundPlayer as SoundPlayer
 
 
 strip_symbols = '.,!?;-/()"'
