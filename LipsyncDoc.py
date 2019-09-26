@@ -495,6 +495,7 @@ class LipsyncVoice:
         json_data = {"name": self.name, "start_frame": start_frame, "end_frame": end_frame,
                      "text": self.text, "num_children": self.num_children}
         list_of_phrases = []
+        list_of_used_phonemes = []
         for phr_id, phrase in enumerate(self.phrases):
             dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
                            "end_frame": phrase.end_frame, "tags": phrase.tags}
@@ -507,11 +508,14 @@ class LipsyncVoice:
                     dict_phoneme = {"id": pho_id, "text": phoneme.text, "frame": phoneme.frame,
                                     "tags": phoneme.tags or word.tags or phrase.tags}
                     list_of_phonemes.append(dict_phoneme)
+                    if phoneme.text not in list_of_used_phonemes:
+                        list_of_used_phonemes.append(phoneme.text)
                 dict_word["phonemes"] = list_of_phonemes
                 list_of_words.append(dict_word)
             dict_phrase["words"] = list_of_words
             list_of_phrases.append(dict_phrase)
         json_data["phrases"] = list_of_phrases
+        json_data["used_phonemes"] = list_of_used_phonemes
         file_path = open(path, "w")
         json.dump(json_data, file_path, indent=True)
         file_path.close()
@@ -656,6 +660,7 @@ class LipsyncDoc:
             json_data = {"name": voice.name, "start_frame": start_frame, "end_frame": end_frame,
                          "text": voice.text, "num_children": voice.num_children}
             list_of_phrases = []
+            list_of_used_phonemes = []
             for phr_id, phrase in enumerate(voice.phrases):
                 dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
                                "end_frame": phrase.end_frame, "tags": phrase.tags}
@@ -668,11 +673,14 @@ class LipsyncDoc:
                         dict_phoneme = {"id": pho_id, "text": phoneme.text,
                                         "frame": phoneme.frame, "tags": phoneme.tags}
                         list_of_phonemes.append(dict_phoneme)
+                        if phoneme.text not in list_of_used_phonemes:
+                            list_of_used_phonemes.append(phoneme.text)
                     dict_word["phonemes"] = list_of_phonemes
                     list_of_words.append(dict_word)
                 dict_phrase["words"] = list_of_words
                 list_of_phrases.append(dict_phrase)
             json_data["phrases"] = list_of_phrases
+            json_data["used_phonemes"] = list_of_used_phonemes
             list_of_voices.append(json_data)
         out_json["voices"] = list_of_voices
         file_path = open(self.path, "w")
