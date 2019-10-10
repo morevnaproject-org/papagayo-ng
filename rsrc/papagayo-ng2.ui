@@ -300,7 +300,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
+        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0">
          <property name="spacing">
           <number>6</number>
          </property>
@@ -321,7 +321,7 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <layout class="QHBoxLayout" name="fps_layout">
             <item>
              <spacer name="fps_spacer_left">
               <property name="orientation">
@@ -379,9 +379,9 @@
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
+          <layout class="QHBoxLayout" name="mouth_view_layout">
            <item>
-            <spacer name="horizontalSpacer">
+            <spacer name="mouth_left_spacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -425,7 +425,7 @@
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacer_2">
+            <spacer name="mouth_righ_spacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -450,7 +450,7 @@
            <property name="title">
             <string>Voice List</string>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_6">
+           <layout class="QVBoxLayout" name="voice_list_layout">
             <property name="leftMargin">
              <number>1</number>
             </property>
@@ -513,6 +513,39 @@
                </item>
               </layout>
              </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="tag_list_group">
+           <property name="title">
+            <string>Selected Object Tags</string>
+           </property>
+           <layout class="QVBoxLayout" name="tag_list_layout">
+            <item>
+             <widget class="QLineEdit" name="tag_entry"/>
+            </item>
+            <item>
+             <widget class="QListWidget" name="list_of_tags"/>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="tag_list_buttons">
+              <item>
+               <widget class="QPushButton" name="add_tag">
+                <property name="text">
+                 <string>Add</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="remove_tag">
+                <property name="text">
+                 <string>Remove</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

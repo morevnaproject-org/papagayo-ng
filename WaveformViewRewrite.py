@@ -86,6 +86,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.phoneme_offset = phoneme_offset
         self.lipsync_object = lipsync_object
         self.style = None
+        self.select_style = None
         self.is_resizing = False
         self.is_moving = False
         self.resize_origin = 0  # 0 = left 1 = right
@@ -128,6 +129,15 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
+                self.select_style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
+                    phrase_fill_col.red(),
+                    phrase_fill_col.green(),
+                    phrase_fill_col.blue())
+                self.select_style += "background-image: url(:/rsrc/marker.png); "
+                self.select_style += "background-repeat: repeat-y; background-position: right;"
+                self.select_style += "border:2px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
+                                                                             phrase_outline_col.green(),
+                                                                             phrase_outline_col.blue())
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
@@ -138,12 +148,28 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(word_outline_col.red(),
                                                                              word_outline_col.green(),
                                                                              word_outline_col.blue())
+                self.select_style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
+                    word_fill_col.red(),
+                    word_fill_col.green(),
+                    word_fill_col.blue())
+                self.select_style += "background-image: url(:/rsrc/marker.png); "
+                self.select_style += "background-repeat: repeat-y; background-position: right;"
+                self.select_style += "border:2px solid rgb({0},{1},{2});}};".format(word_outline_col.red(),
+                                                                             word_outline_col.green(),
+                                                                             word_outline_col.blue())
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     phoneme_fill_col.red(),
                     phoneme_fill_col.green(),
                     phoneme_fill_col.blue())
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(phoneme_outline_col.red(),
+                                                                             phoneme_outline_col.green(),
+                                                                             phoneme_outline_col.blue())
+                self.select_style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
+                    phoneme_fill_col.red(),
+                    phoneme_fill_col.green(),
+                    phoneme_fill_col.blue())
+                self.select_style += "border:2px solid rgb({0},{1},{2});}};".format(phoneme_outline_col.red(),
                                                                              phoneme_outline_col.green(),
                                                                              phoneme_outline_col.blue())
             self.setStyleSheet(self.style)
@@ -503,9 +529,10 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setMouseTracking(True)
 
         # Other initialization
+        self.main_window = self.parentWidget().parentWidget().parentWidget()  # lol
         self.doc = None
-        self.is_dragging = False
-        self.basic_scrubbing = False
+        self.currently_selected_object = None
+        self.is_scrubbing = False
         self.cur_frame = 0
         self.old_frame = 0
         self.default_sample_width = default_sample_width
@@ -545,6 +572,50 @@ class WaveformView(QtWidgets.QGraphicsView):
     def dragEnterEvent(self, e):
         print("DragEnter!")
         e.accept()
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            possible_item = self.itemAt(event.pos())
+            if type(possible_item) == QtWidgets.QGraphicsPolygonItem:
+                possible_item = None
+            if not possible_item:
+                if self.currently_selected_object:
+                    self.currently_selected_object.setStyleSheet(self.currently_selected_object.style)
+                self.currently_selected_object = None
+                self.main_window.list_of_tags.clear()
+                self.main_window.tag_list_group.setEnabled(False)
+                self.is_scrubbing = True
+            else:
+                self.main_window.tag_list_group.setEnabled(True)
+                if self.currently_selected_object:
+                    self.currently_selected_object.setStyleSheet(self.currently_selected_object.style)
+                self.currently_selected_object = possible_item.widget()
+                self.currently_selected_object.setStyleSheet(self.currently_selected_object.select_style)
+                self.main_window.list_of_tags.clear()
+                self.main_window.list_of_tags.addItems(self.currently_selected_object.lipsync_object.tags)
+
+        event.accept()
+        super(WaveformView, self).mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self.is_scrubbing:
+            self.is_scrubbing = False
+            self.doc.sound.stop()
+        super(WaveformView, self).mouseReleaseEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.is_scrubbing:
+            if not self.doc.sound.is_playing():
+                start = round(event.pos().x() / self.frame_width) / self.doc.fps
+                length = self.frame_width / self.doc.fps
+                self.doc.sound.play_segment(start, length)
+            else:
+                self.doc.sound.stop()
+                start = round(event.pos().x() / self.frame_width) / self.doc.fps
+                length = self.frame_width / self.doc.fps
+                self.doc.sound.play_segment(start, length)
+        else:
+            super(WaveformView, self).mouseMoveEvent(event)
 
     def dragMoveEvent(self, e):
         if not self.doc.sound.is_playing():

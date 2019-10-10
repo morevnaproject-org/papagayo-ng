@@ -146,8 +146,8 @@ class SoundPlayer:
         print("Playing Segment")
         if not self.is_playing():  # otherwise this get's kinda echo-y
             self.isplaying = True
-            self.audio.setPosition(start * 1000.0)
             self.audio.play()
+            self.audio.setPosition(start * 1000.0)
             thread.start_new_thread(self._wait_for_segment_end, (start, length))
 
     def _wait_for_segment_end(self, newstart, newlength):

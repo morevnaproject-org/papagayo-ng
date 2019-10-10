@@ -143,6 +143,8 @@ class LipsyncFrame:
         self.main_window.text_edit.textChanged.connect(self.on_voice_text)
         self.main_window.apply_fps.clicked.connect(self.apply_changed_fps)
         self.main_window.spread_out.clicked.connect(self.spread_out)
+        self.main_window.add_tag.clicked.connect(self.add_tag)
+        self.main_window.remove_tag.clicked.connect(self.remove_tag)
 
         self.cur_frame = 0
         self.timer = None
@@ -164,6 +166,21 @@ class LipsyncFrame:
         self.ui = loader.load(file, parent)
         file.close()
         return self.ui
+
+    def add_tag(self):
+        self.main_window.list_of_tags.addItem(self.main_window.tag_entry.text())
+        self.main_window.tag_entry.clear()
+        temp_list = []
+        for i in range(self.main_window.list_of_tags.count()):
+            temp_list.append(self.main_window.list_of_tags.item(i).text())
+        self.main_window.waveform_view.currently_selected_object.lipsync_object.tags = temp_list
+
+    def remove_tag(self):
+        self.main_window.list_of_tags.takeItem(self.main_window.list_of_tags.currentRow())
+        temp_list = []
+        for i in range(self.main_window.list_of_tags.count()):
+            temp_list.append(self.main_window.list_of_tags.item(i).text())
+        self.main_window.waveform_view.currently_selected_object.lipsync_object.tags = temp_list
 
     def spread_out(self):
         wfv = self.main_window.waveform_view
@@ -308,6 +325,7 @@ class LipsyncFrame:
                 self.main_window.action_zoom_in.setEnabled(True)
                 self.main_window.action_zoom_out.setEnabled(True)
                 self.main_window.action_reset_zoom.setEnabled(True)
+            self.main_window.tag_list_group.setEnabled(False)
 
             self.main_window.voice_list.clear()
             for voice in self.doc.voices:
