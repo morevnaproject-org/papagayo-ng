@@ -580,7 +580,10 @@ class WaveformView(QtWidgets.QGraphicsView):
                 possible_item = None
             if not possible_item:
                 if self.currently_selected_object:
-                    self.currently_selected_object.setStyleSheet(self.currently_selected_object.style)
+                    try:
+                        self.currently_selected_object.setStyleSheet(self.currently_selected_object.style)
+                    except RuntimeError:
+                        pass  # The real object was deleted, instead of carefully tracking we simply do this
                 self.currently_selected_object = None
                 self.main_window.list_of_tags.clear()
                 self.main_window.tag_list_group.setEnabled(False)
@@ -588,7 +591,10 @@ class WaveformView(QtWidgets.QGraphicsView):
             else:
                 self.main_window.tag_list_group.setEnabled(True)
                 if self.currently_selected_object:
-                    self.currently_selected_object.setStyleSheet(self.currently_selected_object.style)
+                    try:
+                        self.currently_selected_object.setStyleSheet(self.currently_selected_object.style)
+                    except RuntimeError:
+                        pass  # The real object was deleted, instead of carefully tracking we simply do this
                 self.currently_selected_object = possible_item.widget()
                 self.currently_selected_object.setStyleSheet(self.currently_selected_object.select_style)
                 self.main_window.list_of_tags.clear()
