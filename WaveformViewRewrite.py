@@ -391,6 +391,7 @@ class MovableButton(QtWidgets.QPushButton):
 
     def set_tags(self, new_taglist):
         self.lipsync_object.tags = new_taglist
+        self.setToolTip("".join("{}\n".format(entry) for entry in self.lipsync_object.tags)[:-1])
         # Change the border-style or something like that depending on whether there are tags or not
         if len(self.lipsync_object.tags) > 0:
             if "solid" in self.styleSheet():
@@ -744,6 +745,7 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def create_movbuttons(self):
         if self.doc is not None:
+            self.setUpdatesEnabled(False)
             font_metrics = QtGui.QFontMetrics(font)
             text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
             text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
@@ -810,6 +812,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             progress.setValue(self.doc.current_voice.num_children)
             progress.close()
             main_window.statusbar.showMessage("Papagayo-NG")
+            self.setUpdatesEnabled(True)
 
     def recalc_waveform(self):
         duration = self.doc.sound.Duration()
