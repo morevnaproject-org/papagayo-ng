@@ -27,6 +27,7 @@ import PySide2.QtWidgets as QtWidgets
 import anytree.util
 import numpy as np
 from anytree import Node
+import re
 
 from LipsyncDoc import *
 
@@ -86,7 +87,6 @@ class MovableButton(QtWidgets.QPushButton):
         self.phoneme_offset = phoneme_offset
         self.lipsync_object = lipsync_object
         self.style = None
-        self.select_style = None
         self.is_resizing = False
         self.is_moving = False
         self.resize_origin = 0  # 0 = left 1 = right
@@ -94,6 +94,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.wfv_parent = wfv_parent
         self.setToolTip(lipsync_object.text)
         self.create_and_set_style()
+        self.set_tags(self.lipsync_object.tags)
         self.setMinimumWidth(self.convert_to_pixels(1))
         self.fit_text_to_size()
 
@@ -129,15 +130,6 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
-                self.select_style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    phrase_fill_col.red(),
-                    phrase_fill_col.green(),
-                    phrase_fill_col.blue())
-                self.select_style += "background-image: url(:/rsrc/marker.png); "
-                self.select_style += "background-repeat: repeat-y; background-position: right;"
-                self.select_style += "border:2px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
-                                                                             phrase_outline_col.green(),
-                                                                             phrase_outline_col.blue())
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
@@ -148,28 +140,12 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(word_outline_col.red(),
                                                                              word_outline_col.green(),
                                                                              word_outline_col.blue())
-                self.select_style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    word_fill_col.red(),
-                    word_fill_col.green(),
-                    word_fill_col.blue())
-                self.select_style += "background-image: url(:/rsrc/marker.png); "
-                self.select_style += "background-repeat: repeat-y; background-position: right;"
-                self.select_style += "border:2px solid rgb({0},{1},{2});}};".format(word_outline_col.red(),
-                                                                             word_outline_col.green(),
-                                                                             word_outline_col.blue())
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     phoneme_fill_col.red(),
                     phoneme_fill_col.green(),
                     phoneme_fill_col.blue())
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(phoneme_outline_col.red(),
-                                                                             phoneme_outline_col.green(),
-                                                                             phoneme_outline_col.blue())
-                self.select_style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    phoneme_fill_col.red(),
-                    phoneme_fill_col.green(),
-                    phoneme_fill_col.blue())
-                self.select_style += "border:2px solid rgb({0},{1},{2});}};".format(phoneme_outline_col.red(),
                                                                              phoneme_outline_col.green(),
                                                                              phoneme_outline_col.blue())
             self.setStyleSheet(self.style)
@@ -413,6 +389,16 @@ class MovableButton(QtWidgets.QPushButton):
             self.reposition_descendants2(True)
             self.is_resizing = False
 
+    def set_tags(self, new_taglist):
+        self.lipsync_object.tags = new_taglist
+        # Change the border-style or something like that depending on whether there are tags or not
+        if len(self.lipsync_object.tags) > 0:
+            if "solid" in self.styleSheet():
+                self.setStyleSheet(self.styleSheet().replace("solid", "dashed "))
+        else:
+            if "dashed " in self.styleSheet():
+                self.setStyleSheet(self.styleSheet().replace("dashed ", "solid"))
+
     def reposition_descendants(self, did_resize=False, x_diff=0):
         if did_resize:
             for child in self.node.children:
@@ -581,7 +567,12 @@ class WaveformView(QtWidgets.QGraphicsView):
             if not possible_item:
                 if self.currently_selected_object:
                     try:
-                        self.currently_selected_object.setStyleSheet(self.currently_selected_object.style)
+                        new_style = self.currently_selected_object.styleSheet()
+                        if "2px" in new_style:
+                            new_style = new_style.replace("2px", "1px")
+                        else:
+                            pass
+                        self.currently_selected_object.setStyleSheet(new_style)
                     except RuntimeError:
                         pass  # The real object was deleted, instead of carefully tracking we simply do this
                 self.currently_selected_object = None
@@ -592,11 +583,21 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.main_window.tag_list_group.setEnabled(True)
                 if self.currently_selected_object:
                     try:
-                        self.currently_selected_object.setStyleSheet(self.currently_selected_object.style)
+                        new_style = self.currently_selected_object.styleSheet()
+                        if "2px" in new_style:
+                            new_style = new_style.replace("2px", "1px")
+                        else:
+                            pass
+                        self.currently_selected_object.setStyleSheet(new_style)
                     except RuntimeError:
                         pass  # The real object was deleted, instead of carefully tracking we simply do this
                 self.currently_selected_object = possible_item.widget()
-                self.currently_selected_object.setStyleSheet(self.currently_selected_object.select_style)
+                new_style = self.currently_selected_object.styleSheet()
+                if "1px" in new_style:
+                    new_style = new_style.replace("1px", "2px")
+                else:
+                    pass
+                self.currently_selected_object.setStyleSheet(new_style)
                 self.main_window.list_of_tags.clear()
                 self.main_window.list_of_tags.addItems(self.currently_selected_object.lipsync_object.tags)
 

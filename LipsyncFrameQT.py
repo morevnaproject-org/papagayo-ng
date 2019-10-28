@@ -168,19 +168,20 @@ class LipsyncFrame:
         return self.ui
 
     def add_tag(self):
-        self.main_window.list_of_tags.addItem(self.main_window.tag_entry.text())
-        self.main_window.tag_entry.clear()
-        temp_list = []
-        for i in range(self.main_window.list_of_tags.count()):
-            temp_list.append(self.main_window.list_of_tags.item(i).text())
-        self.main_window.waveform_view.currently_selected_object.lipsync_object.tags = temp_list
+        if self.main_window.tag_entry.text():
+            self.main_window.list_of_tags.addItem(self.main_window.tag_entry.text())
+            self.main_window.tag_entry.clear()
+            temp_list = []
+            for i in range(self.main_window.list_of_tags.count()):
+                temp_list.append(self.main_window.list_of_tags.item(i).text())
+            self.main_window.waveform_view.currently_selected_object.set_tags(temp_list)
 
     def remove_tag(self):
         self.main_window.list_of_tags.takeItem(self.main_window.list_of_tags.currentRow())
         temp_list = []
         for i in range(self.main_window.list_of_tags.count()):
             temp_list.append(self.main_window.list_of_tags.item(i).text())
-        self.main_window.waveform_view.currently_selected_object.lipsync_object.tags = temp_list
+        self.main_window.waveform_view.currently_selected_object.set_tags(temp_list)
 
     def spread_out(self):
         wfv = self.main_window.waveform_view
