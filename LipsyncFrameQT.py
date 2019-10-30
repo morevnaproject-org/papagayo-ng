@@ -53,14 +53,15 @@ save_wildcard = "{} files ({})".format(app_title, lipsync_extension)
 class LipsyncFrame:
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
-        ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
-        self.main_window = self.load_ui_widget(ui_path)
-        self.main_window.setWindowTitle("%s" % app_title)
         self.loader = None
         self.ui_file = None
         self.ui = None
         self.doc = None
         self.about_dlg = None
+        self.ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
+        self.main_window = self.load_ui_widget(self.ui_path)
+        self.main_window.setWindowTitle("%s" % app_title)
+
         self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
 
         # TODO: need a good description for this stuff
@@ -115,6 +116,20 @@ class LipsyncFrame:
         self.main_window.statusbar.addPermanentWidget(self.sep_status)
         self.main_window.statusbar.addPermanentWidget(self.play_status)
         self.main_window.statusbar.showMessage(self.mainframe_statusbar_fields[0])
+        # This is for the buttons to add and remove voices from the TabBar
+        self.tab_widgets = QtWidgets.QWidget()
+        self.tab_layout = QtWidgets.QHBoxLayout()
+        self.tab_add_button = QtWidgets.QToolButton()
+        self.tab_add_button.setText("+")
+        self.tab_remove_button = QtWidgets.QToolButton()
+        self.tab_remove_button.setText("-")
+        self.tab_layout.addWidget(self.tab_add_button)
+        self.tab_layout.addWidget(self.tab_remove_button)
+        self.tab_layout.setContentsMargins(0, 0, 0, 0)
+        self.tab_layout.setSpacing(1)
+        self.tab_widgets.setContentsMargins(0, 0, 0, 0)
+        self.tab_widgets.setLayout(self.tab_layout)
+        self.main_window.current_voice.setCornerWidget(self.tab_widgets)
         # Connect Events
         self.main_window.action_play.triggered.connect(self.on_play)
         self.main_window.action_stop.triggered.connect(self.on_stop)
@@ -136,15 +151,16 @@ class LipsyncFrame:
         self.main_window.breakdown_button.clicked.connect(self.on_voice_breakdown)
         self.main_window.choose_imageset_button.clicked.connect(self.on_voice_image_choose)
         self.main_window.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
-        self.main_window.voice_list.itemClicked.connect(self.on_sel_voice)
         self.main_window.volume_slider.valueChanged.connect(self.change_volume)
-        self.main_window.new_button.clicked.connect(self.on_new_voice)
-        self.main_window.delete_button.clicked.connect(self.on_del_voice)
         self.main_window.text_edit.textChanged.connect(self.on_voice_text)
         self.main_window.apply_fps.clicked.connect(self.apply_changed_fps)
         self.main_window.spread_out.clicked.connect(self.spread_out)
         self.main_window.add_tag.clicked.connect(self.add_tag)
+        self.main_window.tag_entry.returnPressed.connect(self.add_tag)
         self.main_window.remove_tag.clicked.connect(self.remove_tag)
+        self.tab_add_button.clicked.connect(self.on_new_voice)
+        self.tab_remove_button.clicked.connect(self.on_del_voice)
+        self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
 
         self.cur_frame = 0
         self.timer = None
@@ -158,12 +174,12 @@ class LipsyncFrame:
         self.start_time = time.time()
 
     def load_ui_widget(self, ui_filename, parent=None):
-        loader = uic()
+        self.loader = uic()
         file = QFile(ui_filename)
         file.open(QFile.ReadOnly)
-        loader.registerCustomWidget(MouthView)
-        loader.registerCustomWidget(WaveformView)
-        self.ui = loader.load(file, parent)
+        self.loader.registerCustomWidget(MouthView)
+        self.loader.registerCustomWidget(WaveformView)
+        self.ui = self.loader.load(file, parent)
         file.close()
         return self.ui
 
@@ -303,7 +319,7 @@ class LipsyncFrame:
                 try:
                     txt_file = open("{}.trans".format(path[0].rsplit('.', 1)[0]), 'r')  # TODO: Check if path is correct
                     for line in txt_file:
-                        self.main_window.voice_list.appendRow(QtGui.QStandardItem(line))
+                        self.main_window.current_voice.tabBar().addTab(QtGui.QStandardItem(line))
                 except:
                     pass
         if self.doc is not None:
@@ -328,13 +344,17 @@ class LipsyncFrame:
                 self.main_window.action_reset_zoom.setEnabled(True)
             self.main_window.tag_list_group.setEnabled(False)
 
-            self.main_window.voice_list.clear()
+            first_entry = True
             for voice in self.doc.voices:
-                self.main_window.voice_list.addItem(voice.name)
-            self.main_window.voice_list.setCurrentRow(0)
+                if not first_entry:
+                    self.main_window.current_voice.tabBar().addTab(voice.name)
+                else:
+                    self.main_window.current_voice.tabBar().setTabText(0, voice.name)
+                    first_entry = False
             self.main_window.fps_input.setValue(self.doc.fps)
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
             self.main_window.text_edit.setText(self.doc.current_voice.text)
+
             # reload dictionary
             self.on_reload_dictionary()
             self.doc.dirty = False
@@ -378,7 +398,6 @@ class LipsyncFrame:
         self.main_window.voice_name_input.clear()
         self.main_window.text_edit.clear()
         self.main_window.fps_input.clear()
-        self.main_window.voice_list.clear()
         # disabling widgets
         self.main_window.vertical_layout_right.setEnabled(False)
         self.main_window.vertical_layout_left.setEnabled(False)
@@ -469,12 +488,13 @@ class LipsyncFrame:
             self.main_window.choose_imageset_button.setEnabled(False)
 
     def on_voice_name(self, event=None):
-        print(self.main_window.voice_name_input.text())
+
         if (self.doc is not None) and (self.doc.current_voice is not None):
             self.doc.dirty = True
             self.doc.current_voice.name = self.main_window.voice_name_input.text()
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
-            self.main_window.voice_list.currentItem().setText(self.doc.current_voice.name)
+            if not self.main_window.current_voice.tabBar().tabText(self.main_window.current_voice.tabBar().currentIndex()):
+                self.main_window.current_voice.tabBar().setTabText(self.main_window.current_voice.tabBar().currentIndex(), self.doc.current_voice.name)
             self.main_window.waveform_view.first_update = True
             self.main_window.waveform_view.set_document(self.doc)
 
@@ -555,12 +575,18 @@ class LipsyncFrame:
                 elif exporter == "JSON":
                     self.doc.current_voice.export_json(file_path)
 
-    def on_sel_voice(self, e):
+    def on_sel_voice_tab(self, e):
         if not self.doc:
             return
         prev_dirty = self.doc.dirty
         self.ignore_text_changes = True
-        self.doc.current_voice = self.doc.voices[self.main_window.voice_list.row(self.main_window.voice_list.currentItem())]
+
+        for voice in self.doc.voices:
+            if voice.name == self.main_window.current_voice.tabBar().tabText(self.main_window.current_voice.tabBar().currentIndex()):
+                self.doc.current_voice = voice
+
+        self.main_window.list_of_tags.clear()
+        self.main_window.tag_list_group.setEnabled(False)
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
@@ -570,15 +596,24 @@ class LipsyncFrame:
         self.main_window.mouth_view.draw_me()
         self.doc.dirty = prev_dirty
 
-
     def on_new_voice(self, event=None):
         if not self.doc:
             return
         self.doc.dirty = True
-        self.doc.voices.append(LipsyncVoice("Voice {:d}".format(len(self.doc.voices) + 1)))
+        voice_exist_count = 1
+        new_voice_name = "Voice {:d}".format(len(self.doc.voices) + voice_exist_count)
+        voice_name_exists = True
+        while voice_name_exists:
+            voice_name_exists = False
+            new_voice_name = "Voice {:d}".format(len(self.doc.voices) + voice_exist_count)
+            for voice in self.doc.voices:
+                if voice.name == new_voice_name:
+                    voice_name_exists = True
+                    voice_exist_count += 1
+                    break
+
+        self.doc.voices.append(LipsyncVoice(new_voice_name))
         self.doc.current_voice = self.doc.voices[-1]
-        self.main_window.voice_list.addItem(self.doc.current_voice.name)
-        self.main_window.voice_list.setCurrentRow(self.main_window.voice_list.count() - 1)
         self.ignore_text_changes = True
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
@@ -587,6 +622,8 @@ class LipsyncFrame:
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
+        self.main_window.current_voice.tabBar().addTab(self.doc.current_voice.name)
+        self.main_window.current_voice.tabBar().setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
 
     def on_del_voice(self, event=None):
         if (not self.doc) or (len(self.doc.voices) == 1):
@@ -599,12 +636,9 @@ class LipsyncFrame:
             new_index = 0
         self.doc.voices.remove(self.doc.current_voice)
         self.doc.current_voice = self.doc.voices[new_index]
-        self.main_window.voice_list.clear()
-        for voice in self.doc.voices:
-            self.main_window.voice_list.addItem(voice.name)
-        self.main_window.voice_list.setCurrentRow(new_index)
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
+        self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().currentIndex())
         self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()

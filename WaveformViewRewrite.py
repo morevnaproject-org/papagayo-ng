@@ -130,6 +130,14 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
+                # self.style = """QPushButton {
+                #                 color: #000000;
+                #                 border-image: url(./rsrc/testbutton2.png) 2 10 2 2 repeat;
+                #                 border-top: 2px transparent;
+                #                 border-bottom: 2px transparent;
+                #                 border-right: 10px transparent;
+                #                 border-left: 2px transparent;
+                #                 }"""
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
