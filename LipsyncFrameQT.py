@@ -296,6 +296,8 @@ class LipsyncFrame:
             self.open(file_path)
 
     def open(self, path):
+        while self.main_window.current_voice.tabBar().count() > 1:
+            self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().count() - 1)
         self.doc = LipsyncDoc(self.langman, self)
         if path.endswith((lipsync_extension.split(" ")[0][1:], lipsync_extension.split(" ")[1][1:])):
             if path.endswith(lipsync_extension.split(" ")[0][1:]):
