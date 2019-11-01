@@ -63,6 +63,21 @@ class LipsyncFrame:
         self.main_window.setWindowTitle("%s" % app_title)
 
         self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+        tree_style = r'''QTreeView::branch:has-siblings:!adjoins-item {
+                             border-image: url(./rsrc/vline.png) 0;}               
+                         QTreeView::branch:has-siblings:adjoins-item {
+                             border-image: url(./rsrc/branch-more.png) 0;}
+                         QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+                             border-image: url(./rsrc/branch-end.png) 0;}
+                         QTreeView::branch:has-children:!has-siblings:closed,
+                         QTreeView::branch:closed:has-children:has-siblings {
+                                 border-image: none;
+                                 image: url(./rsrc/branch-closed.png); }
+                         QTreeView::branch:open:has-children:!has-siblings,
+                         QTreeView::branch:open:has-children:has-siblings  {
+                                 border-image: none;
+                                 image: url(./rsrc/branch-open.png); }'''
+        self.main_window.parent_tags.setStyleSheet(tree_style)
 
         # TODO: need a good description for this stuff
         print(dir(self.main_window))

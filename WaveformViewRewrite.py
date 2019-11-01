@@ -178,6 +178,16 @@ class MovableButton(QtWidgets.QPushButton):
             return False
         return True
 
+    def object_type(self):
+        if self.is_phoneme():
+            return "phoneme"
+        elif self.is_word():
+            return "word"
+        elif self.is_phrase():
+            return "phrase"
+        else:
+            return None
+
     def after_reposition(self):
         if self.is_phoneme():
             self.setGeometry(self.convert_to_pixels(self.lipsync_object.frame), self.y(),
@@ -506,6 +516,12 @@ class MovableButton(QtWidgets.QPushButton):
     def get_right_sibling(self):
         return anytree.util.rightsibling(self.node)
 
+    def get_parent(self):
+        if self.object_type() != "phrase":
+            return self.node.parent
+        else:
+            return None
+
     def __del__(self):
         try:
             self.deleteLater()
@@ -587,6 +603,9 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.currently_selected_object = None
                 self.main_window.list_of_tags.clear()
                 self.main_window.tag_list_group.setEnabled(False)
+                self.main_window.tag_list_group.setTitle("Selected Object Tags")
+                self.main_window.parent_tags.clear()
+                self.main_window.parent_tags.setEnabled(False)
                 self.is_scrubbing = True
             else:
                 self.main_window.tag_list_group.setEnabled(True)
@@ -609,6 +628,53 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.currently_selected_object.setStyleSheet(new_style)
                 self.main_window.list_of_tags.clear()
                 self.main_window.list_of_tags.addItems(self.currently_selected_object.lipsync_object.tags)
+                title_part_two = self.currently_selected_object.title
+                if len(self.currently_selected_object.title) > 40:
+                    title_part_two = self.currently_selected_object.title[0:40] + "..."
+                new_title = self.currently_selected_object.object_type().title() + ": " + title_part_two
+                self.main_window.tag_list_group.setTitle(new_title)
+                self.main_window.parent_tags.clear()
+                self.main_window.parent_tags.setEnabled(False)
+                if self.currently_selected_object.object_type() == "phoneme":
+                    parent_word = self.currently_selected_object.get_parent().name
+                    parent_phrase = parent_word.get_parent().name
+                    word_tags = parent_word.lipsync_object.tags
+                    phrase_tags = parent_phrase.lipsync_object.tags
+                    if word_tags or phrase_tags:
+                        self.main_window.parent_tags.setEnabled(True)
+                    if phrase_tags:
+                        list_of_phrase_tags = []
+                        for tag in phrase_tags:
+                            new_tag = QtWidgets.QTreeWidgetItem([tag])
+                            list_of_phrase_tags.append(new_tag)
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.title])
+                        phrase_tree.addChildren(list_of_phrase_tags)
+                        self.main_window.parent_tags.addTopLevelItem(phrase_tree)
+                        phrase_tree.setExpanded(True)
+                    if word_tags:
+                        list_of_word_tags = []
+                        for tag in word_tags:
+                            new_tag = QtWidgets.QTreeWidgetItem([tag])
+                            list_of_word_tags.append(new_tag)
+                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.title])
+                        word_tree.addChildren(list_of_word_tags)
+                        self.main_window.parent_tags.addTopLevelItem(word_tree)
+                        word_tree.setExpanded(True)
+                elif self.currently_selected_object.object_type() == "word":
+                    parent_phrase = self.currently_selected_object.get_parent().name
+                    parent_tags = parent_phrase.lipsync_object.tags
+                    list_of_tags = []
+                    if parent_tags:
+                        self.main_window.parent_tags.setEnabled(True)
+                        for tag in parent_tags:
+                            new_tag = QtWidgets.QTreeWidgetItem([tag])
+                            list_of_tags.append(new_tag)
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.title])
+                        phrase_tree.addChildren(list_of_tags)
+                        self.main_window.parent_tags.addTopLevelItem(phrase_tree)
+                        phrase_tree.setExpanded(True)
+                else:
+                    self.main_window.parent_tags.setEnabled(False)
 
         event.accept()
         super(WaveformView, self).mousePressEvent(event)
