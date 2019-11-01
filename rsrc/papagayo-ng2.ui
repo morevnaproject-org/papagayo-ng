@@ -452,75 +452,125 @@
            <property name="title">
             <string>Selected Object Tags</string>
            </property>
-           <layout class="QVBoxLayout" name="tag_list_layout" stretch="2,1,0,0">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QTreeWidget" name="parent_tags">
-              <property name="enabled">
-               <bool>false</bool>
+             <widget class="QSplitter" name="tag_splitter">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
               </property>
-              <property name="showDropIndicator" stdset="0">
-               <bool>false</bool>
-              </property>
-              <property name="alternatingRowColors">
-               <bool>true</bool>
-              </property>
-              <property name="selectionMode">
-               <enum>QAbstractItemView::NoSelection</enum>
-              </property>
-              <property name="verticalScrollMode">
-               <enum>QAbstractItemView::ScrollPerPixel</enum>
-              </property>
-              <property name="rootIsDecorated">
-               <bool>false</bool>
-              </property>
-              <property name="itemsExpandable">
-               <bool>false</bool>
-              </property>
-              <property name="headerHidden">
-               <bool>true</bool>
-              </property>
-              <property name="expandsOnDoubleClick">
-               <bool>false</bool>
-              </property>
-              <property name="columnCount">
+              <property name="midLineWidth">
                <number>1</number>
               </property>
-              <attribute name="headerDefaultSectionSize">
-               <number>200</number>
-              </attribute>
-              <attribute name="headerStretchLastSection">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="opaqueResize">
                <bool>true</bool>
-              </attribute>
-              <column>
-               <property name="text">
-                <string notr="true">1</string>
+              </property>
+              <property name="childrenCollapsible">
+               <bool>false</bool>
+              </property>
+              <widget class="QTreeWidget" name="parent_tags">
+               <property name="enabled">
+                <bool>false</bool>
                </property>
-              </column>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="showDropIndicator" stdset="0">
+                <bool>false</bool>
+               </property>
+               <property name="alternatingRowColors">
+                <bool>true</bool>
+               </property>
+               <property name="selectionMode">
+                <enum>QAbstractItemView::NoSelection</enum>
+               </property>
+               <property name="verticalScrollMode">
+                <enum>QAbstractItemView::ScrollPerPixel</enum>
+               </property>
+               <property name="rootIsDecorated">
+                <bool>false</bool>
+               </property>
+               <property name="itemsExpandable">
+                <bool>false</bool>
+               </property>
+               <property name="headerHidden">
+                <bool>true</bool>
+               </property>
+               <property name="expandsOnDoubleClick">
+                <bool>false</bool>
+               </property>
+               <property name="columnCount">
+                <number>1</number>
+               </property>
+               <attribute name="headerDefaultSectionSize">
+                <number>200</number>
+               </attribute>
+               <attribute name="headerStretchLastSection">
+                <bool>true</bool>
+               </attribute>
+               <column>
+                <property name="text">
+                 <string notr="true">1</string>
+                </property>
+               </column>
+              </widget>
+              <widget class="QLineEdit" name="tag_entry">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>1</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="baseSize">
+                <size>
+                 <width>0</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </widget>
+              <widget class="QListWidget" name="list_of_tags"/>
+              <widget class="QWidget" name="">
+               <layout class="QHBoxLayout" name="tag_list_buttons">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMaximumSize</enum>
+                </property>
+                <item>
+                 <widget class="QPushButton" name="add_tag">
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>23</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Add</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="remove_tag">
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>23</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Remove</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="tag_entry"/>
-            </item>
-            <item>
-             <widget class="QListWidget" name="list_of_tags"/>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="tag_list_buttons">
-              <item>
-               <widget class="QPushButton" name="add_tag">
-                <property name="text">
-                 <string>Add</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="remove_tag">
-                <property name="text">
-                 <string>Remove</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
             </item>
            </layout>
           </widget>
