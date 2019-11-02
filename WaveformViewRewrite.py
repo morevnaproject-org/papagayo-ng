@@ -332,7 +332,6 @@ class MovableButton(QtWidgets.QPushButton):
                     if list_of_new_phonemes:
                         if list_of_new_phonemes != prev_phoneme_list.split():
                             old_childnodes = self.node.children
-                            print(self.wfv_parent.items())
                             for old_node in old_childnodes:
                                 for proxy in self.wfv_parent.items():
                                     try:
@@ -365,8 +364,6 @@ class MovableButton(QtWidgets.QPushButton):
 
     def mouseDoubleClickEvent(self, event):
         if not self.wfv_parent.doc.sound.is_playing() and not self.is_phoneme():
-            print("Double Click: ")
-            print(self.text())
             start = self.lipsync_object.start_frame / self.wfv_parent.doc.fps
             length = (self.lipsync_object.end_frame - self.lipsync_object.start_frame) / self.wfv_parent.doc.fps
             self.wfv_parent.doc.sound.play_segment(start, length)
@@ -400,7 +397,6 @@ class MovableButton(QtWidgets.QPushButton):
             main_window.waveform_view.update()
 
     def mouseReleaseEvent(self, event):
-        print("Release")
         if self.is_moving:
             self.is_moving = False
         if self.is_resizing:
@@ -675,7 +671,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                         phrase_tree.setExpanded(True)
                 else:
                     self.main_window.parent_tags.setEnabled(False)
-
         event.accept()
         super(WaveformView, self).mousePressEvent(event)
 
@@ -683,19 +678,21 @@ class WaveformView(QtWidgets.QGraphicsView):
         if self.is_scrubbing:
             self.is_scrubbing = False
             self.doc.sound.stop()
+            self.temp_play_marker.setVisible(False)
+            self.main_window.mouth_view.set_frame(0)
         super(WaveformView, self).mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
         if self.is_scrubbing:
+            mouse_scene_pos = self.mapToScene(event.pos()).x()
             if not self.doc.sound.is_playing():
-                start = round(event.pos().x() / self.frame_width) / self.doc.fps
+                start = round(mouse_scene_pos / self.frame_width) / self.doc.fps
                 length = self.frame_width / self.doc.fps
                 self.doc.sound.play_segment(start, length)
-            else:
-                self.doc.sound.stop()
-                start = round(event.pos().x() / self.frame_width) / self.doc.fps
-                length = self.frame_width / self.doc.fps
-                self.doc.sound.play_segment(start, length)
+            self.draw_play_marker = True
+            self.temp_play_marker.setVisible(True)
+            self.temp_play_marker.setPos(round(mouse_scene_pos / self.frame_width) * self.frame_width, 0)
+            self.main_window.mouth_view.set_frame(round(mouse_scene_pos / self.frame_width))
         else:
             super(WaveformView, self).mouseMoveEvent(event)
 

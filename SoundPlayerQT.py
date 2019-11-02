@@ -90,8 +90,6 @@ class SoundPlayer:
         self.decoding_is_finished = True
 
     def on_durationChanged(self, duration):
-        print("Changed!")
-        print(duration)
         self.is_loaded = True
 
     def get_audio_buffer(self, bufferdata):
@@ -143,25 +141,20 @@ class SoundPlayer:
         self.audio.play()
 
     def play_segment(self, start, length):
-        print("Playing Segment")
         if not self.is_playing():  # otherwise this get's kinda echo-y
             self.isplaying = True
-            self.audio.play()
             self.audio.setPosition(start * 1000.0)
+            self.audio.play()
             thread.start_new_thread(self._wait_for_segment_end, (start, length))
 
     def _wait_for_segment_end(self, newstart, newlength):
         start = newstart * 1000.0
         length = newlength * 1000.0
         end = start + length
-        print(start)
-        print(length)
-        print(end)
         while self.audio.position() < end:
             if not self.isplaying:
                 return 0
             QCoreApplication.processEvents()
-            print(self.audio.position())
             time.sleep(0.001)
         self.audio.stop()
         self.isplaying = False
