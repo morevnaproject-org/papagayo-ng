@@ -510,8 +510,7 @@ class LipsyncFrame:
             self.doc.dirty = True
             self.doc.current_voice.name = self.main_window.voice_name_input.text()
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
-            if not self.main_window.current_voice.tabBar().tabText(self.main_window.current_voice.tabBar().currentIndex()):
-                self.main_window.current_voice.tabBar().setTabText(self.main_window.current_voice.tabBar().currentIndex(), self.doc.current_voice.name)
+            self.main_window.current_voice.tabBar().setTabText(self.main_window.current_voice.tabBar().currentIndex(), self.doc.current_voice.name)
             self.main_window.waveform_view.first_update = True
             self.main_window.waveform_view.set_document(self.doc)
 
@@ -631,6 +630,8 @@ class LipsyncFrame:
 
         self.doc.voices.append(LipsyncVoice(new_voice_name))
         self.doc.current_voice = self.doc.voices[-1]
+        self.main_window.current_voice.tabBar().addTab(self.doc.current_voice.name)
+        self.main_window.current_voice.tabBar().setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
         self.ignore_text_changes = True
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
@@ -639,8 +640,7 @@ class LipsyncFrame:
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
-        self.main_window.current_voice.tabBar().addTab(self.doc.current_voice.name)
-        self.main_window.current_voice.tabBar().setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
+
 
     def on_del_voice(self, event=None):
         if (not self.doc) or (len(self.doc.voices) == 1):
