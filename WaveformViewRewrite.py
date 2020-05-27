@@ -728,6 +728,13 @@ class WaveformView(QtWidgets.QGraphicsView):
         e.accept()
 
     def set_frame(self, frame):
+        if self.temp_play_marker not in self.scene().items():
+            self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
+                                                             QtGui.QPen(play_outline_col),
+                                                             QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+            self.temp_play_marker.setZValue(1000)
+            self.temp_play_marker.setOpacity(0.5)
+            self.temp_play_marker.setVisible(True)
         self.centerOn(self.temp_play_marker)
         self.temp_play_marker.setPos(frame * self.frame_width, 0)
         self.update()
@@ -914,12 +921,13 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.scene().update()
                 self.create_movbuttons()
                 self.create_waveform()
-                self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
-                                                             QtGui.QPen(play_outline_col),
-                                                             QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
-                self.temp_play_marker.setZValue(1000)
-                self.temp_play_marker.setOpacity(0.5)
-                self.temp_play_marker.setVisible(False)
+                if self.temp_play_marker not in self.scene().items():
+                    self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
+                                                                 QtGui.QPen(play_outline_col),
+                                                                 QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+                    self.temp_play_marker.setZValue(1000)
+                    self.temp_play_marker.setOpacity(0.5)
+                    self.temp_play_marker.setVisible(False)
                 self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
 
     def on_slider_change(self, value):
