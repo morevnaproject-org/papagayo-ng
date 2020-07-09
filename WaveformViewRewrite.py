@@ -680,10 +680,9 @@ class WaveformView(QtWidgets.QGraphicsView):
                 word_count = 0
                 current_num += 1
                 progress.setValue(current_num)
-                if current_num > 0 and  self.doc.current_voice.num_children > 0:
-                    main_window.statusbar.showMessage(
-                        "Preparing Buttons: {0}%".format(
-                            str(int((current_num / self.doc.current_voice.num_children) * 100))))
+                main_window.statusbar.showMessage(
+                    "Preparing Buttons: {0}%".format(
+                        str(int((current_num / self.doc.current_voice.num_children) * 100))))
                 for word in phrase.words:
                     self.temp_button = MovableButton(word, self)
                     self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
@@ -698,9 +697,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                     phoneme_count = 0
                     current_num += 1
                     progress.setValue(current_num)
-                    if current_num > 0 and  self.doc.current_voice.num_children > 0:
-                        main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
-                            str(int((current_num / self.doc.current_voice.num_children) * 100))))
+                    main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
+                        str(int((current_num / self.doc.current_voice.num_children) * 100))))
                     for phoneme in word.phonemes:
                         self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
                         self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
@@ -715,10 +713,9 @@ class WaveformView(QtWidgets.QGraphicsView):
                         phoneme_count += 1
                         current_num += 1
                         progress.setValue(current_num)
-                        if current_num > 0 and  self.doc.current_voice.num_children > 0:
-                            main_window.statusbar.showMessage(
-                                "Preparing Buttons: {0}%".format(
-                                    str(int((current_num / self.doc.current_voice.num_children) * 100))))
+                        main_window.statusbar.showMessage(
+                            "Preparing Buttons: {0}%".format(
+                                str(int((current_num / self.doc.current_voice.num_children) * 100))))
                         QtCore.QCoreApplication.processEvents()
             progress.setValue(self.doc.current_voice.num_children)
             progress.close()
