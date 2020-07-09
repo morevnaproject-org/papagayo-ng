@@ -20,6 +20,7 @@ import math
 import shutil
 import codecs
 import importlib
+import json
 
 from Rhubarb import Rhubarb, RhubarbTimeoutException
 
@@ -33,10 +34,12 @@ import PySide2.QtCore as QtCore
 from utilities import *
 from PronunciationDialogQT import PronunciationDialog
 
-if sys.platform != "darwin":
+if sys.platform == "win32":
     import SoundPlayerQT as SoundPlayer
-else:
+elif sys.platform == "darwin":
     import SoundPlayerOSX as SoundPlayer
+else:
+    import SoundPlayer as SoundPlayer
 
 
 strip_symbols = '.,!?;-/()"'
@@ -52,6 +55,7 @@ class LipsyncPhoneme:
         self._frame = frame
         self.dirty = False
         self.is_phoneme = True
+        self.tags = []
 
         @property
         def frame(self):
@@ -75,6 +79,7 @@ class LipsyncWord:
         self.end_frame = 0
         self.phonemes = []
         self.is_phoneme = False
+        self.tags = []
 
     def run_breakdown(self, parent_window, language, languagemanager, phonemeset):
         self.phonemes = []
@@ -149,6 +154,7 @@ class LipsyncPhrase:
         self.end_frame = 0
         self.words = []
         self.is_phoneme = False
+        self.tags = []
 
     def run_breakdown(self, parent_window, language, languagemanager, phonemeset):
         self.words = []
@@ -414,12 +420,12 @@ class LipsyncVoice:
             print("Use normal procedure.\n")
             phonemedict = {}
             for files in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                 "rsrc/mouths/") + currentmouth):
+                                                 "rsrc", "mouths/") + currentmouth):
                 phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
             for frame in range(start_frame, end_frame + 1):
                 phoneme = self.get_phoneme_at_frame(frame)
                 try:
-                    shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc/mouths/") +
+                    shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rsrc", "mouths/") +
                                 currentmouth + "/" + phoneme + phonemedict[phoneme],
                                 path + str(frame).rjust(6, '0') + phoneme + phonemedict[phoneme])
                 except KeyError:
@@ -480,12 +486,46 @@ class LipsyncVoice:
                     pass
         out_file.close()
 
+    def export_json(self, path):
+        if len(self.phrases) > 0:
+            start_frame = self.phrases[0].start_frame
+            end_frame = self.phrases[-1].end_frame
+        else:  # No phrases means no data, so do nothing
+            return
+        json_data = {"name": self.name, "start_frame": start_frame, "end_frame": end_frame,
+                     "text": self.text, "num_children": self.num_children}
+        list_of_phrases = []
+        list_of_used_phonemes = []
+        for phr_id, phrase in enumerate(self.phrases):
+            dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
+                           "end_frame": phrase.end_frame, "tags": phrase.tags}
+            list_of_words = []
+            for wor_id, word in enumerate(phrase.words):
+                dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
+                             "end_frame": word.end_frame, "tags": word.tags or phrase.tags}
+                list_of_phonemes = []
+                for pho_id, phoneme in enumerate(word.phonemes):
+                    dict_phoneme = {"id": pho_id, "text": phoneme.text, "frame": phoneme.frame,
+                                    "tags": phoneme.tags or word.tags or phrase.tags}
+                    list_of_phonemes.append(dict_phoneme)
+                    if phoneme.text not in list_of_used_phonemes:
+                        list_of_used_phonemes.append(phoneme.text)
+                dict_word["phonemes"] = list_of_phonemes
+                list_of_words.append(dict_word)
+            dict_phrase["words"] = list_of_words
+            list_of_phrases.append(dict_phrase)
+        json_data["phrases"] = list_of_phrases
+        json_data["used_phonemes"] = list_of_used_phonemes
+        file_path = open(path, "w")
+        json.dump(json_data, file_path, indent=True)
+        file_path.close()
+
 
 ###############################################################
 
 class LipsyncDoc:
     def __init__(self, langman, parent):
-        self.dirty = False
+        self._dirty = False
         self.name = "Untitled"
         self.path = None
         self.fps = 24
@@ -497,13 +537,68 @@ class LipsyncDoc:
         self.language_manager = langman
         self.parent = parent
 
+    @property
+    def dirty(self):
+        return self._dirty
+
+    @dirty.setter
+    def dirty(self, value):
+        self._dirty = value
+
     def __del__(self):
         # Properly close down the sound object
         if self.sound is not None:
             del self.sound
 
+    def open2(self, path):
+        self._dirty = False
+        self.path = os.path.normpath(path)
+        self.name = os.path.basename(path)
+        self.sound = None
+        self.voices = []
+        self.current_voice = None
+        file_data = open(self.path, "r")
+        json_data = json.load(file_data)
+        self.soundPath = json_data["sound_path"]
+        if not os.path.isabs(self.soundPath):
+            self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
+        self.fps = json_data["fps"]
+        self.soundDuration = json_data["sound_duration"]
+        num_voices = json_data["num_voices"]
+        for voice in json_data["voices"]:
+            temp_voice = LipsyncVoice()
+            temp_voice.name = voice["name"]
+            temp_voice.text = voice["text"]
+            temp_voice.num_children = voice["num_children"]
+            for phrase in voice["phrases"]:
+                temp_phrase = LipsyncPhrase()
+                temp_phrase.text = phrase["text"]
+                temp_phrase.start_frame = phrase["start_frame"]
+                temp_phrase.end_frame = phrase["end_frame"]
+                temp_phrase.tags = phrase["tags"]
+                for word in phrase["words"]:
+                    temp_word = LipsyncWord()
+                    temp_word.text = word["text"]
+                    temp_word.start_frame = word["start_frame"]
+                    temp_word.end_frame = word["end_frame"]
+                    temp_word.tags = word["tags"]
+                    for phoneme in word["phonemes"]:
+                        temp_phoneme = LipsyncPhoneme()
+                        temp_phoneme.text = phoneme["text"]
+                        temp_phoneme.frame = phoneme["frame"]
+                        temp_phoneme.tags = phoneme["tags"]
+                        temp_word.phonemes.append(temp_phoneme)
+                    temp_phrase.words.append(temp_word)
+                temp_voice.phrases.append(temp_phrase)
+            self.voices.append(temp_voice)
+        file_data.close()
+        self.open_audio(self.soundPath)
+        if len(self.voices) > 0:
+            self.current_voice = self.voices[0]
+
+
     def open(self, path):
-        self.dirty = False
+        self._dirty = False
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
         self.sound = None
@@ -547,6 +642,51 @@ class LipsyncDoc:
         else:
             self.sound = None
 
+    def save2(self, path):
+        self.path = os.path.normpath(path)
+        self.name = os.path.basename(path)
+        if os.path.dirname(self.path) == os.path.dirname(self.soundPath):
+            saved_sound_path = os.path.basename(self.soundPath)
+        else:
+            saved_sound_path = self.soundPath
+        out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration, "num_voices": len(self.voices)}
+        list_of_voices = []
+        for voi_id, voice in enumerate(self.voices):
+            start_frame = 0
+            end_frame = 1
+            if len(voice.phrases) > 0:
+                start_frame = voice.phrases[0].start_frame
+                end_frame = voice.phrases[-1].end_frame
+            json_data = {"name": voice.name, "start_frame": start_frame, "end_frame": end_frame,
+                         "text": voice.text, "num_children": voice.num_children}
+            list_of_phrases = []
+            list_of_used_phonemes = []
+            for phr_id, phrase in enumerate(voice.phrases):
+                dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
+                               "end_frame": phrase.end_frame, "tags": phrase.tags}
+                list_of_words = []
+                for wor_id, word in enumerate(phrase.words):
+                    dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
+                                 "end_frame": word.end_frame, "tags": word.tags}
+                    list_of_phonemes = []
+                    for pho_id, phoneme in enumerate(word.phonemes):
+                        dict_phoneme = {"id": pho_id, "text": phoneme.text,
+                                        "frame": phoneme.frame, "tags": phoneme.tags}
+                        list_of_phonemes.append(dict_phoneme)
+                        if phoneme.text not in list_of_used_phonemes:
+                            list_of_used_phonemes.append(phoneme.text)
+                    dict_word["phonemes"] = list_of_phonemes
+                    list_of_words.append(dict_word)
+                dict_phrase["words"] = list_of_words
+                list_of_phrases.append(dict_phrase)
+            json_data["phrases"] = list_of_phrases
+            json_data["used_phonemes"] = list_of_used_phonemes
+            list_of_voices.append(json_data)
+        out_json["voices"] = list_of_voices
+        file_path = open(self.path, "w")
+        json.dump(out_json, file_path, indent=True)
+        file_path.close()
+
     def save(self, path):
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
@@ -563,7 +703,7 @@ class LipsyncDoc:
         for voice in self.voices:
             voice.save(out_file)
         out_file.close()
-        self.dirty = False
+        self._dirty = False
 
     def auto_recognize_phoneme(self):
         try:
@@ -702,6 +842,6 @@ class LanguageManager:
     def init_languages(self):
         if len(self.language_table) > 0:
             return
-        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc/languages")):
+        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc", "languages")):
             if "language.ini" in files:
                 self.language_details(path, files)

@@ -52,20 +52,20 @@ class AboutBox:
         self.loader = None
         self.ui = None
         self.ui_file = None
-        self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "./rsrc/about_box.ui"))
+        self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "rsrc", "about_box.ui"))
         self.main_window.about_window_group.html_view = HtmlView(self.main_window)
         self.main_window.about_window_group.html_view.setMinimumHeight(450)
         self.main_window.about_window_group.insertWidget(0, self.main_window.about_window_group.html_view)
-        self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), r"rsrc\window_icon.bmp")))
+        self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
         self.main_window.about_ok_button.clicked.connect(self.close)
 
-        with open(os.path.join(get_main_dir(), r"rsrc\about.html"), "r") as html_file:
+        with open(os.path.join(get_main_dir(), "rsrc", "about.html"), "r") as html_file:
             html_file_fixed_paths = html_file.read().replace("papagayo-ng.png", r"file:///{}".format(
-                os.path.join(get_main_dir(), r"rsrc\papagayo-ng.png")))
+                os.path.join(get_main_dir(), "rsrc", "papagayo-ng.png")))
             html_file_fixed_paths = html_file_fixed_paths.replace("gpl.html", r"file:///{}".format(
-                os.path.join(get_main_dir(), r"rsrc\gpl.html")))
+                os.path.join(get_main_dir(), "rsrc", "gpl.html")))
             self.main_window.about_window_group.html_view.setHtml(html_file_fixed_paths, baseUrl=QtCore.QUrl(
-                r"file:///{}".format(os.path.join(get_main_dir(), r"rsrc\about.html"))))
+                r"file:///{}".format(os.path.join(get_main_dir(), "rsrc", "about.html"))))
 
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()

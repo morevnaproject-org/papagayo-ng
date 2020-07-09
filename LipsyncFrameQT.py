@@ -40,7 +40,7 @@ from AboutBoxQT import AboutBox
 from LipsyncDoc import *
 
 app_title = "Papagayo-NG"
-lipsync_extension = "*.pgo"
+lipsync_extension = "*.pgo *.pg2"
 audio_extensions = "*.wav *.mp3 *.aiff *.aif *.au *.snd *.mov *.m4a"
 open_wildcard = "{} and sound files ({} {})".format(app_title, audio_extensions, lipsync_extension)
 audioExtensions = "*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a"
@@ -53,15 +53,31 @@ save_wildcard = "{} files ({})".format(app_title, lipsync_extension)
 class LipsyncFrame:
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
-        ui_path = os.path.join(get_main_dir(), "rsrc/papagayo-ng2.ui")
-        self.main_window = self.load_ui_widget(ui_path)
-        self.main_window.setWindowTitle("%s" % app_title)
         self.loader = None
         self.ui_file = None
         self.ui = None
         self.doc = None
         self.about_dlg = None
+        self.ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
+        self.main_window = self.load_ui_widget(self.ui_path)
+        self.main_window.setWindowTitle("%s" % app_title)
+
         self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+        tree_style = r'''QTreeView::branch:has-siblings:!adjoins-item {
+                             border-image: url(./rsrc/vline.png) 0;}               
+                         QTreeView::branch:has-siblings:adjoins-item {
+                             border-image: url(./rsrc/branch-more.png) 0;}
+                         QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+                             border-image: url(./rsrc/branch-end.png) 0;}
+                         QTreeView::branch:has-children:!has-siblings:closed,
+                         QTreeView::branch:closed:has-children:has-siblings {
+                                 border-image: none;
+                                 image: url(./rsrc/branch-closed.png); }
+                         QTreeView::branch:open:has-children:!has-siblings,
+                         QTreeView::branch:open:has-children:has-siblings  {
+                                 border-image: none;
+                                 image: url(./rsrc/branch-open.png); }'''
+        self.main_window.parent_tags.setStyleSheet(tree_style)
 
         # TODO: need a good description for this stuff
         print(dir(self.main_window))
@@ -94,7 +110,7 @@ class LipsyncFrame:
         self.main_window.phoneme_set.setCurrentIndex(0)
 
         # setup export initialisation here
-        exporter_list = ["MOHO", "ALELO", "Images"]
+        exporter_list = ["MOHO", "ALELO", "Images", "JSON"]
         c = 0
         select = 0
         for exporter in exporter_list:
@@ -103,7 +119,7 @@ class LipsyncFrame:
                 select = c
             c += 1
         self.main_window.export_combo.setCurrentIndex(select)
-
+        self.app.aboutToQuit.connect(self.on_close)
         self.ignore_text_changes = False
         # This adds our statuses to the statusbar
         self.mainframe_statusbar_fields = [app_title, "Stopped"]
@@ -115,6 +131,20 @@ class LipsyncFrame:
         self.main_window.statusbar.addPermanentWidget(self.sep_status)
         self.main_window.statusbar.addPermanentWidget(self.play_status)
         self.main_window.statusbar.showMessage(self.mainframe_statusbar_fields[0])
+        # This is for the buttons to add and remove voices from the TabBar
+        self.tab_widgets = QtWidgets.QWidget()
+        self.tab_layout = QtWidgets.QHBoxLayout()
+        self.tab_add_button = QtWidgets.QToolButton()
+        self.tab_add_button.setText("+")
+        self.tab_remove_button = QtWidgets.QToolButton()
+        self.tab_remove_button.setText("-")
+        self.tab_layout.addWidget(self.tab_add_button)
+        self.tab_layout.addWidget(self.tab_remove_button)
+        self.tab_layout.setContentsMargins(0, 0, 0, 0)
+        self.tab_layout.setSpacing(1)
+        self.tab_widgets.setContentsMargins(0, 0, 0, 0)
+        self.tab_widgets.setLayout(self.tab_layout)
+        self.main_window.current_voice.setCornerWidget(self.tab_widgets)
         # Connect Events
         self.main_window.action_play.triggered.connect(self.on_play)
         self.main_window.action_stop.triggered.connect(self.on_stop)
@@ -132,17 +162,20 @@ class LipsyncFrame:
         self.main_window.action_about_papagayo_ng.triggered.connect(self.on_about)
         self.main_window.export_combo.currentIndexChanged.connect(self.on_export_choice)
         self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
-        self.main_window.text_edit.textChanged.connect(self.on_voice_text)
         self.main_window.export_button.clicked.connect(self.on_voice_export)
         self.main_window.breakdown_button.clicked.connect(self.on_voice_breakdown)
         self.main_window.choose_imageset_button.clicked.connect(self.on_voice_image_choose)
         self.main_window.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
-        self.main_window.voice_list.itemClicked.connect(self.on_sel_voice)
         self.main_window.volume_slider.valueChanged.connect(self.change_volume)
-        self.main_window.new_button.clicked.connect(self.on_new_voice)
-        self.main_window.delete_button.clicked.connect(self.on_del_voice)
-        self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
         self.main_window.text_edit.textChanged.connect(self.on_voice_text)
+        self.main_window.apply_fps.clicked.connect(self.apply_changed_fps)
+        self.main_window.spread_out.clicked.connect(self.spread_out)
+        self.main_window.add_tag.clicked.connect(self.add_tag)
+        self.main_window.tag_entry.returnPressed.connect(self.add_tag)
+        self.main_window.remove_tag.clicked.connect(self.remove_tag)
+        self.tab_add_button.clicked.connect(self.on_new_voice)
+        self.tab_remove_button.clicked.connect(self.on_del_voice)
+        self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
 
         self.cur_frame = 0
         self.timer = None
@@ -154,30 +187,57 @@ class LipsyncFrame:
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
-        self.main_window.fps_input.valueChanged.connect(self.fps_changed)
 
     def load_ui_widget(self, ui_filename, parent=None):
-        loader = uic()
+        self.loader = uic()
         file = QFile(ui_filename)
         file.open(QFile.ReadOnly)
-        loader.registerCustomWidget(MouthView)
-        loader.registerCustomWidget(WaveformView)
-        self.ui = loader.load(file, parent)
+        self.loader.registerCustomWidget(MouthView)
+        self.loader.registerCustomWidget(WaveformView)
+        self.ui = self.loader.load(file, parent)
         file.close()
         return self.ui
 
-    def fps_changed(self, new_fps_value):
+    def add_tag(self):
+        if self.main_window.tag_entry.text():
+            self.main_window.list_of_tags.addItem(self.main_window.tag_entry.text())
+            self.main_window.tag_entry.clear()
+            temp_list = []
+            for i in range(self.main_window.list_of_tags.count()):
+                temp_list.append(self.main_window.list_of_tags.item(i).text())
+            self.main_window.waveform_view.currently_selected_object.set_tags(temp_list)
+
+    def remove_tag(self):
+        self.main_window.list_of_tags.takeItem(self.main_window.list_of_tags.currentRow())
+        temp_list = []
+        for i in range(self.main_window.list_of_tags.count()):
+            temp_list.append(self.main_window.list_of_tags.item(i).text())
+        self.main_window.waveform_view.currently_selected_object.set_tags(temp_list)
+
+    def spread_out(self):
+        wfv = self.main_window.waveform_view
+        top_nodes = wfv.main_node.children
+        num_frames = wfv.waveform_polygon.polygon().boundingRect().width() / wfv.frame_width
+        frames_per_top_level = num_frames / len(top_nodes)
+        for num, top_node in enumerate(top_nodes):
+            top_node.name.lipsync_object.start_frame = (num * frames_per_top_level) + int(bool(num))
+            top_node.name.lipsync_object.end_frame = (num * frames_per_top_level) + frames_per_top_level
+            top_node.name.after_reposition()
+            top_node.name.reposition_descendants2(True)
+            
+    def apply_changed_fps(self):
+        new_fps_value = self.main_window.fps_input.value()
         print('FPS changed to: {0}'.format(str(new_fps_value)))
         old_fps_value = self.doc.fps
         resize_multiplier = new_fps_value / old_fps_value
         self.doc.fps = new_fps_value
-        # wfv = self.main_window.waveform_view
+        wfv = self.main_window.waveform_view
         # wfv.default_samples_per_frame *= resize_multiplier
         # wfv.default_sample_width *= resize_multiplier
         #
         # wfv.sample_width = wfv.default_sample_width
         # wfv.samples_per_frame = wfv.default_samples_per_frame
-        # wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
+        wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
         # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
         #
         # for node in wfv.main_node.descendants:
@@ -187,13 +247,14 @@ class LipsyncFrame:
         # #self.main_window.waveform_view.create_waveform()
         # if wfv.temp_play_marker:
         #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
-        # wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
-        #                          wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
-        # wfv.setSceneRect(wfv.scene().sceneRect())
-        # wfv.scroll_position *= resize_multiplier
-        # wfv.horizontalScrollBar().setValue(wfv.scroll_position)
-        #
-        # wfv.set_document(self.doc)
+        wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
+                                 wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
+        wfv.setSceneRect(wfv.scene().sceneRect())
+        wfv.scroll_position *= resize_multiplier
+        wfv.scroll_position = 0
+        wfv.horizontalScrollBar().setValue(wfv.scroll_position)
+        wfv.recalc_waveform()
+        wfv.create_waveform()
 
     def close_doc_ok(self):
         if self.doc is not None:
@@ -235,10 +296,16 @@ class LipsyncFrame:
             self.open(file_path)
 
     def open(self, path):
+        while self.main_window.current_voice.tabBar().count() > 1:
+            self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().count() - 1)
         self.doc = LipsyncDoc(self.langman, self)
-        if path.endswith(lipsync_extension[1:]):
-            # open a lipsync project
-            self.doc.open(path)
+        if path.endswith((lipsync_extension.split(" ")[0][1:], lipsync_extension.split(" ")[1][1:])):
+            if path.endswith(lipsync_extension.split(" ")[0][1:]):
+                # open a lipsync project
+                self.doc.open(path)
+            elif path.endswith(lipsync_extension.split(" ")[1][1:]):
+                # open a json based lipsync project
+                self.doc.open2(path)
             while self.doc.sound is None:
                 # if no sound file found, then ask user to specify one
                 dlg = QtWidgets.QMessageBox(self.main_window)
@@ -269,7 +336,7 @@ class LipsyncFrame:
                 try:
                     txt_file = open("{}.trans".format(path[0].rsplit('.', 1)[0]), 'r')  # TODO: Check if path is correct
                     for line in txt_file:
-                        self.main_window.voice_list.appendRow(QtGui.QStandardItem(line))
+                        self.main_window.current_voice.tabBar().addTab(QtGui.QStandardItem(line))
                 except:
                     pass
         if self.doc is not None:
@@ -292,16 +359,22 @@ class LipsyncFrame:
                 self.main_window.action_zoom_in.setEnabled(True)
                 self.main_window.action_zoom_out.setEnabled(True)
                 self.main_window.action_reset_zoom.setEnabled(True)
+            self.main_window.tag_list_group.setEnabled(False)
 
-            self.main_window.voice_list.clear()
+            first_entry = True
             for voice in self.doc.voices:
-                self.main_window.voice_list.addItem(voice.name)
-            self.main_window.voice_list.setCurrentRow(0)
+                if not first_entry:
+                    self.main_window.current_voice.tabBar().addTab(voice.name)
+                else:
+                    self.main_window.current_voice.tabBar().setTabText(0, voice.name)
+                    first_entry = False
             self.main_window.fps_input.setValue(self.doc.fps)
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
             self.main_window.text_edit.setText(self.doc.current_voice.text)
+
             # reload dictionary
             self.on_reload_dictionary()
+            self.doc.dirty = False
 
     def on_save(self):
         if self.doc is None:
@@ -309,7 +382,10 @@ class LipsyncFrame:
         if self.doc.path is None:
             self.on_save_as()
             return
-        self.doc.save(self.doc.path)
+        if self.doc.path.endswith(lipsync_extension.split(" ")[0][1:]):
+            self.doc.save(self.doc.path)
+        elif self.doc.path.endswith(lipsync_extension.split(" ")[1][1:]):
+            self.doc.save2(self.doc.path)
 
     def on_save_as(self):
         if self.doc is None:
@@ -321,11 +397,15 @@ class LipsyncFrame:
                                                              save_wildcard)
         if file_path:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
-            self.doc.save(file_path)
+            if file_path.endswith(lipsync_extension.split(" ")[0][1:]):
+                self.doc.save(file_path)
+            elif file_path.endswith(lipsync_extension.split(" ")[1][1:]):
+                self.doc.save2(file_path)
             self.main_window.setWindowTitle("{} [{}] - {}".format(self.doc.name, file_path, app_title))
 
     def on_close(self):
         if self.doc is not None:
+            self.close_doc_ok()
             self.config.setValue("LastFPS", str(self.doc.fps))
             del self.doc
         self.doc = None
@@ -335,7 +415,6 @@ class LipsyncFrame:
         self.main_window.voice_name_input.clear()
         self.main_window.text_edit.clear()
         self.main_window.fps_input.clear()
-        self.main_window.voice_list.clear()
         # disabling widgets
         self.main_window.vertical_layout_right.setEnabled(False)
         self.main_window.vertical_layout_left.setEnabled(False)
@@ -356,7 +435,7 @@ class LipsyncFrame:
     def on_help(self, event=None):
         github_path = "https://github.com/morevnaproject/papagayo-ng/issues"
         test_path = "file://{}".format(r"D:\Program Files (x86)\Papagayo\help\index.html")
-        real_path = "file://{}".format(os.path.join(get_main_dir(), r"help\index.html"))
+        real_path = "file://{}".format(os.path.join(get_main_dir(), "help", "index.html"))
         webbrowser.open(github_path)  # TODO: Fix path
 
     def on_about(self, event=None):
@@ -426,12 +505,12 @@ class LipsyncFrame:
             self.main_window.choose_imageset_button.setEnabled(False)
 
     def on_voice_name(self, event=None):
-        print(self.main_window.voice_name_input.text())
+
         if (self.doc is not None) and (self.doc.current_voice is not None):
             self.doc.dirty = True
             self.doc.current_voice.name = self.main_window.voice_name_input.text()
             self.main_window.voice_name_input.setText(self.doc.current_voice.name)
-            self.main_window.voice_list.currentItem().setText(self.doc.current_voice.name)
+            self.main_window.current_voice.tabBar().setTabText(self.main_window.current_voice.tabBar().currentIndex(), self.doc.current_voice.name)
             self.main_window.waveform_view.first_update = True
             self.main_window.waveform_view.set_document(self.doc)
 
@@ -493,6 +572,10 @@ class LipsyncFrame:
                     message = "Export Image Strip"
                     default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0])
                     wildcard = ""
+            elif exporter == "JSON":
+                message = "Export JSON Object"
+                default_file = "{}.json".format(self.doc.soundPath.rsplit('.', 1)[0])
+                wildcard = "JSON object files (*.json)|*.json"
             file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                                  message,
                                                                  self.config.value("WorkingDir", get_main_dir()),
@@ -505,12 +588,21 @@ class LipsyncFrame:
                     self.doc.current_voice.export_alelo(file_path, language, self.langman)
                 elif exporter == "Images":
                     self.doc.current_voice.export_images(file_path, self.main_window.mouth_choice.currentText())
+                elif exporter == "JSON":
+                    self.doc.current_voice.export_json(file_path)
 
-    def on_sel_voice(self, e):
+    def on_sel_voice_tab(self, e):
         if not self.doc:
             return
+        prev_dirty = self.doc.dirty
         self.ignore_text_changes = True
-        self.doc.current_voice = self.doc.voices[self.main_window.voice_list.row(self.main_window.voice_list.currentItem())]
+
+        for voice in self.doc.voices:
+            if voice.name == self.main_window.current_voice.tabBar().tabText(self.main_window.current_voice.tabBar().currentIndex()):
+                self.doc.current_voice = voice
+
+        self.main_window.list_of_tags.clear()
+        self.main_window.tag_list_group.setEnabled(False)
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
@@ -518,15 +610,28 @@ class LipsyncFrame:
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
+        self.doc.dirty = prev_dirty
 
     def on_new_voice(self, event=None):
         if not self.doc:
             return
         self.doc.dirty = True
-        self.doc.voices.append(LipsyncVoice("Voice {:d}".format(len(self.doc.voices) + 1)))
+        voice_exist_count = 1
+        new_voice_name = "Voice {:d}".format(len(self.doc.voices) + voice_exist_count)
+        voice_name_exists = True
+        while voice_name_exists:
+            voice_name_exists = False
+            new_voice_name = "Voice {:d}".format(len(self.doc.voices) + voice_exist_count)
+            for voice in self.doc.voices:
+                if voice.name == new_voice_name:
+                    voice_name_exists = True
+                    voice_exist_count += 1
+                    break
+
+        self.doc.voices.append(LipsyncVoice(new_voice_name))
         self.doc.current_voice = self.doc.voices[-1]
-        self.main_window.voice_list.addItem(self.doc.current_voice.name)
-        self.main_window.voice_list.setCurrentRow(self.main_window.voice_list.count() - 1)
+        self.main_window.current_voice.tabBar().addTab(self.doc.current_voice.name)
+        self.main_window.current_voice.tabBar().setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
         self.ignore_text_changes = True
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
@@ -535,6 +640,7 @@ class LipsyncFrame:
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
+
 
     def on_del_voice(self, event=None):
         if (not self.doc) or (len(self.doc.voices) == 1):
@@ -547,12 +653,9 @@ class LipsyncFrame:
             new_index = 0
         self.doc.voices.remove(self.doc.current_voice)
         self.doc.current_voice = self.doc.voices[new_index]
-        self.main_window.voice_list.clear()
-        for voice in self.doc.voices:
-            self.main_window.voice_list.addItem(voice.name)
-        self.main_window.voice_list.setCurrentRow(new_index)
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
+        self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().currentIndex())
         self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
@@ -565,7 +668,7 @@ class LipsyncFrame:
                                                                          "Choose Path for Images",
                                                                          self.config.value("MouthDir",
                                                                                            os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                                                                        "rsrc/mouths/")))
+                                                                                                        "rsrc", r"mouths/")))
             if voiceimage_path:
                 self.config.setValue("MouthDir", voiceimage_path)
                 print(voiceimage_path)

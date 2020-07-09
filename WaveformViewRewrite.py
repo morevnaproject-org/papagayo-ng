@@ -27,6 +27,7 @@ import PySide2.QtWidgets as QtWidgets
 import anytree.util
 import numpy as np
 from anytree import Node
+import re
 
 from LipsyncDoc import *
 
@@ -93,6 +94,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.wfv_parent = wfv_parent
         self.setToolTip(lipsync_object.text)
         self.create_and_set_style()
+        self.set_tags(self.lipsync_object.tags)
         self.setMinimumWidth(self.convert_to_pixels(1))
         self.fit_text_to_size()
 
@@ -128,6 +130,14 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
+                # self.style = """QPushButton {
+                #                 color: #000000;
+                #                 border-image: url(./rsrc/testbutton2.png) 2 10 2 2 repeat;
+                #                 border-top: 2px transparent;
+                #                 border-bottom: 2px transparent;
+                #                 border-right: 10px transparent;
+                #                 border-left: 2px transparent;
+                #                 }"""
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
@@ -167,6 +177,16 @@ class MovableButton(QtWidgets.QPushButton):
         except AttributeError:
             return False
         return True
+
+    def object_type(self):
+        if self.is_phoneme():
+            return "phoneme"
+        elif self.is_word():
+            return "word"
+        elif self.is_phrase():
+            return "phrase"
+        else:
+            return None
 
     def after_reposition(self):
         if self.is_phoneme():
@@ -266,12 +286,14 @@ class MovableButton(QtWidgets.QPushButton):
             if self.is_resizing and not self.is_moving:
                 if self.get_frame_size() < self.get_min_size():
                     self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
+                    self.wfv_parent.doc.dirty = True
                 self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
                     if round(self.convert_to_frames(
                             event.x() + self.x())) + 1 >= self.lipsync_object.start_frame + self.get_min_size():
                         if round(self.convert_to_frames(event.x() + self.x())) + 1 <= self.get_right_max():
                             self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x())) + 1
+                            self.wfv_parent.doc.dirty = True
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
                 # elif self.resize_origin == 0:  # start resize from left side
@@ -310,7 +332,6 @@ class MovableButton(QtWidgets.QPushButton):
                     if list_of_new_phonemes:
                         if list_of_new_phonemes != prev_phoneme_list.split():
                             old_childnodes = self.node.children
-                            print(self.wfv_parent.items())
                             for old_node in old_childnodes:
                                 for proxy in self.wfv_parent.items():
                                     try:
@@ -339,11 +360,10 @@ class MovableButton(QtWidgets.QPushButton):
                                                          self.wfv_parent.frame_width, text_height)
                                 temp_scene_widget.setGeometry(temp_rect)
                                 temp_scene_widget.setZValue(99)
+                            self.wfv_parent.doc.dirty = True
 
     def mouseDoubleClickEvent(self, event):
         if not self.wfv_parent.doc.sound.is_playing() and not self.is_phoneme():
-            print("Double Click: ")
-            print(self.text())
             start = self.lipsync_object.start_frame / self.wfv_parent.doc.fps
             length = (self.lipsync_object.end_frame - self.lipsync_object.start_frame) / self.wfv_parent.doc.fps
             self.wfv_parent.doc.sound.play_segment(start, length)
@@ -377,12 +397,22 @@ class MovableButton(QtWidgets.QPushButton):
             main_window.waveform_view.update()
 
     def mouseReleaseEvent(self, event):
-        print("Release")
         if self.is_moving:
             self.is_moving = False
         if self.is_resizing:
             self.reposition_descendants2(True)
             self.is_resizing = False
+
+    def set_tags(self, new_taglist):
+        self.lipsync_object.tags = new_taglist
+        self.setToolTip("".join("{}\n".format(entry) for entry in self.lipsync_object.tags)[:-1])
+        # Change the border-style or something like that depending on whether there are tags or not
+        if len(self.lipsync_object.tags) > 0:
+            if "solid" in self.styleSheet():
+                self.setStyleSheet(self.styleSheet().replace("solid", "dashed "))
+        else:
+            if "dashed " in self.styleSheet():
+                self.setStyleSheet(self.styleSheet().replace("dashed ", "solid"))
 
     def reposition_descendants(self, did_resize=False, x_diff=0):
         if did_resize:
@@ -396,6 +426,7 @@ class MovableButton(QtWidgets.QPushButton):
                     child.name.lipsync_object.start_frame += x_diff
                     child.name.lipsync_object.end_frame += x_diff
                 child.name.after_reposition()
+            self.wfv_parent.doc.dirty = True
 
     def reposition_descendants2(self, did_resize=False, x_diff=0):
         if did_resize:
@@ -404,6 +435,7 @@ class MovableButton(QtWidgets.QPushButton):
                     child.name.lipsync_object.frame = round(self.lipsync_object.start_frame +
                                                             ((self.get_frame_size() / self.get_min_size()) * position))
                     child.name.after_reposition()
+                self.wfv_parent.doc.dirty = True
             elif self.is_phrase():
                 extra_space = self.get_frame_size() - self.get_min_size()
                 for child in self.node.children:
@@ -443,6 +475,7 @@ class MovableButton(QtWidgets.QPushButton):
                 for child in self.node.children:
                     child.name.after_reposition()
                     child.name.reposition_descendants2(True, 0)
+                self.wfv_parent.doc.dirty = True
         else:
             for child in self.node.descendants:
                 if child.name.is_phoneme():
@@ -451,6 +484,7 @@ class MovableButton(QtWidgets.QPushButton):
                     child.name.lipsync_object.start_frame += x_diff
                     child.name.lipsync_object.end_frame += x_diff
                 child.name.after_reposition()
+                self.wfv_parent.doc.dirty = True
 
     def reposition_to_left(self):
         if self.has_left_sibling():
@@ -470,12 +504,19 @@ class MovableButton(QtWidgets.QPushButton):
                 for child in self.node.children:
                     child.name.reposition_to_left()
         self.after_reposition()
+        self.wfv_parent.doc.dirty = True
 
     def get_left_sibling(self):
         return anytree.util.leftsibling(self.node)
 
     def get_right_sibling(self):
         return anytree.util.rightsibling(self.node)
+
+    def get_parent(self):
+        if self.object_type() != "phrase":
+            return self.node.parent
+        else:
+            return None
 
     def __del__(self):
         try:
@@ -495,9 +536,10 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setMouseTracking(True)
 
         # Other initialization
+        self.main_window = self.parentWidget().parentWidget().parentWidget()  # lol
         self.doc = None
-        self.is_dragging = False
-        self.basic_scrubbing = False
+        self.currently_selected_object = None
+        self.is_scrubbing = False
         self.cur_frame = 0
         self.old_frame = 0
         self.default_sample_width = default_sample_width
@@ -538,6 +580,122 @@ class WaveformView(QtWidgets.QGraphicsView):
         print("DragEnter!")
         e.accept()
 
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            possible_item = self.itemAt(event.pos())
+            if type(possible_item) == QtWidgets.QGraphicsPolygonItem:
+                possible_item = None
+            if not possible_item:
+                if self.currently_selected_object:
+                    try:
+                        new_style = self.currently_selected_object.styleSheet()
+                        if "2px" in new_style:
+                            new_style = new_style.replace("2px", "1px")
+                        else:
+                            pass
+                        self.currently_selected_object.setStyleSheet(new_style)
+                    except RuntimeError:
+                        pass  # The real object was deleted, instead of carefully tracking we simply do this
+                self.currently_selected_object = None
+                self.main_window.list_of_tags.clear()
+                self.main_window.tag_list_group.setEnabled(False)
+                self.main_window.tag_list_group.setTitle("Selected Object Tags")
+                self.main_window.parent_tags.clear()
+                self.main_window.parent_tags.setEnabled(False)
+                self.is_scrubbing = True
+            else:
+                self.main_window.tag_list_group.setEnabled(True)
+                if self.currently_selected_object:
+                    try:
+                        new_style = self.currently_selected_object.styleSheet()
+                        if "2px" in new_style:
+                            new_style = new_style.replace("2px", "1px")
+                        else:
+                            pass
+                        self.currently_selected_object.setStyleSheet(new_style)
+                    except RuntimeError:
+                        pass  # The real object was deleted, instead of carefully tracking we simply do this
+                self.currently_selected_object = possible_item.widget()
+                new_style = self.currently_selected_object.styleSheet()
+                if "1px" in new_style:
+                    new_style = new_style.replace("1px", "2px")
+                else:
+                    pass
+                self.currently_selected_object.setStyleSheet(new_style)
+                self.main_window.list_of_tags.clear()
+                self.main_window.list_of_tags.addItems(self.currently_selected_object.lipsync_object.tags)
+                title_part_two = self.currently_selected_object.title
+                if len(self.currently_selected_object.title) > 40:
+                    title_part_two = self.currently_selected_object.title[0:40] + "..."
+                new_title = self.currently_selected_object.object_type().title() + ": " + title_part_two
+                self.main_window.tag_list_group.setTitle(new_title)
+                self.main_window.parent_tags.clear()
+                self.main_window.parent_tags.setEnabled(False)
+                if self.currently_selected_object.object_type() == "phoneme":
+                    parent_word = self.currently_selected_object.get_parent().name
+                    parent_phrase = parent_word.get_parent().name
+                    word_tags = parent_word.lipsync_object.tags
+                    phrase_tags = parent_phrase.lipsync_object.tags
+                    if word_tags or phrase_tags:
+                        self.main_window.parent_tags.setEnabled(True)
+                    if phrase_tags:
+                        list_of_phrase_tags = []
+                        for tag in phrase_tags:
+                            new_tag = QtWidgets.QTreeWidgetItem([tag])
+                            list_of_phrase_tags.append(new_tag)
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.title])
+                        phrase_tree.addChildren(list_of_phrase_tags)
+                        self.main_window.parent_tags.addTopLevelItem(phrase_tree)
+                        phrase_tree.setExpanded(True)
+                    if word_tags:
+                        list_of_word_tags = []
+                        for tag in word_tags:
+                            new_tag = QtWidgets.QTreeWidgetItem([tag])
+                            list_of_word_tags.append(new_tag)
+                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.title])
+                        word_tree.addChildren(list_of_word_tags)
+                        self.main_window.parent_tags.addTopLevelItem(word_tree)
+                        word_tree.setExpanded(True)
+                elif self.currently_selected_object.object_type() == "word":
+                    parent_phrase = self.currently_selected_object.get_parent().name
+                    parent_tags = parent_phrase.lipsync_object.tags
+                    list_of_tags = []
+                    if parent_tags:
+                        self.main_window.parent_tags.setEnabled(True)
+                        for tag in parent_tags:
+                            new_tag = QtWidgets.QTreeWidgetItem([tag])
+                            list_of_tags.append(new_tag)
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.title])
+                        phrase_tree.addChildren(list_of_tags)
+                        self.main_window.parent_tags.addTopLevelItem(phrase_tree)
+                        phrase_tree.setExpanded(True)
+                else:
+                    self.main_window.parent_tags.setEnabled(False)
+        event.accept()
+        super(WaveformView, self).mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self.is_scrubbing:
+            self.is_scrubbing = False
+            self.doc.sound.stop()
+            self.temp_play_marker.setVisible(False)
+            self.main_window.mouth_view.set_frame(0)
+        super(WaveformView, self).mouseReleaseEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.is_scrubbing:
+            mouse_scene_pos = self.mapToScene(event.pos()).x()
+            if not self.doc.sound.is_playing():
+                start = round(mouse_scene_pos / self.frame_width) / self.doc.fps
+                length = self.frame_width / self.doc.fps
+                self.doc.sound.play_segment(start, length)
+            self.draw_play_marker = True
+            self.temp_play_marker.setVisible(True)
+            self.temp_play_marker.setPos(round(mouse_scene_pos / self.frame_width) * self.frame_width, 0)
+            self.main_window.mouth_view.set_frame(round(mouse_scene_pos / self.frame_width))
+        else:
+            super(WaveformView, self).mouseMoveEvent(event)
+
     def dragMoveEvent(self, e):
         if not self.doc.sound.is_playing():
             position = e.pos()
@@ -566,9 +724,17 @@ class WaveformView(QtWidgets.QGraphicsView):
                                             dropped_widget.y())
                         # Move the children!
                         dropped_widget.reposition_descendants(False, x_diff)
+                    self.doc.dirty = True
         e.accept()
 
     def set_frame(self, frame):
+        if self.temp_play_marker not in self.scene().items():
+            self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
+                                                             QtGui.QPen(play_outline_col),
+                                                             QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+            self.temp_play_marker.setZValue(1000)
+            self.temp_play_marker.setOpacity(0.5)
+            self.temp_play_marker.setVisible(True)
         self.centerOn(self.temp_play_marker)
         self.temp_play_marker.setPos(frame * self.frame_width, 0)
         self.update()
@@ -657,6 +823,7 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def create_movbuttons(self):
         if self.doc is not None:
+            self.setUpdatesEnabled(False)
             font_metrics = QtGui.QFontMetrics(font)
             text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
             text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
@@ -680,9 +847,10 @@ class WaveformView(QtWidgets.QGraphicsView):
                 word_count = 0
                 current_num += 1
                 progress.setValue(current_num)
-                main_window.statusbar.showMessage(
-                    "Preparing Buttons: {0}%".format(
-                        str(int((current_num / self.doc.current_voice.num_children) * 100))))
+                if self.doc.current_voice.num_children:
+                    main_window.statusbar.showMessage(
+                        "Preparing Buttons: {0}%".format(
+                            str(int((current_num / self.doc.current_voice.num_children) * 100))))
                 for word in phrase.words:
                     self.temp_button = MovableButton(word, self)
                     self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
@@ -697,8 +865,9 @@ class WaveformView(QtWidgets.QGraphicsView):
                     phoneme_count = 0
                     current_num += 1
                     progress.setValue(current_num)
-                    main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
-                        str(int((current_num / self.doc.current_voice.num_children) * 100))))
+                    if self.doc.current_voice.num_children:
+                        main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
+                            str(int((current_num / self.doc.current_voice.num_children) * 100))))
                     for phoneme in word.phonemes:
                         self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
                         self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
@@ -713,13 +882,15 @@ class WaveformView(QtWidgets.QGraphicsView):
                         phoneme_count += 1
                         current_num += 1
                         progress.setValue(current_num)
-                        main_window.statusbar.showMessage(
-                            "Preparing Buttons: {0}%".format(
-                                str(int((current_num / self.doc.current_voice.num_children) * 100))))
+                        if self.doc.current_voice.num_children:
+                            main_window.statusbar.showMessage(
+                                "Preparing Buttons: {0}%".format(
+                                    str(int((current_num / self.doc.current_voice.num_children) * 100))))
                         QtCore.QCoreApplication.processEvents()
             progress.setValue(self.doc.current_voice.num_children)
             progress.close()
             main_window.statusbar.showMessage("Papagayo-NG")
+            self.setUpdatesEnabled(True)
 
     def recalc_waveform(self):
         duration = self.doc.sound.Duration()
@@ -750,12 +921,13 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.scene().update()
                 self.create_movbuttons()
                 self.create_waveform()
-                self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
-                                                             QtGui.QPen(play_outline_col),
-                                                             QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
-                self.temp_play_marker.setZValue(1000)
-                self.temp_play_marker.setOpacity(0.5)
-                self.temp_play_marker.setVisible(False)
+                if self.temp_play_marker not in self.scene().items():
+                    self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
+                                                                 QtGui.QPen(play_outline_col),
+                                                                 QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+                    self.temp_play_marker.setZValue(1000)
+                    self.temp_play_marker.setOpacity(0.5)
+                    self.temp_play_marker.setVisible(False)
                 self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
 
     def on_slider_change(self, value):

@@ -57,7 +57,9 @@ class SoundPlayer:
             self.wave_reference = None
             self.isvalid = False
         if AudioSegment:
-            self.audio.default.samplerate = self.pydubfile.frame_rate
+            self.pydubfile = self.pydubfile.set_sample_width(2)
+            self.audio.default.samplerate = self.pydubfile.frame_rate * self.pydubfile.channels
+
         else:
             self.audio.default.samplerate = self.wave_reference.getframerate()
 
@@ -152,6 +154,6 @@ class SoundPlayer:
     def play(self, arg):
         thread.start_new_thread(self._play, (0, self.Duration()))
 
-    def PlaySegment(self, start, length, arg):
+    def play_segment(self, start, length):
         if not self.isplaying:  # otherwise this get's kinda echo-y
             thread.start_new_thread(self._play, (start, length))
