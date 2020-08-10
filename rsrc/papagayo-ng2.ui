@@ -10,6 +10,9 @@
     <height>768</height>
    </rect>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -18,6 +21,9 @@
     <normaloff>:/rsrc/window_icon.png</normaloff>:/rsrc/window_icon.png</iconset>
   </property>
   <widget class="QWidget" name="central_widget">
+   <property name="acceptDrops">
+    <bool>true</bool>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout_5">
     <property name="sizeConstraint">
      <enum>QLayout::SetMinimumSize</enum>
@@ -537,7 +543,7 @@
                </property>
               </widget>
               <widget class="QListWidget" name="list_of_tags"/>
-              <widget class="QWidget" name="">
+              <widget class="QWidget" name="layoutWidget">
                <layout class="QHBoxLayout" name="tag_list_buttons">
                 <property name="sizeConstraint">
                  <enum>QLayout::SetMaximumSize</enum>
@@ -645,8 +651,15 @@
    <addaction name="menu_edit"/>
    <addaction name="menu_help"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="acceptDrops">
+    <bool>true</bool>
+   </property>
+  </widget>
   <widget class="QToolBar" name="toolbar">
+   <property name="acceptDrops">
+    <bool>true</bool>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>

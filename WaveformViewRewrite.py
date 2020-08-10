@@ -573,8 +573,21 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def dropEvent(self, event):
         print("DragLeave")  # Strangely no dragLeaveEvent fires but a dropEvent instead...
-        event.source().is_moving = False
-        event.accept()
+        if event.mimeData().hasUrls():
+            # event.accept()
+            for url in event.mimeData().urls():
+                if sys.platform == "darwin":
+                    from Foundation import NSURL
+                    fname = str(NSURL.URLWithString_(str(url.toString())).filePathURL().path())
+                    self.topLevelWidget().lip_sync_frame.open(fname)
+                else:
+                    fname = str(url.toLocalFile())
+                    self.topLevelWidget().lip_sync_frame.open(fname)
+            return True
+        else:
+            if event.source():
+                event.source().is_moving = False
+            event.accept()
 
     def dragEnterEvent(self, e):
         print("DragEnter!")
@@ -698,33 +711,34 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def dragMoveEvent(self, e):
         if not self.doc.sound.is_playing():
-            position = e.pos()
-            if self.width() > self.sceneRect().width():
-                new_x = e.pos().x() + self.horizontalScrollBar().value() - \
-                        ((self.width() - self.sceneRect().width()) / 2) - e.source().hot_spot
-            else:
-                new_x = e.pos().x() + self.horizontalScrollBar().value() - e.source().hot_spot
-            dropped_widget = e.source()
-            if new_x >= dropped_widget.get_left_max() * self.frame_width:
-                if new_x + dropped_widget.width() <= dropped_widget.get_right_max() * self.frame_width:
-                    x_diff = 0
-                    dropped_widget.move(new_x, dropped_widget.y())
-                    # after moving save the position and align to the grid based on that. Hacky but works!
-                    if dropped_widget.lipsync_object.is_phoneme:
-                        x_diff = round(dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.frame
-                        dropped_widget.lipsync_object.frame = round(new_x / self.frame_width)
-                        dropped_widget.move(dropped_widget.lipsync_object.frame * self.frame_width, dropped_widget.y())
-                    else:
-                        x_diff = round(
-                            dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
-                        dropped_widget.lipsync_object.start_frame = round(dropped_widget.x() / self.frame_width)
-                        dropped_widget.lipsync_object.end_frame = round(
-                            (dropped_widget.x() + dropped_widget.width()) / self.frame_width)
-                        dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width,
-                                            dropped_widget.y())
-                        # Move the children!
-                        dropped_widget.reposition_descendants(False, x_diff)
-                    self.doc.dirty = True
+            if e.source():
+                position = e.pos()
+                if self.width() > self.sceneRect().width():
+                    new_x = e.pos().x() + self.horizontalScrollBar().value() - \
+                            ((self.width() - self.sceneRect().width()) / 2) - e.source().hot_spot
+                else:
+                    new_x = e.pos().x() + self.horizontalScrollBar().value() - e.source().hot_spot
+                dropped_widget = e.source()
+                if new_x >= dropped_widget.get_left_max() * self.frame_width:
+                    if new_x + dropped_widget.width() <= dropped_widget.get_right_max() * self.frame_width:
+                        x_diff = 0
+                        dropped_widget.move(new_x, dropped_widget.y())
+                        # after moving save the position and align to the grid based on that. Hacky but works!
+                        if dropped_widget.lipsync_object.is_phoneme:
+                            x_diff = round(dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.frame
+                            dropped_widget.lipsync_object.frame = round(new_x / self.frame_width)
+                            dropped_widget.move(dropped_widget.lipsync_object.frame * self.frame_width, dropped_widget.y())
+                        else:
+                            x_diff = round(
+                                dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
+                            dropped_widget.lipsync_object.start_frame = round(dropped_widget.x() / self.frame_width)
+                            dropped_widget.lipsync_object.end_frame = round(
+                                (dropped_widget.x() + dropped_widget.width()) / self.frame_width)
+                            dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width,
+                                                dropped_widget.y())
+                            # Move the children!
+                            dropped_widget.reposition_descendants(False, x_diff)
+                        self.doc.dirty = True
         e.accept()
 
     def set_frame(self, frame):
