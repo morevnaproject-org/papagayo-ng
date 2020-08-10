@@ -50,6 +50,34 @@ save_wildcard = "{} files ({})".format(app_title, lipsync_extension)
 # saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
 
 
+class DropFilter(QtCore.QObject):
+    def eventFilter(self, obj, event):
+        if event.type() == QtCore.QEvent.DragEnter:
+            if event.mimeData().hasUrls():
+                event.accept()
+            else:
+                event.ignore()
+            return True
+        elif event.type() == QtCore.QEvent.Drop:
+            if event.mimeData().hasUrls():
+                # event.accept()
+                for url in event.mimeData().urls():
+                    if sys.platform == "darwin":
+                        from Foundation import NSURL
+                        fname = str(NSURL.URLWithString_(str(url.toString())).filePathURL().path())
+                        obj.topLevelWidget().lip_sync_frame.open(fname)
+                    else:
+                        fname = str(url.toLocalFile())
+                        obj.topLevelWidget().lip_sync_frame.open(fname)
+                return True
+            else:
+                event.ignore()
+                return False
+
+        else:
+            return False
+
+
 class LipsyncFrame:
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
@@ -61,6 +89,7 @@ class LipsyncFrame:
         self.ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
         self.main_window = self.load_ui_widget(self.ui_path)
         self.main_window.setWindowTitle("%s" % app_title)
+        self.main_window.lip_sync_frame = self
 
         self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
         tree_style = r'''QTreeView::branch:has-siblings:!adjoins-item {
@@ -176,6 +205,8 @@ class LipsyncFrame:
         self.tab_add_button.clicked.connect(self.on_new_voice)
         self.tab_remove_button.clicked.connect(self.on_del_voice)
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
+        self.dropfilter = DropFilter()
+        self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
 
         self.cur_frame = 0
         self.timer = None

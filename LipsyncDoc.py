@@ -44,6 +44,7 @@ else:
 
 strip_symbols = '.,!?;-/()"'
 strip_symbols += '\N{INVERTED QUESTION MARK}'
+strip_symbols += "'"
 
 
 ###############################################################
