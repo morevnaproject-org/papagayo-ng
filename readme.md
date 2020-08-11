@@ -13,13 +13,12 @@ To work with the Papagayo-NG source code, you need some special software install
 * anytree>=2.6.0
 * PySide2>=5.12.3
 
-You can use the included requirements.txt with pip to install these, like this for example:
-pip install -r requirements.txt
+You can use the included requirements.txt with pip to install these, like this for example:  
+``pip install -r requirements.txt``
 
 ## Running
-To run Papagayo-NG, double-click the papagayo-ng.py file, or run the following command:
-
-python3 papagayo-ng.py
+To run Papagayo-NG, double-click the papagayo-ng.py file, or run the following command:  
+``python3 papagayo-ng.py``
 
 ## Contents
 The Papagayo-NG source package includes the following files:
@@ -47,7 +46,7 @@ The Papagayo-NG source package includes the following files:
 ## Tips
 Here are a couple tips for source code that you may want to modify:
 
-By default, Papagayo-NG uses the Preston Blair phoneme set. There is also Fleming & Dobbs phoneme set available. The phoneme sets are stored in the phonemes_*.py files. If you want to add a different set of phonemes, you can use existing sets as examples. Also, take a look at the instructions in the phonemes.py file.
+By default, Papagayo-NG uses the Preston Blair phoneme set. There is also Fleming & Dobbs phoneme set available. The phoneme sets are stored in the phonemes sub folder. If you want to add a different set of phonemes, you can use existing sets as examples.
 
 To add breakdowns for other languages create a new language configuration in rsrc/languages/<language> inside you need to place a configuration file (see italian for an example of how to configure a breakdown)  You will also need to create a breakdown class.  These live in breakdowns.  The naming convention is <language>_breakdown.py. Just examine one of the existing ones for how to make it work.  Make sure the function to call your breakdown processing is called breakdownWord.
 
