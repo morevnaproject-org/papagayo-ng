@@ -21,6 +21,8 @@ import shutil
 import codecs
 import importlib
 import json
+import fnmatch
+import os
 
 from Rhubarb import Rhubarb, RhubarbTimeoutException
 
@@ -735,9 +737,6 @@ class LipsyncDoc:
             pass
 
 
-from phonemes import *
-
-
 class PhonemeSet:
     __shared_state = {}
 
@@ -745,20 +744,28 @@ class PhonemeSet:
         self.__dict__ = self.__shared_state
         self.set = []
         self.conversion = {}
-        self.alternatives = phoneme_sets
-        self.load(self.alternatives[0])
+        self.alternatives = []
+        for file in os.listdir(os.path.join(get_main_dir(), "phonemes")):
+            print(file)
+            if fnmatch.fnmatch(file, '*.json'):
+                self.alternatives.append(file.split(".")[0])
+
+        # Try to load Preston Blair as default as before, but fall back just in case
+        self.selected_set = self.load("preston_blair")
+        if not self.selected_set:
+            self.load(self.alternatives[0])
+            self.selected_set = self.alternatives[0]
 
     def load(self, name=''):
         if name in self.alternatives:
-            print("import phonemes_{} as phonemeset".format(name))
-            phonemeset = importlib.import_module("phonemes_{}".format(name))
-            # exec("import phonemes_%s as phonemeset" % name)
-            # import phonemes_preston_blair as phonemeset
-            self.set = phonemeset.phoneme_set
-            self.conversion = phonemeset.phoneme_conversion
+            with open(os.path.join(get_main_dir(), "./phonemes/{}.json".format(name)), "r") as loaded_file:
+                json_data = json.load(loaded_file)
+                self.set = json_data["phoneme_set"]
+                self.conversion = json_data["phoneme_conversion"]
+                return name
         else:
             print(("Can't find phonemeset! ({})".format(name)))
-            return
+            return False
 
 
 class LanguageManager:

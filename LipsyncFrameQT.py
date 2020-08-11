@@ -136,7 +136,8 @@ class LipsyncFrame:
         self.phonemeset = PhonemeSet()
         for name in self.phonemeset.alternatives:
             self.main_window.phoneme_set.addItem(name)
-        self.main_window.phoneme_set.setCurrentIndex(0)
+        current_index = self.main_window.phoneme_set.findText(self.phonemeset.selected_set)
+        self.main_window.phoneme_set.setCurrentIndex(current_index)
 
         # setup export initialisation here
         exporter_list = ["MOHO", "ALELO", "Images", "JSON"]
