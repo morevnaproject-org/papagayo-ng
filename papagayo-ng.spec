@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['papagayo-ng.py'],
-             pathex=['C:\\Users\\Stefan\\Documents\\StefanMain\\PycharmProjects\\new_papagayo\\papagayo-ng'],
+             pathex=['./'],
              binaries=[],
              datas=[('./rsrc', './rsrc'), ('./breakdowns', './breakdowns'), ('./phonemes', './phonemes')],
              hiddenimports=['PySide2.QtXml', 'PySide2.QtPrintSupport', 'phonemes_preston_blair', 'phonemes_fleming_dobbs', 'phonemes_rhubarb', 'numpy.random.common', 'numpy.random.bounded_integers', 'numpy.random.entropy', 'pkg_resources.py2_warn'],
