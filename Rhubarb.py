@@ -1,9 +1,15 @@
 import json
-import signal
 import subprocess
 import os
+import threading
+from PySide2.QtWidgets import QProgressDialog
+from PySide2.QtCore import QCoreApplication
+import sys
 
-RHUBARB_PATH = './rhubarb/rhubarb'
+if sys.platform == "win32":
+    RHUBARB_PATH = './rhubarb/rhubarb.exe'
+else:
+    RHUBARB_PATH = './rhubarb/rhubarb'
 
 
 class RhubarbTimeoutException(Exception):
@@ -15,27 +21,33 @@ class Rhubarb:
     def __init__(self, file_path=None):
         self.file_path = file_path
         self.process = None
+        self.progress = 0
+        self.progress_dialog = QProgressDialog("Processing by Rhubarb", "Cancel", 0, 100)
+        self.progress_dialog.setWindowTitle("Progress")
+        self.progress_dialog.setModal(True)
+        self.progress_dialog.forceShow()
 
-    def _signal_handler(self, signum, frame):
-        print('Rhubarb не отвечает более 30 секунд')
+    def _signal_handler(self):
+        print('Rhubarb did not respond for more than 30 seconds.')
         raise RhubarbTimeoutException()
 
     def _read_log(self):
-        signal.signal(signal.SIGALRM, self._signal_handler)
-        signal.alarm(30)
+        alarm = threading.Timer(30, self._signal_handler)
+        alarm.start()
         log = self.process.stderr.readline().decode('utf-8').strip()
-        signal.alarm(0)
+        self.progress = json.loads(log).get("value", 0) * 100
+        alarm.cancel()
         return log
 
     def _read_result(self):
-        signal.signal(signal.SIGALRM, self._signal_handler)
-        signal.alarm(1)
+        alarm = threading.Timer(1, self._signal_handler)
+        alarm.start()
         line = ''
         result = ''
         while line != '}':
             line = self.process.stdout.readline().decode('utf-8').strip()
             result += line
-        signal.alarm(0)
+        alarm.cancel()
         return json.loads(result)
 
     def run(self):
@@ -53,6 +65,11 @@ class Rhubarb:
             else:
                 log = self._read_log()
                 log_formatted = json.loads(log)
-            print(log_formatted['log']['message'])
-            if log_formatted['log']['message'] == 'Application terminating normally.':
+            self.progress_dialog.setValue(int(self.progress))
+            QCoreApplication.processEvents()
+            if log_formatted['type'] == 'success':
                 result_is_ready = True
+                self.progress_dialog.close()
+            elif log_formatted['type'] == 'failure':
+                self.progress_dialog.close()
+                return None

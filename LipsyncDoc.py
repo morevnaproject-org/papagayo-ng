@@ -787,10 +787,17 @@ class LanguageManager:
         except FileNotFoundError:
             print("Unable to open phoneme dictionary!:{}".format(path))
             return
+        new_cmu_version = False
+        if in_file.readline().startswith(";;; # CMUdict"):
+            new_cmu_version = True
         # process dictionary entries
         for line in in_file.readlines():
-            if line[0] == '#':
-                continue  # skip comments in the dictionary
+            if not new_cmu_version:
+                if line[0] == '#':
+                    continue  # skip comments in the dictionary
+            else:
+                if line.startswith(";;;"):
+                    continue
             # strip out leading/trailing whitespace
             line.strip()
             line = line.rstrip('\r\n')

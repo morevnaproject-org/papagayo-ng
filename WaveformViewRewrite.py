@@ -987,7 +987,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.horizontalScrollBar().setValue(self.scroll_position)
         if self.temp_play_marker:
             self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
-        QtCore.QCoreApplication.processEvents()
 
     def on_zoom_in(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame < 16):
