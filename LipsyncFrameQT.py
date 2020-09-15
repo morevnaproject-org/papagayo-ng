@@ -352,15 +352,13 @@ class LipsyncFrame:
                 dlg.setWindowTitle(app_title)
                 dlg.setIcon(QtWidgets.QMessageBox.Warning)
                 dlg.exec_()  # This should open it as a modal blocking window
-                dlg.destroy()  # Untested, might not need it
                 print(self.config.value("WorkingDir", get_main_dir()))
-                file_path, _ = QtWidgets.QFileDialog(self.main_window,
+                file_path = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
                                                      "Open Audio",
                                                      self.config.value("WorkingDir", get_main_dir()),
-                                                     open_wildcard)
+                                                     audio_extensions)[0]
                 if file_path:
-                    self.config.setValue("WorkingDir", os.path.dirname(file_path))
-                    self.doc.open(file_path)
+                    self.doc.open_audio(file_path)
         else:
             # open an audio file
             self.doc.fps = int(self.config.value("LastFPS", 24))

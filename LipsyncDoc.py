@@ -627,6 +627,8 @@ class LipsyncDoc:
             self.current_voice = self.voices[0]
 
     def open_audio(self, path):
+        if not os.path.exists(path):
+            return
         if self.sound is not None:
             del self.sound
             self.sound = None
