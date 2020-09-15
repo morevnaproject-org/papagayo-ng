@@ -78,6 +78,13 @@ class DropFilter(QtCore.QObject):
             return False
 
 
+def sort_mouth_list_order(elem):
+    try:
+        return int(elem.split("-")[0])
+    except ValueError:
+        return hash(elem)
+
+
 class LipsyncFrame:
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
@@ -111,7 +118,7 @@ class LipsyncFrame:
         # TODO: need a good description for this stuff
         print(dir(self.main_window))
         mouth_list = list(self.main_window.mouth_view.mouths.keys())
-        mouth_list.sort()
+        mouth_list.sort(key=sort_mouth_list_order)
         print(mouth_list)
         for mouth in mouth_list:
             self.main_window.mouth_choice.addItem(mouth)
@@ -709,7 +716,7 @@ class LipsyncFrame:
                     print("{0}:{1}:{2}".format(str(directory), str(dir_names), str(file_names)))
                     self.main_window.mouth_view.process_mouth_dir(directory, file_names, supported_imagetypes)
                 mouth_list = list(self.main_window.mouth_view.mouths.keys())
-                mouth_list.sort()
+                mouth_list.sort(key=sort_mouth_list_order)
                 print(mouth_list)
                 self.main_window.mouth_choice.clear()
                 for mouth in mouth_list:
