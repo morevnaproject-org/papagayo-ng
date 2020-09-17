@@ -220,8 +220,11 @@ class LipsyncFrame:
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
-        if platform.system() == "Windows":
-            ffmpeg_path = os.path.join(get_main_dir(), "ffmpeg.exe")
+        if platform.system() in ["Windows", "Darwin"]:
+            ffmpeg_binary = "ffmpeg.exe"
+            if platform.system() == "Darwin":
+                ffmpeg_binary = "ffmpeg"
+            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
             if not os.path.exists(ffmpeg_path):
                 self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
                 self.ffmpeg_action.triggered.connect(self.download_ffmpeg)
@@ -239,14 +242,19 @@ class LipsyncFrame:
         self.start_time = time.time()
 
     def download_ffmpeg(self):
-        ffmpeg_path = os.path.join(get_main_dir(), "ffmpeg.exe")
+        ffmpeg_binary = "ffmpeg.exe"
+        ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+        if platform.system() == "Darwin":
+            ffmpeg_binary = "ffmpeg"
+            ffmpeg_build_url = "https://evermeet.cx/ffmpeg/getrelease/zip"
+        ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
         if os.path.exists(ffmpeg_path):
             return
         else:
             progress = QProgressDialog("Downloading FFmpeg", "Cancel", 0, 100, self.main_window)
             progress.setWindowTitle("Progress")
             progress.setModal(True)
-            ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+
             with urllib.request.urlopen(ffmpeg_build_url) as req:
                 length = req.getheader('content-length')
                 block_size = 1000000
@@ -269,7 +277,7 @@ class LipsyncFrame:
                 if buffer_all:
                     ffmpeg_zip = ZipFile(buffer_all)
                     for zfile in ffmpeg_zip.filelist:
-                        if "ffmpeg.exe" in zfile.filename:
+                        if ffmpeg_binary in zfile.filename:
                             ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
                             ffmpeg_file = open(ffmpeg_path, "wb")
                             ffmpeg_file.write(ffmpeg_file_content)
