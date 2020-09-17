@@ -25,10 +25,15 @@ import time
 
 from PySide2.QtCore import QFile
 from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtWidgets import QProgressDialog
 from PySide2.QtUiTools import QUiLoader as uic
 
 
 import webbrowser
+import urllib.request
+import io
+from zipfile import ZipFile
+import platform
 import random
 import re
 
@@ -215,6 +220,12 @@ class LipsyncFrame:
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
+        if platform.system() == "Windows":
+            ffmpeg_path = os.path.join(get_main_dir(), "ffmpeg.exe")
+            if not os.path.exists(ffmpeg_path):
+                self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
+                self.ffmpeg_action.triggered.connect(self.download_ffmpeg)
+                self.main_window.menubar.addAction(self.ffmpeg_action)
 
         self.cur_frame = 0
         self.timer = None
@@ -226,6 +237,45 @@ class LipsyncFrame:
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
+
+    def download_ffmpeg(self):
+        ffmpeg_path = os.path.join(get_main_dir(), "ffmpeg.exe")
+        if os.path.exists(ffmpeg_path):
+            return
+        else:
+            progress = QProgressDialog("Downloading FFmpeg", "Cancel", 0, 100, self.main_window)
+            progress.setWindowTitle("Progress")
+            progress.setModal(True)
+            ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+            with urllib.request.urlopen(ffmpeg_build_url) as req:
+                length = req.getheader('content-length')
+                block_size = 1000000
+                if length:
+                    length = int(length)
+                    block_size = max(4096, length // 100)
+                buffer_all = io.BytesIO()
+                size = 0
+                while True:
+                    buffer_now = req.read(block_size)
+                    if not buffer_now:
+                        break
+                    buffer_all.write(buffer_now)
+                    size += len(buffer_now)
+                    if length:
+                        percent = int((size / length) * 100)
+                        progress.setValue(percent)
+                        if progress.wasCanceled():
+                            return
+                if buffer_all:
+                    ffmpeg_zip = ZipFile(buffer_all)
+                    for zfile in ffmpeg_zip.filelist:
+                        if "ffmpeg.exe" in zfile.filename:
+                            ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
+                            ffmpeg_file = open(ffmpeg_path, "wb")
+                            ffmpeg_file.write(ffmpeg_file_content)
+                            ffmpeg_file.close()
+                            self.main_window.menubar.removeAction(self.ffmpeg_action)
+            progress.close()
 
     def load_ui_widget(self, ui_filename, parent=None):
         self.loader = uic()
