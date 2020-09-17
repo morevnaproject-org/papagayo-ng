@@ -25,10 +25,15 @@ import time
 
 from PySide2.QtCore import QFile
 from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtWidgets import QProgressDialog
 from PySide2.QtUiTools import QUiLoader as uic
 
 
 import webbrowser
+import urllib.request
+import io
+from zipfile import ZipFile
+import platform
 import random
 import re
 
@@ -78,6 +83,13 @@ class DropFilter(QtCore.QObject):
             return False
 
 
+def sort_mouth_list_order(elem):
+    try:
+        return int(elem.split("-")[0])
+    except ValueError:
+        return hash(elem)
+
+
 class LipsyncFrame:
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
@@ -111,7 +123,7 @@ class LipsyncFrame:
         # TODO: need a good description for this stuff
         print(dir(self.main_window))
         mouth_list = list(self.main_window.mouth_view.mouths.keys())
-        mouth_list.sort()
+        mouth_list.sort(key=sort_mouth_list_order)
         print(mouth_list)
         for mouth in mouth_list:
             self.main_window.mouth_choice.addItem(mouth)
@@ -208,6 +220,15 @@ class LipsyncFrame:
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
+        if platform.system() in ["Windows", "Darwin"]:
+            ffmpeg_binary = "ffmpeg.exe"
+            if platform.system() == "Darwin":
+                ffmpeg_binary = "ffmpeg"
+            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
+            if not os.path.exists(ffmpeg_path):
+                self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
+                self.ffmpeg_action.triggered.connect(self.download_ffmpeg)
+                self.main_window.menubar.addAction(self.ffmpeg_action)
 
         self.cur_frame = 0
         self.timer = None
@@ -219,6 +240,50 @@ class LipsyncFrame:
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
+
+    def download_ffmpeg(self):
+        ffmpeg_binary = "ffmpeg.exe"
+        ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+        if platform.system() == "Darwin":
+            ffmpeg_binary = "ffmpeg"
+            ffmpeg_build_url = "https://evermeet.cx/ffmpeg/getrelease/zip"
+        ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
+        if os.path.exists(ffmpeg_path):
+            return
+        else:
+            progress = QProgressDialog("Downloading FFmpeg", "Cancel", 0, 100, self.main_window)
+            progress.setWindowTitle("Progress")
+            progress.setModal(True)
+
+            with urllib.request.urlopen(ffmpeg_build_url) as req:
+                length = req.getheader('content-length')
+                block_size = 1000000
+                if length:
+                    length = int(length)
+                    block_size = max(4096, length // 100)
+                buffer_all = io.BytesIO()
+                size = 0
+                while True:
+                    buffer_now = req.read(block_size)
+                    if not buffer_now:
+                        break
+                    buffer_all.write(buffer_now)
+                    size += len(buffer_now)
+                    if length:
+                        percent = int((size / length) * 100)
+                        progress.setValue(percent)
+                        if progress.wasCanceled():
+                            return
+                if buffer_all:
+                    ffmpeg_zip = ZipFile(buffer_all)
+                    for zfile in ffmpeg_zip.filelist:
+                        if ffmpeg_binary in zfile.filename:
+                            ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
+                            ffmpeg_file = open(ffmpeg_path, "wb")
+                            ffmpeg_file.write(ffmpeg_file_content)
+                            ffmpeg_file.close()
+                            self.main_window.menubar.removeAction(self.ffmpeg_action)
+            progress.close()
 
     def load_ui_widget(self, ui_filename, parent=None):
         self.loader = uic()
@@ -345,15 +410,13 @@ class LipsyncFrame:
                 dlg.setWindowTitle(app_title)
                 dlg.setIcon(QtWidgets.QMessageBox.Warning)
                 dlg.exec_()  # This should open it as a modal blocking window
-                dlg.destroy()  # Untested, might not need it
                 print(self.config.value("WorkingDir", get_main_dir()))
-                file_path, _ = QtWidgets.QFileDialog(self.main_window,
+                file_path = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
                                                      "Open Audio",
                                                      self.config.value("WorkingDir", get_main_dir()),
-                                                     open_wildcard)
+                                                     audio_extensions)[0]
                 if file_path:
-                    self.config.setValue("WorkingDir", os.path.dirname(file_path))
-                    self.doc.open(file_path)
+                    self.doc.open_audio(file_path)
         else:
             # open an audio file
             self.doc.fps = int(self.config.value("LastFPS", 24))
@@ -709,7 +772,7 @@ class LipsyncFrame:
                     print("{0}:{1}:{2}".format(str(directory), str(dir_names), str(file_names)))
                     self.main_window.mouth_view.process_mouth_dir(directory, file_names, supported_imagetypes)
                 mouth_list = list(self.main_window.mouth_view.mouths.keys())
-                mouth_list.sort()
+                mouth_list.sort(key=sort_mouth_list_order)
                 print(mouth_list)
                 self.main_window.mouth_choice.clear()
                 for mouth in mouth_list:

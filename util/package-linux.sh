@@ -12,8 +12,8 @@
 # umount /mnt/data/buildroots/pencil-buildroot.i386/mnt/
 
 export EMAIL='ksee.zelgadis@gmail.com'
-export VERSION='1.4.1'
-export RELEASE='5'
+export VERSION='1.5.0'
+export RELEASE='1'
 export SCRIPTDIR=$(cd `dirname $0`; pwd)
 export SOURCEDIR=`dirname "$SCRIPTDIR"`
 
