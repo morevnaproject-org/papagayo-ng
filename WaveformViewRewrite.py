@@ -28,6 +28,7 @@ import anytree.util
 import numpy as np
 from anytree import Node
 import re
+# from utilities import Worker, WorkerSignals
 
 from LipsyncDoc import *
 
@@ -534,7 +535,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
-
+        self.lipsync_frame = None
         # Other initialization
         self.main_window = self.parentWidget().parentWidget().parentWidget()  # lol
         self.doc = None
@@ -567,7 +568,10 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.node = None
         self.did_resize = None
         self.main_node = None
-        # self.scene().setSceneRect(0,0,self.width(),self.height())
+        self.scene().setSceneRect(0, 0, self.width(), self.height())
+        self.resize_timer = QtCore.QTimer(self)
+        self.resize_timer.setSingleShot(True)
+        self.connect(self.resize_timer, QtCore.SIGNAL("timeout()"), self.resize_finished)
 
         print("LoadedWaveFormView")
 
@@ -794,13 +798,55 @@ class WaveformView(QtWidgets.QGraphicsView):
             painter.drawLines(self.list_of_lines)
             for text_marker in list_of_textmarkers:
                 painter.drawText(text_marker[0], QtCore.Qt.AlignLeft, text_marker[1])
-            if self.first_update:
-                new_scene_rect = QtCore.QRectF(0, 0, self.list_of_lines[-1].p2().x(), self.list_of_lines[0].p2().y())
-                self.setSceneRect(new_scene_rect)
-                self.scene().setSceneRect(new_scene_rect)
-                self.first_update = False
 
-    def create_waveform(self):
+    def start_create_waveform(self):
+        worker = Worker(self.create_waveform)
+        worker.signals.finished.connect(self.waveform_finished)
+        worker.signals.progress.connect(self.lipsync_frame.status_bar_progress)
+
+        self.lipsync_frame.status_progress.show()
+        available_height = self.height() / 2
+        fitted_samples = self.amp * available_height
+        self.lipsync_frame.status_progress.setMaximum(len(fitted_samples))
+        self.lipsync_frame.threadpool.start(worker)
+        self.lipsync_frame.threadpool.waitForDone()
+
+    def waveform_finished(self):
+        self.lipsync_frame.status_progress.hide()
+        testobj =  self.rect()
+        testobj.oldSize = self.rect().size
+        ##############################
+        update_rect = self.scene().sceneRect()
+        width_factor = 1  # Only the height needs to change.
+        height_factor = 1
+        update_rect.setHeight(self.size().height() - 1)
+        if self.doc:
+            update_rect.setWidth(self.waveform_polygon.polygon().boundingRect().width())
+            self.setSceneRect(update_rect)
+            self.scene().setSceneRect(update_rect)
+            origin_x, origin_y = 0, 0
+            height_factor = height_factor * self.waveform_polygon.transform().m22()  # We need to add the factors
+            self.waveform_polygon.setTransform(QtGui.QTransform().translate(
+                origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
+            # We need to at least update the Y Position of the Phonemes
+            font_metrics = QtGui.QFontMetrics(font)
+            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            top_border += 4
+            for phoneme_node in self.main_node.leaves:  # this should be all phonemes
+                widget = phoneme_node.name
+                if widget:
+                    if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
+                        widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
+                                           (text_height + (text_height * widget.phoneme_offset)), self.frame_width + 5,
+                                           text_height)
+        self.horizontalScrollBar().setValue(self.scroll_position)
+        if self.temp_play_marker:
+            self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
+        self.scene().update()
+        ##############################
+
+    def create_waveform(self, progress_callback):
         if self.waveform_polygon in self.scene().items():
             self.scene().removeItem(self.waveform_polygon)
         available_height = self.height() / 2
@@ -808,22 +854,17 @@ class WaveformView(QtWidgets.QGraphicsView):
         offset = 0  # available_height / 2
         temp_polygon = QtGui.QPolygonF()
         main_window = self.parentWidget().parentWidget().parentWidget()
-        progress = QtWidgets.QProgressDialog("Creating Waveform", "Cancel", 0, len(fitted_samples), self)
-        progress.setWindowTitle("Progress")
-        progress.setModal(True)
         for x, y in enumerate(fitted_samples):
-            progress.setValue((x / 2))
+            progress_callback.emit((x / 2))
             main_window.statusbar.showMessage(
                 "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100))))
-            QtCore.QCoreApplication.processEvents()
             temp_polygon.append(QtCore.QPointF(x * self.sample_width, available_height - y + offset))
             if x < len(fitted_samples):
                 temp_polygon.append(QtCore.QPointF((x + 1) * self.sample_width, available_height - y + offset))
         for x, y in enumerate(fitted_samples[::-1]):
-            progress.setValue((len(fitted_samples)/2)+(x / 2))
+            progress_callback.emit((len(fitted_samples)/2)+(x / 2))
             main_window.statusbar.showMessage(
                 "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100) + 50)))
-            QtCore.QCoreApplication.processEvents()
             temp_polygon.append(QtCore.QPointF((len(fitted_samples) - x) * self.sample_width,
                                                available_height + y + offset))
             if x > 0:
@@ -831,8 +872,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                                                    available_height + y + offset))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
         self.waveform_polygon.setZValue(1)
-        progress.setValue(len(fitted_samples))
-        progress.close()
         main_window.statusbar.showMessage("Papagayo-NG")
 
     def create_movbuttons(self):
@@ -906,35 +945,46 @@ class WaveformView(QtWidgets.QGraphicsView):
             main_window.statusbar.showMessage("Papagayo-NG")
             self.setUpdatesEnabled(True)
 
-    def recalc_waveform(self):
+    def start_recalc(self):
+        worker = Worker(self.recalc_waveform)
+        worker.signals.finished.connect(self.recalc_finished)
+        worker.signals.progress.connect(self.lipsync_frame.status_bar_progress)
+
+        self.lipsync_frame.status_progress.show()
+        self.lipsync_frame.status_progress.setMaximum(self.doc.sound.Duration())
+        self.lipsync_frame.threadpool.start(worker)
+        self.lipsync_frame.threadpool.waitForDone()
+
+    def recalc_finished(self):
+        self.lipsync_frame.status_progress.hide()
+        self.start_create_waveform()
+
+    def recalc_waveform(self, progress_callback):
         duration = self.doc.sound.Duration()
         time_pos = 0.0
         sample_dur = 1.0 / self.samples_per_sec
         max_amp = 0.0
         self.amp = []
-        progress = QtWidgets.QProgressDialog("Calculating Waveform", "Cancel", 0.0, duration, self)
-        progress.setWindowTitle("Progress")
-        progress.setModal(True)
         while time_pos < duration:
-            progress.setValue(time_pos)
+            progress_callback.emit(time_pos)
             self.num_samples += 1
             amp = self.doc.sound.GetRMSAmplitude(time_pos, sample_dur)
             self.amp.append(amp)
             max_amp = max(max_amp, amp)
             time_pos += sample_dur
         self.amp = normalize(self.amp)
-        progress.setValue(duration)
-        progress.close()
 
     def set_document(self, document, force=False):
         if document != self.doc or force:
             self.doc = document
             if (self.doc is not None) and (self.doc.sound is not None):
-                self.recalc_waveform()
+                self.start_recalc()
+                #self.recalc_waveform()
                 self.scene().clear()
                 self.scene().update()
                 self.create_movbuttons()
-                self.create_waveform()
+                self.start_recalc()
+                #self.create_waveform()
                 if self.temp_play_marker not in self.scene().items():
                     self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
                                                                  QtGui.QPen(play_outline_col),
@@ -951,14 +1001,12 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.scroll_position = self.horizontalScrollBar().value() + (event.delta() / 1.2)
         self.horizontalScrollBar().setValue(self.scroll_position)
 
+    def resize_finished(self):
+        self.start_create_waveform()
+
     def resizeEvent(self, event):
         update_rect = self.scene().sceneRect()
         width_factor = 1  # Only the height needs to change.
-        # try:
-        #     width_factor = self.width() / update_rect.width()
-        # except ZeroDivisionError:
-        #     width_factor = 1
-
         try:
             height_factor = event.size().height() / event.oldSize().height()
         except ZeroDivisionError:
@@ -984,6 +1032,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
                                            (text_height + (text_height * widget.phoneme_offset)), self.frame_width + 5,
                                            text_height)
+            self.resize_timer.start(150)
         self.horizontalScrollBar().setValue(self.scroll_position)
         if self.temp_play_marker:
             self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
@@ -996,8 +1045,9 @@ class WaveformView(QtWidgets.QGraphicsView):
             for node in self.main_node.descendants:
                 node.name.after_reposition()
                 node.name.fit_text_to_size()
-            self.recalc_waveform()
-            self.create_waveform()
+            self.start_recalc()
+            #self.recalc_waveform()
+            #self.create_waveform()
             if self.temp_play_marker:
                 self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
             self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
@@ -1014,8 +1064,9 @@ class WaveformView(QtWidgets.QGraphicsView):
             for node in self.main_node.descendants:
                 node.name.after_reposition()
                 node.name.fit_text_to_size()
-            self.recalc_waveform()
-            self.create_waveform()
+            self.start_recalc()
+            #self.recalc_waveform()
+            #self.create_waveform()
             if self.temp_play_marker:
                 self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
             self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
@@ -1035,8 +1086,9 @@ class WaveformView(QtWidgets.QGraphicsView):
             for node in self.main_node.descendants:
                 node.name.after_reposition()
                 node.name.fit_text_to_size()
-            self.recalc_waveform()
-            self.create_waveform()
+            self.start_recalc()
+            #self.recalc_waveform()
+            #self.create_waveform()
             if self.temp_play_marker:
                 self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
             self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
