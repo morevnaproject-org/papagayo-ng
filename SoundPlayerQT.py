@@ -1,3 +1,5 @@
+from PySide2 import QtWidgets
+
 from utilities import *
 
 import time
@@ -6,7 +8,6 @@ from PySide2.QtMultimedia import QMediaPlayer, QAudioFormat, QAudioBuffer, QAudi
 from PySide2.QtMultimedia import QAudioOutput
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtCore import QUrl
-from PySide2.QtWidgets import QProgressDialog
 
 from utilities import which
 from cffi import FFI
@@ -41,23 +42,27 @@ class SoundPlayer:
         self.decoder.finished.connect(self.decode_finished_signal)
         self.audio.setMedia(QUrl.fromLocalFile(soundfile))
         self.decoder.setSourceFilename(soundfile)  # strangely inconsistent file-handling
-        progress = QProgressDialog("Loading Audio", "Cancel", 0, 0)
-        progress.setWindowTitle("Progress")
-        progress.setModal(True)
-        progress.forceShow()
+        self.top_level_widget = None
+
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if "lip_sync_frame" in dir(widget):
+                self.top_level_widget = widget
+        self.top_level_widget.lip_sync_frame.status_progress.show()
+        self.top_level_widget.lip_sync_frame.status_progress.reset()
+        self.top_level_widget.lip_sync_frame.status_progress.setMinimum(0)
+        self.top_level_widget.lip_sync_frame.status_progress.setMaximum(0)
         # It will hang here forever if we don't process the events.
         while not self.is_loaded:
             QCoreApplication.processEvents()
-            time.sleep(0.1)
-
-        self.decode_audio()
-
+            time.sleep(0.01)
+        self.top_level_widget.lip_sync_frame.status_progress.setMaximum(self.decoder.duration())
+        self.decode_audio(self.top_level_widget.lip_sync_frame.status_bar_progress)
+        self.top_level_widget.lip_sync_frame.status_progress.hide()
         self.np_data = np.array(self.only_samples)
         if not self.signed:  # don't ask me why this fixes 8 bit samples...
             self.np_data = self.np_data - self.max_bits / 2
         print(len(self.only_samples))
         print(self.max_bits)
-        progress.close()
         self.isvalid = True
 
     def audioformat_to_datatype(self, audioformat):
@@ -72,7 +77,7 @@ class SoundPlayer:
             self.max_bits = int(self.max_bits / 2)
             return "int{0}_t".format(str(num_bits))
 
-    def decode_audio(self):
+    def decode_audio(self, progress_callback):
         self.decoder.start()
         while not self.decoding_is_finished:
             QCoreApplication.processEvents()
@@ -85,6 +90,7 @@ class SoundPlayer:
                 self.only_samples.extend(possible_data)
                 self.decoded_audio[self.decoder.position()] = [possible_data, len(possible_data), tempdata.byteCount(),
                                                                tempdata.format()]
+            progress_callback(self.decoder.position())
 
     def decode_finished_signal(self):
         self.decoding_is_finished = True

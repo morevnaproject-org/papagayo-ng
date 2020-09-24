@@ -232,7 +232,6 @@ class LipsyncFrame:
                 self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
                 self.ffmpeg_action.triggered.connect(self.start_download)
                 self.main_window.menubar.addAction(self.ffmpeg_action)
-        self.main_window.waveform_view.lipsync_frame = self
         self.cur_frame = 0
         self.timer = None
         self.wv_height = 1
@@ -243,7 +242,7 @@ class LipsyncFrame:
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
-        self.threadpool = QtCore.QThreadPool()
+        self.threadpool = QtCore.QThreadPool.globalInstance()
 
     def download_finished(self):
         if platform.system() in ["Windows", "Darwin"]:
