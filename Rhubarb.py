@@ -2,6 +2,8 @@ import json
 import subprocess
 import os
 import threading
+
+from PySide2 import QtWidgets
 from PySide2.QtWidgets import QProgressDialog
 from PySide2.QtCore import QCoreApplication
 import sys
@@ -22,10 +24,14 @@ class Rhubarb:
         self.file_path = file_path
         self.process = None
         self.progress = 0
-        self.progress_dialog = QProgressDialog("Processing by Rhubarb", "Cancel", 0, 100)
-        self.progress_dialog.setWindowTitle("Progress")
-        self.progress_dialog.setModal(True)
-        self.progress_dialog.forceShow()
+        self.top_level_widget = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if "lip_sync_frame" in dir(widget):
+                self.top_level_widget = widget
+        self.top_level_widget.lip_sync_frame.status_progress.show()
+        self.top_level_widget.lip_sync_frame.status_progress.reset()
+        self.top_level_widget.lip_sync_frame.status_progress.setMinimum(0)
+        self.top_level_widget.lip_sync_frame.status_progress.setMaximum(100)
 
     def _signal_handler(self):
         print('Rhubarb did not respond for more than 30 seconds.')
@@ -65,11 +71,8 @@ class Rhubarb:
             else:
                 log = self._read_log()
                 log_formatted = json.loads(log)
-            self.progress_dialog.setValue(int(self.progress))
-            QCoreApplication.processEvents()
+            self.top_level_widget.lip_sync_frame.status_bar_progress(int(self.progress))
             if log_formatted['type'] == 'success':
                 result_is_ready = True
-                self.progress_dialog.close()
             elif log_formatted['type'] == 'failure':
-                self.progress_dialog.close()
                 return None

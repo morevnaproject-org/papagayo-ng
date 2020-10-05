@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # import os
-import string
+# from utilities import Worker, WorkerSignals
 import time
 
 from PySide2.QtCore import QFile
@@ -173,6 +173,9 @@ class LipsyncFrame:
         self.main_window.statusbar.addPermanentWidget(self.sep_status)
         self.main_window.statusbar.addPermanentWidget(self.play_status)
         self.main_window.statusbar.showMessage(self.mainframe_statusbar_fields[0])
+        self.status_progress = QtWidgets.QProgressBar()
+        self.main_window.statusbar.addPermanentWidget(self.status_progress)
+        self.status_progress.hide()
         # This is for the buttons to add and remove voices from the TabBar
         self.tab_widgets = QtWidgets.QWidget()
         self.tab_layout = QtWidgets.QHBoxLayout()
@@ -227,9 +230,8 @@ class LipsyncFrame:
             ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
             if not os.path.exists(ffmpeg_path):
                 self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
-                self.ffmpeg_action.triggered.connect(self.download_ffmpeg)
+                self.ffmpeg_action.triggered.connect(self.start_download)
                 self.main_window.menubar.addAction(self.ffmpeg_action)
-
         self.cur_frame = 0
         self.timer = None
         self.wv_height = 1
@@ -240,8 +242,31 @@ class LipsyncFrame:
         self.wv_pen = QtGui.QPen(QtCore.Qt.darkBlue)
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
+        self.threadpool = QtCore.QThreadPool.globalInstance()
 
-    def download_ffmpeg(self):
+    def download_finished(self):
+        if platform.system() in ["Windows", "Darwin"]:
+            ffmpeg_binary = "ffmpeg.exe"
+            if platform.system() == "Darwin":
+                ffmpeg_binary = "ffmpeg"
+            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
+            if os.path.exists(ffmpeg_path):
+                self.main_window.menubar.removeAction(self.ffmpeg_action)
+        self.status_progress.hide()
+
+    def start_download(self):
+        worker = Worker(self.download_ffmpeg)
+        worker.signals.finished.connect(self.download_finished)
+        worker.signals.progress.connect(self.status_bar_progress)
+        self.status_progress.show()
+        self.status_progress.setMaximum(100)
+        self.threadpool.start(worker)
+
+    def status_bar_progress(self, n):
+        self.status_progress.setValue(n)
+        QtCore.QCoreApplication.processEvents()
+
+    def download_ffmpeg(self, progress_callback):
         ffmpeg_binary = "ffmpeg.exe"
         ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
         if platform.system() == "Darwin":
@@ -251,10 +276,6 @@ class LipsyncFrame:
         if os.path.exists(ffmpeg_path):
             return
         else:
-            progress = QProgressDialog("Downloading FFmpeg", "Cancel", 0, 100, self.main_window)
-            progress.setWindowTitle("Progress")
-            progress.setModal(True)
-
             with urllib.request.urlopen(ffmpeg_build_url) as req:
                 length = req.getheader('content-length')
                 block_size = 1000000
@@ -271,9 +292,7 @@ class LipsyncFrame:
                     size += len(buffer_now)
                     if length:
                         percent = int((size / length) * 100)
-                        progress.setValue(percent)
-                        if progress.wasCanceled():
-                            return
+                        progress_callback.emit(percent)
                 if buffer_all:
                     ffmpeg_zip = ZipFile(buffer_all)
                     for zfile in ffmpeg_zip.filelist:
@@ -282,8 +301,7 @@ class LipsyncFrame:
                             ffmpeg_file = open(ffmpeg_path, "wb")
                             ffmpeg_file.write(ffmpeg_file_content)
                             ffmpeg_file.close()
-                            self.main_window.menubar.removeAction(self.ffmpeg_action)
-            progress.close()
+            return
 
     def load_ui_widget(self, ui_filename, parent=None):
         self.loader = uic()
