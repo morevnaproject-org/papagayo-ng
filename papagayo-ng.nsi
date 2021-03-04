@@ -4,6 +4,9 @@ Name "Papagayo-NG"
 
 SetCompressor /final lzma
 !include MUI2.nsh
+!insertmacro MUI_LANGUAGE "English"
+
+!define MUI_PAGE_HEADER_TEXT "Papagayo-NG"
 
 Icon "papagayo-ng.ico"
 UninstallIcon "papagayo-ng.ico"
