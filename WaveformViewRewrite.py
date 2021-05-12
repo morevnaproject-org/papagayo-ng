@@ -145,8 +145,8 @@ class MovableButton(QtWidgets.QPushButton):
                     word_fill_col.red(),
                     word_fill_col.green(),
                     word_fill_col.blue())
-                self.style += "background-image: url(:/rsrc/marker.png); "
-                self.style += "background-repeat: repeat-y; background-position: right;"
+                # self.style += "background-image: url(:/rsrc/marker.png); "
+                # self.style += "background-repeat: repeat-y; background-position: right;"
                 self.style += "border:1px solid rgb({0},{1},{2});}};".format(word_outline_col.red(),
                                                                              word_outline_col.green(),
                                                                              word_outline_col.blue())
@@ -277,10 +277,14 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.wfv_parent.doc.sound.is_playing():
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
+                    # print(str(round(self.convert_to_frames(self.x()))) + " - "  + str(self.lipsync_object.end_frame) + " / " + str(round(self.convert_to_frames(self.x() + event.x()))))
                     if (round(self.convert_to_frames(
-                            self.x() + event.x())) + 1 >= self.lipsync_object.end_frame) and not self.is_moving:
+                            self.x() + event.x())) >= self.lipsync_object.end_frame - 2 ) and not self.is_moving:
                         self.is_resizing = True
                         self.resize_origin = 1
+                    if ( self.convert_to_frames(self.x() + event.x()) <= self.convert_to_frames(self.x()) + 2 ):       
+                        self.is_resizing = True
+                        self.resize_origin = 0
                 else:
                     self.is_resizing = False
                     self.is_moving = True
@@ -299,13 +303,13 @@ class MovableButton(QtWidgets.QPushButton):
                             self.wfv_parent.doc.dirty = True
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
-                # elif self.resize_origin == 0:  # start resize from left side
-                #     if round(self.convert_to_frames(event.x() + self.x())) < self.lipsync_object.end_frame:
-                #         if round(self.convert_to_frames(event.x() + self.x())) >= self.get_left_max():
-                #             self.lipsync_object.start_frame = round(self.convert_to_frames(event.x() + self.x()))
-                #             new_length = self.convert_to_pixels(self.lipsync_object.end_frame) - self.convert_to_pixels(self.lipsync_object.start_frame)
-                #             self.resize(new_length, self.height())
-                #             self.move(self.convert_to_pixels(self.lipsync_object.start_frame), self.y())
+                elif self.resize_origin == 0:  # start resize from left side
+                    if round(self.convert_to_frames(event.x() + self.x())) < self.lipsync_object.end_frame:
+                        if round(self.convert_to_frames(event.x() + self.x())) >= self.get_left_max():
+                            self.lipsync_object.start_frame = round(self.convert_to_frames(event.x() + self.x()))
+                            new_length = self.convert_to_pixels(self.lipsync_object.end_frame) - self.convert_to_pixels(self.lipsync_object.start_frame)
+                            self.resize(new_length, self.height())
+                            self.move(self.convert_to_pixels(self.lipsync_object.start_frame), self.y())
             else:
                 self.is_moving = True
                 mime_data = QtCore.QMimeData()
