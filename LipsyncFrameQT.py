@@ -658,7 +658,7 @@ class LipsyncFrame:
             wildcard = ""
             if exporter == "MOHO":
                 message = "Export Lipsync Data (MOHO)"
-                default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0])
+                default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".dat"
                 wildcard = "Moho switch files (*.dat)"
             elif exporter == "ALELO":
                 fps = int(self.config.value("FPS", 24))
@@ -692,11 +692,12 @@ class LipsyncFrame:
             file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                                  message,
                                                                  default_file,
-                                                                 wildcard)
+                                                                 wildcard,
+                                                                 options=QtWidgets.QFileDialog.DontUseNativeDialog)
             if file_path:
                 self.config.setValue("WorkingDir", os.path.dirname(file_path))
                 if exporter == "MOHO":
-                    self.doc.current_voice.export(file_path)
+                    self.doc.current_voice.export(file_path if ("." in file_path) else file_path + ".dat")
                 elif exporter == "ALELO":
                     self.doc.current_voice.export_alelo(file_path, language, self.langman)
                 elif exporter == "Images":
