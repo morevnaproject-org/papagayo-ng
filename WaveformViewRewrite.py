@@ -128,27 +128,15 @@ class MovableButton(QtWidgets.QPushButton):
                     phrase_fill_col.red(),
                     phrase_fill_col.green(),
                     phrase_fill_col.blue())
-                # self.style += "background-image: url(:/rsrc/marker.png); "
-                # self.style += "background-repeat: repeat-y; background-position: right;"
                 self.style += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
                 self.style +=  "border-width: 1px {0};}};" .format(self.convert_to_pixels(resize_handle_width))
-                # self.style = """QPushButton {
-                #                 color: #000000;
-                #                 border-image: url(./rsrc/testbutton2.png) 2 10 2 2 repeat;
-                #                 border-top: 2px transparent;
-                #                 border-bottom: 2px transparent;
-                #                 border-right: 10px transparent;
-                #                 border-left: 2px transparent;
-                #                 }"""
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
                     word_fill_col.green(),
                     word_fill_col.blue())
-                # self.style += "background-image: url(:/rsrc/marker.png); "
-                # self.style += "background-repeat: repeat-y; background-position: right;"
                 self.style += "border: 1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
                                                                             word_outline_col.green(),
                                                                             word_outline_col.blue())
@@ -280,7 +268,6 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.wfv_parent.doc.sound.is_playing():
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
-                    # print(str(round(self.convert_to_frames(self.x()))) + " - "  + str(self.lipsync_object.end_frame) + " / " + str(round(self.convert_to_frames(self.x() + event.x()))))
                     if (math.floor(self.convert_to_frames(
                             self.x() + event.x())) >= self.lipsync_object.end_frame - resize_handle_width ) and not self.is_moving:
                         self.is_resizing = True
