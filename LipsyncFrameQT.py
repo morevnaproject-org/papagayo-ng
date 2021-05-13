@@ -658,8 +658,8 @@ class LipsyncFrame:
             wildcard = ""
             if exporter == "MOHO":
                 message = "Export Lipsync Data (MOHO)"
-                default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".dat"
-                wildcard = "Moho switch files (*.dat)|*.dat"
+                default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0])
+                wildcard = "Moho switch files (*.dat)"
             elif exporter == "ALELO":
                 fps = int(self.config.value("FPS", 24))
                 if fps != 100:
@@ -691,7 +691,7 @@ class LipsyncFrame:
                 wildcard = "JSON object files (*.json)|*.json"
             file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                                  message,
-                                                                 self.config.value("WorkingDir", get_main_dir()),
+                                                                 default_file,
                                                                  wildcard)
             if file_path:
                 self.config.setValue("WorkingDir", os.path.dirname(file_path))
