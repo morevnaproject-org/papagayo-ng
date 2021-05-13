@@ -60,6 +60,7 @@ font = QtGui.QFont("Swiss", 6)
 default_sample_width = 4
 default_samples_per_frame = 2
 
+resize_handle_width = 2
 
 class SceneWithDrag(QtWidgets.QGraphicsScene):
     def dragEnterEvent(self, e):
@@ -127,11 +128,12 @@ class MovableButton(QtWidgets.QPushButton):
                     phrase_fill_col.red(),
                     phrase_fill_col.green(),
                     phrase_fill_col.blue())
-                self.style += "background-image: url(:/rsrc/marker.png); "
-                self.style += "background-repeat: repeat-y; background-position: right;"
-                self.style += "border:1px solid rgb({0},{1},{2});}};".format(phrase_outline_col.red(),
+                # self.style += "background-image: url(:/rsrc/marker.png); "
+                # self.style += "background-repeat: repeat-y; background-position: right;"
+                self.style += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
+                self.style +=  "border-width: 1px {0};}};" .format(self.convert_to_pixels(resize_handle_width))
                 # self.style = """QPushButton {
                 #                 color: #000000;
                 #                 border-image: url(./rsrc/testbutton2.png) 2 10 2 2 repeat;
@@ -147,9 +149,10 @@ class MovableButton(QtWidgets.QPushButton):
                     word_fill_col.blue())
                 # self.style += "background-image: url(:/rsrc/marker.png); "
                 # self.style += "background-repeat: repeat-y; background-position: right;"
-                self.style += "border:1px solid rgb({0},{1},{2});}};".format(word_outline_col.red(),
-                                                                             word_outline_col.green(),
-                                                                             word_outline_col.blue())
+                self.style += "border: 1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
+                                                                            word_outline_col.green(),
+                                                                            word_outline_col.blue())
+                self.style +=  "border-width: 1px {0};}};" .format(self.convert_to_pixels(resize_handle_width))
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     phoneme_fill_col.red(),
@@ -278,11 +281,11 @@ class MovableButton(QtWidgets.QPushButton):
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
                     # print(str(round(self.convert_to_frames(self.x()))) + " - "  + str(self.lipsync_object.end_frame) + " / " + str(round(self.convert_to_frames(self.x() + event.x()))))
-                    if (round(self.convert_to_frames(
-                            self.x() + event.x())) >= self.lipsync_object.end_frame - 2 ) and not self.is_moving:
+                    if (math.floor(self.convert_to_frames(
+                            self.x() + event.x())) >= self.lipsync_object.end_frame - resize_handle_width ) and not self.is_moving:
                         self.is_resizing = True
                         self.resize_origin = 1
-                    if ( self.convert_to_frames(self.x() + event.x()) <= self.convert_to_frames(self.x()) + 2 ):       
+                    if ( math.ceil(self.convert_to_frames(self.x() + event.x())) <= round(self.convert_to_frames(self.x()) + resize_handle_width )):       
                         self.is_resizing = True
                         self.resize_origin = 0
                 else:
