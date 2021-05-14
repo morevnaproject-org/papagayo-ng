@@ -16,7 +16,10 @@ def get_main_dir():
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
+        if sys._MEIPASS:
+            base_path = os.path.dirname(sys.executable)
+        else:
+            base_path = os.path.abspath(".")
     except Exception:
         base_path = os.path.abspath(".")
     return base_path

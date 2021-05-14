@@ -37,7 +37,7 @@ from utilities import *
 from PronunciationDialogQT import PronunciationDialog
 
 if sys.platform == "win32":
-    import SoundPlayerQT as SoundPlayer
+    import SoundPlayerNew as SoundPlayer
 elif sys.platform == "darwin":
     import SoundPlayerOSX as SoundPlayer
 else:
