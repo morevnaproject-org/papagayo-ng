@@ -128,19 +128,19 @@ class MovableButton(QtWidgets.QPushButton):
                     phrase_fill_col.red(),
                     phrase_fill_col.green(),
                     phrase_fill_col.blue())
-                self.style += "border:1px solid rgb({0},{1},{2});".format(phrase_outline_col.red(),
+                self.style += "border-color: rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
-                self.style +=  "border-width: 1px {0};}};" .format(self.convert_to_pixels(resize_handle_width))
+                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(self.convert_to_pixels(resize_handle_width))
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
                     word_fill_col.green(),
                     word_fill_col.blue())
-                self.style += "border: 1px solid rgb({0},{1},{2});".format(word_outline_col.red(),
+                self.style += "border-color: rgb({0},{1},{2});".format(word_outline_col.red(),
                                                                             word_outline_col.green(),
                                                                             word_outline_col.blue())
-                self.style +=  "border-width: 1px {0};}};" .format(self.convert_to_pixels(resize_handle_width))
+                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(self.convert_to_pixels(resize_handle_width))
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     phoneme_fill_col.red(),
@@ -406,10 +406,10 @@ class MovableButton(QtWidgets.QPushButton):
         # Change the border-style or something like that depending on whether there are tags or not
         if len(self.lipsync_object.tags) > 0:
             if "solid" in self.styleSheet():
-                self.setStyleSheet(self.styleSheet().replace("solid", "dashed "))
+                self.setStyleSheet(self.styleSheet().replace("solid solid solid solid", "dashed double dashed double"))
         else:
-            if "dashed " in self.styleSheet():
-                self.setStyleSheet(self.styleSheet().replace("dashed ", "solid"))
+            if "dashed" in self.styleSheet():
+                self.setStyleSheet(self.styleSheet().replace("dashed double dashed double", "solid solid solid solid"))
 
     def reposition_descendants(self, did_resize=False, x_diff=0):
         if did_resize:
