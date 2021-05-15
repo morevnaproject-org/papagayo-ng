@@ -273,31 +273,21 @@ class MovableButton(QtWidgets.QPushButton):
                         self.resize_origin = 1
                     if (self.x() + event.x() <= self.x() + resize_handle_width ):       
                         self.is_resizing = True
-                        self.resize_origin = 0
+                        self.resize_origin = 0 
                 else:
                     self.is_resizing = False
                     self.is_moving = True
+                # print("resize origin: " + str(self.resize_origin))
             else:
                 self.is_moving = True
             if self.is_resizing and not self.is_moving:
-                print("left max: " + str(self.get_left_max()) + " ,right max: " + str(self.get_right_max()))
-                print("start frame: " + str(self.lipsync_object.start_frame) + " , end frame: " + str(self.lipsync_object.end_frame))
-                print("min size: " + str(self.get_min_size()) + " frame size: " + str(self.get_frame_size()))
-                print("self x: " + str(self.x()) + " , event x: " + str(event.x()))
-                if self.get_frame_size() < self.get_min_size():
-                    if self.resize_origin == 1:
-                        if self.get_right_max() - self.lipsync_object.start_frame > self.get_min_size():
-                            self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
-                        else:
-                            self.lipsync_object.start_frame = self.get_right_max() - self.get_min_size()
-                    elif self.resize_origin == 0:
-                        if self.lipsync_object.start_frame - self.get_left_max() > self.get_min_size():
-                            self.lipsync_object.start_frame = self.lipsync_object.end_frame - self.get_min_size()
-                        else:
-                            self.lipsync_object.start_frame = self.get_left_max() 
-                            self.lipsync_object.end_frame += self.get_min_size()
-                     
-                    self.wfv_parent.doc.dirty = True
+                # whatsup = "\nleft max: " + str(self.get_left_max()) + " ,right max: " + str(self.get_right_max())
+                # whatsup += " start frame: " + str(self.lipsync_object.start_frame) + " , end frame: " + str(self.lipsync_object.end_frame)
+                # whatsup += " min size: " + str(self.get_min_size()) + " frame size: " + str(self.get_frame_size())
+                # whatsup += " self x: " + str(self.x()) + " , event x: " + str(event.x())
+                # print (whatsup)
+
+                self.wfv_parent.doc.dirty = True
                 self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
                     if round(self.convert_to_frames(
@@ -308,9 +298,11 @@ class MovableButton(QtWidgets.QPushButton):
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
                 elif self.resize_origin == 0:  # start resize from left side
-                    if round(self.convert_to_frames(event.x() + self.x())) < self.lipsync_object.end_frame:
+                    if round(self.convert_to_frames(event.x() + self.x())) < self.lipsync_object.end_frame - 1:
                         if round(self.convert_to_frames(event.x() + self.x())) >= self.get_left_max():
                             self.lipsync_object.start_frame = round(self.convert_to_frames(event.x() + self.x()))
+                            if self.get_frame_size() < self.get_min_size():
+                                self.lipsync_object.start_frame = self.lipsync_object.end_frame - self.get_min_size()
                             new_length = self.convert_to_pixels(self.lipsync_object.end_frame) - self.convert_to_pixels(self.lipsync_object.start_frame)
                             self.resize(new_length, self.height())
                             self.move(self.convert_to_pixels(self.lipsync_object.start_frame), self.y())
