@@ -60,7 +60,7 @@ font = QtGui.QFont("Swiss", 6)
 default_sample_width = 4
 default_samples_per_frame = 2
 
-resize_handle_width = 2
+resize_handle_width = 8
 
 class SceneWithDrag(QtWidgets.QGraphicsScene):
     def dragEnterEvent(self, e):
@@ -131,7 +131,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border-color: rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
-                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(self.convert_to_pixels(resize_handle_width))
+                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(resize_handle_width)
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
@@ -140,7 +140,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border-color: rgb({0},{1},{2});".format(word_outline_col.red(),
                                                                             word_outline_col.green(),
                                                                             word_outline_col.blue())
-                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(self.convert_to_pixels(resize_handle_width))
+                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(resize_handle_width)
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     phoneme_fill_col.red(),
@@ -268,11 +268,10 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.wfv_parent.doc.sound.is_playing():
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
-                    if (math.floor(self.convert_to_frames(
-                            self.x() + event.x())) >= self.lipsync_object.end_frame - resize_handle_width ) and not self.is_moving:
+                    if (self.x() + event.x() >=  self.convert_to_pixels(self.lipsync_object.end_frame) - resize_handle_width ) and not self.is_moving:
                         self.is_resizing = True
                         self.resize_origin = 1
-                    if ( math.ceil(self.convert_to_frames(self.x() + event.x())) <= round(self.convert_to_frames(self.x()) + resize_handle_width )):       
+                    if (self.x() + event.x() <= self.x() + resize_handle_width ):       
                         self.is_resizing = True
                         self.resize_origin = 0
                 else:
@@ -281,8 +280,23 @@ class MovableButton(QtWidgets.QPushButton):
             else:
                 self.is_moving = True
             if self.is_resizing and not self.is_moving:
+                print("left max: " + str(self.get_left_max()) + " ,right max: " + str(self.get_right_max()))
+                print("start frame: " + str(self.lipsync_object.start_frame) + " , end frame: " + str(self.lipsync_object.end_frame))
+                print("min size: " + str(self.get_min_size()) + " frame size: " + str(self.get_frame_size()))
+                print("self x: " + str(self.x()) + " , event x: " + str(event.x()))
                 if self.get_frame_size() < self.get_min_size():
-                    self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
+                    if self.resize_origin == 1:
+                        if self.get_right_max() - self.lipsync_object.start_frame > self.get_min_size():
+                            self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
+                        else:
+                            self.lipsync_object.start_frame = self.get_right_max() - self.get_min_size()
+                    elif self.resize_origin == 0:
+                        if self.lipsync_object.start_frame - self.get_left_max() > self.get_min_size():
+                            self.lipsync_object.start_frame = self.lipsync_object.end_frame - self.get_min_size()
+                        else:
+                            self.lipsync_object.start_frame = self.get_left_max() 
+                            self.lipsync_object.end_frame += self.get_min_size()
+                     
                     self.wfv_parent.doc.dirty = True
                 self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
