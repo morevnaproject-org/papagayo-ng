@@ -132,7 +132,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border-color: rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
-                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(resize_handle_width)
+                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(self.wfv_parent.frame_width)
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
@@ -141,7 +141,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border-color: rgb({0},{1},{2});".format(word_outline_col.red(),
                                                                             word_outline_col.green(),
                                                                             word_outline_col.blue())
-                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(resize_handle_width)
+                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(self.wfv_parent.frame_width)
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     phoneme_fill_col.red(),
@@ -189,9 +189,7 @@ class MovableButton(QtWidgets.QPushButton):
         else:
             self.setGeometry(self.convert_to_pixels(self.lipsync_object.start_frame), self.y(),
                              self.convert_to_pixels(self.get_frame_size()), self.height())
-        # self.setStyleSheet(self.styleSheet().replace("19px", str(int(self.wfv_parent.frame_width)) + "px"))
-        replaced = re.sub('\d+px}', str(int(self.wfv_parent.frame_width)) + 'px}' , self.styleSheet())
-        # print(replaced)
+        replaced = re.sub('\d+px}', str(int(min(self.wfv_parent.frame_width,self.convert_to_pixels(self.get_frame_size()) / 4))) + 'px}' , self.styleSheet())
         self.setStyleSheet(replaced)
         self.update()
 
@@ -273,10 +271,10 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.wfv_parent.doc.sound.is_playing():
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
-                    if (self.x() + event.x() >=  self.convert_to_pixels(self.lipsync_object.end_frame) - self.wfv_parent.frame_width ) and not self.is_moving:
+                    if (self.x() + event.x() >=  self.convert_to_pixels(self.lipsync_object.end_frame) - (min(self.wfv_parent.frame_width, self.convert_to_pixels(self.get_frame_size()) / 4)) ) and not self.is_moving:
                         self.is_resizing = True
                         self.resize_origin = 1
-                    if (self.x() + event.x() <= self.x() + self.wfv_parent.frame_width ):       
+                    if (self.x() + event.x() <= self.x() + (min(self.wfv_parent.frame_width, self.convert_to_pixels(self.get_frame_size()) / 4)) ):       
                         self.is_resizing = True
                         self.resize_origin = 0 
                 else:
@@ -291,12 +289,12 @@ class MovableButton(QtWidgets.QPushButton):
                     if round(self.convert_to_frames(
                             event.x() + self.x())) + 1 >= self.lipsync_object.start_frame + self.get_min_size():
                         if round(self.convert_to_frames(event.x() + self.x())) + 1 <= self.get_right_max():
-                            self.lipsync_object.end_frame = round(self.convert_to_frames(event.x() + self.x())) + 1
+                            self.lipsync_object.end_frame = math.floor(self.convert_to_frames(event.x() + self.x())) + 1
                             self.wfv_parent.doc.dirty = True
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
                 elif self.resize_origin == 0:  # start resize from left side
-                    if round(self.convert_to_frames(event.x() + self.x())) < self.lipsync_object.end_frame - 1:
+                    if round(self.convert_to_frames(event.x() + self.x())) < self.lipsync_object.end_frame:
                         if round(self.convert_to_frames(event.x() + self.x())) >= self.get_left_max():
                             self.lipsync_object.start_frame = round(self.convert_to_frames(event.x() + self.x()))
                             if self.get_frame_size() < self.get_min_size():
@@ -1050,7 +1048,6 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.samples_per_frame *= 2
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
-            # print(int(self.frame_width))
             for node in self.main_node.descendants:
                 node.name.after_reposition()
                 node.name.fit_text_to_size()
