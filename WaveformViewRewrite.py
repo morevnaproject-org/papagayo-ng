@@ -26,6 +26,7 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 import anytree.util
 import numpy as np
+import re
 from anytree import Node
 
 from LipsyncDoc import *
@@ -188,6 +189,10 @@ class MovableButton(QtWidgets.QPushButton):
         else:
             self.setGeometry(self.convert_to_pixels(self.lipsync_object.start_frame), self.y(),
                              self.convert_to_pixels(self.get_frame_size()), self.height())
+        # self.setStyleSheet(self.styleSheet().replace("19px", str(int(self.wfv_parent.frame_width)) + "px"))
+        replaced = re.sub('\d+px}', str(int(self.wfv_parent.frame_width)) + 'px}' , self.styleSheet())
+        # print(replaced)
+        self.setStyleSheet(replaced)
         self.update()
 
     def get_min_size(self):
@@ -268,10 +273,10 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.wfv_parent.doc.sound.is_playing():
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
-                    if (self.x() + event.x() >=  self.convert_to_pixels(self.lipsync_object.end_frame) - resize_handle_width ) and not self.is_moving:
+                    if (self.x() + event.x() >=  self.convert_to_pixels(self.lipsync_object.end_frame) - self.wfv_parent.frame_width ) and not self.is_moving:
                         self.is_resizing = True
                         self.resize_origin = 1
-                    if (self.x() + event.x() <= self.x() + resize_handle_width ):       
+                    if (self.x() + event.x() <= self.x() + self.wfv_parent.frame_width ):       
                         self.is_resizing = True
                         self.resize_origin = 0 
                 else:
@@ -1045,6 +1050,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.samples_per_frame *= 2
             self.samples_per_sec = self.doc.fps * self.samples_per_frame
             self.frame_width = self.sample_width * self.samples_per_frame
+            # print(int(self.frame_width))
             for node in self.main_node.descendants:
                 node.name.after_reposition()
                 node.name.fit_text_to_size()
