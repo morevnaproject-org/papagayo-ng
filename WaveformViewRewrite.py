@@ -287,7 +287,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
                     if round(self.convert_to_frames(
-                            event.x() + self.x())) + 1 >= self.lipsync_object.start_frame + self.get_min_size():
+                            event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
                         if round(self.convert_to_frames(event.x() + self.x())) + 1 <= self.get_right_max():
                             self.lipsync_object.end_frame = math.floor(self.convert_to_frames(event.x() + self.x())) + 1
                             self.wfv_parent.doc.dirty = True
