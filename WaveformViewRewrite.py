@@ -55,13 +55,12 @@ word_outline_col = QtGui.QColor(198, 121, 30)
 phoneme_fill_col = QtGui.QColor(231, 185, 210)
 phoneme_outline_col = QtGui.QColor(173, 114, 146)
 font = QtGui.QFont("Swiss", 6)
+font.setStyleHint(QtGui.QFont.Helvetica)
 
 # default_sample_width = 2
 # default_samples_per_frame = 4
 default_sample_width = 4
 default_samples_per_frame = 2
-
-resize_handle_width = 8
 
 class SceneWithDrag(QtWidgets.QGraphicsScene):
     def dragEnterEvent(self, e):
@@ -121,6 +120,10 @@ class MovableButton(QtWidgets.QPushButton):
                 break
         self.setText(self.title)
 
+    def get_handle_width(self):
+        resize_handle_width = 1.5
+        return int(min(self.wfv_parent.frame_width * resize_handle_width,self.convert_to_pixels(self.get_frame_size()) / 4))
+
     def create_and_set_style(self):
         if not self.style:
             if self.is_phrase():
@@ -132,7 +135,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border-color: rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
-                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(self.wfv_parent.frame_width)
+                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(str(self.get_handle_width()))
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
@@ -141,7 +144,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border-color: rgb({0},{1},{2});".format(word_outline_col.red(),
                                                                             word_outline_col.green(),
                                                                             word_outline_col.blue())
-                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(self.wfv_parent.frame_width)
+                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(str(self.get_handle_width()))
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     phoneme_fill_col.red(),
@@ -189,7 +192,7 @@ class MovableButton(QtWidgets.QPushButton):
         else:
             self.setGeometry(self.convert_to_pixels(self.lipsync_object.start_frame), self.y(),
                              self.convert_to_pixels(self.get_frame_size()), self.height())
-        replaced = re.sub('\d+px}', str(int(min(self.wfv_parent.frame_width,self.convert_to_pixels(self.get_frame_size()) / 4))) + 'px}' , self.styleSheet())
+        replaced = re.sub('(border-width: \dpx) \d+.*px', r'\1 {}px'.format(str(self.get_handle_width())), self.styleSheet())
         self.setStyleSheet(replaced)
         self.update()
 
@@ -271,10 +274,10 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.wfv_parent.doc.sound.is_playing():
             if event.buttons() == QtCore.Qt.LeftButton:
                 if not self.is_phoneme():
-                    if (self.x() + event.x() >=  self.convert_to_pixels(self.lipsync_object.end_frame) - (min(self.wfv_parent.frame_width, self.convert_to_pixels(self.get_frame_size()) / 4)) ) and not self.is_moving:
+                    if (self.x() + event.x() >=  self.convert_to_pixels(self.lipsync_object.end_frame) - self.get_handle_width() ):
                         self.is_resizing = True
                         self.resize_origin = 1
-                    if (self.x() + event.x() <= self.x() + (min(self.wfv_parent.frame_width, self.convert_to_pixels(self.get_frame_size()) / 4)) ):       
+                    if (self.x() + event.x() <= self.x() + self.get_handle_width() ):       
                         self.is_resizing = True
                         self.resize_origin = 0 
                 else:
@@ -286,17 +289,17 @@ class MovableButton(QtWidgets.QPushButton):
                 self.wfv_parent.doc.dirty = True
                 self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
-                    if round(self.convert_to_frames(
-                            event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
-                        if round(self.convert_to_frames(event.x() + self.x())) + 1 <= self.get_right_max():
+                    if self.convert_to_frames(
+                            event.x() + self.x()) + 1 >= self.lipsync_object.start_frame + self.get_min_size():
+                        if self.convert_to_frames(event.x() + self.x()) <= self.get_right_max():
                             self.lipsync_object.end_frame = math.floor(self.convert_to_frames(event.x() + self.x())) + 1
                             self.wfv_parent.doc.dirty = True
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
                 elif self.resize_origin == 0:  # start resize from left side
-                    if round(self.convert_to_frames(event.x() + self.x())) < self.lipsync_object.end_frame:
-                        if round(self.convert_to_frames(event.x() + self.x())) >= self.get_left_max():
-                            self.lipsync_object.start_frame = round(self.convert_to_frames(event.x() + self.x()))
+                    if self.convert_to_frames(event.x() + self.x()) < self.lipsync_object.end_frame:
+                        if self.convert_to_frames(event.x() + self.x()) >= self.get_left_max():
+                            self.lipsync_object.start_frame = math.floor(self.convert_to_frames(event.x() + self.x()))
                             if self.get_frame_size() < self.get_min_size():
                                 self.lipsync_object.start_frame = self.lipsync_object.end_frame - self.get_min_size()
                             new_length = self.convert_to_pixels(self.lipsync_object.end_frame) - self.convert_to_pixels(self.lipsync_object.start_frame)
