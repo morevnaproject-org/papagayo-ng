@@ -335,8 +335,8 @@ class LipsyncFrame:
         num_frames = wfv.waveform_polygon.polygon().boundingRect().width() / wfv.frame_width
         frames_per_top_level = num_frames / len(top_nodes)
         for num, top_node in enumerate(top_nodes):
-            top_node.name.lipsync_object.start_frame = (num * frames_per_top_level) + int(bool(num))
-            top_node.name.lipsync_object.end_frame = (num * frames_per_top_level) + frames_per_top_level
+            top_node.name.lipsync_object.start_frame = round((num * frames_per_top_level) + int(bool(num)))
+            top_node.name.lipsync_object.end_frame = round((num * frames_per_top_level) + frames_per_top_level)
             top_node.name.after_reposition()
             top_node.name.reposition_descendants2(True)
             
