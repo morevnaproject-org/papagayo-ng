@@ -55,7 +55,6 @@ word_outline_col = QtGui.QColor(198, 121, 30)
 phoneme_fill_col = QtGui.QColor(231, 185, 210)
 phoneme_outline_col = QtGui.QColor(173, 114, 146)
 font = QtGui.QFont("Swiss", 6)
-font.setStyleHint(QtGui.QFont.Helvetica)
 
 # default_sample_width = 2
 # default_samples_per_frame = 4
@@ -287,14 +286,13 @@ class MovableButton(QtWidgets.QPushButton):
                 self.is_moving = True
             if self.is_resizing and not self.is_moving:
                 self.wfv_parent.doc.dirty = True
-                self.after_reposition()
                 if self.resize_origin == 1:  # start resize from right side
-                    if self.convert_to_frames(
-                            event.x() + self.x()) + 1 >= self.lipsync_object.start_frame + self.get_min_size():
+                    if round(self.convert_to_frames(
+                             event.x() + self.x())) >= self.lipsync_object.start_frame + self.get_min_size():
                         if self.convert_to_frames(event.x() + self.x()) <= self.get_right_max():
-                            self.lipsync_object.end_frame = math.floor(self.convert_to_frames(event.x() + self.x())) + 1
+                            self.lipsync_object.end_frame = math.ceil(self.convert_to_frames(event.x() + self.x()))
                             self.wfv_parent.doc.dirty = True
-                            self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) -
+                            self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) - 
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
                 elif self.resize_origin == 0:  # start resize from left side
                     if self.convert_to_frames(event.x() + self.x()) < self.lipsync_object.end_frame:
@@ -305,6 +303,7 @@ class MovableButton(QtWidgets.QPushButton):
                             new_length = self.convert_to_pixels(self.lipsync_object.end_frame) - self.convert_to_pixels(self.lipsync_object.start_frame)
                             self.resize(new_length, self.height())
                             self.move(self.convert_to_pixels(self.lipsync_object.start_frame), self.y())
+                self.after_reposition()
             else:
                 self.is_moving = True
                 mime_data = QtCore.QMimeData()
