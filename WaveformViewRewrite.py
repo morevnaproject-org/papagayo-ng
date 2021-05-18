@@ -191,7 +191,7 @@ class MovableButton(QtWidgets.QPushButton):
         else:
             self.setGeometry(self.convert_to_pixels(self.lipsync_object.start_frame), self.y(),
                              self.convert_to_pixels(self.get_frame_size()), self.height())
-        replaced = re.sub('(border-width: \dpx) \d+.*px', r'\1 {}px'.format(str(self.get_handle_width())), self.styleSheet())
+        replaced = re.sub('(border-width: \dpx) \d+px', r'\1 {}px'.format(str(self.get_handle_width())), self.styleSheet())
         self.setStyleSheet(replaced)
         self.update()
 
