@@ -106,7 +106,7 @@ class SoundPlayer:
             self.time = start
             self.audio.play(playchunk.get_array_of_samples(), blocking=False)
 
-            # For some reason it does not like the seperated chunks, so we play it non-
+            # For some reason it does not like the separated chunks, so we play it non-
             # We might be able to use self.audio.get_stream().time to improve accuracy
             for chunks in make_chunks(playchunk, millisecondchunk*1000):
                 self.time += millisecondchunk
