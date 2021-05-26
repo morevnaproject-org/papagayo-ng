@@ -63,6 +63,8 @@ class MouthView(QtWidgets.QGraphicsView):
         else:
             bitmap = self.mouths[list(self.mouths)[0]]["rest"]
         self.scene().clear()
+        bitmap = bitmap.scaled(self.sceneRect().width() or 200, self.sceneRect().height() or 200,
+                               QtCore.Qt.KeepAspectRatio)
         self.scene().addPixmap(bitmap)
         if self.current_phoneme not in self.mouths[self.current_mouth].keys():
             self.scene().addText("Missing Mouth: {0}".format(self.current_phoneme), QtGui.QFont("Swiss", 14))
