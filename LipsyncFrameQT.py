@@ -335,8 +335,8 @@ class LipsyncFrame:
         num_frames = wfv.waveform_polygon.polygon().boundingRect().width() / wfv.frame_width
         frames_per_top_level = num_frames / len(top_nodes)
         for num, top_node in enumerate(top_nodes):
-            top_node.name.lipsync_object.start_frame = (num * frames_per_top_level) + int(bool(num))
-            top_node.name.lipsync_object.end_frame = (num * frames_per_top_level) + frames_per_top_level
+            top_node.name.lipsync_object.start_frame = round((num * frames_per_top_level) + int(bool(num)))
+            top_node.name.lipsync_object.end_frame = round((num * frames_per_top_level) + frames_per_top_level)
             top_node.name.after_reposition()
             top_node.name.reposition_descendants2(True)
             
@@ -659,7 +659,7 @@ class LipsyncFrame:
             if exporter == "MOHO":
                 message = "Export Lipsync Data (MOHO)"
                 default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".dat"
-                wildcard = "Moho switch files (*.dat)|*.dat"
+                wildcard = "Moho switch files (*.dat)"
             elif exporter == "ALELO":
                 fps = int(self.config.value("FPS", 24))
                 if fps != 100:
@@ -691,12 +691,13 @@ class LipsyncFrame:
                 wildcard = "JSON object files (*.json)|*.json"
             file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                                  message,
-                                                                 self.config.value("WorkingDir", get_main_dir()),
-                                                                 wildcard)
+                                                                 default_file,
+                                                                 wildcard,
+                                                                 options=QtWidgets.QFileDialog.DontUseNativeDialog)
             if file_path:
                 self.config.setValue("WorkingDir", os.path.dirname(file_path))
                 if exporter == "MOHO":
-                    self.doc.current_voice.export(file_path)
+                    self.doc.current_voice.export(file_path if ("." in file_path) else file_path + ".dat")
                 elif exporter == "ALELO":
                     self.doc.current_voice.export_alelo(file_path, language, self.langman)
                 elif exporter == "Images":
