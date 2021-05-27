@@ -7,7 +7,7 @@ a = Analysis(['papagayo-ng.py'],
              pathex=['./'],
              binaries=[],
              datas=[],
-             hiddenimports=['PySide2.QtXml', 'PySide2.QtPrintSupport', 'numpy.random.common', 'numpy.random.bounded_integers', 'numpy.random.entropy', 'pkg_resources.py2_warn'],
+             hiddenimports=['PySide2.QtXml', 'PySide2.QtPrintSupport', 'numpy.random.common', 'numpy.random.bounded_integers', 'numpy.random.entropy', 'pkg_resources.py2_warn', 'audioread'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -27,7 +27,8 @@ if not standalone_exe:
               debug=False,
               bootloader_ignore_signals=False,
               strip=False,
-              upx=True,
+              upx=False,
+              upx_exclude="vcruntime140.dll, qwindows.dll",
               runtime_tmpdir=None,
               console=False )
     coll = COLLECT(
@@ -36,7 +37,8 @@ if not standalone_exe:
         a.datas,
         name='papagayo-ng',
         strip=False,
-        upx=True
+        upx=False,
+        upx_exclude="vcruntime140.dll, qwindows.dll"
     )
 else:
     exe = EXE(pyz,
@@ -50,6 +52,7 @@ else:
               debug=False,
               bootloader_ignore_signals=False,
               strip=False,
-              upx=True,
+              upx=False,
+              upx_exclude="vcruntime140.dll, qwindows.dll",
               runtime_tmpdir=None,
               console=False )
