@@ -796,7 +796,7 @@ class LipsyncFrame:
                 self.main_window.mouth_choice.clear()
                 for mouth in mouth_list:
                     self.main_window.mouth_choice.addItem(mouth)
-                self.main_window.mouth_choice.setCurrentIndex(0)
+                self.main_window.mouth_choice.setCurrentIndex(self.main_window.mouth_choice.findText(os.path.basename(voiceimage_path)))
                 self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
 
     def on_reload_dictionary(self, event=None):
