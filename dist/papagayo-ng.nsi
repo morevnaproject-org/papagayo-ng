@@ -10,10 +10,16 @@ SetCompressor /final lzma
 
 !define MUI_ICON "papagayo-ng.ico"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "C:\Users\Stefan\Documents\StefanMain\PycharmProjects\papagayo_clean\dist\papagayo_wide.bmp"
+!define MUI_HEADERIMAGE_BITMAP "papagayo_wide.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "bannerp.bmp"
 
 Icon "papagayo-ng.ico"
 UninstallIcon "papagayo-ng.ico"
+
+#!define MUI_WELCOMEPAGE_TITLE "We can write a nice Title here."
+#!define MUI_WELCOMEPAGE_TEXT "And here we can set a custom text for the Welcome Page."
+
+!insertmacro MUI_PAGE_WELCOME
 
 LicenseData gpl.txt
 !insertmacro MUI_PAGE_LICENSE "gpl.txt"
