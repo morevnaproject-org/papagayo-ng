@@ -22,6 +22,7 @@ import codecs
 import importlib
 import json
 import fnmatch
+from allosaurus.app import read_recognizer
 import os
 
 from Rhubarb import Rhubarb, RhubarbTimeoutException
@@ -711,32 +712,62 @@ class LipsyncDoc:
         self._dirty = False
 
     def auto_recognize_phoneme(self):
-        try:
-            phonemes = Rhubarb(self.soundPath).run()
-            if not phonemes:
-                return
-            end_frame = math.floor(self.fps * phonemes[-1]['end'])
+        model = read_recognizer()
+        results = model.recognize(self.soundPath, timestamp=True, lang_id="eng")
+        ipa_list = []
+        if results:
+            ipa_convert = json.load(open("ipa_cmu.json", encoding="utf8"))
+            for line in results.splitlines():
+                phone_dict = {"start": float(line.split()[0]), "duration": float(line.split()[1]),
+                              "phoneme": ipa_convert.get(line.split()[2])}
+                ipa_list.append(phone_dict)
+
+            end_frame = math.floor(self.fps * (ipa_list[-1]["start"] + ipa_list[-1]["duration"]))
             phrase = LipsyncPhrase()
-            phrase.text = 'Auto detection rhubarb'
+            phrase.text = 'Auto detection Allosaurus'
             phrase.start_frame = 0
             phrase.end_frame = end_frame
 
             word = LipsyncWord()
-            word.text = 'rhubarb'
+            word.text = 'Allosaurus'
             word.start_frame = 0
             word.end_frame = end_frame
 
-            for phoneme in phonemes:
+            for phoneme in ipa_list:
                 pg_phoneme = LipsyncPhoneme()
                 pg_phoneme.frame = math.floor(self.fps * phoneme['start'])
-                pg_phoneme.text = phoneme['value'] if phoneme['value'] != 'X' else 'rest'
+                pg_phoneme.text = phoneme['phoneme'] if phoneme['phoneme'] is not None else 'rest'
                 word.phonemes.append(pg_phoneme)
 
             phrase.words.append(word)
             self.current_voice.phrases.append(phrase)
+        else:
+            try:
+                phonemes = Rhubarb(self.soundPath).run()
+                if not phonemes:
+                    return
+                end_frame = math.floor(self.fps * phonemes[-1]['end'])
+                phrase = LipsyncPhrase()
+                phrase.text = 'Auto detection rhubarb'
+                phrase.start_frame = 0
+                phrase.end_frame = end_frame
 
-        except RhubarbTimeoutException:
-            pass
+                word = LipsyncWord()
+                word.text = 'rhubarb'
+                word.start_frame = 0
+                word.end_frame = end_frame
+
+                for phoneme in phonemes:
+                    pg_phoneme = LipsyncPhoneme()
+                    pg_phoneme.frame = math.floor(self.fps * phoneme['start'])
+                    pg_phoneme.text = phoneme['value'] if phoneme['value'] != 'X' else 'rest'
+                    word.phonemes.append(pg_phoneme)
+
+                phrase.words.append(word)
+                self.current_voice.phrases.append(phrase)
+
+            except RhubarbTimeoutException:
+                pass
 
 
 class PhonemeSet:
