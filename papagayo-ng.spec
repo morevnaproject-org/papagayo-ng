@@ -1,4 +1,7 @@
 # -*- mode: python -*-
+import shutil
+import os
+import sys
 standalone_exe = True
 block_cipher = None
 
@@ -56,3 +59,17 @@ else:
               upx_exclude="vcruntime140.dll, qwindows.dll",
               runtime_tmpdir=None,
               console=False )
+
+installer_folder = "./installer_files"
+shutil.rmtree(installer_folder)
+os.mkdir(installer_folder)
+if sys.platform == "win32":
+    shutil.move("./dist/papagayo-ng.exe", os.path.join(installer_folder , "papagayo-ng.exe"))
+else:
+    shutil.move("./dist/papagayo-ng", os.path.join(installer_folder , "papagayo-ng"))
+shutil.copytree("./breakdowns", os.path.join(installer_folder , "breakdowns"))
+shutil.copytree("./phonemes", os.path.join(installer_folder , "phonemes"))
+shutil.copytree("./rsrc", os.path.join(installer_folder , "rsrc"))
+shutil.copytree("./rhubarb", os.path.join(installer_folder , "rhubarb"))
+shutil.copy("./papagayo-ng.nsi", os.path.join(installer_folder , "papagayo-ng.nsi"))
+shutil.copy("./papagayo-ng.ico", os.path.join(installer_folder , "papagayo-ng.ico"))
