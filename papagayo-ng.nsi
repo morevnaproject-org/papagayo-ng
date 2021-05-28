@@ -4,21 +4,32 @@ Name "Papagayo-NG"
 
 SetCompressor /final lzma
 !include MUI2.nsh
-!insertmacro MUI_LANGUAGE "English"
+
 
 !define MUI_PAGE_HEADER_TEXT "Papagayo-NG"
 
-Icon "papagayo-ng.ico"
-UninstallIcon "papagayo-ng.ico"
+!define MUI_ICON ".\papagayo-ng.ico"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "..\nsis_extra_files\papagayo_wide.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "..\nsis_extra_files\bannerp.bmp"
 
-LicenseData gpl.txt
-!insertmacro MUI_PAGE_LICENSE "gpl.txt"
+Icon ".\papagayo-ng.ico"
+UninstallIcon ".\papagayo-ng.ico"
+
+#!define MUI_WELCOMEPAGE_TITLE "We can write a nice Title here."
+#!define MUI_WELCOMEPAGE_TEXT "And here we can set a custom text for the Welcome Page."
+
+!insertmacro MUI_PAGE_WELCOME
+
+LicenseData "..\nsis_extra_files\gpl.txt"
+!insertmacro MUI_PAGE_LICENSE "..\nsis_extra_files\gpl.txt"
 
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_LANGUAGE "English"
 
 Section "Papagayo-NG (required)"
   SectionIn RO  
