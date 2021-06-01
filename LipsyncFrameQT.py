@@ -21,6 +21,7 @@
 
 # import os
 # from utilities import Worker, WorkerSignals
+import os
 import time
 
 from PySide2.QtCore import QFile
@@ -268,11 +269,14 @@ class LipsyncFrame:
 
     def download_ffmpeg(self, progress_callback):
         ffmpeg_binary = "ffmpeg.exe"
+        ffprobe_binary = "ffprobe.exe"
         ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
         if platform.system() == "Darwin":
             ffmpeg_binary = "ffmpeg"
+            ffprobe_binary = "ffprobe"
             ffmpeg_build_url = "https://evermeet.cx/ffmpeg/getrelease/zip"
         ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
+        ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
         if os.path.exists(ffmpeg_path):
             return
         else:
@@ -301,6 +305,11 @@ class LipsyncFrame:
                             ffmpeg_file = open(ffmpeg_path, "wb")
                             ffmpeg_file.write(ffmpeg_file_content)
                             ffmpeg_file.close()
+                        elif ffprobe_binary in zfile.filename:
+                            ffprobe_file_content = ffmpeg_zip.read(zfile.filename)
+                            ffprobe_file = open(ffprobe_path, "wb")
+                            ffprobe_file.write(ffprobe_file_content)
+                            ffprobe_file.close()
             return
 
     def load_ui_widget(self, ui_filename, parent=None):
