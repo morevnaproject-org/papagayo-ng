@@ -1,3 +1,5 @@
+import string
+
 from allosaurus.app import read_recognizer
 import json
 import pydub
@@ -19,14 +21,18 @@ def convert_to_wav(sound_path):
 def recognize_allosaurus(sound_path):
     temp_file = convert_to_wav(sound_path)
     model = read_recognizer()
-    results = model.recognize(temp_file, timestamp=True, lang_id="eng", emit=1.5)
+    results = model.recognize(temp_file, timestamp=True, lang_id="eng", emit=1)
     ipa_list = []
     os.remove(temp_file)
     if results:
         ipa_convert = json.load(open("ipa_cmu.json", encoding="utf8"))
+        stress_symbols = [*string.digits, r"!", r"+", r"/", r"#", r"ː", r"ʰ"]
         for line in results.splitlines():
-            phone_dict = {"start": float(line.split()[0]), "duration": float(line.split()[1]),
-                          "phoneme": ipa_convert.get(line.split()[2])}
+            start, dur, phone = line.split()
+            phone = "".join(e for e in phone if e not in stress_symbols)
+            if phone not in ipa_convert:
+                print("Missing conversion for: " + phone)
+            phone_dict = {"start": float(start), "duration": float(dur), "phoneme": ipa_convert.get(phone)}
             ipa_list.append(phone_dict)
         return ipa_list
     else:
