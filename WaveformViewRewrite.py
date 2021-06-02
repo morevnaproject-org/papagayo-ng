@@ -379,7 +379,6 @@ class MovableButton(QtWidgets.QPushButton):
                 cur_frame = int(self.wfv_parent.doc.sound.current_time() * self.wfv_parent.doc.fps)
                 if old_cur_frame != cur_frame:
                     old_cur_frame = cur_frame
-
                     main_window.mouth_view.set_frame(old_cur_frame)
                     self.wfv_parent.set_frame(old_cur_frame)
                     try:
@@ -396,6 +395,9 @@ class MovableButton(QtWidgets.QPushButton):
             main_window.statusbar.showMessage("Stopped")
             main_window.waveform_view.horizontalScrollBar().setValue(main_window.waveform_view.scroll_position)
             main_window.waveform_view.update()
+        elif self.is_phoneme():
+            main_window = self.wfv_parent.parentWidget().parentWidget().parentWidget()  # lol
+            main_window.mouth_view.set_frame(self.lipsync_object.frame)
 
     def mouseReleaseEvent(self, event):
         if self.is_moving:

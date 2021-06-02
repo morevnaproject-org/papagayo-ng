@@ -712,9 +712,10 @@ class LipsyncDoc:
         self._dirty = False
 
     def auto_recognize_phoneme(self):
-        results = auto_recognition.recognize_allosaurus(self.soundPath)
+        allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
+        results = allo_recognizer.recognize_allosaurus()
         if results:
-            end_frame = math.floor(self.fps * (results[-1]["start"] + results[-1]["duration"]))
+            end_frame = math.floor(self.fps * (results[-1]["start"] + results[-1]["duration"] * 2))
             phrase = LipsyncPhrase()
             phrase.text = 'Auto detection Allosaurus'
             phrase.start_frame = 0
@@ -724,10 +725,14 @@ class LipsyncDoc:
             word.text = 'Allosaurus'
             word.start_frame = 0
             word.end_frame = end_frame
-
+            previous_frame_pos = -1
             for phoneme in results:
                 pg_phoneme = LipsyncPhoneme()
-                pg_phoneme.frame = math.floor(self.fps * phoneme['start'])
+                current_frame_pos = math.floor(self.fps * phoneme['start'])
+                if current_frame_pos == previous_frame_pos:
+                    current_frame_pos += 1
+                pg_phoneme.frame = current_frame_pos
+                previous_frame_pos = current_frame_pos
                 pg_phoneme.text = phoneme['phoneme'] if phoneme['phoneme'] is not None else 'rest'
                 word.phonemes.append(pg_phoneme)
 
