@@ -1,5 +1,6 @@
 import string
 
+import PySide2.QtCore as QtCore
 from allosaurus.app import read_recognizer
 import json
 import pydub
@@ -9,6 +10,7 @@ import tempfile
 
 class AutoRecognize:
     def __init__(self, sound_path):
+        self.settings = QtCore.QSettings("Lost Marble", "Papagayo-NG")
         self.temp_wave_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
         self.convert_to_wav(sound_path)
 
@@ -22,7 +24,7 @@ class AutoRecognize:
 
     def recognize_allosaurus(self):
         model = read_recognizer()
-        results = model.recognize(self.temp_wave_file, timestamp=True, lang_id="eng", emit=1)
+        results = model.recognize(self.temp_wave_file, timestamp=True, lang_id=self.settings.value("allo_lang_id", "eng"), emit=float(self.settings.value("allo_emission", 1.0)))
         ipa_list = []
 
         if results:

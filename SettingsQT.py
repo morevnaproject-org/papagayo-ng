@@ -45,6 +45,8 @@ class SettingsWindow:
         self.main_window.misc_2.clicked.connect(self.change_tab)
         self.main_window.voice_rec.clicked.connect(self.change_tab)
         self.main_window.delete_settings.clicked.connect(self.delete_settings)
+        self.main_window.accepted.connect(self.accepted)
+        self.load_settings_to_gui()
         #self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
         #self.main_window.about_ok_button.clicked.connect(self.close)
 
@@ -57,7 +59,6 @@ class SettingsWindow:
         return self.ui
 
     def change_tab(self, event=None):
-        print(self.settings.allKeys())
         if self.main_window.graphical_2.isChecked():
             print("Graphics")
             self.main_window.settings_options.setCurrentIndex(1)
@@ -75,7 +76,14 @@ class SettingsWindow:
         self.settings.clear()
 
     def load_settings_to_gui(self):
-        print(self.settings.allKeys())
+        self.main_window.fps_value.setValue(int(self.settings.value("LastFPS", 24)))
+        self.main_window.lang_id_value.setText(self.settings.value("allo_lang_id", "eng"))
+        self.main_window.voice_emission_value.setValue(float(self.settings.value("allo_emission", 1.0)))
+
+    def accepted(self, event=None):
+        self.settings.setValue("LastFPS", self.main_window.fps_value.value())
+        self.settings.setValue("allo_lang_id", self.main_window.lang_id_value.text())
+        self.settings.setValue("allo_emission", self.main_window.voice_emission_value.value())
 
     def close(self):
         self.main_window.close()
