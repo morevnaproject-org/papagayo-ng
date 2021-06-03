@@ -43,6 +43,7 @@ from MouthViewQT import MouthView
 # end wxGlade
 
 from AboutBoxQT import AboutBox
+from SettingsQT import SettingsWindow
 from LipsyncDoc import *
 
 app_title = "Papagayo-NG"
@@ -99,6 +100,7 @@ class LipsyncFrame:
         self.ui = None
         self.doc = None
         self.about_dlg = None
+        self.settings_dlg = None
         self.ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
         self.main_window = self.load_ui_widget(self.ui_path)
         self.main_window.setWindowTitle("%s" % app_title)
@@ -201,6 +203,7 @@ class LipsyncFrame:
         self.main_window.action_zoom_in.triggered.connect(self.main_window.waveform_view.on_zoom_in)
         self.main_window.action_zoom_out.triggered.connect(self.main_window.waveform_view.on_zoom_out)
         self.main_window.action_reset_zoom.triggered.connect(self.main_window.waveform_view.on_zoom_reset)
+        self.main_window.action_settings.triggered.connect(self.show_settings)
 
         self.main_window.reload_dict_button.clicked.connect(self.on_reload_dictionary)
         self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(self.main_window.waveform_view.on_slider_change)
@@ -354,31 +357,32 @@ class LipsyncFrame:
         print('FPS changed to: {0}'.format(str(new_fps_value)))
         old_fps_value = self.doc.fps
         resize_multiplier = new_fps_value / old_fps_value
-        self.doc.fps = new_fps_value
-        wfv = self.main_window.waveform_view
-        # wfv.default_samples_per_frame *= resize_multiplier
-        # wfv.default_sample_width *= resize_multiplier
-        #
-        # wfv.sample_width = wfv.default_sample_width
-        # wfv.samples_per_frame = wfv.default_samples_per_frame
-        wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
-        # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
-        #
-        # for node in wfv.main_node.descendants:
-        #     node.name.after_reposition()
-        #     node.name.fit_text_to_size()
-        # #self.main_window.waveform_view.recalc_waveform()
-        # #self.main_window.waveform_view.create_waveform()
-        # if wfv.temp_play_marker:
-        #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
-        wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
-                                 wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
-        wfv.setSceneRect(wfv.scene().sceneRect())
-        wfv.scroll_position *= resize_multiplier
-        wfv.scroll_position = 0
-        wfv.horizontalScrollBar().setValue(wfv.scroll_position)
-        wfv.recalc_waveform()
-        wfv.create_waveform()
+        if resize_multiplier != 1:
+            self.doc.fps = new_fps_value
+            wfv = self.main_window.waveform_view
+            # wfv.default_samples_per_frame *= resize_multiplier
+            # wfv.default_sample_width *= resize_multiplier
+            #
+            # wfv.sample_width = wfv.default_sample_width
+            # wfv.samples_per_frame = wfv.default_samples_per_frame
+            wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
+            # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
+            #
+            # for node in wfv.main_node.descendants:
+            #     node.name.after_reposition()
+            #     node.name.fit_text_to_size()
+            # #self.main_window.waveform_view.recalc_waveform()
+            # #self.main_window.waveform_view.create_waveform()
+            # if wfv.temp_play_marker:
+            #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
+
+            wfv.start_recalc(True)
+            wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
+                                     wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
+            wfv.setSceneRect(wfv.scene().sceneRect())
+            wfv.scroll_position *= resize_multiplier
+            wfv.scroll_position = 0
+            wfv.horizontalScrollBar().setValue(wfv.scroll_position)
 
     def close_doc_ok(self):
         if self.doc is not None:
@@ -563,6 +567,10 @@ class LipsyncFrame:
     def on_about(self, event=None):
         self.about_dlg = AboutBox()
         self.about_dlg.main_window.show()
+
+    def show_settings(self, event=None):
+        self.settings_dlg = SettingsWindow()
+        self.settings_dlg.main_window.show()
 
     def on_play(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):

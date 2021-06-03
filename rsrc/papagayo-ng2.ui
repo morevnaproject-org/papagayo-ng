@@ -626,6 +626,7 @@
     <addaction name="action_open"/>
     <addaction name="action_save"/>
     <addaction name="action_save_as"/>
+    <addaction name="action_settings"/>
     <addaction name="action_exit"/>
    </widget>
    <widget class="QMenu" name="menu_edit">
@@ -801,6 +802,11 @@
    </property>
    <property name="text">
     <string>ResetZoom</string>
+   </property>
+  </action>
+  <action name="action_settings">
+   <property name="text">
+    <string>&amp;Settings</string>
    </property>
   </action>
  </widget>

@@ -50,7 +50,7 @@
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>30</x>
      <y>10</y>
      <width>481</width>
      <height>521</height>
@@ -66,20 +66,20 @@
        <enum>QFrame::Plain</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="general">
        <widget class="QPushButton" name="pushButton">
         <property name="geometry">
          <rect>
-          <x>100</x>
-          <y>90</y>
+          <x>290</x>
+          <y>460</y>
           <width>75</width>
           <height>23</height>
          </rect>
         </property>
         <property name="text">
-         <string>PushButton</string>
+         <string/>
         </property>
        </widget>
       </widget>
@@ -153,6 +153,19 @@
          <string>CheckBox</string>
         </property>
        </widget>
+       <widget class="QPushButton" name="delete_settings">
+        <property name="geometry">
+         <rect>
+          <x>244</x>
+          <y>460</y>
+          <width>111</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Delete All Settings</string>
+        </property>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -189,7 +202,7 @@
          <bool>true</bool>
         </property>
         <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonIconOnly</enum>
+         <enum>Qt::ToolButtonTextUnderIcon</enum>
         </property>
         <property name="autoRaise">
          <bool>false</bool>
@@ -220,12 +233,15 @@
         <property name="autoExclusive">
          <bool>true</bool>
         </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonTextUnderIcon</enum>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QToolButton" name="voice_rec">
         <property name="text">
-         <string>Autorecognition</string>
+         <string>Voicerecognition</string>
         </property>
         <property name="icon">
          <iconset resource="../qt-icons.qrc">
@@ -242,6 +258,9 @@
         </property>
         <property name="autoExclusive">
          <bool>true</bool>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonTextUnderIcon</enum>
         </property>
        </widget>
       </item>
@@ -277,6 +296,9 @@
         </property>
         <property name="autoExclusive">
          <bool>true</bool>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonTextUnderIcon</enum>
         </property>
        </widget>
       </item>
