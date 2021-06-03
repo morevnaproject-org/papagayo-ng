@@ -395,9 +395,6 @@ class MovableButton(QtWidgets.QPushButton):
             main_window.statusbar.showMessage("Stopped")
             main_window.waveform_view.horizontalScrollBar().setValue(main_window.waveform_view.scroll_position)
             main_window.waveform_view.update()
-        elif self.is_phoneme():
-            main_window = self.wfv_parent.parentWidget().parentWidget().parentWidget()  # lol
-            main_window.mouth_view.set_frame(self.lipsync_object.frame)
 
     def mouseReleaseEvent(self, event):
         if self.is_moving:
@@ -405,6 +402,9 @@ class MovableButton(QtWidgets.QPushButton):
         if self.is_resizing:
             self.reposition_descendants2(True)
             self.is_resizing = False
+        if self.is_phoneme():
+            main_window = self.wfv_parent.parentWidget().parentWidget().parentWidget()  # lol
+            main_window.mouth_view.set_phoneme_picture(self.lipsync_object.text)
 
     def set_tags(self, new_taglist):
         self.lipsync_object.tags = new_taglist
