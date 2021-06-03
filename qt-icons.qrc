@@ -1,5 +1,11 @@
 <RCC>
   <qresource>
+    <file>rsrc/list-settings-line.png</file>
+    <file>rsrc/voice-recognition-fill.png</file>
+    <file>rsrc/eye-2-line.png</file>
+    <file>rsrc/settings-3-fill.png</file>
+    <file>rsrc/user-voice-line.png</file>
+    <file>rsrc/window-fill.png</file>
     <file>rsrc/window_icon.png</file>
     <file>rsrc/open.png</file>
     <file>rsrc/papagayo-ng.ui</file>
