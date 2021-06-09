@@ -52,6 +52,99 @@ strip_symbols += "'"
 
 ###############################################################
 
+class LanguageManager:
+    __shared_state = {}
+
+    def __init__(self):
+        self.__dict__ = self.__shared_state
+        self.language_table = {}
+        self.phoneme_dictionary = {}
+        self.raw_dictionary = {}
+        self.current_language = ""
+
+        self.export_conversion = {}
+        self.init_languages()
+
+    def load_dictionary(self, path):
+        try:
+            in_file = open(path, 'r')
+        except FileNotFoundError:
+            print("Unable to open phoneme dictionary!:{}".format(path))
+            return
+        new_cmu_version = False
+        if in_file.readline().startswith(";;; # CMUdict"):
+            new_cmu_version = True
+        # process dictionary entries
+        for line in in_file.readlines():
+            if not new_cmu_version:
+                if line[0] == '#':
+                    continue  # skip comments in the dictionary
+            else:
+                if line.startswith(";;;"):
+                    continue
+            # strip out leading/trailing whitespace
+            line.strip()
+            line = line.rstrip('\r\n')
+
+            # split into components
+            entry = line.split()
+            if len(entry) == 0:
+                continue
+            # check if this is a duplicate word (alternate transcriptions end with a number in parentheses) - if so, throw it out
+            if entry[0].endswith(')'):
+                continue
+            # add this entry to the in-memory dictionary
+            for i in range(len(entry)):
+                if i == 0:
+                    self.raw_dictionary[entry[0]] = []
+                else:
+                    rawentry = entry[i]
+                    self.raw_dictionary[entry[0]].append(rawentry)
+        in_file.close()
+        in_file = None
+
+    def load_language(self, language_config, force=False):
+        if self.current_language == language_config["label"] and not force:
+            return
+        self.current_language = language_config["label"]
+
+        if "dictionaries" in language_config:
+            for dictionary in language_config["dictionaries"]:
+                self.load_dictionary(os.path.join(get_main_dir(),
+                                                  language_config["location"],
+                                                  language_config["dictionaries"][dictionary]))
+
+    def language_details(self, dirname, names):
+        if "language.ini" in names:
+            config = configparser.ConfigParser()
+            config.read(os.path.join(dirname, "language.ini"))
+            label = config.get("configuration", "label")
+            ltype = config.get("configuration", "type")
+            details = {"label": label, "type": ltype, "location": dirname}
+            if ltype == "breakdown":
+                details["breakdown_class"] = config.get("configuration", "breakdown_class")
+                self.language_table[label] = details
+            elif ltype == "dictionary":
+                try:
+                    details["case"] = config.get("configuration", "case")
+                except:
+                    details["case"] = "upper"
+                details["dictionaries"] = {}
+
+                if config.has_section('dictionaries'):
+                    for key, value in config.items('dictionaries'):
+                        details["dictionaries"][key] = value
+                self.language_table[label] = details
+            else:
+                print("unknown type ignored language not added to table")
+
+    def init_languages(self):
+        if len(self.language_table) > 0:
+            return
+        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc", "languages")):
+            if "language.ini" in files:
+                self.language_details(path, files)
+
 class LipsyncPhoneme:
     def __init__(self, text="", frame=0):
         self.text = text
@@ -528,7 +621,7 @@ class LipsyncVoice:
 ###############################################################
 
 class LipsyncDoc:
-    def __init__(self, langman, parent):
+    def __init__(self, langman: LanguageManager, parent):
         self._dirty = False
         self.name = "Untitled"
         self.path = None
@@ -711,6 +804,32 @@ class LipsyncDoc:
         out_file.close()
         self._dirty = False
 
+    def convert_to_phonemeset(self):
+        # The base set is the CMU39 set, we will convert everything to that and from it to the desired one for now
+        new_set = self.parent.main_window.phoneme_set.currentText()
+        old_set = self.parent.phonemeset.selected_set
+        if old_set != new_set:
+            if old_set != "CMU_39":
+                conversion_map_to_cmu = {v: k for k, v in self.parent.phonemeset.conversion.items()}
+                for voice in self.voices:
+                    for phrase in voice.phrases:
+                        for word in phrase.words:
+                            for phoneme in word.phonemes:
+                                if phoneme.text != "rest":
+                                    phoneme.text = conversion_map_to_cmu[phoneme.text]
+            new_map = PhonemeSet()
+            new_map.load(new_set)
+            conversion_map_from_cmu = new_map.conversion
+
+            for voice in self.voices:
+                for phrase in voice.phrases:
+                    for word in phrase.words:
+                        for phoneme in word.phonemes:
+                            if phoneme.text != "rest":
+                                phoneme.text = conversion_map_from_cmu[phoneme.text]
+            self.dirty = True
+            self.parent.main_window.waveform_view.set_document(self, force=True)
+
     def auto_recognize_phoneme(self):
         allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
         results = allo_recognizer.recognize_allosaurus()
@@ -738,6 +857,9 @@ class LipsyncDoc:
 
             phrase.words.append(word)
             self.current_voice.phrases.append(phrase)
+            self.parent.phonemeset.selected_set = self.parent.phonemeset.load("CMU_39")
+            current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
+            self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
         else:
             try:
                 phonemes = Rhubarb(self.soundPath).run()
@@ -776,7 +898,6 @@ class PhonemeSet:
         self.conversion = {}
         self.alternatives = []
         for file in os.listdir(os.path.join(get_main_dir(), "phonemes")):
-            print(file)
             if fnmatch.fnmatch(file, '*.json'):
                 self.alternatives.append(file.split(".")[0])
 
@@ -796,97 +917,3 @@ class PhonemeSet:
         else:
             print(("Can't find phonemeset! ({})".format(name)))
             return False
-
-
-class LanguageManager:
-    __shared_state = {}
-
-    def __init__(self):
-        self.__dict__ = self.__shared_state
-        self.language_table = {}
-        self.phoneme_dictionary = {}
-        self.raw_dictionary = {}
-        self.current_language = ""
-
-        self.export_conversion = {}
-        self.init_languages()
-
-    def load_dictionary(self, path):
-        try:
-            in_file = open(path, 'r')
-        except FileNotFoundError:
-            print("Unable to open phoneme dictionary!:{}".format(path))
-            return
-        new_cmu_version = False
-        if in_file.readline().startswith(";;; # CMUdict"):
-            new_cmu_version = True
-        # process dictionary entries
-        for line in in_file.readlines():
-            if not new_cmu_version:
-                if line[0] == '#':
-                    continue  # skip comments in the dictionary
-            else:
-                if line.startswith(";;;"):
-                    continue
-            # strip out leading/trailing whitespace
-            line.strip()
-            line = line.rstrip('\r\n')
-
-            # split into components
-            entry = line.split()
-            if len(entry) == 0:
-                continue
-            # check if this is a duplicate word (alternate transcriptions end with a number in parentheses) - if so, throw it out
-            if entry[0].endswith(')'):
-                continue
-            # add this entry to the in-memory dictionary
-            for i in range(len(entry)):
-                if i == 0:
-                    self.raw_dictionary[entry[0]] = []
-                else:
-                    rawentry = entry[i]
-                    self.raw_dictionary[entry[0]].append(rawentry)
-        in_file.close()
-        in_file = None
-
-    def load_language(self, language_config, force=False):
-        if self.current_language == language_config["label"] and not force:
-            return
-        self.current_language = language_config["label"]
-
-        if "dictionaries" in language_config:
-            for dictionary in language_config["dictionaries"]:
-                self.load_dictionary(os.path.join(get_main_dir(),
-                                                  language_config["location"],
-                                                  language_config["dictionaries"][dictionary]))
-
-    def language_details(self, dirname, names):
-        if "language.ini" in names:
-            config = configparser.ConfigParser()
-            config.read(os.path.join(dirname, "language.ini"))
-            label = config.get("configuration", "label")
-            ltype = config.get("configuration", "type")
-            details = {"label": label, "type": ltype, "location": dirname}
-            if ltype == "breakdown":
-                details["breakdown_class"] = config.get("configuration", "breakdown_class")
-                self.language_table[label] = details
-            elif ltype == "dictionary":
-                try:
-                    details["case"] = config.get("configuration", "case")
-                except:
-                    details["case"] = "upper"
-                details["dictionaries"] = {}
-
-                if config.has_section('dictionaries'):
-                    for key, value in config.items('dictionaries'):
-                        details["dictionaries"][key] = value
-                self.language_table[label] = details
-            else:
-                print("unknown type ignored language not added to table")
-
-    def init_languages(self):
-        if len(self.language_table) > 0:
-            return
-        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc", "languages")):
-            if "language.ini" in files:
-                self.language_details(path, files)

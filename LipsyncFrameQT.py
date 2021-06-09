@@ -236,6 +236,7 @@ class LipsyncFrame:
                 self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
                 self.ffmpeg_action.triggered.connect(self.start_download)
                 self.main_window.menubar.addAction(self.ffmpeg_action)
+        self.phoneme_convert = QtWidgets.QAction("Convert Phonemes")
         self.cur_frame = 0
         self.timer = None
         self.wv_height = 1
@@ -479,6 +480,8 @@ class LipsyncFrame:
             self.main_window.action_save_as.setEnabled(True)
             self.main_window.menu_edit.setEnabled(True)
             self.main_window.choose_imageset_button.setEnabled(False)
+            self.phoneme_convert.triggered.connect(self.doc.convert_to_phonemeset)
+            self.main_window.menubar.addAction(self.phoneme_convert)
             if self.doc.sound is not None:
                 self.main_window.action_play.setEnabled(True)
                 # self.main_window.action_stop.setEnabled(True)

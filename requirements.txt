@@ -1,6 +1,8 @@
-sounddevice>=0.3.13
-cffi>=1.12.2
-numpy>=1.16.2
-pydub>=0.23.1
-anytree>=2.6.0
-PySide2>=5.12.3
+sounddevice
+cffi
+numpy
+pydub
+anytree
+PySide2
+audioread
+allosaurus
