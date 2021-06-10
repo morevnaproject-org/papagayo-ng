@@ -832,7 +832,7 @@ class LipsyncDoc:
 
     def auto_recognize_phoneme(self):
         allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
-        results = allo_recognizer.recognize_allosaurus()
+        results, peaks = allo_recognizer.recognize_allosaurus()
         if results:
             end_frame = math.floor(self.fps * (results[-1]["start"] + results[-1]["duration"] * 2))
             phrase = LipsyncPhrase()
@@ -840,22 +840,28 @@ class LipsyncDoc:
             phrase.start_frame = 0
             phrase.end_frame = end_frame
 
-            word = LipsyncWord()
-            word.text = 'Allosaurus'
-            word.start_frame = 0
-            word.end_frame = end_frame
-            previous_frame_pos = -1
-            for phoneme in results:
-                pg_phoneme = LipsyncPhoneme()
-                current_frame_pos = math.floor(self.fps * phoneme['start'])
-                if current_frame_pos == previous_frame_pos:
-                    current_frame_pos += 1
-                pg_phoneme.frame = current_frame_pos
-                previous_frame_pos = current_frame_pos
-                pg_phoneme.text = phoneme['phoneme'] if phoneme['phoneme'] is not None else 'rest'
-                word.phonemes.append(pg_phoneme)
+            for i in range(len(peaks) - 2):
+                peak_left = peaks[i]
+                peak_right = peaks[i + 1]
 
-            phrase.words.append(word)
+                word_chunk = results[peak_left:peak_right]
+                word = LipsyncWord()
+
+                word.text = "".join(letter["phoneme"] for letter in word_chunk)
+                word.start_frame = math.floor(self.fps * results[peak_left]["start"])
+                word.end_frame = math.floor(self.fps * results[peak_right]["start"])
+                previous_frame_pos = math.floor(self.fps * results[peak_left]["start"]) - 1
+                for phoneme in word_chunk:
+                    current_frame_pos = math.floor(self.fps * phoneme['start'])
+                    if current_frame_pos == previous_frame_pos:
+                        current_frame_pos += 1
+                    pg_phoneme = LipsyncPhoneme()
+                    pg_phoneme.frame = current_frame_pos
+                    previous_frame_pos = current_frame_pos
+                    pg_phoneme.text = phoneme['phoneme'] if phoneme['phoneme'] is not None else 'rest'
+                    word.phonemes.append(pg_phoneme)
+                word.end_frame = previous_frame_pos + 1
+                phrase.words.append(word)
             self.current_voice.phrases.append(phrase)
             self.parent.phonemeset.selected_set = self.parent.phonemeset.load("CMU_39")
             current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
