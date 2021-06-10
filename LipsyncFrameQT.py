@@ -222,6 +222,7 @@ class LipsyncFrame:
         self.main_window.add_tag.clicked.connect(self.add_tag)
         self.main_window.tag_entry.returnPressed.connect(self.add_tag)
         self.main_window.remove_tag.clicked.connect(self.remove_tag)
+        self.main_window.apply_voice_change.clicked.connect(self.change_voice_for_selection)
         self.tab_add_button.clicked.connect(self.on_new_voice)
         self.tab_remove_button.clicked.connect(self.on_del_voice)
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
@@ -325,6 +326,12 @@ class LipsyncFrame:
         self.ui = self.loader.load(file, parent)
         file.close()
         return self.ui
+
+    def change_voice_for_selection(self):
+        print("Currently Selected Object: " + self.main_window.waveform_view.currently_selected_object.title)
+        print("Corresponding LipsyncObject: " + str(vars(self.main_window.waveform_view.currently_selected_object.lipsync_object)))
+        print("Current Voice: " + self.doc.current_voice.name)
+        print("New Voice: " + self.main_window.voice_for_selection.currentText())
 
     def add_tag(self):
         if self.main_window.tag_entry.text():
@@ -489,6 +496,8 @@ class LipsyncFrame:
                 self.main_window.action_zoom_out.setEnabled(True)
                 self.main_window.action_reset_zoom.setEnabled(True)
             self.main_window.tag_list_group.setEnabled(False)
+            list_of_voices = [voice.name for voice in self.doc.voices]
+            self.main_window.voice_for_selection.addItems(list_of_voices)
 
             first_entry = True
             for voice in self.doc.voices:
@@ -740,6 +749,7 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
+        self.main_window.voice_for_selection.setCurrentIndex(self.main_window.current_voice.tabBar().currentIndex())
         self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
@@ -770,11 +780,14 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
+        list_of_voices = [voice.name for voice in self.doc.voices]
+        self.main_window.voice_for_selection.clear()
+        self.main_window.voice_for_selection.addItems(list_of_voices)
+        self.main_window.voice_for_selection.setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
         self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
-
 
     def on_del_voice(self, event=None):
         if (not self.doc) or (len(self.doc.voices) == 1):
@@ -790,6 +803,9 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().currentIndex())
+        list_of_voices = [voice.name for voice in self.doc.voices]
+        self.main_window.voice_for_selection.clear()
+        self.main_window.voice_for_selection.addItems(list_of_voices)
         self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
