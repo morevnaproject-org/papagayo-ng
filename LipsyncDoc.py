@@ -890,6 +890,9 @@ class LipsyncDoc:
 
                 phrase.words.append(word)
                 self.current_voice.phrases.append(phrase)
+                self.parent.phonemeset.selected_set = self.parent.phonemeset.load("rhubarb")
+                current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
+                self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
 
             except RhubarbTimeoutException:
                 pass
