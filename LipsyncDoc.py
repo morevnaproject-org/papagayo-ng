@@ -847,7 +847,7 @@ class LipsyncDoc:
                 word_chunk = results[peak_left:peak_right]
                 word = LipsyncWord()
 
-                word.text = "".join(letter["phoneme"] for letter in word_chunk)
+                word.text = "".join(letter["phoneme"] if letter["phoneme"] is not None else "rest" for letter in word_chunk)
                 word.start_frame = math.floor(self.fps * results[peak_left]["start"])
                 word.end_frame = math.floor(self.fps * results[peak_right]["start"])
                 previous_frame_pos = math.floor(self.fps * results[peak_left]["start"]) - 1
