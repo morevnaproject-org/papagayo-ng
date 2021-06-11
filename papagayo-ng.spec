@@ -18,6 +18,12 @@ a = Analysis(['papagayo-ng.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+# Avoid warning
+for d in a.datas:
+    if '_C.cp39-win_amd64.pyd' in d[0]:
+        a.datas.remove(d)
+        break
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 if not standalone_exe:
