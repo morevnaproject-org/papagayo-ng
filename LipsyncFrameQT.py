@@ -230,10 +230,13 @@ class LipsyncFrame:
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
         if platform.system() in ["Windows", "Darwin"]:
             ffmpeg_binary = "ffmpeg.exe"
+            ffprobe_binary = "ffprobe.exe"
             if platform.system() == "Darwin":
                 ffmpeg_binary = "ffmpeg"
+                ffprobe_binary = "ffprobe"
             ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-            if not os.path.exists(ffmpeg_path):
+            ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
+            if not os.path.exists(ffmpeg_path) or not os.path.exists(ffprobe_path):
                 self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
                 self.ffmpeg_action.triggered.connect(self.start_download)
                 self.main_window.menubar.addAction(self.ffmpeg_action)
@@ -253,10 +256,13 @@ class LipsyncFrame:
     def download_finished(self):
         if platform.system() in ["Windows", "Darwin"]:
             ffmpeg_binary = "ffmpeg.exe"
+            ffprobe_binary = "ffprobe.exe"
             if platform.system() == "Darwin":
                 ffmpeg_binary = "ffmpeg"
+                ffprobe_binary = "ffprobe"
             ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-            if os.path.exists(ffmpeg_path):
+            ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
+            if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
                 self.main_window.menubar.removeAction(self.ffmpeg_action)
         self.status_progress.hide()
 
@@ -282,7 +288,7 @@ class LipsyncFrame:
             ffmpeg_build_url = "https://evermeet.cx/ffmpeg/getrelease/zip"
         ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
         ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
-        if os.path.exists(ffmpeg_path):
+        if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
             return
         else:
             with urllib.request.urlopen(ffmpeg_build_url) as req:

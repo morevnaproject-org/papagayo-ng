@@ -185,19 +185,6 @@
        </widget>
       </widget>
       <widget class="QWidget" name="misc">
-       <widget class="QCheckBox" name="checkBox">
-        <property name="geometry">
-         <rect>
-          <x>120</x>
-          <y>110</y>
-          <width>70</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>CheckBox</string>
-        </property>
-       </widget>
        <widget class="QPushButton" name="delete_settings">
         <property name="geometry">
          <rect>
@@ -210,6 +197,25 @@
         <property name="text">
          <string>Delete All Settings</string>
         </property>
+       </widget>
+       <widget class="QWidget" name="gridLayoutWidget_4">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>351</width>
+          <height>441</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0">
+          <widget class="QPushButton" name="ffmpeg_delete_button">
+           <property name="text">
+            <string>Remove FFMpeg</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </widget>
      </widget>

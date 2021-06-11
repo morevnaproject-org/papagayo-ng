@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import platform
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -45,6 +46,7 @@ class SettingsWindow:
         self.main_window.misc_2.clicked.connect(self.change_tab)
         self.main_window.voice_rec.clicked.connect(self.change_tab)
         self.main_window.delete_settings.clicked.connect(self.delete_settings)
+        self.main_window.ffmpeg_delete_button.clicked.connect(self.delete_ffmpeg)
         self.main_window.accepted.connect(self.accepted)
         self.load_settings_to_gui()
         #self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
@@ -74,6 +76,19 @@ class SettingsWindow:
 
     def delete_settings(self, event=None):
         self.settings.clear()
+
+    def delete_ffmpeg(self):
+        ffmpeg_binary = "ffmpeg.exe"
+        ffprobe_binary = "ffprobe.exe"
+        if platform.system() == "Darwin":
+            ffmpeg_binary = "ffmpeg"
+            ffprobe_binary = "ffprobe"
+        ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
+        ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
+        if os.path.exists(ffmpeg_path):
+            os.remove(ffmpeg_path)
+        if os.path.exists(ffprobe_path):
+            os.remove(ffprobe_path)
 
     def load_settings_to_gui(self):
         self.main_window.fps_value.setValue(int(self.settings.value("LastFPS", 24)))
