@@ -4,7 +4,7 @@ import os
 import sys
 standalone_exe = True
 block_cipher = None
-
+with_rhubarb = False
 
 a = Analysis(['papagayo-ng.py'],
              pathex=['./'],
@@ -70,7 +70,8 @@ else:
 shutil.copytree("./breakdowns", os.path.join(installer_folder , "breakdowns"))
 shutil.copytree("./phonemes", os.path.join(installer_folder , "phonemes"))
 shutil.copytree("./rsrc", os.path.join(installer_folder , "rsrc"))
-shutil.copytree("./rhubarb", os.path.join(installer_folder , "rhubarb"))
+if with_rhubarb:
+    shutil.copytree("./rhubarb", os.path.join(installer_folder , "rhubarb"))
 shutil.copy("./papagayo-ng.nsi", os.path.join(installer_folder , "papagayo-ng.nsi"))
 shutil.copy("./papagayo-ng.ico", os.path.join(installer_folder , "papagayo-ng.ico"))
 shutil.copy("./ipa_cmu.json", os.path.join(installer_folder , "ipa_cmu.json"))

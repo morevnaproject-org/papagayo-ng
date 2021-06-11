@@ -265,6 +265,14 @@ class LipsyncFrame:
             if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
                 self.main_window.menubar.removeAction(self.ffmpeg_action)
         self.status_progress.hide()
+        dlg = QtWidgets.QMessageBox()
+        dlg.setText("Download of FFMPEG is finished. \nPlease close and restart Papagayo-NG")
+        dlg.setWindowTitle(app_title)
+        dlg.setWindowIcon(self.main_window.windowIcon())
+        dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        dlg.setDefaultButton(QtWidgets.QMessageBox.Ok)
+        dlg.setIcon(QtWidgets.QMessageBox.Information)
+        dlg.exec_()
 
     def start_download(self):
         worker = Worker(self.download_ffmpeg)
