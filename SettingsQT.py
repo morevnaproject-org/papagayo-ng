@@ -20,6 +20,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import platform
+import shutil
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -47,6 +48,7 @@ class SettingsWindow:
         self.main_window.voice_rec.clicked.connect(self.change_tab)
         self.main_window.delete_settings.clicked.connect(self.delete_settings)
         self.main_window.ffmpeg_delete_button.clicked.connect(self.delete_ffmpeg)
+        self.main_window.allo_delete_button.clicked.connect(self.delete_ai_model)
         self.main_window.accepted.connect(self.accepted)
         self.load_settings_to_gui()
         #self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
@@ -89,6 +91,11 @@ class SettingsWindow:
             os.remove(ffmpeg_path)
         if os.path.exists(ffprobe_path):
             os.remove(ffprobe_path)
+
+    def delete_ai_model(self):
+        allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
+        if not os.path.exists(allosaurus_model_path):
+            shutil.rmtree(allosaurus_model_path)
 
     def load_settings_to_gui(self):
         self.main_window.fps_value.setValue(int(self.settings.value("LastFPS", 24)))

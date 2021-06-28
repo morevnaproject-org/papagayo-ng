@@ -66,7 +66,7 @@
        <enum>QFrame::Plain</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="general">
        <widget class="QWidget" name="gridLayoutWidget_3">
@@ -212,6 +212,13 @@
           <widget class="QPushButton" name="ffmpeg_delete_button">
            <property name="text">
             <string>Remove FFMpeg</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="allo_delete_button">
+           <property name="text">
+            <string>Remove AI Model</string>
            </property>
           </widget>
          </item>

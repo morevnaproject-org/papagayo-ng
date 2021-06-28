@@ -22,6 +22,7 @@
 # import os
 # from utilities import Worker, WorkerSignals
 import os
+import tarfile
 import time
 
 from PySide2.QtCore import QFile
@@ -238,8 +239,13 @@ class LipsyncFrame:
             ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
             if not os.path.exists(ffmpeg_path) or not os.path.exists(ffprobe_path):
                 self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
-                self.ffmpeg_action.triggered.connect(self.start_download)
+                self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
                 self.main_window.menubar.addAction(self.ffmpeg_action)
+        allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
+        if not os.listdir(allosaurus_model_path):
+            self.model_action = QtWidgets.QAction("Download AI Model")
+            self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
+            self.main_window.menubar.addAction(self.model_action)
         self.phoneme_convert = QtWidgets.QAction("Convert Phonemes")
         self.cur_frame = 0
         self.timer = None
@@ -253,7 +259,21 @@ class LipsyncFrame:
         self.start_time = time.time()
         self.threadpool = QtCore.QThreadPool.globalInstance()
 
-    def download_finished(self):
+    def download_allo_finished(self):
+        allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
+        if os.listdir(allosaurus_model_path):
+            self.main_window.menubar.removeAction(self.model_action)
+        self.status_progress.hide()
+        dlg = QtWidgets.QMessageBox()
+        dlg.setText("Download of AI Model is finished. \nPlease close and restart Papagayo-NG")
+        dlg.setWindowTitle(app_title)
+        dlg.setWindowIcon(self.main_window.windowIcon())
+        dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        dlg.setDefaultButton(QtWidgets.QMessageBox.Ok)
+        dlg.setIcon(QtWidgets.QMessageBox.Information)
+        dlg.exec_()
+
+    def download_ffmpeg_finished(self):
         if platform.system() in ["Windows", "Darwin"]:
             ffmpeg_binary = "ffmpeg.exe"
             ffprobe_binary = "ffprobe.exe"
@@ -274,9 +294,12 @@ class LipsyncFrame:
         dlg.setIcon(QtWidgets.QMessageBox.Information)
         dlg.exec_()
 
-    def start_download(self):
-        worker = Worker(self.download_ffmpeg)
-        worker.signals.finished.connect(self.download_finished)
+    def start_download(self, work_job):
+        worker = Worker(work_job)
+        if work_job == self.download_ffmpeg:
+            worker.signals.finished.connect(self.download_ffmpeg_finished)
+        elif work_job == self.download_allosaurus_model:
+            worker.signals.finished.connect(self.download_allo_finished)
         worker.signals.progress.connect(self.status_bar_progress)
         self.status_progress.show()
         self.status_progress.setMaximum(100)
@@ -285,6 +308,33 @@ class LipsyncFrame:
     def status_bar_progress(self, n):
         self.status_progress.setValue(n)
         QtCore.QCoreApplication.processEvents()
+
+    def download_allosaurus_model(self, progress_callback):
+        model_name = "latest"
+        url = 'https://github.com/xinjli/allosaurus/releases/download/v1.0/' + model_name + '.tar.gz'
+        model_dir = os.path.join(get_main_dir(), "allosaurus_model")
+        with urllib.request.urlopen(url) as req:
+            length = req.getheader('content-length')
+            block_size = 1000000
+            if length:
+                length = int(length)
+                block_size = max(4096, length // 100)
+            buffer_all = io.BytesIO()
+            size = 0
+            while True:
+                buffer_now = req.read(block_size)
+                if not buffer_now:
+                    break
+                buffer_all.write(buffer_now)
+                size += len(buffer_now)
+                if length:
+                    percent = int((size / length) * 100)
+                    progress_callback.emit(percent)
+            if buffer_all:
+                buffer_all.seek(0)
+                files = tarfile.open(fileobj=buffer_all)
+                files.extractall(str(model_dir))
+        return
 
     def download_ffmpeg(self, progress_callback):
         ffmpeg_binary = "ffmpeg.exe"
