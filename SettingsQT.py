@@ -51,6 +51,7 @@ class SettingsWindow:
         self.main_window.allo_delete_button.clicked.connect(self.delete_ai_model)
         self.main_window.accepted.connect(self.accepted)
         self.load_settings_to_gui()
+        self.main_window.settings_options.setCurrentIndex(0)
         #self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
         #self.main_window.about_ok_button.clicked.connect(self.close)
 

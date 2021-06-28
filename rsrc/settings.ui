@@ -66,7 +66,7 @@
        <enum>QFrame::Plain</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="general">
        <widget class="QWidget" name="gridLayoutWidget_3">
