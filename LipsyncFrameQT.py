@@ -242,7 +242,12 @@ class LipsyncFrame:
                 self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
                 self.main_window.menubar.addAction(self.ffmpeg_action)
         allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
-        if not os.listdir(allosaurus_model_path):
+        if os.path.exists(allosaurus_model_path):
+            if not os.listdir(allosaurus_model_path):
+                self.model_action = QtWidgets.QAction("Download AI Model")
+                self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
+                self.main_window.menubar.addAction(self.model_action)
+        else:
             self.model_action = QtWidgets.QAction("Download AI Model")
             self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
             self.main_window.menubar.addAction(self.model_action)
@@ -264,14 +269,6 @@ class LipsyncFrame:
         if os.listdir(allosaurus_model_path):
             self.main_window.menubar.removeAction(self.model_action)
         self.status_progress.hide()
-        dlg = QtWidgets.QMessageBox()
-        dlg.setText("Download of AI Model is finished. \nPlease close and restart Papagayo-NG")
-        dlg.setWindowTitle(app_title)
-        dlg.setWindowIcon(self.main_window.windowIcon())
-        dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        dlg.setDefaultButton(QtWidgets.QMessageBox.Ok)
-        dlg.setIcon(QtWidgets.QMessageBox.Information)
-        dlg.exec_()
 
     def download_ffmpeg_finished(self):
         if platform.system() in ["Windows", "Darwin"]:

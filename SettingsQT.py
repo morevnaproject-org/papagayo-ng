@@ -95,7 +95,7 @@ class SettingsWindow:
 
     def delete_ai_model(self):
         allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
-        if not os.path.exists(allosaurus_model_path):
+        if os.path.exists(allosaurus_model_path):
             shutil.rmtree(allosaurus_model_path)
 
     def load_settings_to_gui(self):
