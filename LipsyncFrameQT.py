@@ -35,6 +35,7 @@ import webbrowser
 import urllib.request
 import io
 from zipfile import ZipFile
+import utilities
 import platform
 import random
 import re
@@ -125,10 +126,8 @@ class LipsyncFrame:
         self.main_window.parent_tags.setStyleSheet(tree_style)
 
         # TODO: need a good description for this stuff
-        print(dir(self.main_window))
         mouth_list = list(self.main_window.mouth_view.mouths.keys())
         mouth_list.sort(key=sort_mouth_list_order)
-        print(mouth_list)
         for mouth in mouth_list:
             self.main_window.mouth_choice.addItem(mouth)
         self.main_window.mouth_choice.setCurrentIndex(0)
@@ -229,25 +228,11 @@ class LipsyncFrame:
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
-        if platform.system() in ["Windows", "Darwin"]:
-            ffmpeg_binary = "ffmpeg.exe"
-            ffprobe_binary = "ffprobe.exe"
-            if platform.system() == "Darwin":
-                ffmpeg_binary = "ffmpeg"
-                ffprobe_binary = "ffprobe"
-            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-            ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
-            if not os.path.exists(ffmpeg_path) or not os.path.exists(ffprobe_path):
-                self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
-                self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
-                self.main_window.menubar.addAction(self.ffmpeg_action)
-        allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
-        if os.path.exists(allosaurus_model_path):
-            if not os.listdir(allosaurus_model_path):
-                self.model_action = QtWidgets.QAction("Download AI Model")
-                self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
-                self.main_window.menubar.addAction(self.model_action)
-        else:
+        if not utilities.ffmpeg_binaries_exists():
+            self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
+            self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
+            self.main_window.menubar.addAction(self.ffmpeg_action)
+        if not utilities.allosaurus_model_exists():
             self.model_action = QtWidgets.QAction("Download AI Model")
             self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
             self.main_window.menubar.addAction(self.model_action)
@@ -265,22 +250,13 @@ class LipsyncFrame:
         self.threadpool = QtCore.QThreadPool.globalInstance()
 
     def download_allo_finished(self):
-        allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
-        if os.listdir(allosaurus_model_path):
+        if utilities.allosaurus_model_exists():
             self.main_window.menubar.removeAction(self.model_action)
         self.status_progress.hide()
 
     def download_ffmpeg_finished(self):
-        if platform.system() in ["Windows", "Darwin"]:
-            ffmpeg_binary = "ffmpeg.exe"
-            ffprobe_binary = "ffprobe.exe"
-            if platform.system() == "Darwin":
-                ffmpeg_binary = "ffmpeg"
-                ffprobe_binary = "ffprobe"
-            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-            ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
-            if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
-                self.main_window.menubar.removeAction(self.ffmpeg_action)
+        if utilities.ffmpeg_binaries_exists():
+            self.main_window.menubar.removeAction(self.ffmpeg_action)
         self.status_progress.hide()
         dlg = QtWidgets.QMessageBox()
         dlg.setText("Download of FFMPEG is finished. \nPlease close and restart Papagayo-NG")
@@ -644,6 +620,17 @@ class LipsyncFrame:
     def show_settings(self, event=None):
         self.settings_dlg = SettingsWindow()
         self.settings_dlg.main_window.show()
+        self.settings_dlg.main_window.finished.connect(self.settings_closed)
+
+    def settings_closed(self):
+        if not utilities.ffmpeg_binaries_exists():
+            self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
+            self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
+            self.main_window.menubar.addAction(self.ffmpeg_action)
+        if not utilities.allosaurus_model_exists():
+            self.model_action = QtWidgets.QAction("Download AI Model")
+            self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
+            self.main_window.menubar.addAction(self.model_action)
 
     def on_play(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):

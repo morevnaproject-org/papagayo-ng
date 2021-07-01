@@ -2,6 +2,7 @@ import json
 import os
 import string
 import tempfile
+from pathlib import Path
 
 import PySide2.QtCore as QtCore
 import pydub
@@ -13,7 +14,7 @@ from utilities import get_main_dir
 class AutoRecognize:
     def __init__(self, sound_path):
         self.settings = QtCore.QSettings("Lost Marble", "Papagayo-NG")
-        self.allo_model_path = os.path.join(get_main_dir(), "allosaurus_model")
+        self.allo_model_path = Path(os.path.join(get_main_dir(), "allosaurus_model"))
         self.temp_wave_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
         self.convert_to_wav(sound_path)
 

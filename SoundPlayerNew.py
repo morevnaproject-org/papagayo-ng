@@ -40,12 +40,6 @@ class SoundPlayer:
         self.audio_data = []
         for buf in self.audio_file:
             self.audio_data.extend(struct.unpack("<{}H".format(int(len(list(buf))/2)), buf))
-        print(self.audio_data)
-        print(len(self.audio_data))
-        print(len(self.audio_data) / self.audio_file.samplerate)
-        print(self.audio_file.duration)
-        print(self.audio_file.channels)
-        print("DATAEND")
         while not self.is_loaded:
             QCoreApplication.processEvents()
             time.sleep(0.1)
