@@ -7,7 +7,7 @@ block_cipher = None
 with_rhubarb = False
 
 a = Analysis(['papagayo-ng.py'],
-             pathex=['./'],
+             pathex=['./venv', './'],
              binaries=[],
              datas=[],
              hiddenimports=['PySide2.QtXml', 'PySide2.QtPrintSupport', 'numpy.random.common', 'numpy.random.bounded_integers', 'numpy.random.entropy', 'pkg_resources.py2_warn', 'audioread'],
@@ -67,7 +67,8 @@ else:
               console=False )
 
 installer_folder = "./installer_files"
-shutil.rmtree(installer_folder)
+if os.path.exists(installer_folder):
+    shutil.rmtree(installer_folder)
 os.mkdir(installer_folder)
 if sys.platform == "win32":
     shutil.move("./dist/papagayo-ng.exe", os.path.join(installer_folder , "papagayo-ng.exe"))

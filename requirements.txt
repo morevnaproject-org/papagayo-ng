@@ -5,4 +5,4 @@ pydub
 anytree
 PySide2
 audioread
-allosaurus
+allosaurus >= 1.0.1

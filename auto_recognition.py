@@ -6,6 +6,7 @@ from pathlib import Path
 
 import PySide2.QtCore as QtCore
 import pydub
+from PySide2 import QtWidgets
 from allosaurus.app import read_recognizer
 
 from utilities import get_main_dir
@@ -46,6 +47,20 @@ class AutoRecognize:
                 phone = "".join(e for e in phone if e not in stress_symbols)
                 if phone not in ipa_convert:
                     print("Missing conversion for: " + phone)
+                    dlg = QtWidgets.QMessageBox()
+                    dlg.setText("Missing conversion for: " + phone)
+                    dlg.setWindowTitle("Missing Phoneme Conversion")
+                    app = QtWidgets.QApplication.instance()
+                    main_window = None
+                    for widget in app.topLevelWidgets():
+                        if isinstance(widget, QtWidgets.QMainWindow):
+                            main_window = widget
+                    dlg.setWindowIcon(main_window.windowIcon())
+                    dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                    dlg.setDefaultButton(QtWidgets.QMessageBox.Ok)
+                    dlg.setIcon(QtWidgets.QMessageBox.Information)
+                    dlg.exec_()
+
                 phone_dict = {"start": float(start), "duration": float(dur), "phoneme": ipa_convert.get(phone)}
                 time_list.append(float(start) - prev_start)
                 prev_start = float(start)

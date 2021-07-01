@@ -307,6 +307,7 @@ class LipsyncFrame:
                 buffer_all.seek(0)
                 files = tarfile.open(fileobj=buffer_all)
                 files.extractall(str(model_dir))
+                os.rename(os.path.join(model_dir, "uni2005"), os.path.join(model_dir, "latest"))
         return
 
     def download_ffmpeg(self, progress_callback):
