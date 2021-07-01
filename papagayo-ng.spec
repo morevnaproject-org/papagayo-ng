@@ -7,10 +7,10 @@ block_cipher = None
 with_rhubarb = False
 
 a = Analysis(['papagayo-ng.py'],
-             pathex=['./venv', './'],
+             pathex=['./'],
              binaries=[],
              datas=[],
-             hiddenimports=['PySide2.QtXml', 'PySide2.QtPrintSupport', 'numpy.random.common', 'numpy.random.bounded_integers', 'numpy.random.entropy', 'pkg_resources.py2_warn', 'audioread'],
+             hiddenimports=['PySide2.QtXml', 'PySide2.QtPrintSupport', 'numpy.random.common', 'numpy.random.bounded_integers', 'numpy.random.entropy', 'pkg_resources.py2_warn', 'audioread', 'pydub'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -64,7 +64,7 @@ else:
               upx=False,
               upx_exclude="vcruntime140.dll, qwindows.dll",
               runtime_tmpdir=None,
-              console=False )
+              console=True )
 
 installer_folder = "./installer_files"
 if os.path.exists(installer_folder):
