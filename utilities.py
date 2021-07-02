@@ -4,7 +4,7 @@ import platform
 import sys
 import traceback
 
-from PySide6 import QtCore
+from PySide2 import QtCore
 
 
 def main_is_frozen():

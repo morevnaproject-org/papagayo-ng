@@ -21,10 +21,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import math, random
-import PySide6.QtCore as QtCore
-import PySide6.QtGui as QtGui
-import PySide6.QtWidgets as QtWidgets
-#from PySide6.QtWidgets import QtGui, QtCore, QtWidgets
+import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
+import PySide2.QtWidgets as QtWidgets
+#from PySide2.QtWidgets import QtGui, QtCore, QtWidgets
 
 from LipsyncDoc import *
 

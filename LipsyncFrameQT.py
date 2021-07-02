@@ -25,10 +25,10 @@ import os
 import tarfile
 import time
 
-from PySide6.QtCore import QFile
-from PySide6 import QtCore, QtGui, QtWidgets
-from PySide6.QtWidgets import QProgressDialog
-from PySide6.QtUiTools import QUiLoader as uic
+from PySide2.QtCore import QFile
+from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtWidgets import QProgressDialog
+from PySide2.QtUiTools import QUiLoader as uic
 
 
 import webbrowser
@@ -229,14 +229,14 @@ class LipsyncFrame:
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
         if not utilities.ffmpeg_binaries_exists():
-            self.ffmpeg_action = QtGui.QAction("Download FFmpeg")
+            self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
             self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
             self.main_window.menubar.addAction(self.ffmpeg_action)
         if not utilities.allosaurus_model_exists():
-            self.model_action = QtGui.QAction("Download AI Model")
+            self.model_action = QtWidgets.QAction("Download AI Model")
             self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
             self.main_window.menubar.addAction(self.model_action)
-        self.phoneme_convert = QtGui.QAction("Convert Phonemes")
+        self.phoneme_convert = QtWidgets.QAction("Convert Phonemes")
         self.cur_frame = 0
         self.timer = None
         self.wv_height = 1

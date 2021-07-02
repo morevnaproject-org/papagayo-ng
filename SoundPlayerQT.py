@@ -1,13 +1,13 @@
-from PySide6 import QtWidgets
+from PySide2 import QtWidgets
 
 from utilities import *
 
 import time
 
-from PySide6.QtMultimedia import QMediaPlayer, QAudioFormat, QAudioBuffer, QAudioDecoder
-from PySide6.QtMultimedia import QAudioOutput
-from PySide6.QtCore import QCoreApplication
-from PySide6.QtCore import QUrl
+from PySide2.QtMultimedia import QMediaPlayer, QAudioFormat, QAudioBuffer, QAudioDecoder
+from PySide2.QtMultimedia import QAudioOutput
+from PySide2.QtCore import QCoreApplication
+from PySide2.QtCore import QUrl
 
 from utilities import which
 from cffi import FFI

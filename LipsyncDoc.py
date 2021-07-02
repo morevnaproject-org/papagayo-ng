@@ -35,7 +35,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-import PySide6.QtCore as QtCore
+import PySide2.QtCore as QtCore
 
 from utilities import *
 from PronunciationDialogQT import PronunciationDialog

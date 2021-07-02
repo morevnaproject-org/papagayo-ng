@@ -22,14 +22,14 @@
 import platform
 import shutil
 
-import PySide6.QtCore as QtCore
-import PySide6.QtGui as QtGui
-from PySide6.QtGui import QDesktopServices
-import PySide6.QtWidgets as QtWidgets
+import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
+from PySide2.QtGui import QDesktopServices
+import PySide2.QtWidgets as QtWidgets
 
 
-from PySide6.QtUiTools import QUiLoader as uic
-from PySide6.QtCore import QFile
+from PySide2.QtUiTools import QUiLoader as uic
+from PySide2.QtCore import QFile
 
 from utilities import *
 

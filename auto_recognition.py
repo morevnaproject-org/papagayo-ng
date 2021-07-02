@@ -4,9 +4,9 @@ import string
 import tempfile
 from pathlib import Path
 
-import PySide6.QtCore as QtCore
+import PySide2.QtCore as QtCore
 import pydub
-from PySide6 import QtWidgets
+from PySide2 import QtWidgets
 from allosaurus.app import read_recognizer
 
 from utilities import get_main_dir

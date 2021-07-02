@@ -4,7 +4,7 @@ import time
 import audioread
 import struct
 
-from PySide6.QtCore import QCoreApplication
+from PySide2.QtCore import QCoreApplication
 from PySide2.QtCore import QUrl
 from PySide2.QtMultimedia import QMediaPlayer
 from cffi import FFI

@@ -24,6 +24,25 @@ for d in a.datas:
         a.datas.remove(d)
         break
 
+useless_libs = (
+        "Qt3D",
+        "QtDesigner",
+        "QtQuick",
+        "QtShader",
+        "QtVirt",
+        "QtSql",
+        "QtData",
+        "QtCharts",
+        "QtLabs",
+        "QtScxml",
+        "QtMultimedia",
+        "QtWebEngine",
+        "Qt5WebEngineCore"
+    )
+for d in a.datas:
+    if d[0].startswith(useless_libs):
+        a.datas.remove(d)
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 if not standalone_exe:

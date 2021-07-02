@@ -22,8 +22,8 @@
 
 import time
 
-import PySide6.QtGui as QtGui
-import PySide6.QtWidgets as QtWidgets
+import PySide2.QtGui as QtGui
+import PySide2.QtWidgets as QtWidgets
 import anytree.util
 import numpy as np
 import re
