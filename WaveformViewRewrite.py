@@ -22,8 +22,8 @@
 
 import time
 
-import PySide2.QtGui as QtGui
-import PySide2.QtWidgets as QtWidgets
+import PySide6.QtGui as QtGui
+import PySide6.QtWidgets as QtWidgets
 import anytree.util
 import numpy as np
 import re
@@ -102,7 +102,7 @@ class MovableButton(QtWidgets.QPushButton):
 
     def text_size(self):
         font_metrics = QtGui.QFontMetrics(self.font())
-        return font_metrics.width(self.title)
+        return font_metrics.horizontalAdvance(self.title)
 
     def text_fits_in_button(self):
         if not self.is_phoneme():
@@ -778,7 +778,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             bg_height = self.height() + self.horizontalScrollBar().height()
             half_client_height = bg_height / 2
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
             x = first_sample * self.sample_width
             frame = first_sample / self.samples_per_frame
             fps = int(round(self.doc.fps))
@@ -833,8 +833,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                 origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
             # We need to at least update the Y Position of the Phonemes
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             if self.main_node:
                 if self.main_node.children:
@@ -901,8 +901,8 @@ class WaveformView(QtWidgets.QGraphicsView):
         if self.doc is not None:
             self.setUpdatesEnabled(False)
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             main_window = self.parentWidget().parentWidget().parentWidget()
             current_num = 0
@@ -1036,8 +1036,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                 origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
             # We need to at least update the Y Position of the Phonemes
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             for phoneme_node in self.main_node.leaves:  # this should be all phonemes
                 widget = phoneme_node.name

@@ -22,15 +22,14 @@
 import platform
 import shutil
 
-import PySide2.QtCore as QtCore
-import PySide2.QtGui as QtGui
-from PySide2.QtGui import QDesktopServices
-import PySide2.QtWidgets as QtWidgets
+import PySide6.QtCore as QtCore
+import PySide6.QtGui as QtGui
+from PySide6.QtGui import QDesktopServices
+import PySide6.QtWidgets as QtWidgets
 
-from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 
-from PySide2.QtUiTools import QUiLoader as uic
-from PySide2.QtCore import QFile
+from PySide6.QtUiTools import QUiLoader as uic
+from PySide6.QtCore import QFile
 
 from utilities import *
 
@@ -102,11 +101,13 @@ class SettingsWindow:
         self.main_window.fps_value.setValue(int(self.settings.value("LastFPS", 24)))
         self.main_window.lang_id_value.setText(self.settings.value("allo_lang_id", "eng"))
         self.main_window.voice_emission_value.setValue(float(self.settings.value("allo_emission", 1.0)))
+        self.main_window.run_allosaurus.setChecked(bool(self.settings.value("run_allosaurus", True)))
 
     def accepted(self, event=None):
         self.settings.setValue("LastFPS", self.main_window.fps_value.value())
         self.settings.setValue("allo_lang_id", self.main_window.lang_id_value.text())
         self.settings.setValue("allo_emission", self.main_window.voice_emission_value.value())
+        self.settings.setValue("run_allosaurus", int(self.main_window.run_allosaurus.isChecked()))
 
     def close(self):
         self.main_window.close()
