@@ -1,5 +1,6 @@
 import imp
 import os
+import platform
 import sys
 import traceback
 
@@ -28,7 +29,8 @@ def get_main_dir():
 def which(program):
     def is_exe(fpath):
         if os.name == 'nt':
-            return os.path.isfile(fpath) or os.path.isfile("{}.exe".format(fpath)) or os.path.isfile("{}.bat".format(fpath))
+            return os.path.isfile(fpath) or os.path.isfile("{}.exe".format(fpath)) or os.path.isfile(
+                "{}.bat".format(fpath))
         else:
             return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
@@ -46,6 +48,33 @@ def which(program):
                 return exe_file
 
     return None
+
+
+def ffmpeg_binaries_exists():
+    if platform.system() in ["Windows", "Darwin"]:
+        ffmpeg_binary = "ffmpeg.exe"
+        ffprobe_binary = "ffprobe.exe"
+        if platform.system() == "Darwin":
+            ffmpeg_binary = "ffmpeg"
+            ffprobe_binary = "ffprobe"
+        ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
+        ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
+        if not os.path.exists(ffmpeg_path) or not os.path.exists(ffprobe_path):
+            return False
+        else:
+            return True
+    return False
+
+
+def allosaurus_model_exists():
+    allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
+    if os.path.exists(allosaurus_model_path):
+        if not os.listdir(allosaurus_model_path):
+            return False
+        else:
+            return True
+    else:
+        return False
 
 
 class WorkerSignals(QtCore.QObject):
