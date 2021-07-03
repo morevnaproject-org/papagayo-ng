@@ -4,13 +4,13 @@ import os
 import sys
 standalone_exe = True
 block_cipher = None
-
+with_rhubarb = False
 
 a = Analysis(['papagayo-ng.py'],
              pathex=['./'],
              binaries=[],
              datas=[],
-             hiddenimports=['PySide2.QtXml', 'PySide2.QtPrintSupport', 'numpy.random.common', 'numpy.random.bounded_integers', 'numpy.random.entropy', 'pkg_resources.py2_warn', 'audioread'],
+             hiddenimports=['PySide2.QtXml', 'PySide2.QtPrintSupport', 'numpy.random.common', 'numpy.random.bounded_integers', 'numpy.random.entropy', 'pkg_resources.py2_warn', 'audioread', 'pydub'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -18,6 +18,31 @@ a = Analysis(['papagayo-ng.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+# Avoid warning
+for d in a.datas:
+    if '_C.cp39-win_amd64.pyd' in d[0]:
+        a.datas.remove(d)
+        break
+
+useless_libs = (
+        "Qt3D",
+        "QtDesigner",
+        "QtQuick",
+        "QtShader",
+        "QtVirt",
+        "QtSql",
+        "QtData",
+        "QtCharts",
+        "QtLabs",
+        "QtScxml",
+        "QtMultimedia",
+        "QtWebEngine",
+        "Qt5WebEngineCore"
+    )
+for d in a.datas:
+    if d[0].startswith(useless_libs):
+        a.datas.remove(d)
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 if not standalone_exe:
@@ -58,10 +83,11 @@ else:
               upx=False,
               upx_exclude="vcruntime140.dll, qwindows.dll",
               runtime_tmpdir=None,
-              console=False )
+              console=True )
 
 installer_folder = "./installer_files"
-shutil.rmtree(installer_folder)
+if os.path.exists(installer_folder):
+    shutil.rmtree(installer_folder)
 os.mkdir(installer_folder)
 if sys.platform == "win32":
     shutil.move("./dist/papagayo-ng.exe", os.path.join(installer_folder , "papagayo-ng.exe"))
@@ -70,6 +96,8 @@ else:
 shutil.copytree("./breakdowns", os.path.join(installer_folder , "breakdowns"))
 shutil.copytree("./phonemes", os.path.join(installer_folder , "phonemes"))
 shutil.copytree("./rsrc", os.path.join(installer_folder , "rsrc"))
-shutil.copytree("./rhubarb", os.path.join(installer_folder , "rhubarb"))
+if with_rhubarb:
+    shutil.copytree("./rhubarb", os.path.join(installer_folder , "rhubarb"))
 shutil.copy("./papagayo-ng.nsi", os.path.join(installer_folder , "papagayo-ng.nsi"))
 shutil.copy("./papagayo-ng.ico", os.path.join(installer_folder , "papagayo-ng.ico"))
+shutil.copy("./ipa_cmu.json", os.path.join(installer_folder , "ipa_cmu.json"))

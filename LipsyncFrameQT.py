@@ -21,6 +21,8 @@
 
 # import os
 # from utilities import Worker, WorkerSignals
+import os
+import tarfile
 import time
 
 from PySide2.QtCore import QFile
@@ -33,6 +35,7 @@ import webbrowser
 import urllib.request
 import io
 from zipfile import ZipFile
+import utilities
 import platform
 import random
 import re
@@ -42,6 +45,7 @@ from MouthViewQT import MouthView
 # end wxGlade
 
 from AboutBoxQT import AboutBox
+from SettingsQT import SettingsWindow
 from LipsyncDoc import *
 
 app_title = "Papagayo-NG"
@@ -98,6 +102,7 @@ class LipsyncFrame:
         self.ui = None
         self.doc = None
         self.about_dlg = None
+        self.settings_dlg = None
         self.ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
         self.main_window = self.load_ui_widget(self.ui_path)
         self.main_window.setWindowTitle("%s" % app_title)
@@ -121,10 +126,8 @@ class LipsyncFrame:
         self.main_window.parent_tags.setStyleSheet(tree_style)
 
         # TODO: need a good description for this stuff
-        print(dir(self.main_window))
         mouth_list = list(self.main_window.mouth_view.mouths.keys())
         mouth_list.sort(key=sort_mouth_list_order)
-        print(mouth_list)
         for mouth in mouth_list:
             self.main_window.mouth_choice.addItem(mouth)
         self.main_window.mouth_choice.setCurrentIndex(0)
@@ -200,6 +203,7 @@ class LipsyncFrame:
         self.main_window.action_zoom_in.triggered.connect(self.main_window.waveform_view.on_zoom_in)
         self.main_window.action_zoom_out.triggered.connect(self.main_window.waveform_view.on_zoom_out)
         self.main_window.action_reset_zoom.triggered.connect(self.main_window.waveform_view.on_zoom_reset)
+        self.main_window.action_settings.triggered.connect(self.show_settings)
 
         self.main_window.reload_dict_button.clicked.connect(self.on_reload_dictionary)
         self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(self.main_window.waveform_view.on_slider_change)
@@ -218,20 +222,21 @@ class LipsyncFrame:
         self.main_window.add_tag.clicked.connect(self.add_tag)
         self.main_window.tag_entry.returnPressed.connect(self.add_tag)
         self.main_window.remove_tag.clicked.connect(self.remove_tag)
+        self.main_window.apply_voice_change.clicked.connect(self.change_voice_for_selection)
         self.tab_add_button.clicked.connect(self.on_new_voice)
         self.tab_remove_button.clicked.connect(self.on_del_voice)
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
-        if platform.system() in ["Windows", "Darwin"]:
-            ffmpeg_binary = "ffmpeg.exe"
-            if platform.system() == "Darwin":
-                ffmpeg_binary = "ffmpeg"
-            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-            if not os.path.exists(ffmpeg_path):
-                self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
-                self.ffmpeg_action.triggered.connect(self.start_download)
-                self.main_window.menubar.addAction(self.ffmpeg_action)
+        if not utilities.ffmpeg_binaries_exists():
+            self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
+            self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
+            self.main_window.menubar.addAction(self.ffmpeg_action)
+        if not utilities.allosaurus_model_exists():
+            self.model_action = QtWidgets.QAction("Download AI Model")
+            self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
+            self.main_window.menubar.addAction(self.model_action)
+        self.phoneme_convert = QtWidgets.QAction("Convert Phonemes")
         self.cur_frame = 0
         self.timer = None
         self.wv_height = 1
@@ -244,19 +249,30 @@ class LipsyncFrame:
         self.start_time = time.time()
         self.threadpool = QtCore.QThreadPool.globalInstance()
 
-    def download_finished(self):
-        if platform.system() in ["Windows", "Darwin"]:
-            ffmpeg_binary = "ffmpeg.exe"
-            if platform.system() == "Darwin":
-                ffmpeg_binary = "ffmpeg"
-            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-            if os.path.exists(ffmpeg_path):
-                self.main_window.menubar.removeAction(self.ffmpeg_action)
+    def download_allo_finished(self):
+        if utilities.allosaurus_model_exists():
+            self.main_window.menubar.removeAction(self.model_action)
         self.status_progress.hide()
 
-    def start_download(self):
-        worker = Worker(self.download_ffmpeg)
-        worker.signals.finished.connect(self.download_finished)
+    def download_ffmpeg_finished(self):
+        if utilities.ffmpeg_binaries_exists():
+            self.main_window.menubar.removeAction(self.ffmpeg_action)
+        self.status_progress.hide()
+        dlg = QtWidgets.QMessageBox()
+        dlg.setText("Download of FFMPEG is finished. \nPlease close and restart Papagayo-NG")
+        dlg.setWindowTitle(app_title)
+        dlg.setWindowIcon(self.main_window.windowIcon())
+        dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        dlg.setDefaultButton(QtWidgets.QMessageBox.Ok)
+        dlg.setIcon(QtWidgets.QMessageBox.Information)
+        dlg.exec_()
+
+    def start_download(self, work_job):
+        worker = Worker(work_job)
+        if work_job == self.download_ffmpeg:
+            worker.signals.finished.connect(self.download_ffmpeg_finished)
+        elif work_job == self.download_allosaurus_model:
+            worker.signals.finished.connect(self.download_allo_finished)
         worker.signals.progress.connect(self.status_bar_progress)
         self.status_progress.show()
         self.status_progress.setMaximum(100)
@@ -266,14 +282,45 @@ class LipsyncFrame:
         self.status_progress.setValue(n)
         QtCore.QCoreApplication.processEvents()
 
+    def download_allosaurus_model(self, progress_callback):
+        model_name = "latest"
+        url = 'https://github.com/xinjli/allosaurus/releases/download/v1.0/' + model_name + '.tar.gz'
+        model_dir = os.path.join(get_main_dir(), "allosaurus_model")
+        with urllib.request.urlopen(url) as req:
+            length = req.getheader('content-length')
+            block_size = 1000000
+            if length:
+                length = int(length)
+                block_size = max(4096, length // 100)
+            buffer_all = io.BytesIO()
+            size = 0
+            while True:
+                buffer_now = req.read(block_size)
+                if not buffer_now:
+                    break
+                buffer_all.write(buffer_now)
+                size += len(buffer_now)
+                if length:
+                    percent = int((size / length) * 100)
+                    progress_callback.emit(percent)
+            if buffer_all:
+                buffer_all.seek(0)
+                files = tarfile.open(fileobj=buffer_all)
+                files.extractall(str(model_dir))
+                os.rename(os.path.join(model_dir, "uni2005"), os.path.join(model_dir, "latest"))
+        return
+
     def download_ffmpeg(self, progress_callback):
         ffmpeg_binary = "ffmpeg.exe"
+        ffprobe_binary = "ffprobe.exe"
         ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
         if platform.system() == "Darwin":
             ffmpeg_binary = "ffmpeg"
+            ffprobe_binary = "ffprobe"
             ffmpeg_build_url = "https://evermeet.cx/ffmpeg/getrelease/zip"
         ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-        if os.path.exists(ffmpeg_path):
+        ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
+        if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
             return
         else:
             with urllib.request.urlopen(ffmpeg_build_url) as req:
@@ -301,6 +348,11 @@ class LipsyncFrame:
                             ffmpeg_file = open(ffmpeg_path, "wb")
                             ffmpeg_file.write(ffmpeg_file_content)
                             ffmpeg_file.close()
+                        elif ffprobe_binary in zfile.filename:
+                            ffprobe_file_content = ffmpeg_zip.read(zfile.filename)
+                            ffprobe_file = open(ffprobe_path, "wb")
+                            ffprobe_file.write(ffprobe_file_content)
+                            ffprobe_file.close()
             return
 
     def load_ui_widget(self, ui_filename, parent=None):
@@ -312,6 +364,12 @@ class LipsyncFrame:
         self.ui = self.loader.load(file, parent)
         file.close()
         return self.ui
+
+    def change_voice_for_selection(self):
+        print("Currently Selected Object: " + self.main_window.waveform_view.currently_selected_object.title)
+        print("Corresponding LipsyncObject: " + str(vars(self.main_window.waveform_view.currently_selected_object.lipsync_object)))
+        print("Current Voice: " + self.doc.current_voice.name)
+        print("New Voice: " + self.main_window.voice_for_selection.currentText())
 
     def add_tag(self):
         if self.main_window.tag_entry.text():
@@ -345,31 +403,32 @@ class LipsyncFrame:
         print('FPS changed to: {0}'.format(str(new_fps_value)))
         old_fps_value = self.doc.fps
         resize_multiplier = new_fps_value / old_fps_value
-        self.doc.fps = new_fps_value
-        wfv = self.main_window.waveform_view
-        # wfv.default_samples_per_frame *= resize_multiplier
-        # wfv.default_sample_width *= resize_multiplier
-        #
-        # wfv.sample_width = wfv.default_sample_width
-        # wfv.samples_per_frame = wfv.default_samples_per_frame
-        wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
-        # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
-        #
-        # for node in wfv.main_node.descendants:
-        #     node.name.after_reposition()
-        #     node.name.fit_text_to_size()
-        # #self.main_window.waveform_view.recalc_waveform()
-        # #self.main_window.waveform_view.create_waveform()
-        # if wfv.temp_play_marker:
-        #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
-        wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
-                                 wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
-        wfv.setSceneRect(wfv.scene().sceneRect())
-        wfv.scroll_position *= resize_multiplier
-        wfv.scroll_position = 0
-        wfv.horizontalScrollBar().setValue(wfv.scroll_position)
-        wfv.recalc_waveform()
-        wfv.create_waveform()
+        if resize_multiplier != 1:
+            self.doc.fps = new_fps_value
+            wfv = self.main_window.waveform_view
+            # wfv.default_samples_per_frame *= resize_multiplier
+            # wfv.default_sample_width *= resize_multiplier
+            #
+            # wfv.sample_width = wfv.default_sample_width
+            # wfv.samples_per_frame = wfv.default_samples_per_frame
+            wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
+            # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
+            #
+            # for node in wfv.main_node.descendants:
+            #     node.name.after_reposition()
+            #     node.name.fit_text_to_size()
+            # #self.main_window.waveform_view.recalc_waveform()
+            # #self.main_window.waveform_view.create_waveform()
+            # if wfv.temp_play_marker:
+            #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
+
+            wfv.start_recalc(True)
+            wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
+                                     wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
+            wfv.setSceneRect(wfv.scene().sceneRect())
+            wfv.scroll_position *= resize_multiplier
+            wfv.scroll_position = 0
+            wfv.horizontalScrollBar().setValue(wfv.scroll_position)
 
     def close_doc_ok(self):
         if self.doc is not None:
@@ -466,6 +525,8 @@ class LipsyncFrame:
             self.main_window.action_save_as.setEnabled(True)
             self.main_window.menu_edit.setEnabled(True)
             self.main_window.choose_imageset_button.setEnabled(False)
+            self.phoneme_convert.triggered.connect(self.doc.convert_to_phonemeset)
+            self.main_window.menubar.addAction(self.phoneme_convert)
             if self.doc.sound is not None:
                 self.main_window.action_play.setEnabled(True)
                 # self.main_window.action_stop.setEnabled(True)
@@ -473,6 +534,8 @@ class LipsyncFrame:
                 self.main_window.action_zoom_out.setEnabled(True)
                 self.main_window.action_reset_zoom.setEnabled(True)
             self.main_window.tag_list_group.setEnabled(False)
+            list_of_voices = [voice.name for voice in self.doc.voices]
+            self.main_window.voice_for_selection.addItems(list_of_voices)
 
             first_entry = True
             for voice in self.doc.voices:
@@ -554,6 +617,21 @@ class LipsyncFrame:
     def on_about(self, event=None):
         self.about_dlg = AboutBox()
         self.about_dlg.main_window.show()
+
+    def show_settings(self, event=None):
+        self.settings_dlg = SettingsWindow()
+        self.settings_dlg.main_window.show()
+        self.settings_dlg.main_window.finished.connect(self.settings_closed)
+
+    def settings_closed(self):
+        if not utilities.ffmpeg_binaries_exists():
+            self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
+            self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
+            self.main_window.menubar.addAction(self.ffmpeg_action)
+        if not utilities.allosaurus_model_exists():
+            self.model_action = QtWidgets.QAction("Download AI Model")
+            self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
+            self.main_window.menubar.addAction(self.model_action)
 
     def on_play(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):
@@ -721,6 +799,7 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
+        self.main_window.voice_for_selection.setCurrentIndex(self.main_window.current_voice.tabBar().currentIndex())
         self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
@@ -751,11 +830,14 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
+        list_of_voices = [voice.name for voice in self.doc.voices]
+        self.main_window.voice_for_selection.clear()
+        self.main_window.voice_for_selection.addItems(list_of_voices)
+        self.main_window.voice_for_selection.setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
         self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
-
 
     def on_del_voice(self, event=None):
         if (not self.doc) or (len(self.doc.voices) == 1):
@@ -771,6 +853,9 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().currentIndex())
+        list_of_voices = [voice.name for voice in self.doc.voices]
+        self.main_window.voice_for_selection.clear()
+        self.main_window.voice_for_selection.addItems(list_of_voices)
         self.main_window.waveform_view.first_update = True
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.waveform_view.update()

@@ -102,7 +102,7 @@ class MovableButton(QtWidgets.QPushButton):
 
     def text_size(self):
         font_metrics = QtGui.QFontMetrics(self.font())
-        return font_metrics.width(self.title)
+        return font_metrics.horizontalAdvance(self.title)
 
     def text_fits_in_button(self):
         if not self.is_phoneme():
@@ -379,7 +379,6 @@ class MovableButton(QtWidgets.QPushButton):
                 cur_frame = int(self.wfv_parent.doc.sound.current_time() * self.wfv_parent.doc.fps)
                 if old_cur_frame != cur_frame:
                     old_cur_frame = cur_frame
-
                     main_window.mouth_view.set_frame(old_cur_frame)
                     self.wfv_parent.set_frame(old_cur_frame)
                     try:
@@ -403,6 +402,9 @@ class MovableButton(QtWidgets.QPushButton):
         if self.is_resizing:
             self.reposition_descendants2(True)
             self.is_resizing = False
+        if self.is_phoneme():
+            main_window = self.wfv_parent.parentWidget().parentWidget().parentWidget()  # lol
+            main_window.mouth_view.set_phoneme_picture(self.lipsync_object.text)
 
     def set_tags(self, new_taglist):
         self.lipsync_object.tags = new_taglist
@@ -648,6 +650,9 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.main_window.tag_list_group.setTitle(new_title)
                 self.main_window.parent_tags.clear()
                 self.main_window.parent_tags.setEnabled(False)
+                for i in range(self.main_window.voice_for_selection.count()):
+                    if self.main_node.name == self.main_window.voice_for_selection.itemText(i):
+                        self.main_window.voice_for_selection.setCurrentIndex(i)
                 if self.currently_selected_object.object_type() == "phoneme":
                     parent_word = self.currently_selected_object.get_parent().name
                     parent_phrase = parent_word.get_parent().name
@@ -773,7 +778,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             bg_height = self.height() + self.horizontalScrollBar().height()
             half_client_height = bg_height / 2
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
             x = first_sample * self.sample_width
             frame = first_sample / self.samples_per_frame
             fps = int(round(self.doc.fps))
@@ -828,18 +833,19 @@ class WaveformView(QtWidgets.QGraphicsView):
                 origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
             # We need to at least update the Y Position of the Phonemes
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             if self.main_node:
-                for phoneme_node in self.main_node.leaves:  # this should be all phonemes
-                    widget = phoneme_node.name
-                    if widget:
-                        if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
-                            widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
-                                               (text_height + (text_height * widget.phoneme_offset)),
-                                               self.frame_width + 5,
-                                               text_height)
+                if self.main_node.children:
+                    for phoneme_node in self.main_node.leaves:  # this should be all phonemes
+                        widget = phoneme_node.name
+                        if widget:
+                            if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
+                                widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
+                                                   (text_height + (text_height * widget.phoneme_offset)),
+                                                   self.frame_width + 5,
+                                                   text_height)
         self.horizontalScrollBar().setValue(self.scroll_position)
         try:
             if self.temp_play_marker:
@@ -895,13 +901,13 @@ class WaveformView(QtWidgets.QGraphicsView):
         if self.doc is not None:
             self.setUpdatesEnabled(False)
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             main_window = self.parentWidget().parentWidget().parentWidget()
             current_num = 0
             self.main_node = Node(
-                self.doc.current_voice.text)  # Not actually needed, but should make everything a bit easier
+                self.doc.current_voice.name)  # Not actually needed, but should make everything a bit easier
             for phrase in self.doc.current_voice.phrases:
                 self.temp_button = MovableButton(phrase, self)
                 self.temp_button.node = Node(self.temp_button, parent=self.main_node)
@@ -1030,8 +1036,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                 origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
             # We need to at least update the Y Position of the Phonemes
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             for phoneme_node in self.main_node.leaves:  # this should be all phonemes
                 widget = phoneme_node.name
