@@ -461,7 +461,7 @@ class LipsyncFrame:
             self.main_window.vertical_layout_right.setEnabled(True)
             self.main_window.vertical_layout_left.setEnabled(True)
             self.main_window.volume_slider.setEnabled(True)
-            self.main_window.volume_slider.setValue(50)
+            self.main_window.volume_slider.setValue(self.config.value("volume", 50))
             self.main_window.action_save.setEnabled(True)
             self.main_window.action_save_as.setEnabled(True)
             self.main_window.menu_edit.setEnabled(True)
@@ -606,6 +606,7 @@ class LipsyncFrame:
     def change_volume(self, e):
         if self.doc and self.doc.sound:
             self.doc.sound.set_volume(int(self.main_window.volume_slider.value()))
+            self.config.setValue("volume", int(self.main_window.volume_slider.value()))
 
     def on_mouth_choice(self, event=None):
         self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
