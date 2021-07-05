@@ -5,9 +5,14 @@ import tempfile
 from pathlib import Path
 
 import PySide2.QtCore as QtCore
+import utilities
+
+if utilities.get_app_data_path() not in os.environ['PATH']:
+    os.environ['PATH'] += os.pathsep + utilities.get_app_data_path()
 import pydub
 from PySide2 import QtWidgets
 from allosaurus.app import read_recognizer
+
 
 from utilities import get_main_dir
 
@@ -15,7 +20,7 @@ from utilities import get_main_dir
 class AutoRecognize:
     def __init__(self, sound_path):
         self.settings = QtCore.QSettings("Lost Marble", "Papagayo-NG")
-        self.allo_model_path = Path(os.path.join(get_main_dir(), "allosaurus_model"))
+        self.allo_model_path = Path(os.path.join(utilities.get_app_data_path(), "allosaurus_model"))
         self.temp_wave_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
         self.convert_to_wav(sound_path)
 

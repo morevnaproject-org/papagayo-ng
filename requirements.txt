@@ -6,3 +6,4 @@ anytree
 PySide2
 audioread
 allosaurus >= 1.0.1
+appdirs

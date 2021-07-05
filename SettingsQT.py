@@ -31,6 +31,7 @@ import PySide2.QtWidgets as QtWidgets
 from PySide2.QtUiTools import QUiLoader as uic
 from PySide2.QtCore import QFile
 
+import utilities
 from utilities import *
 
 
@@ -50,6 +51,7 @@ class SettingsWindow:
         self.main_window.allo_delete_button.clicked.connect(self.delete_ai_model)
         self.main_window.accepted.connect(self.accepted)
         self.load_settings_to_gui()
+        self.main_window.open_app_data_path.clicked.connect(self.open_app_data)
         self.main_window.settings_options.setCurrentIndex(0)
         #self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
         #self.main_window.about_ok_button.clicked.connect(self.close)
@@ -79,6 +81,10 @@ class SettingsWindow:
     def delete_settings(self, event=None):
         self.settings.clear()
 
+    def open_app_data(self):
+        qt_url = QtCore.QUrl(r"file:///" + utilities.get_app_data_path(), QtCore.QUrl.TolerantMode)
+        QtGui.QDesktopServices.openUrl(qt_url)
+
     def delete_ffmpeg(self):
         ffmpeg_binary = "ffmpeg.exe"
         ffprobe_binary = "ffprobe.exe"
@@ -102,6 +108,8 @@ class SettingsWindow:
         self.main_window.lang_id_value.setText(self.settings.value("allo_lang_id", "eng"))
         self.main_window.voice_emission_value.setValue(float(self.settings.value("allo_emission", 1.0)))
         self.main_window.run_allosaurus.setChecked(bool(self.settings.value("run_allosaurus", True)))
+        self.main_window.app_data_path.setText(utilities.get_app_data_path())
+        self.main_window.app_data_path.home(True)
 
     def accepted(self, event=None):
         self.settings.setValue("LastFPS", self.main_window.fps_value.value())

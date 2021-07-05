@@ -66,7 +66,7 @@
        <enum>QFrame::Plain</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="general">
        <widget class="QWidget" name="gridLayoutWidget_3">
@@ -246,7 +246,16 @@
           <height>441</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="gridLayout_4">
+        <layout class="QGridLayout" name="gridLayout_4" rowstretch="2,0,0,0" columnstretch="0">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <property name="horizontalSpacing">
+          <number>6</number>
+         </property>
+         <property name="verticalSpacing">
+          <number>165</number>
+         </property>
          <item row="0" column="0">
           <widget class="QPushButton" name="ffmpeg_delete_button">
            <property name="text">
@@ -260,6 +269,31 @@
             <string>Remove AI Model</string>
            </property>
           </widget>
+         </item>
+         <item row="2" column="0">
+          <layout class="QGridLayout" name="gridLayout_5" rowstretch="1,2">
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="app_data_path">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="open_app_data_path">
+             <property name="text">
+              <string>Open in FileBrowser</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>AppData Path:</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

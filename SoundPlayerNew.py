@@ -1,6 +1,11 @@
 import audioop
 import platform
 import time
+import utilities
+import os
+
+if utilities.get_app_data_path() not in os.environ['PATH']:
+    os.environ['PATH'] += os.pathsep + utilities.get_app_data_path()
 import audioread
 import struct
 
@@ -19,6 +24,7 @@ try:
 except ImportError:
     import _thread as thread
 AudioSegment = None
+
 
 class SoundPlayer:
     def __init__(self, soundfile, parent):
@@ -39,11 +45,10 @@ class SoundPlayer:
         self.audio_file = audioread.audio_open(self.soundfile)
         self.audio_data = []
         for buf in self.audio_file:
-            self.audio_data.extend(struct.unpack("<{}H".format(int(len(list(buf))/2)), buf))
+            self.audio_data.extend(struct.unpack("<{}H".format(int(len(list(buf)) / 2)), buf))
         while not self.is_loaded:
             QCoreApplication.processEvents()
             time.sleep(0.1)
-
         self.isvalid = True
         self.pydubfile = None
         if AudioSegment:
@@ -53,7 +58,7 @@ class SoundPlayer:
                 AudioSegment.converter = which("avconv")
             else:
                 if platform.system() == "Windows":
-                    AudioSegment.converter = os.path.join(get_main_dir(), "ffmpeg.exe")
+                    AudioSegment.converter = os.path.join(utilities.get_app_data_path(), "ffmpeg.exe")
                     # AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
                 else:
                     # TODO: Check if we have ffmpeg or avconv installed
@@ -86,7 +91,8 @@ class SoundPlayer:
             else:
                 sample_pos = 0
             sample_end = int(sample_pos + sample_dur * self.audio_file.samplerate)
-            return audioop.rms(struct.pack("<{}H".format(len(self.audio_data[sample_pos:sample_end])), *self.audio_data[sample_pos:sample_end]), 2)
+            return audioop.rms(struct.pack("<{}H".format(len(self.audio_data[sample_pos:sample_end])),
+                                           *self.audio_data[sample_pos:sample_end]), 2)
 
     def is_playing(self):
         if self.audio.state() == QMediaPlayer.PlayingState:

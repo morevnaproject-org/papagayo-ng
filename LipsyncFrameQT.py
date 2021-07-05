@@ -285,7 +285,7 @@ class LipsyncFrame:
     def download_allosaurus_model(self, progress_callback):
         model_name = "latest"
         url = 'https://github.com/xinjli/allosaurus/releases/download/v1.0/' + model_name + '.tar.gz'
-        model_dir = os.path.join(get_main_dir(), "allosaurus_model")
+        model_dir = os.path.join(utilities.get_app_data_path(), "allosaurus_model")
         with urllib.request.urlopen(url) as req:
             length = req.getheader('content-length')
             block_size = 1000000
@@ -318,8 +318,8 @@ class LipsyncFrame:
             ffmpeg_binary = "ffmpeg"
             ffprobe_binary = "ffprobe"
             ffmpeg_build_url = "https://evermeet.cx/ffmpeg/getrelease/zip"
-        ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-        ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
+        ffmpeg_path = os.path.join(utilities.get_app_data_path(), ffmpeg_binary)
+        ffprobe_path = os.path.join(utilities.get_app_data_path(), ffprobe_binary)
         if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
             return
         else:

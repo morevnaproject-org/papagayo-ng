@@ -3,6 +3,7 @@ import os
 import platform
 import sys
 import traceback
+import appdirs
 
 from PySide2 import QtCore
 
@@ -24,6 +25,15 @@ def get_main_dir():
     except Exception:
         base_path = os.path.abspath(".")
     return base_path
+
+
+def get_app_data_path():
+    config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+    app_name = "PapagayoNG"
+    app_author = "Lost Marble"
+    user_data_dir = appdirs.user_data_dir(app_name, app_author)
+    config.setValue("appdata_dir", user_data_dir)
+    return user_data_dir
 
 
 def which(program):
@@ -57,8 +67,8 @@ def ffmpeg_binaries_exists():
         if platform.system() == "Darwin":
             ffmpeg_binary = "ffmpeg"
             ffprobe_binary = "ffprobe"
-        ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-        ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
+        ffmpeg_path = os.path.join(get_app_data_path(), ffmpeg_binary)
+        ffprobe_path = os.path.join(get_app_data_path(), ffprobe_binary)
         if not os.path.exists(ffmpeg_path) or not os.path.exists(ffprobe_path):
             return False
         else:
@@ -67,7 +77,7 @@ def ffmpeg_binaries_exists():
 
 
 def allosaurus_model_exists():
-    allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
+    allosaurus_model_path = os.path.join(get_app_data_path(), "allosaurus_model")
     if os.path.exists(allosaurus_model_path):
         if not os.listdir(allosaurus_model_path):
             return False
