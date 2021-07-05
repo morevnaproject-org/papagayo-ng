@@ -96,7 +96,7 @@
       <item>
        <widget class="QLabel" name="license_version">
         <property name="text">
-         <string>Version: 1.6.0</string>
+         <string>Version: 1.6.1</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>

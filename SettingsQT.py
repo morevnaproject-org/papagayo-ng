@@ -91,17 +91,26 @@ class SettingsWindow:
         if platform.system() == "Darwin":
             ffmpeg_binary = "ffmpeg"
             ffprobe_binary = "ffprobe"
-        ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-        ffprobe_path = os.path.join(get_main_dir(), ffprobe_binary)
-        if os.path.exists(ffmpeg_path):
-            os.remove(ffmpeg_path)
-        if os.path.exists(ffprobe_path):
-            os.remove(ffprobe_path)
+        ffmpeg_path_old = os.path.join(get_main_dir(), ffmpeg_binary)
+        ffprobe_path_old = os.path.join(get_main_dir(), ffprobe_binary)
+        if os.path.exists(ffmpeg_path_old):
+            os.remove(ffmpeg_path_old)
+        if os.path.exists(ffprobe_path_old):
+            os.remove(ffprobe_path_old)
+        ffmpeg_path_new = os.path.join(utilities.get_app_data_path(), ffmpeg_binary)
+        ffprobe_path_new= os.path.join(utilities.get_app_data_path(), ffprobe_binary)
+        if os.path.exists(ffmpeg_path_new):
+            os.remove(ffmpeg_path_new)
+        if os.path.exists(ffprobe_path_new):
+            os.remove(ffprobe_path_new)
 
     def delete_ai_model(self):
-        allosaurus_model_path = os.path.join(get_main_dir(), "allosaurus_model")
-        if os.path.exists(allosaurus_model_path):
-            shutil.rmtree(allosaurus_model_path)
+        allosaurus_model_path_old = os.path.join(get_main_dir(), "allosaurus_model")
+        allosaurus_model_path_new = os.path.join(utilities.get_app_data_path(), "allosaurus_model")
+        if os.path.exists(allosaurus_model_path_old):
+            shutil.rmtree(allosaurus_model_path_old)
+        if os.path.exists(allosaurus_model_path_new):
+            shutil.rmtree(allosaurus_model_path_new)
 
     def load_settings_to_gui(self):
         self.main_window.fps_value.setValue(int(self.settings.value("LastFPS", 24)))

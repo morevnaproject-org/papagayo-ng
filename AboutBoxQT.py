@@ -24,7 +24,6 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 from PySide2.QtGui import QDesktopServices
 import PySide2.QtWidgets as QtWidgets
-import webbrowser
 # from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 
 from PySide2.QtUiTools import QUiLoader as uic
@@ -44,8 +43,8 @@ class AboutBox:
         self.main_window.license.linkActivated.connect(self.open_license)
 
     def open_license(self, event):
-        license_path = os.path.join(get_main_dir(), "rsrc", "gpl.html")
-        webbrowser.open(license_path, new=2)
+        license_path = QtCore.QUrl("file:///{}".format(os.path.join(get_main_dir(), "rsrc", "gpl.html")))
+        QtGui.QDesktopServices.openUrl(license_path)
 
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()

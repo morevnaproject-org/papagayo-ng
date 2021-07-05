@@ -31,7 +31,6 @@ from PySide2.QtWidgets import QProgressDialog
 from PySide2.QtUiTools import QUiLoader as uic
 
 
-import webbrowser
 import urllib.request
 import io
 from zipfile import ZipFile
@@ -612,7 +611,7 @@ class LipsyncFrame:
         github_path = "https://github.com/morevnaproject/papagayo-ng/issues"
         test_path = "file://{}".format(r"D:\Program Files (x86)\Papagayo\help\index.html")
         real_path = "file://{}".format(os.path.join(get_main_dir(), "help", "index.html"))
-        webbrowser.open(github_path)  # TODO: Fix path
+        QtGui.QDesktopServices.openUrl(github_path)
 
     def on_about(self, event=None):
         self.about_dlg = AboutBox()
