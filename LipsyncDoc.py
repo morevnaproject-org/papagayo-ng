@@ -41,7 +41,7 @@ from utilities import *
 from PronunciationDialogQT import PronunciationDialog
 
 if sys.platform == "win32":
-    import SoundPlayer as SoundPlayer
+    import SoundPlayerNew as SoundPlayer
 elif sys.platform == "darwin":
     import SoundPlayerOSX as SoundPlayer
 else:
@@ -845,7 +845,8 @@ class LipsyncDoc:
                     phrase.text = 'Auto detection Allosaurus'
                     phrase.start_frame = 0
                     phrase.end_frame = end_frame
-
+                    if len(peaks) % 2 != 0:
+                        peaks.append(peaks[-1])
                     for i in range(len(peaks) - 2):
                         peak_left = peaks[i]
                         peak_right = peaks[i + 1]
@@ -855,7 +856,7 @@ class LipsyncDoc:
 
                         word.text = "".join(letter["phoneme"] if letter["phoneme"] is not None else "rest" for letter in word_chunk)
                         word.start_frame = math.floor(self.fps * results[peak_left]["start"])
-                        word.end_frame = math.floor(self.fps * results[peak_right]["start"])
+                        # word.end_frame = math.floor(self.fps * results[peak_right]["start"])
                         previous_frame_pos = math.floor(self.fps * results[peak_left]["start"]) - 1
                         for phoneme in word_chunk:
                             current_frame_pos = math.floor(self.fps * phoneme['start'])
@@ -868,6 +869,7 @@ class LipsyncDoc:
                             word.phonemes.append(pg_phoneme)
                         word.end_frame = previous_frame_pos + 1
                         phrase.words.append(word)
+                    phrase.end_frame = phrase.words[-1].end_frame
                     self.current_voice.phrases.append(phrase)
                     self.parent.phonemeset.selected_set = self.parent.phonemeset.load("CMU_39")
                     current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
