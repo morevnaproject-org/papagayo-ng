@@ -838,8 +838,9 @@ class LipsyncDoc:
         if settings.value("run_allosaurus", True):
             if auto_recognition:
                 allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
-                results, peaks = allo_recognizer.recognize_allosaurus()
+                results, peaks, allo_output = allo_recognizer.recognize_allosaurus()
                 if results:
+                    phonemes_as_text = ""
                     end_frame = math.floor(self.fps * (results[-1]["start"] + results[-1]["duration"] * 2))
                     phrase = LipsyncPhrase()
                     phrase.text = 'Auto detection Allosaurus'
@@ -867,8 +868,12 @@ class LipsyncDoc:
                             previous_frame_pos = current_frame_pos
                             pg_phoneme.text = phoneme['phoneme'] if phoneme['phoneme'] is not None else 'rest'
                             word.phonemes.append(pg_phoneme)
+                            phonemes_as_text += pg_phoneme.text
+                        phonemes_as_text += " "
                         word.end_frame = previous_frame_pos + 1
                         phrase.words.append(word)
+                    phonemes_as_text += "\n{}".format(str(allo_output))
+                    self.parent.main_window.text_edit.setText(phonemes_as_text)
                     phrase.end_frame = phrase.words[-1].end_frame
                     self.current_voice.phrases.append(phrase)
                     self.parent.phonemeset.selected_set = self.parent.phonemeset.load("CMU_39")

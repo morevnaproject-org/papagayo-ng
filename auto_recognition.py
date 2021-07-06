@@ -71,7 +71,7 @@ class AutoRecognize:
                 prev_start = float(start)
                 ipa_list.append(phone_dict)
             peaks = self.get_level_peaks(time_list)
-            return ipa_list, peaks
+            return ipa_list, peaks, results
         else:
             return None
 

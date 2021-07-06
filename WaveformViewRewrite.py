@@ -643,9 +643,9 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.currently_selected_object.setStyleSheet(new_style)
                 self.main_window.list_of_tags.clear()
                 self.main_window.list_of_tags.addItems(self.currently_selected_object.lipsync_object.tags)
-                title_part_two = self.currently_selected_object.title
-                if len(self.currently_selected_object.title) > 40:
-                    title_part_two = self.currently_selected_object.title[0:40] + "..."
+                title_part_two = self.currently_selected_object.lipsync_object.text
+                if len(self.currently_selected_object.lipsync_object.text) > 40:
+                    title_part_two = self.currently_selected_object.lipsync_object.text[0:40] + "..."
                 new_title = self.currently_selected_object.object_type().title() + ": " + title_part_two
                 self.main_window.tag_list_group.setTitle(new_title)
                 self.main_window.parent_tags.clear()
@@ -665,7 +665,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in phrase_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_phrase_tags.append(new_tag)
-                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.title])
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.lipsync_object.text])
                         phrase_tree.addChildren(list_of_phrase_tags)
                         self.main_window.parent_tags.addTopLevelItem(phrase_tree)
                         phrase_tree.setExpanded(True)
@@ -674,7 +674,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in word_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_word_tags.append(new_tag)
-                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.title])
+                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.lipsync_object.text])
                         word_tree.addChildren(list_of_word_tags)
                         self.main_window.parent_tags.addTopLevelItem(word_tree)
                         word_tree.setExpanded(True)
@@ -687,7 +687,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in parent_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_tags.append(new_tag)
-                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.title])
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.lipsync_object.text])
                         phrase_tree.addChildren(list_of_tags)
                         self.main_window.parent_tags.addTopLevelItem(phrase_tree)
                         phrase_tree.setExpanded(True)
