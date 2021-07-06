@@ -41,7 +41,7 @@ class SettingsWindow:
         self.ui = None
         self.ui_file = None
         self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "rsrc", "settings.ui"))
-        self.settings = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+        self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         self.main_window.general_2.clicked.connect(self.change_tab)
         self.main_window.graphical_2.clicked.connect(self.change_tab)
         self.main_window.misc_2.clicked.connect(self.change_tab)

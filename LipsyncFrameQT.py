@@ -107,7 +107,7 @@ class LipsyncFrame:
         self.main_window.setWindowTitle("%s" % app_title)
         self.main_window.lip_sync_frame = self
 
-        self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+        self.config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         tree_style = r'''QTreeView::branch:has-siblings:!adjoins-item {
                              border-image: url(./rsrc/vline.png) 0;}               
                          QTreeView::branch:has-siblings:adjoins-item {
@@ -313,6 +313,10 @@ class LipsyncFrame:
         ffmpeg_binary = "ffmpeg.exe"
         ffprobe_binary = "ffprobe.exe"
         ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+        ffmpeg_json = json.loads(urllib.request.urlopen("https://api.github.com/repos/BtbN/FFmpeg-Builds/releases").read())
+        for download in ffmpeg_json[0]["assets"]:
+            if download["name"].endswith("win64-lgpl.zip"):
+                ffmpeg_build_url = download["browser_download_url"]
         if platform.system() == "Darwin":
             ffmpeg_binary = "ffmpeg"
             ffprobe_binary = "ffprobe"
@@ -322,36 +326,40 @@ class LipsyncFrame:
         if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
             return
         else:
-            with urllib.request.urlopen(ffmpeg_build_url) as req:
-                length = req.getheader('content-length')
-                block_size = 1000000
-                if length:
-                    length = int(length)
-                    block_size = max(4096, length // 100)
-                buffer_all = io.BytesIO()
-                size = 0
-                while True:
-                    buffer_now = req.read(block_size)
-                    if not buffer_now:
-                        break
-                    buffer_all.write(buffer_now)
-                    size += len(buffer_now)
+            try:
+                with urllib.request.urlopen(ffmpeg_build_url) as req:
+                    length = req.getheader('content-length')
+                    block_size = 1000000
                     if length:
-                        percent = int((size / length) * 100)
-                        progress_callback.emit(percent)
-                if buffer_all:
-                    ffmpeg_zip = ZipFile(buffer_all)
-                    for zfile in ffmpeg_zip.filelist:
-                        if ffmpeg_binary in zfile.filename:
-                            ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
-                            ffmpeg_file = open(ffmpeg_path, "wb")
-                            ffmpeg_file.write(ffmpeg_file_content)
-                            ffmpeg_file.close()
-                        elif ffprobe_binary in zfile.filename:
-                            ffprobe_file_content = ffmpeg_zip.read(zfile.filename)
-                            ffprobe_file = open(ffprobe_path, "wb")
-                            ffprobe_file.write(ffprobe_file_content)
-                            ffprobe_file.close()
+                        length = int(length)
+                        block_size = max(4096, length // 100)
+                    buffer_all = io.BytesIO()
+                    size = 0
+                    while True:
+                        buffer_now = req.read(block_size)
+                        if not buffer_now:
+                            break
+                        buffer_all.write(buffer_now)
+                        size += len(buffer_now)
+                        if length:
+                            percent = int((size / length) * 100)
+                            progress_callback.emit(percent)
+                    if buffer_all:
+                        ffmpeg_zip = ZipFile(buffer_all)
+                        for zfile in ffmpeg_zip.filelist:
+                            if ffmpeg_binary in zfile.filename:
+                                ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
+                                ffmpeg_file = open(ffmpeg_path, "wb")
+                                ffmpeg_file.write(ffmpeg_file_content)
+                                ffmpeg_file.close()
+                            elif ffprobe_binary in zfile.filename:
+                                ffprobe_file_content = ffmpeg_zip.read(zfile.filename)
+                                ffprobe_file = open(ffprobe_path, "wb")
+                                ffprobe_file.write(ffprobe_file_content)
+                                ffprobe_file.close()
+            except TimeoutError:
+                # Download Failed
+                pass
             return
 
     def load_ui_widget(self, ui_filename, parent=None):

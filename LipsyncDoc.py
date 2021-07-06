@@ -508,7 +508,7 @@ class LipsyncVoice:
         try:
             self.config
         except AttributeError:
-            self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+            self.config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         phoneme = ""
         if len(self.phrases) > 0:
             start_frame = self.phrases[0].start_frame
@@ -834,7 +834,7 @@ class LipsyncDoc:
             self.parent.main_window.waveform_view.set_document(self, force=True)
 
     def auto_recognize_phoneme(self):
-        settings = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+        settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         if settings.value("run_allosaurus", True):
             if auto_recognition:
                 allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)

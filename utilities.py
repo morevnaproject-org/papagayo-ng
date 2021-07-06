@@ -28,9 +28,9 @@ def get_main_dir():
 
 
 def get_app_data_path():
-    config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+    config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
     app_name = "PapagayoNG"
-    app_author = "Lost Marble"
+    app_author = "Morevna Project"
     user_data_dir = appdirs.user_data_dir(app_name, app_author)
     config.setValue("appdata_dir", user_data_dir)
     return user_data_dir

@@ -19,7 +19,7 @@ from utilities import get_main_dir
 
 class AutoRecognize:
     def __init__(self, sound_path):
-        self.settings = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+        self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         self.allo_model_path = Path(os.path.join(utilities.get_app_data_path(), "allosaurus_model"))
         self.temp_wave_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
         self.convert_to_wav(sound_path)
