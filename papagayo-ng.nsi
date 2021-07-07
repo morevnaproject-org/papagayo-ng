@@ -1,11 +1,12 @@
+Unicode true
+
 OutFile "..\papagayo-ng_installer.exe"
 InstallDir "$PROGRAMFILES\Papagayo-NG"
 Name "Papagayo-NG"
 
 SetCompressor /final lzma
 !include MUI2.nsh
-
-
+!include "LogicLib.nsh"
 !define MUI_PAGE_HEADER_TEXT "Papagayo-NG"
 
 !define MUI_ICON ".\papagayo-ng.ico"
@@ -50,6 +51,19 @@ Section "Start Menu Shortcuts"
 SectionEnd
 
 Section "Uninstall"
+
+    StrCpy $1 "papagayo-ng.exe"
+
+    nsProcess::_FindProcess "$1"
+    Pop $R0
+    ${If} $R0 = 0
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Papagayo-NG is currently running. We will close it now to uninstall correctly." /SD IDOK
+      nsProcess::_KillProcess "$1"
+      Pop $R0
+
+      Sleep 500
+    ${EndIf}
+
   DeleteRegKey HKLM "Software\$(^Name)\"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)"
   Delete "$INSTDIR\*.*"
