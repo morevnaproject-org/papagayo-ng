@@ -29,6 +29,8 @@ class AutoRecognize:
         pydubfile = pydubfile.set_sample_width(2)
         pydubfile = pydubfile.set_frame_rate(16000)
         pydubfile = pydubfile.set_channels(1)
+        half_second_silence = pydub.AudioSegment.silent(500)
+        pydubfile += half_second_silence
         out_ = pydubfile.export(self.temp_wave_file, format="wav", bitrate="256k")
         out_.close()
 
