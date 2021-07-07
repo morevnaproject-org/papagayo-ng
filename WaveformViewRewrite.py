@@ -996,7 +996,6 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.doc = document
             if (self.doc is not None) and (self.doc.sound is not None):
                 self.scene().clear()
-                self.scene().update()
                 self.create_movbuttons(self.topLevelWidget().lip_sync_frame.status_bar_progress)
                 self.start_recalc()
                 if self.temp_play_marker not in self.scene().items():
@@ -1007,6 +1006,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     self.temp_play_marker.setOpacity(0.5)
                     self.temp_play_marker.setVisible(False)
                 self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+                self.scene().update()
 
     def on_slider_change(self, value):
         self.scroll_position = value
@@ -1041,7 +1041,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             top_border += 4
             for phoneme_node in self.main_node.leaves:  # this should be all phonemes
                 widget = phoneme_node.name
-                if widget:
+                if widget and not isinstance(widget, str):
                     if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
                         widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
                                            (text_height + (text_height * widget.phoneme_offset)), self.frame_width + 5,
@@ -1087,21 +1087,22 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def on_zoom_reset(self, event=None):
         if self.doc is not None:
-            self.scroll_position /= (self.samples_per_frame / self.default_samples_per_frame)
-            factor = (self.samples_per_frame / self.default_samples_per_frame)
-            self.sample_width = self.default_sample_width
-            self.samples_per_frame = self.default_samples_per_frame
-            self.samples_per_sec = self.doc.fps * self.samples_per_frame
-            self.frame_width = self.sample_width * self.samples_per_frame
-            for node in self.main_node.descendants:
-                node.name.after_reposition()
-                node.name.fit_text_to_size()
-            self.start_recalc()
-            if self.temp_play_marker:
-                self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
-            self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
-                                      self.scene().sceneRect().width() / factor, self.scene().sceneRect().height())
-            self.setSceneRect(self.scene().sceneRect())
-            self.horizontalScrollBar().setValue(self.scroll_position)
+            if self.samples_per_frame != self.default_samples_per_frame:
+                self.scroll_position /= (self.samples_per_frame / self.default_samples_per_frame)
+                factor = (self.samples_per_frame / self.default_samples_per_frame)
+                self.sample_width = self.default_sample_width
+                self.samples_per_frame = self.default_samples_per_frame
+                self.samples_per_sec = self.doc.fps * self.samples_per_frame
+                self.frame_width = self.sample_width * self.samples_per_frame
+                for node in self.main_node.descendants:
+                    node.name.after_reposition()
+                    node.name.fit_text_to_size()
+                self.start_recalc()
+                if self.temp_play_marker:
+                    self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
+                self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
+                                          self.scene().sceneRect().width() / factor, self.scene().sceneRect().height())
+                self.setSceneRect(self.scene().sceneRect())
+                self.horizontalScrollBar().setValue(self.scroll_position)
 
 # end of class WaveformView

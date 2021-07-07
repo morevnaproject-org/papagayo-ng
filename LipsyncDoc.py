@@ -833,9 +833,9 @@ class LipsyncDoc:
             self.dirty = True
             self.parent.main_window.waveform_view.set_document(self, force=True)
 
-    def auto_recognize_phoneme(self):
+    def auto_recognize_phoneme(self, manual_invoke=False):
         settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
-        if settings.value("run_allosaurus", True):
+        if settings.value("run_allosaurus", True) or manual_invoke:
             if auto_recognition:
                 allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
                 results, peaks, allo_output = allo_recognizer.recognize_allosaurus()
