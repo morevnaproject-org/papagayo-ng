@@ -37,14 +37,18 @@ class AboutBox:
         self.loader = None
         self.ui = None
         self.ui_file = None
+        print(os.path.join(get_main_dir(), "rsrc", "about_box.ui"))
         self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "rsrc", "about_box.ui"))
         self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
         self.main_window.about_ok_button.clicked.connect(self.close)
-        self.main_window.license.linkActivated.connect(self.open_license)
+        self.main_window.license.anchorClicked.connect(self.open_license)
 
     def open_license(self, event):
-        license_path = QtCore.QUrl("file:///{}".format(os.path.join(get_main_dir(), "rsrc", "gpl.html")))
-        QtGui.QDesktopServices.openUrl(license_path)
+        if event.toString() == "gpl.html":
+            license_path = QtCore.QUrl("file:///{}".format(os.path.join(get_main_dir(), "rsrc", "gpl.html")))
+            QtGui.QDesktopServices.openUrl(license_path)
+        else:
+            QtGui.QDesktopServices.openUrl(event)
 
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()
