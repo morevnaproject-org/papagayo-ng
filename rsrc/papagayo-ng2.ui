@@ -200,6 +200,10 @@
                   <property name="text">
                    <string>Breakdown</string>
                   </property>
+                  <property name="icon">
+                   <iconset resource="../qt-icons.qrc">
+                    <normaloff>:/rsrc/pie-chart-line.png</normaloff>:/rsrc/pie-chart-line.png</iconset>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -207,12 +211,20 @@
                   <property name="text">
                    <string>Reload Dictionary</string>
                   </property>
+                  <property name="icon">
+                   <iconset resource="../qt-icons.qrc">
+                    <normaloff>:/rsrc/refresh-line.png</normaloff>:/rsrc/refresh-line.png</iconset>
+                  </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QPushButton" name="spread_out">
                   <property name="text">
                    <string>Spread Out</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="../qt-icons.qrc">
+                    <normaloff>:/rsrc/arrow-left-right-line.png</normaloff>:/rsrc/arrow-left-right-line.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -282,12 +294,20 @@
                   <property name="text">
                    <string>Export</string>
                   </property>
+                  <property name="icon">
+                   <iconset resource="../qt-icons.qrc">
+                    <normaloff>:/rsrc/share-forward-box-line.png</normaloff>:/rsrc/share-forward-box-line.png</iconset>
+                  </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QPushButton" name="choose_imageset_button">
                   <property name="text">
                    <string>Choose Image Set...</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="../qt-icons.qrc">
+                    <normaloff>:/rsrc/gallery-line.png</normaloff>:/rsrc/gallery-line.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -651,12 +671,11 @@
     <addaction name="action_open"/>
     <addaction name="action_save"/>
     <addaction name="action_save_as"/>
-    <addaction name="action_settings"/>
     <addaction name="action_exit"/>
    </widget>
    <widget class="QMenu" name="menu_edit">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="title">
      <string>&amp;Edit</string>
@@ -665,6 +684,7 @@
     <addaction name="action_cut"/>
     <addaction name="action_copy"/>
     <addaction name="action_paste"/>
+    <addaction name="action_settings"/>
    </widget>
    <widget class="QMenu" name="menu_help">
     <property name="title">
@@ -706,11 +726,19 @@
    <addaction name="action_reset_zoom"/>
   </widget>
   <action name="action_help_topics">
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/question-line.png</normaloff>:/rsrc/question-line.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Help Topics</string>
    </property>
   </action>
   <action name="action_about_papagayo_ng">
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/information-line.png</normaloff>:/rsrc/information-line.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;About Papagayo-ng</string>
    </property>
@@ -718,7 +746,7 @@
   <action name="action_open">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/open.png</normaloff>:/rsrc/open.png</iconset>
+     <normaloff>:/rsrc/folder-open-line.png</normaloff>:/rsrc/folder-open-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Open</string>
@@ -730,7 +758,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/save.png</normaloff>:/rsrc/save.png</iconset>
+     <normaloff>:/rsrc/save-3-fill.png</normaloff>:/rsrc/save-3-fill.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -740,31 +768,67 @@
    <property name="enabled">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/save-3-line.png</normaloff>:/rsrc/save-3-line.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save As...</string>
    </property>
   </action>
   <action name="action_exit">
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/shut-down-line.png</normaloff>:/rsrc/shut-down-line.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Exit</string>
    </property>
   </action>
   <action name="action_undo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/arrow-go-back-line.png</normaloff>:/rsrc/arrow-go-back-line.png</iconset>
+   </property>
    <property name="text">
     <string>Undo</string>
    </property>
   </action>
   <action name="action_cut">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/scissors-cut-line.png</normaloff>:/rsrc/scissors-cut-line.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Cut</string>
    </property>
   </action>
   <action name="action_copy">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/file-copy-2-line.png</normaloff>:/rsrc/file-copy-2-line.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Copy</string>
    </property>
   </action>
   <action name="action_paste">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/clipboard-line.png</normaloff>:/rsrc/clipboard-line.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Paste</string>
    </property>
@@ -775,7 +839,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/play.png</normaloff>:/rsrc/play.png</iconset>
+     <normaloff>:/rsrc/play-line.png</normaloff>:/rsrc/play-line.png</iconset>
    </property>
    <property name="text">
     <string>Play</string>
@@ -787,7 +851,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/stop.png</normaloff>:/rsrc/stop.png</iconset>
+     <normaloff>:/rsrc/stop-line.png</normaloff>:/rsrc/stop-line.png</iconset>
    </property>
    <property name="text">
     <string>Stop</string>
@@ -799,7 +863,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/zoom_in.png</normaloff>:/rsrc/zoom_in.png</iconset>
+     <normaloff>:/rsrc/zoom-in-line.png</normaloff>:/rsrc/zoom-in-line.png</iconset>
    </property>
    <property name="text">
     <string>ZoomIn</string>
@@ -811,7 +875,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/zoom_out.png</normaloff>:/rsrc/zoom_out.png</iconset>
+     <normaloff>:/rsrc/zoom-out-line.png</normaloff>:/rsrc/zoom-out-line.png</iconset>
    </property>
    <property name="text">
     <string>ZoomOut</string>
@@ -823,15 +887,25 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/zoom_1.png</normaloff>:/rsrc/zoom_1.png</iconset>
+     <normaloff>:/rsrc/zoom-1-line.png</normaloff>:/rsrc/zoom-1-line.png</iconset>
    </property>
    <property name="text">
     <string>ResetZoom</string>
    </property>
   </action>
   <action name="action_settings">
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/settings-3-line.png</normaloff>:/rsrc/settings-3-line.png</iconset>
+   </property>
    <property name="text">
-    <string>&amp;Settings</string>
+    <string>&amp;Preferences</string>
+   </property>
+   <property name="iconText">
+    <string>Preferences</string>
+   </property>
+   <property name="toolTip">
+    <string>Preferences</string>
    </property>
   </action>
  </widget>
