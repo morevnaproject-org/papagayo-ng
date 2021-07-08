@@ -3,6 +3,7 @@ import os
 import string
 import tempfile
 from pathlib import Path
+import time
 
 import PySide2.QtCore as QtCore
 import utilities
@@ -10,9 +11,9 @@ import utilities
 if utilities.get_app_data_path() not in os.environ['PATH']:
     os.environ['PATH'] += os.pathsep + utilities.get_app_data_path()
 import pydub
+from pydub.generators import WhiteNoise
 from PySide2 import QtWidgets
 from allosaurus.app import read_recognizer
-
 
 from utilities import get_main_dir
 
@@ -22,7 +23,37 @@ class AutoRecognize:
         self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         self.allo_model_path = Path(os.path.join(utilities.get_app_data_path(), "allosaurus_model"))
         self.temp_wave_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
+        self.duration_for_one_second = 1
+        app = QtWidgets.QApplication.instance()
+        self.main_window = None
+        self.threadpool = QtCore.QThreadPool.globalInstance()
+        for widget in app.topLevelWidgets():
+            if isinstance(widget, QtWidgets.QMainWindow):
+                self.main_window = widget
+        self.sound_length = 0
+        self.analysis_finished = False
+        self.test_decode_time()
         self.convert_to_wav(sound_path)
+
+    def test_decode_time(self):
+        five_second_sample = WhiteNoise().to_audio_segment(duration=5000)
+        five_second_sample = five_second_sample.set_sample_width(2)
+        five_second_sample = five_second_sample.set_frame_rate(16000)
+        five_second_sample = five_second_sample.set_channels(1)
+        five_second_sample_temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
+        out_ = five_second_sample.export(five_second_sample_temp_file, format="wav", bitrate="256k")
+        out_.close()
+
+        try:
+            model = read_recognizer("latest", self.allo_model_path)
+        except TypeError:
+            model = read_recognizer("latest")
+        start_time = time.process_time()
+        model.recognize(five_second_sample_temp_file, timestamp=True,
+                        lang_id=self.settings.value("allo_lang_id", "eng"),
+                        emit=float(self.settings.value("allo_emission", 1.0)))
+        self.duration_for_one_second = (time.process_time() - start_time) / 5
+        os.remove(five_second_sample_temp_file)
 
     def convert_to_wav(self, sound_path):
         pydubfile = pydub.AudioSegment.from_file(sound_path, format=os.path.splitext(sound_path)[1][1:])
@@ -30,18 +61,39 @@ class AutoRecognize:
         pydubfile = pydubfile.set_frame_rate(16000)
         pydubfile = pydubfile.set_channels(1)
         half_second_silence = pydub.AudioSegment.silent(500)
+        self.sound_length = pydubfile.duration_seconds
         pydubfile += half_second_silence
         out_ = pydubfile.export(self.temp_wave_file, format="wav", bitrate="256k")
         out_.close()
+
+    def update_progress(self, progress_callback):
+        expected_time_to_finish = self.sound_length * self.duration_for_one_second
+        start_time = time.process_time()
+        finish_time = start_time + expected_time_to_finish
+        progress_multiplier = 100.0 / expected_time_to_finish
+        while time.process_time() < finish_time:
+            if self.analysis_finished:
+                break
+            QtCore.QCoreApplication.processEvents()
+            current_progress = (time.process_time() - start_time) * progress_multiplier
+            progress_callback.emit(current_progress)
+        self.main_window.lip_sync_frame.status_progress.hide()
 
     def recognize_allosaurus(self):
         try:
             model = read_recognizer("latest", self.allo_model_path)
         except TypeError:
             model = read_recognizer("latest")
+        worker = utilities.Worker(self.update_progress)
+        self.main_window.lip_sync_frame.status_progress.show()
+        self.main_window.lip_sync_frame.status_progress.setMaximum(100)
+        worker.signals.progress.connect(self.main_window.lip_sync_frame.status_bar_progress)
+        self.threadpool.start(worker)
+
         results = model.recognize(self.temp_wave_file, timestamp=True,
                                   lang_id=self.settings.value("allo_lang_id", "eng"),
                                   emit=float(self.settings.value("allo_emission", 1.0)))
+        self.analysis_finished = True
         ipa_list = []
 
         if results:
@@ -57,12 +109,7 @@ class AutoRecognize:
                     dlg = QtWidgets.QMessageBox()
                     dlg.setText("Missing conversion for: " + phone)
                     dlg.setWindowTitle("Missing Phoneme Conversion")
-                    app = QtWidgets.QApplication.instance()
-                    main_window = None
-                    for widget in app.topLevelWidgets():
-                        if isinstance(widget, QtWidgets.QMainWindow):
-                            main_window = widget
-                    dlg.setWindowIcon(main_window.windowIcon())
+                    dlg.setWindowIcon(self.main_window.windowIcon())
                     dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                     dlg.setDefaultButton(QtWidgets.QMessageBox.Ok)
                     dlg.setIcon(QtWidgets.QMessageBox.Information)
