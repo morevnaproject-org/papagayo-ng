@@ -24,8 +24,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 from PySide2.QtGui import QDesktopServices
 import PySide2.QtWidgets as QtWidgets
-
-from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+# from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 
 from PySide2.QtUiTools import QUiLoader as uic
 from PySide2.QtCore import QFile
@@ -33,39 +32,23 @@ from PySide2.QtCore import QFile
 from utilities import *
 
 
-class WebEnginePage(QWebEnginePage):
-    def acceptNavigationRequest(self, url,  _type, isMainFrame):
-        if _type == QWebEnginePage.NavigationTypeLinkClicked:
-            QDesktopServices.openUrl(url)
-            return False
-        return True
-
-
-class HtmlView(QWebEngineView):
-    def __init__(self, *args, **kwargs):
-        QWebEngineView.__init__(self, *args, **kwargs)
-        self.setPage(WebEnginePage(self))
-
-
 class AboutBox:
     def __init__(self):
         self.loader = None
         self.ui = None
         self.ui_file = None
+        print(os.path.join(get_main_dir(), "rsrc", "about_box.ui"))
         self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "rsrc", "about_box.ui"))
-        self.main_window.about_window_group.html_view = HtmlView(self.main_window)
-        self.main_window.about_window_group.html_view.setMinimumHeight(450)
-        self.main_window.about_window_group.insertWidget(0, self.main_window.about_window_group.html_view)
         self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
         self.main_window.about_ok_button.clicked.connect(self.close)
+        self.main_window.license.anchorClicked.connect(self.open_license)
 
-        with open(os.path.join(get_main_dir(), "rsrc", "about.html"), "r") as html_file:
-            html_file_fixed_paths = html_file.read().replace("papagayo-ng.png", r"file:///{}".format(
-                os.path.join(get_main_dir(), "rsrc", "papagayo-ng.png")))
-            html_file_fixed_paths = html_file_fixed_paths.replace("gpl.html", r"file:///{}".format(
-                os.path.join(get_main_dir(), "rsrc", "gpl.html")))
-            self.main_window.about_window_group.html_view.setHtml(html_file_fixed_paths, baseUrl=QtCore.QUrl(
-                r"file:///{}".format(os.path.join(get_main_dir(), "rsrc", "about.html"))))
+    def open_license(self, event):
+        if event.toString() == "gpl.html":
+            license_path = QtCore.QUrl("file:///{}".format(os.path.join(get_main_dir(), "rsrc", "gpl.html")))
+            QtGui.QDesktopServices.openUrl(license_path)
+        else:
+            QtGui.QDesktopServices.openUrl(event)
 
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()

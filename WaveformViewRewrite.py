@@ -102,7 +102,7 @@ class MovableButton(QtWidgets.QPushButton):
 
     def text_size(self):
         font_metrics = QtGui.QFontMetrics(self.font())
-        return font_metrics.width(self.title)
+        return font_metrics.horizontalAdvance(self.title)
 
     def text_fits_in_button(self):
         if not self.is_phoneme():
@@ -371,31 +371,29 @@ class MovableButton(QtWidgets.QPushButton):
             old_cur_frame = 0
             start_time = 0
             self.wfv_parent.temp_play_marker.setVisible(True)
-            main_window = self.wfv_parent.parentWidget().parentWidget().parentWidget()  # lol
-            main_window.action_stop.setEnabled(True)
-            main_window.action_play.setEnabled(False)
+            self.wfv_parent.main_window.action_stop.setEnabled(True)
+            self.wfv_parent.main_window.action_play.setEnabled(False)
             while self.wfv_parent.doc.sound.is_playing():
                 QtCore.QCoreApplication.processEvents()
                 cur_frame = int(self.wfv_parent.doc.sound.current_time() * self.wfv_parent.doc.fps)
                 if old_cur_frame != cur_frame:
                     old_cur_frame = cur_frame
-
-                    main_window.mouth_view.set_frame(old_cur_frame)
+                    self.wfv_parent.main_window.mouth_view.set_frame(old_cur_frame)
                     self.wfv_parent.set_frame(old_cur_frame)
                     try:
                         fps = 1.0 / (time.time() - start_time)
                     except ZeroDivisionError:
                         fps = 60
-                    main_window.statusbar.showMessage("Frame: {:d} FPS: {:d}".format((cur_frame + 1), int(fps)))
+                    self.wfv_parent.main_window.statusbar.showMessage("Frame: {:d} FPS: {:d}".format((cur_frame + 1), int(fps)))
                     self.wfv_parent.scroll_position = self.wfv_parent.horizontalScrollBar().value()
                     start_time = time.time()
                 self.wfv_parent.update()
             self.wfv_parent.temp_play_marker.setVisible(False)
-            main_window.action_stop.setEnabled(False)
-            main_window.action_play.setEnabled(True)
-            main_window.statusbar.showMessage("Stopped")
-            main_window.waveform_view.horizontalScrollBar().setValue(main_window.waveform_view.scroll_position)
-            main_window.waveform_view.update()
+            self.wfv_parent.main_window.action_stop.setEnabled(False)
+            self.wfv_parent.main_window.action_play.setEnabled(True)
+            self.wfv_parent.main_window.statusbar.showMessage("Stopped")
+            self.wfv_parent.main_window.waveform_view.horizontalScrollBar().setValue(self.wfv_parent.main_window.waveform_view.scroll_position)
+            self.wfv_parent.main_window.waveform_view.update()
 
     def mouseReleaseEvent(self, event):
         if self.is_moving:
@@ -403,6 +401,8 @@ class MovableButton(QtWidgets.QPushButton):
         if self.is_resizing:
             self.reposition_descendants2(True)
             self.is_resizing = False
+        if self.is_phoneme():
+            self.wfv_parent.main_window.mouth_view.set_phoneme_picture(self.lipsync_object.text)
 
     def set_tags(self, new_taglist):
         self.lipsync_object.tags = new_taglist
@@ -536,7 +536,10 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         # Other initialization
-        self.main_window = self.parentWidget().parentWidget().parentWidget()  # lol
+        self.main_window = None
+        for widget in QtWidgets.QApplication.instance().topLevelWidgets():
+            if isinstance(widget, QtWidgets.QMainWindow):
+                self.main_window = widget
         self.doc = None
         self.currently_selected_object = None
         self.is_scrubbing = False
@@ -583,10 +586,10 @@ class WaveformView(QtWidgets.QGraphicsView):
                 if sys.platform == "darwin":
                     from Foundation import NSURL
                     fname = str(NSURL.URLWithString_(str(url.toString())).filePathURL().path())
-                    self.topLevelWidget().lip_sync_frame.open(fname)
+                    self.main_window.lip_sync_frame.open(fname)
                 else:
                     fname = str(url.toLocalFile())
-                    self.topLevelWidget().lip_sync_frame.open(fname)
+                    self.main_window.lip_sync_frame.open(fname)
             return True
         else:
             if event.source():
@@ -641,13 +644,16 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.currently_selected_object.setStyleSheet(new_style)
                 self.main_window.list_of_tags.clear()
                 self.main_window.list_of_tags.addItems(self.currently_selected_object.lipsync_object.tags)
-                title_part_two = self.currently_selected_object.title
-                if len(self.currently_selected_object.title) > 40:
-                    title_part_two = self.currently_selected_object.title[0:40] + "..."
+                title_part_two = self.currently_selected_object.lipsync_object.text
+                if len(self.currently_selected_object.lipsync_object.text) > 40:
+                    title_part_two = self.currently_selected_object.lipsync_object.text[0:40] + "..."
                 new_title = self.currently_selected_object.object_type().title() + ": " + title_part_two
                 self.main_window.tag_list_group.setTitle(new_title)
                 self.main_window.parent_tags.clear()
                 self.main_window.parent_tags.setEnabled(False)
+                for i in range(self.main_window.voice_for_selection.count()):
+                    if self.main_node.name == self.main_window.voice_for_selection.itemText(i):
+                        self.main_window.voice_for_selection.setCurrentIndex(i)
                 if self.currently_selected_object.object_type() == "phoneme":
                     parent_word = self.currently_selected_object.get_parent().name
                     parent_phrase = parent_word.get_parent().name
@@ -660,7 +666,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in phrase_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_phrase_tags.append(new_tag)
-                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.title])
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.lipsync_object.text])
                         phrase_tree.addChildren(list_of_phrase_tags)
                         self.main_window.parent_tags.addTopLevelItem(phrase_tree)
                         phrase_tree.setExpanded(True)
@@ -669,7 +675,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in word_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_word_tags.append(new_tag)
-                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.title])
+                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.lipsync_object.text])
                         word_tree.addChildren(list_of_word_tags)
                         self.main_window.parent_tags.addTopLevelItem(word_tree)
                         word_tree.setExpanded(True)
@@ -682,7 +688,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in parent_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_tags.append(new_tag)
-                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.title])
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.lipsync_object.text])
                         phrase_tree.addChildren(list_of_tags)
                         self.main_window.parent_tags.addTopLevelItem(phrase_tree)
                         phrase_tree.setExpanded(True)
@@ -773,7 +779,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             bg_height = self.height() + self.horizontalScrollBar().height()
             half_client_height = bg_height / 2
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
             x = first_sample * self.sample_width
             frame = first_sample / self.samples_per_frame
             fps = int(round(self.doc.fps))
@@ -803,17 +809,17 @@ class WaveformView(QtWidgets.QGraphicsView):
     def start_create_waveform(self):
         worker = Worker(self.create_waveform)
         worker.signals.finished.connect(self.waveform_finished)
-        worker.signals.progress.connect(self.topLevelWidget().lip_sync_frame.status_bar_progress)
+        worker.signals.progress.connect(self.main_window.lip_sync_frame.status_bar_progress)
 
-        self.topLevelWidget().lip_sync_frame.status_progress.show()
+        self.main_window.lip_sync_frame.status_progress.show()
         available_height = self.height() / 2
         fitted_samples = self.amp * available_height
-        self.topLevelWidget().lip_sync_frame.status_progress.setMaximum(len(fitted_samples))
+        self.main_window.lip_sync_frame.status_progress.setMaximum(len(fitted_samples))
         self.threadpool.start(worker)
         self.threadpool.waitForDone()
 
     def waveform_finished(self):
-        self.topLevelWidget().lip_sync_frame.status_progress.hide()
+        self.main_window.lip_sync_frame.status_progress.hide()
         update_rect = self.scene().sceneRect()
         width_factor = 1  # Only the height needs to change.
         height_factor = 1
@@ -828,18 +834,19 @@ class WaveformView(QtWidgets.QGraphicsView):
                 origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
             # We need to at least update the Y Position of the Phonemes
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             if self.main_node:
-                for phoneme_node in self.main_node.leaves:  # this should be all phonemes
-                    widget = phoneme_node.name
-                    if widget:
-                        if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
-                            widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
-                                               (text_height + (text_height * widget.phoneme_offset)),
-                                               self.frame_width + 5,
-                                               text_height)
+                if self.main_node.children:
+                    for phoneme_node in self.main_node.leaves:  # this should be all phonemes
+                        widget = phoneme_node.name
+                        if widget:
+                            if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
+                                widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
+                                                   (text_height + (text_height * widget.phoneme_offset)),
+                                                   self.frame_width + 5,
+                                                   text_height)
         self.horizontalScrollBar().setValue(self.scroll_position)
         try:
             if self.temp_play_marker:
@@ -855,17 +862,16 @@ class WaveformView(QtWidgets.QGraphicsView):
         fitted_samples = self.amp * available_height
         offset = 0  # available_height / 2
         temp_polygon = QtGui.QPolygonF()
-        main_window = self.topLevelWidget()
         for x, y in enumerate(fitted_samples):
             progress_callback.emit((x / 2))
-            main_window.statusbar.showMessage(
+            self.main_window.statusbar.showMessage(
                 "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100))))
             temp_polygon.append(QtCore.QPointF(x * self.sample_width, available_height - y + offset))
             if x < len(fitted_samples):
                 temp_polygon.append(QtCore.QPointF((x + 1) * self.sample_width, available_height - y + offset))
         for x, y in enumerate(fitted_samples[::-1]):
             progress_callback.emit((len(fitted_samples) / 2) + (x / 2))
-            main_window.statusbar.showMessage(
+            self.main_window.statusbar.showMessage(
                 "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100) + 50)))
             temp_polygon.append(QtCore.QPointF((len(fitted_samples) - x) * self.sample_width,
                                                available_height + y + offset))
@@ -874,34 +880,33 @@ class WaveformView(QtWidgets.QGraphicsView):
                                                    available_height + y + offset))
         self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
         self.waveform_polygon.setZValue(1)
-        main_window.statusbar.showMessage("Papagayo-NG")
+        self.main_window.statusbar.showMessage("Papagayo-NG")
 
     def start_create_movbuttons(self):
         if self.doc is not None:
             worker = Worker(self.create_movbuttons)
             worker.signals.finished.connect(self.movbuttons_finished)
-            worker.signals.progress.connect(self.topLevelWidget().lip_sync_frame.status_bar_progress)
+            worker.signals.progress.connect(self.main_window.lip_sync_frame.status_bar_progress)
 
-            self.topLevelWidget().lip_sync_frame.status_progress.show()
-            self.topLevelWidget().lip_sync_frame.status_progress.setMaximum(self.doc.current_voice.num_children)
+            self.main_window.lip_sync_frame.status_progress.show()
+            self.main_window.lip_sync_frame.status_progress.setMaximum(self.doc.current_voice.num_children)
             self.threadpool.start(worker)
             self.threadpool.waitForDone()
 
     def movbuttons_finished(self):
-        self.topLevelWidget().lip_sync_frame.status_progress.hide()
+        self.main_window.lip_sync_frame.status_progress.hide()
         self.start_recalc()
 
     def create_movbuttons(self, progress_callback):
         if self.doc is not None:
             self.setUpdatesEnabled(False)
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
-            main_window = self.parentWidget().parentWidget().parentWidget()
             current_num = 0
             self.main_node = Node(
-                self.doc.current_voice.text)  # Not actually needed, but should make everything a bit easier
+                self.doc.current_voice.name)  # Not actually needed, but should make everything a bit easier
             for phrase in self.doc.current_voice.phrases:
                 self.temp_button = MovableButton(phrase, self)
                 self.temp_button.node = Node(self.temp_button, parent=self.main_node)
@@ -915,7 +920,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 current_num += 1
                 progress_callback(current_num)
                 if self.doc.current_voice.num_children:
-                    main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
+                    self.main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
                         str(int((current_num / self.doc.current_voice.num_children) * 100))))
                 for word in phrase.words:
                     self.temp_button = MovableButton(word, self)
@@ -932,7 +937,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     current_num += 1
                     progress_callback(current_num)
                     if self.doc.current_voice.num_children:
-                        main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
+                        self.main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
                             str(int((current_num / self.doc.current_voice.num_children) * 100))))
                     for phoneme in word.phonemes:
                         self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
@@ -949,25 +954,25 @@ class WaveformView(QtWidgets.QGraphicsView):
                         current_num += 1
                         progress_callback(current_num)
                         if self.doc.current_voice.num_children:
-                            main_window.statusbar.showMessage(
+                            self.main_window.statusbar.showMessage(
                                 "Preparing Buttons: {0}%".format(
                                     str(int((current_num / self.doc.current_voice.num_children) * 100))))
-            main_window.statusbar.showMessage("Papagayo-NG")
+            self.main_window.statusbar.showMessage("Papagayo-NG")
             self.setUpdatesEnabled(True)
 
     def start_recalc(self, wait_for_done=True):
         worker = Worker(self.recalc_waveform)
         worker.signals.finished.connect(self.recalc_finished)
-        worker.signals.progress.connect(self.topLevelWidget().lip_sync_frame.status_bar_progress)
+        worker.signals.progress.connect(self.main_window.lip_sync_frame.status_bar_progress)
 
-        self.topLevelWidget().lip_sync_frame.status_progress.show()
-        self.topLevelWidget().lip_sync_frame.status_progress.setMaximum(self.doc.sound.Duration())
+        self.main_window.lip_sync_frame.status_progress.show()
+        self.main_window.lip_sync_frame.status_progress.setMaximum(self.doc.sound.Duration())
         self.threadpool.start(worker)
         if wait_for_done:
             self.threadpool.waitForDone()
 
     def recalc_finished(self):
-        self.topLevelWidget().lip_sync_frame.status_progress.hide()
+        self.main_window.lip_sync_frame.status_progress.hide()
         self.start_create_waveform()
 
     def recalc_waveform(self, progress_callback):
@@ -990,8 +995,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.doc = document
             if (self.doc is not None) and (self.doc.sound is not None):
                 self.scene().clear()
-                self.scene().update()
-                self.create_movbuttons(self.topLevelWidget().lip_sync_frame.status_bar_progress)
+                self.create_movbuttons(self.main_window.lip_sync_frame.status_bar_progress)
                 self.start_recalc()
                 if self.temp_play_marker not in self.scene().items():
                     self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
@@ -1001,6 +1005,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     self.temp_play_marker.setOpacity(0.5)
                     self.temp_play_marker.setVisible(False)
                 self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+                self.scene().update()
 
     def on_slider_change(self, value):
         self.scroll_position = value
@@ -1030,12 +1035,12 @@ class WaveformView(QtWidgets.QGraphicsView):
                 origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
             # We need to at least update the Y Position of the Phonemes
             font_metrics = QtGui.QFontMetrics(font)
-            text_width, top_border = font_metrics.width("Ojyg"), font_metrics.height() * 2
-            text_width, text_height = font_metrics.width("Ojyg"), font_metrics.height() + 6
+            text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
+            text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             for phoneme_node in self.main_node.leaves:  # this should be all phonemes
                 widget = phoneme_node.name
-                if widget:
+                if widget and not isinstance(widget, str):
                     if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
                         widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
                                            (text_height + (text_height * widget.phoneme_offset)), self.frame_width + 5,
@@ -1081,21 +1086,22 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def on_zoom_reset(self, event=None):
         if self.doc is not None:
-            self.scroll_position /= (self.samples_per_frame / self.default_samples_per_frame)
-            factor = (self.samples_per_frame / self.default_samples_per_frame)
-            self.sample_width = self.default_sample_width
-            self.samples_per_frame = self.default_samples_per_frame
-            self.samples_per_sec = self.doc.fps * self.samples_per_frame
-            self.frame_width = self.sample_width * self.samples_per_frame
-            for node in self.main_node.descendants:
-                node.name.after_reposition()
-                node.name.fit_text_to_size()
-            self.start_recalc()
-            if self.temp_play_marker:
-                self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
-            self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
-                                      self.scene().sceneRect().width() / factor, self.scene().sceneRect().height())
-            self.setSceneRect(self.scene().sceneRect())
-            self.horizontalScrollBar().setValue(self.scroll_position)
+            if self.samples_per_frame != self.default_samples_per_frame:
+                self.scroll_position /= (self.samples_per_frame / self.default_samples_per_frame)
+                factor = (self.samples_per_frame / self.default_samples_per_frame)
+                self.sample_width = self.default_sample_width
+                self.samples_per_frame = self.default_samples_per_frame
+                self.samples_per_sec = self.doc.fps * self.samples_per_frame
+                self.frame_width = self.sample_width * self.samples_per_frame
+                for node in self.main_node.descendants:
+                    node.name.after_reposition()
+                    node.name.fit_text_to_size()
+                self.start_recalc()
+                if self.temp_play_marker:
+                    self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
+                self.scene().setSceneRect(self.scene().sceneRect().x(), self.scene().sceneRect().y(),
+                                          self.scene().sceneRect().width() / factor, self.scene().sceneRect().height())
+                self.setSceneRect(self.scene().sceneRect())
+                self.horizontalScrollBar().setValue(self.scroll_position)
 
 # end of class WaveformView

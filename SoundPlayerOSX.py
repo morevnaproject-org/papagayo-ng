@@ -7,6 +7,7 @@ from PySide2.QtCore import QUrl
 from PySide2.QtMultimedia import QMediaPlayer
 from cffi import FFI
 
+import utilities
 from utilities import *
 from utilities import which
 
@@ -55,7 +56,7 @@ class SoundPlayer:
                 AudioSegment.converter = which("avconv")
             else:
                 if platform.system() == "Windows":
-                    AudioSegment.converter = os.path.join(get_main_dir(), "ffmpeg.exe")
+                    AudioSegment.converter = os.path.join(utilities.get_app_data_path(), "ffmpeg.exe")
                     # AudioSegment.converter = os.path.dirname(os.path.realpath(__file__)) + "\\ffmpeg.exe"
                 else:
                     # TODO: Check if we have ffmpeg or avconv installed

@@ -21,7 +21,10 @@
 
 # import os
 # from utilities import Worker, WorkerSignals
+import os
+import tarfile
 import time
+from pprint import pprint
 
 from PySide2.QtCore import QFile
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -29,10 +32,10 @@ from PySide2.QtWidgets import QProgressDialog
 from PySide2.QtUiTools import QUiLoader as uic
 
 
-import webbrowser
 import urllib.request
 import io
 from zipfile import ZipFile
+import utilities
 import platform
 import random
 import re
@@ -42,6 +45,7 @@ from MouthViewQT import MouthView
 # end wxGlade
 
 from AboutBoxQT import AboutBox
+from SettingsQT import SettingsWindow
 from LipsyncDoc import *
 
 app_title = "Papagayo-NG"
@@ -98,12 +102,13 @@ class LipsyncFrame:
         self.ui = None
         self.doc = None
         self.about_dlg = None
+        self.settings_dlg = None
         self.ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
         self.main_window = self.load_ui_widget(self.ui_path)
         self.main_window.setWindowTitle("%s" % app_title)
         self.main_window.lip_sync_frame = self
 
-        self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+        self.config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         tree_style = r'''QTreeView::branch:has-siblings:!adjoins-item {
                              border-image: url(./rsrc/vline.png) 0;}               
                          QTreeView::branch:has-siblings:adjoins-item {
@@ -121,10 +126,8 @@ class LipsyncFrame:
         self.main_window.parent_tags.setStyleSheet(tree_style)
 
         # TODO: need a good description for this stuff
-        print(dir(self.main_window))
         mouth_list = list(self.main_window.mouth_view.mouths.keys())
         mouth_list.sort(key=sort_mouth_list_order)
-        print(mouth_list)
         for mouth in mouth_list:
             self.main_window.mouth_choice.addItem(mouth)
         self.main_window.mouth_choice.setCurrentIndex(0)
@@ -200,6 +203,7 @@ class LipsyncFrame:
         self.main_window.action_zoom_in.triggered.connect(self.main_window.waveform_view.on_zoom_in)
         self.main_window.action_zoom_out.triggered.connect(self.main_window.waveform_view.on_zoom_out)
         self.main_window.action_reset_zoom.triggered.connect(self.main_window.waveform_view.on_zoom_reset)
+        self.main_window.action_settings.triggered.connect(self.show_settings)
 
         self.main_window.reload_dict_button.clicked.connect(self.on_reload_dictionary)
         self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(self.main_window.waveform_view.on_slider_change)
@@ -209,6 +213,7 @@ class LipsyncFrame:
         self.main_window.voice_name_input.textChanged.connect(self.on_voice_name)
         self.main_window.export_button.clicked.connect(self.on_voice_export)
         self.main_window.breakdown_button.clicked.connect(self.on_voice_breakdown)
+        self.main_window.voice_recognition_button.clicked.connect(self.on_voice_recognize)
         self.main_window.choose_imageset_button.clicked.connect(self.on_voice_image_choose)
         self.main_window.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
         self.main_window.volume_slider.valueChanged.connect(self.change_volume)
@@ -218,20 +223,25 @@ class LipsyncFrame:
         self.main_window.add_tag.clicked.connect(self.add_tag)
         self.main_window.tag_entry.returnPressed.connect(self.add_tag)
         self.main_window.remove_tag.clicked.connect(self.remove_tag)
+        self.main_window.apply_voice_change.clicked.connect(self.change_voice_for_selection)
         self.tab_add_button.clicked.connect(self.on_new_voice)
         self.tab_remove_button.clicked.connect(self.on_del_voice)
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
-        if platform.system() in ["Windows", "Darwin"]:
-            ffmpeg_binary = "ffmpeg.exe"
-            if platform.system() == "Darwin":
-                ffmpeg_binary = "ffmpeg"
-            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-            if not os.path.exists(ffmpeg_path):
-                self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
-                self.ffmpeg_action.triggered.connect(self.start_download)
-                self.main_window.menubar.addAction(self.ffmpeg_action)
+        if not utilities.ffmpeg_binaries_exists():
+            self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
+            self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
+            self.main_window.menubar.addAction(self.ffmpeg_action)
+        if not utilities.allosaurus_model_exists():
+            self.model_action = QtWidgets.QAction("Download AI Model")
+            self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
+            self.main_window.menubar.addAction(self.model_action)
+        if not utilities.rhubarb_binaries_exists():
+            self.rhubarb_action = QtWidgets.QAction("Download Rhubarb")
+            self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
+            self.main_window.menubar.addAction(self.rhubarb_action)
+        self.phoneme_convert = QtWidgets.QAction("Convert Phonemes")
         self.cur_frame = 0
         self.timer = None
         self.wv_height = 1
@@ -244,19 +254,43 @@ class LipsyncFrame:
         self.start_time = time.time()
         self.threadpool = QtCore.QThreadPool.globalInstance()
 
-    def download_finished(self):
-        if platform.system() in ["Windows", "Darwin"]:
-            ffmpeg_binary = "ffmpeg.exe"
-            if platform.system() == "Darwin":
-                ffmpeg_binary = "ffmpeg"
-            ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-            if os.path.exists(ffmpeg_path):
+    def download_general_finished(self):
+        if utilities.allosaurus_model_exists():
+            try:
+                self.main_window.menubar.removeAction(self.model_action)
+            except AttributeError:
+                pass  # was already deleted
+        if utilities.ffmpeg_binaries_exists():
+            try:
                 self.main_window.menubar.removeAction(self.ffmpeg_action)
+            except AttributeError:
+                pass  # was already deleted
+        if utilities.rhubarb_binaries_exists():
+            try:
+                self.main_window.menubar.removeAction(self.rhubarb_action)
+            except AttributeError:
+                pass  # was already deleted
         self.status_progress.hide()
 
-    def start_download(self):
-        worker = Worker(self.download_ffmpeg)
-        worker.signals.finished.connect(self.download_finished)
+    def download_ffmpeg_finished(self):
+        self.download_general_finished()
+        dlg = QtWidgets.QMessageBox()
+        dlg.setText("Download of FFMPEG is finished. \nPlease close and restart Papagayo-NG")
+        dlg.setWindowTitle(app_title)
+        dlg.setWindowIcon(self.main_window.windowIcon())
+        dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        dlg.setDefaultButton(QtWidgets.QMessageBox.Ok)
+        dlg.setIcon(QtWidgets.QMessageBox.Information)
+        dlg.exec_()
+
+    def start_download(self, work_job):
+        worker = Worker(work_job)
+        if work_job == self.download_ffmpeg:
+            worker.signals.finished.connect(self.download_ffmpeg_finished)
+        elif work_job == self.download_allosaurus_model:
+            worker.signals.finished.connect(self.download_general_finished)
+        elif work_job == self.download_rhubarb:
+            worker.signals.finished.connect(self.download_general_finished)
         worker.signals.progress.connect(self.status_bar_progress)
         self.status_progress.show()
         self.status_progress.setMaximum(100)
@@ -266,41 +300,135 @@ class LipsyncFrame:
         self.status_progress.setValue(n)
         QtCore.QCoreApplication.processEvents()
 
+    def download_allosaurus_model(self, progress_callback):
+        model_name = "latest"
+        url = 'https://github.com/xinjli/allosaurus/releases/download/v1.0/' + model_name + '.tar.gz'
+        model_dir = os.path.join(utilities.get_app_data_path(), "allosaurus_model")
+        with urllib.request.urlopen(url) as req:
+            length = req.getheader('content-length')
+            block_size = 1000000
+            if length:
+                length = int(length)
+                block_size = max(4096, length // 100)
+            buffer_all = io.BytesIO()
+            size = 0
+            while True:
+                buffer_now = req.read(block_size)
+                if not buffer_now:
+                    break
+                buffer_all.write(buffer_now)
+                size += len(buffer_now)
+                if length:
+                    percent = int((size / length) * 100)
+                    progress_callback.emit(percent)
+            if buffer_all:
+                buffer_all.seek(0)
+                files = tarfile.open(fileobj=buffer_all)
+                files.extractall(str(model_dir))
+                os.rename(os.path.join(model_dir, "uni2005"), os.path.join(model_dir, "latest"))
+        return
+
     def download_ffmpeg(self, progress_callback):
         ffmpeg_binary = "ffmpeg.exe"
+        ffprobe_binary = "ffprobe.exe"
         ffmpeg_build_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+        ffmpeg_json = json.loads(urllib.request.urlopen("https://api.github.com/repos/BtbN/FFmpeg-Builds/releases").read())
+        for download in ffmpeg_json[0]["assets"]:
+            if download["name"].endswith("win64-lgpl.zip"):
+                ffmpeg_build_url = download["browser_download_url"]
         if platform.system() == "Darwin":
             ffmpeg_binary = "ffmpeg"
+            ffprobe_binary = "ffprobe"
             ffmpeg_build_url = "https://evermeet.cx/ffmpeg/getrelease/zip"
-        ffmpeg_path = os.path.join(get_main_dir(), ffmpeg_binary)
-        if os.path.exists(ffmpeg_path):
+        ffmpeg_path = os.path.join(utilities.get_app_data_path(), ffmpeg_binary)
+        ffprobe_path = os.path.join(utilities.get_app_data_path(), ffprobe_binary)
+        if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
             return
         else:
-            with urllib.request.urlopen(ffmpeg_build_url) as req:
-                length = req.getheader('content-length')
-                block_size = 1000000
-                if length:
-                    length = int(length)
-                    block_size = max(4096, length // 100)
-                buffer_all = io.BytesIO()
-                size = 0
-                while True:
-                    buffer_now = req.read(block_size)
-                    if not buffer_now:
-                        break
-                    buffer_all.write(buffer_now)
-                    size += len(buffer_now)
+            try:
+                with urllib.request.urlopen(ffmpeg_build_url) as req:
+                    length = req.getheader('content-length')
+                    block_size = 1000000
                     if length:
-                        percent = int((size / length) * 100)
-                        progress_callback.emit(percent)
-                if buffer_all:
-                    ffmpeg_zip = ZipFile(buffer_all)
-                    for zfile in ffmpeg_zip.filelist:
-                        if ffmpeg_binary in zfile.filename:
-                            ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
-                            ffmpeg_file = open(ffmpeg_path, "wb")
-                            ffmpeg_file.write(ffmpeg_file_content)
-                            ffmpeg_file.close()
+                        length = int(length)
+                        block_size = max(4096, length // 100)
+                    buffer_all = io.BytesIO()
+                    size = 0
+                    while True:
+                        buffer_now = req.read(block_size)
+                        if not buffer_now:
+                            break
+                        buffer_all.write(buffer_now)
+                        size += len(buffer_now)
+                        if length:
+                            percent = int((size / length) * 100)
+                            progress_callback.emit(percent)
+                    if buffer_all:
+                        ffmpeg_zip = ZipFile(buffer_all)
+                        for zfile in ffmpeg_zip.filelist:
+                            if ffmpeg_binary in zfile.filename:
+                                ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
+                                ffmpeg_file = open(ffmpeg_path, "wb")
+                                ffmpeg_file.write(ffmpeg_file_content)
+                                ffmpeg_file.close()
+                            elif ffprobe_binary in zfile.filename:
+                                ffprobe_file_content = ffmpeg_zip.read(zfile.filename)
+                                ffprobe_file = open(ffprobe_path, "wb")
+                                ffprobe_file.write(ffprobe_file_content)
+                                ffprobe_file.close()
+            except TimeoutError:
+                # Download Failed
+                pass
+            return
+
+    def download_rhubarb(self, progress_callback):
+        binary = "rhubarb.exe"
+        release_url = ""
+        if platform.system() == "Darwin":
+            binary = "rhubarb"
+        github_url = "https://api.github.com/repos/DanielSWolf/rhubarb-lip-sync/releases"
+        download_json = json.loads(urllib.request.urlopen(github_url).read())
+        for download in download_json[0]["assets"]:
+            if platform.system() == "Darwin":
+                if download["name"].endswith("-osx.zip"):
+                    release_url = download["browser_download_url"]
+            else:
+                if download["name"].endswith("-win32.zip"):
+                    release_url = download["browser_download_url"]
+        rhubarb_path = os.path.join(utilities.get_app_data_path(), binary)
+
+        if os.path.exists(rhubarb_path):
+            return
+        else:
+            try:
+                with urllib.request.urlopen(release_url) as req:
+                    length = req.getheader('content-length')
+                    block_size = 1000000
+                    if length:
+                        length = int(length)
+                        block_size = max(4096, length // 100)
+                    buffer_all = io.BytesIO()
+                    size = 0
+                    while True:
+                        buffer_now = req.read(block_size)
+                        if not buffer_now:
+                            break
+                        buffer_all.write(buffer_now)
+                        size += len(buffer_now)
+                        if length:
+                            percent = int((size / length) * 100)
+                            progress_callback.emit(percent)
+                    if buffer_all:
+                        rhubarb_zip = ZipFile(buffer_all)
+                        for zfile in rhubarb_zip.filelist:
+                            if binary in zfile.filename:
+                                rhubarb_file_content = rhubarb_zip.read(zfile.filename)
+                                rhubarb_file = open(rhubarb_path, "wb")
+                                rhubarb_file.write(rhubarb_file_content)
+                                rhubarb_file.close()
+            except TimeoutError:
+                # Download Failed
+                pass
             return
 
     def load_ui_widget(self, ui_filename, parent=None):
@@ -312,6 +440,75 @@ class LipsyncFrame:
         self.ui = self.loader.load(file, parent)
         file.close()
         return self.ui
+
+    def change_voice_for_selection(self):
+        print("Currently Selected Object: " + self.main_window.waveform_view.currently_selected_object.title)
+        print("Corresponding LipsyncObject: " + str(vars(self.main_window.waveform_view.currently_selected_object.lipsync_object)))
+        print("Current Voice: " + self.doc.current_voice.name)
+        print("New Voice: " + self.main_window.voice_for_selection.currentText())
+        moving_object = self.main_window.waveform_view.currently_selected_object.lipsync_object
+        new_voice_parent = None
+        for voice in self.doc.voices:
+            if voice.name == self.main_window.voice_for_selection.currentText():
+                new_voice_parent = voice
+        # Find existing parent object for selected one
+        parent_instance = "voice"
+        if isinstance(moving_object, LipsyncWord):
+            parent_instance = "phrase"
+        elif isinstance(moving_object, LipsyncPhoneme):
+            parent_instance = "word"
+        elif isinstance(moving_object, LipsyncPhrase):
+            parent_instance = "voice"
+        new_parent_object = None
+        if parent_instance == "voice":
+            new_parent_object = new_voice_parent
+        else:
+            for possible_parent in new_voice_parent.phrases:
+                if parent_instance == "phrase":
+                    if possible_parent.start_frame <= moving_object.start_frame and possible_parent.end_frame >= moving_object.end_frame:
+                        new_parent_object = possible_parent
+                elif parent_instance == "word":
+                    for possible_word_parent in possible_parent.words:
+                        if possible_word_parent.start_frame <= moving_object.frame <= possible_word_parent.end_frame:
+                            new_parent_object = possible_word_parent
+            if not new_parent_object:
+                if parent_instance == "phrase":
+                    new_temp_parent = LipsyncPhrase()
+                    new_temp_parent.text = moving_object.text
+                    new_temp_parent.start_frame = moving_object.start_frame
+                    new_temp_parent.end_frame = moving_object.end_frame
+                    new_temp_parent.words.append(moving_object)
+                    new_voice_parent.phrases.append(new_temp_parent)
+                if parent_instance == "word":
+                    new_temp_parent = LipsyncPhrase()
+                    new_temp_parent.text = moving_object.text
+                    new_temp_parent.start_frame = moving_object.frame
+                    new_temp_parent.end_frame = moving_object.frame
+
+                    new_word_parent = LipsyncWord()
+                    new_word_parent.text = moving_object.text
+                    new_word_parent.start_frame = moving_object.frame
+                    new_word_parent.end_frame = moving_object.frame
+                    new_word_parent.phonemes.append(moving_object)
+                    new_temp_parent.words.append(new_word_parent)
+                    new_voice_parent.phrases.append(new_temp_parent)
+            else:
+                if parent_instance == "phrase":
+                    new_parent_object.words.append(moving_object)
+                elif parent_instance == "word":
+                    new_parent_object.phonemes.append(moving_object)
+                elif parent_instance == "voice":
+                    new_parent_object.phrases.append(moving_object)
+
+        parent_object = self.main_window.waveform_view.currently_selected_object.get_parent().name.lipsync_object
+        if isinstance(moving_object, LipsyncWord):
+            parent_object.words.remove(moving_object)
+        elif isinstance(moving_object, LipsyncPhrase):
+            parent_object.phrases.remove(moving_object)
+        elif isinstance(moving_object, LipsyncPhoneme):
+            parent_object.phonemes.remove(moving_object)
+
+        self.main_window.waveform_view.set_document(self.doc, force=True)
 
     def add_tag(self):
         if self.main_window.tag_entry.text():
@@ -345,31 +542,41 @@ class LipsyncFrame:
         print('FPS changed to: {0}'.format(str(new_fps_value)))
         old_fps_value = self.doc.fps
         resize_multiplier = new_fps_value / old_fps_value
-        self.doc.fps = new_fps_value
-        wfv = self.main_window.waveform_view
-        # wfv.default_samples_per_frame *= resize_multiplier
-        # wfv.default_sample_width *= resize_multiplier
-        #
-        # wfv.sample_width = wfv.default_sample_width
-        # wfv.samples_per_frame = wfv.default_samples_per_frame
-        wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
-        # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
-        #
-        # for node in wfv.main_node.descendants:
-        #     node.name.after_reposition()
-        #     node.name.fit_text_to_size()
-        # #self.main_window.waveform_view.recalc_waveform()
-        # #self.main_window.waveform_view.create_waveform()
-        # if wfv.temp_play_marker:
-        #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
-        wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
-                                 wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
-        wfv.setSceneRect(wfv.scene().sceneRect())
-        wfv.scroll_position *= resize_multiplier
-        wfv.scroll_position = 0
-        wfv.horizontalScrollBar().setValue(wfv.scroll_position)
-        wfv.recalc_waveform()
-        wfv.create_waveform()
+        if resize_multiplier != 1:
+            self.doc.fps = new_fps_value
+            wfv = self.main_window.waveform_view
+            # wfv.default_samples_per_frame *= resize_multiplier
+            # wfv.default_sample_width *= resize_multiplier
+            #
+            # wfv.sample_width = wfv.default_sample_width
+            # wfv.samples_per_frame = wfv.default_samples_per_frame
+            wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
+            # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
+            #
+            # for node in wfv.main_node.descendants:
+            #     node.name.after_reposition()
+            #     node.name.fit_text_to_size()
+            # #self.main_window.waveform_view.recalc_waveform()
+            # #self.main_window.waveform_view.create_waveform()
+            # if wfv.temp_play_marker:
+            #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
+
+            wfv.start_recalc(True)
+            wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
+                                     wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
+            wfv.setSceneRect(wfv.scene().sceneRect())
+            wfv.scroll_position *= resize_multiplier
+            wfv.scroll_position = 0
+            wfv.horizontalScrollBar().setValue(wfv.scroll_position)
+
+    def on_voice_recognize(self):
+        if self.doc and self.doc.sound:
+            if len(self.doc.voices) < 1:
+                self.doc.voices.append(LipsyncVoice("Voice 1"))
+            self.doc.current_voice = self.doc.voices[0]
+            self.doc.auto_recognize_phoneme(manual_invoke=True)
+            self.main_window.waveform_view.set_document(self.doc, force=True)
+            self.main_window.mouth_view.set_document(self.doc)
 
     def close_doc_ok(self):
         if self.doc is not None:
@@ -461,11 +668,13 @@ class LipsyncFrame:
             self.main_window.vertical_layout_right.setEnabled(True)
             self.main_window.vertical_layout_left.setEnabled(True)
             self.main_window.volume_slider.setEnabled(True)
-            self.main_window.volume_slider.setValue(50)
+            self.main_window.volume_slider.setValue(self.config.value("volume", 50))
             self.main_window.action_save.setEnabled(True)
             self.main_window.action_save_as.setEnabled(True)
             self.main_window.menu_edit.setEnabled(True)
             self.main_window.choose_imageset_button.setEnabled(False)
+            self.phoneme_convert.triggered.connect(self.doc.convert_to_phonemeset)
+            self.main_window.menubar.addAction(self.phoneme_convert)
             if self.doc.sound is not None:
                 self.main_window.action_play.setEnabled(True)
                 # self.main_window.action_stop.setEnabled(True)
@@ -473,6 +682,9 @@ class LipsyncFrame:
                 self.main_window.action_zoom_out.setEnabled(True)
                 self.main_window.action_reset_zoom.setEnabled(True)
             self.main_window.tag_list_group.setEnabled(False)
+            list_of_voices = [voice.name for voice in self.doc.voices]
+            self.main_window.voice_for_selection.clear()
+            self.main_window.voice_for_selection.addItems(list_of_voices)
 
             first_entry = True
             for voice in self.doc.voices:
@@ -549,11 +761,30 @@ class LipsyncFrame:
         github_path = "https://github.com/morevnaproject/papagayo-ng/issues"
         test_path = "file://{}".format(r"D:\Program Files (x86)\Papagayo\help\index.html")
         real_path = "file://{}".format(os.path.join(get_main_dir(), "help", "index.html"))
-        webbrowser.open(github_path)  # TODO: Fix path
+        QtGui.QDesktopServices.openUrl(github_path)
 
     def on_about(self, event=None):
         self.about_dlg = AboutBox()
         self.about_dlg.main_window.show()
+
+    def show_settings(self, event=None):
+        self.settings_dlg = SettingsWindow()
+        self.settings_dlg.main_window.show()
+        self.settings_dlg.main_window.finished.connect(self.settings_closed)
+
+    def settings_closed(self):
+        if not utilities.ffmpeg_binaries_exists():
+            self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
+            self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
+            self.main_window.menubar.addAction(self.ffmpeg_action)
+        if not utilities.allosaurus_model_exists():
+            self.model_action = QtWidgets.QAction("Download AI Model")
+            self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
+            self.main_window.menubar.addAction(self.model_action)
+        if not utilities.rhubarb_binaries_exists():
+            self.rhubarb_action = QtWidgets.QAction("Download Rhubarb")
+            self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
+            self.main_window.menubar.addAction(self.rhubarb_action)
 
     def on_play(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):
@@ -606,6 +837,7 @@ class LipsyncFrame:
     def change_volume(self, e):
         if self.doc and self.doc.sound:
             self.doc.sound.set_volume(int(self.main_window.volume_slider.value()))
+            self.config.setValue("volume", int(self.main_window.volume_slider.value()))
 
     def on_mouth_choice(self, event=None):
         self.main_window.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
@@ -720,9 +952,8 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
-        self.main_window.waveform_view.first_update = True
+        self.main_window.voice_for_selection.setCurrentIndex(self.main_window.current_voice.tabBar().currentIndex())
         self.main_window.waveform_view.set_document(self.doc, True)
-        self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
         self.doc.dirty = prev_dirty
 
@@ -750,11 +981,12 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
-        self.main_window.waveform_view.first_update = True
+        list_of_voices = [voice.name for voice in self.doc.voices]
+        self.main_window.voice_for_selection.clear()
+        self.main_window.voice_for_selection.addItems(list_of_voices)
+        self.main_window.voice_for_selection.setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
         self.main_window.waveform_view.set_document(self.doc, True)
-        self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
-
 
     def on_del_voice(self, event=None):
         if (not self.doc) or (len(self.doc.voices) == 1):
@@ -770,9 +1002,11 @@ class LipsyncFrame:
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().currentIndex())
-        self.main_window.waveform_view.first_update = True
+        list_of_voices = [voice.name for voice in self.doc.voices]
+        self.main_window.voice_for_selection.clear()
+        self.main_window.voice_for_selection.addItems(list_of_voices)
+        self.main_window.voice_for_selection.setCurrentIndex(new_index)
         self.main_window.waveform_view.set_document(self.doc, True)
-        self.main_window.waveform_view.update()
         self.main_window.mouth_view.draw_me()
 
     def on_voice_image_choose(self, event=None):

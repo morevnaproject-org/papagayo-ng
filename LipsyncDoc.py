@@ -22,6 +22,10 @@ import codecs
 import importlib
 import json
 import fnmatch
+try:
+    import auto_recognition
+except ModuleNotFoundError:
+    auto_recognition = None
 import os
 
 from Rhubarb import Rhubarb, RhubarbTimeoutException
@@ -51,6 +55,99 @@ strip_symbols += "'"
 
 ###############################################################
 
+class LanguageManager:
+    __shared_state = {}
+
+    def __init__(self):
+        self.__dict__ = self.__shared_state
+        self.language_table = {}
+        self.phoneme_dictionary = {}
+        self.raw_dictionary = {}
+        self.current_language = ""
+
+        self.export_conversion = {}
+        self.init_languages()
+
+    def load_dictionary(self, path):
+        try:
+            in_file = open(path, 'r')
+        except FileNotFoundError:
+            print("Unable to open phoneme dictionary!:{}".format(path))
+            return
+        new_cmu_version = False
+        if in_file.readline().startswith(";;; # CMUdict"):
+            new_cmu_version = True
+        # process dictionary entries
+        for line in in_file.readlines():
+            if not new_cmu_version:
+                if line[0] == '#':
+                    continue  # skip comments in the dictionary
+            else:
+                if line.startswith(";;;"):
+                    continue
+            # strip out leading/trailing whitespace
+            line.strip()
+            line = line.rstrip('\r\n')
+
+            # split into components
+            entry = line.split()
+            if len(entry) == 0:
+                continue
+            # check if this is a duplicate word (alternate transcriptions end with a number in parentheses) - if so, throw it out
+            if entry[0].endswith(')'):
+                continue
+            # add this entry to the in-memory dictionary
+            for i in range(len(entry)):
+                if i == 0:
+                    self.raw_dictionary[entry[0]] = []
+                else:
+                    rawentry = entry[i]
+                    self.raw_dictionary[entry[0]].append(rawentry)
+        in_file.close()
+        in_file = None
+
+    def load_language(self, language_config, force=False):
+        if self.current_language == language_config["label"] and not force:
+            return
+        self.current_language = language_config["label"]
+
+        if "dictionaries" in language_config:
+            for dictionary in language_config["dictionaries"]:
+                self.load_dictionary(os.path.join(get_main_dir(),
+                                                  language_config["location"],
+                                                  language_config["dictionaries"][dictionary]))
+
+    def language_details(self, dirname, names):
+        if "language.ini" in names:
+            config = configparser.ConfigParser()
+            config.read(os.path.join(dirname, "language.ini"))
+            label = config.get("configuration", "label")
+            ltype = config.get("configuration", "type")
+            details = {"label": label, "type": ltype, "location": dirname}
+            if ltype == "breakdown":
+                details["breakdown_class"] = config.get("configuration", "breakdown_class")
+                self.language_table[label] = details
+            elif ltype == "dictionary":
+                try:
+                    details["case"] = config.get("configuration", "case")
+                except:
+                    details["case"] = "upper"
+                details["dictionaries"] = {}
+
+                if config.has_section('dictionaries'):
+                    for key, value in config.items('dictionaries'):
+                        details["dictionaries"][key] = value
+                self.language_table[label] = details
+            else:
+                print("unknown type ignored language not added to table")
+
+    def init_languages(self):
+        if len(self.language_table) > 0:
+            return
+        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc", "languages")):
+            if "language.ini" in files:
+                self.language_details(path, files)
+
 class LipsyncPhoneme:
     def __init__(self, text="", frame=0):
         self.text = text
@@ -71,6 +168,13 @@ class LipsyncPhoneme:
                 self._frame = value
             if self._frame == self._orig_frame:
                 self.dirty = False
+
+    def __str__(self):
+        out_string = "LipSyncPhoneme:{}|frame:{}".format(self.text, self.frame)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
 
 
 ###############################################################
@@ -147,6 +251,13 @@ class LipsyncWord:
         if phoneme.frame > self.end_frame:
             phoneme.frame = self.end_frame
 
+    def __str__(self):
+        out_string = "LipSyncWord:{}|start_frame:{}|end_frame:{}|Phonemes:{}".format(self.text, self.start_frame, self.end_frame, self.phonemes)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
+
 
 ###############################################################
 
@@ -205,6 +316,13 @@ class LipsyncPhrase:
             cur_frame += frames_per_phoneme
         for phoneme in word.phonemes:
             word.reposition_phoneme(phoneme)
+
+    def __str__(self):
+        out_string = "LipSyncPhrase:{}|start_frame:{}|end_frame:{}|Words:{}".format(self.text,self.start_frame, self.end_frame, self.words)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
 
 
 ###############################################################
@@ -411,7 +529,7 @@ class LipsyncVoice:
         try:
             self.config
         except AttributeError:
-            self.config = QtCore.QSettings("Lost Marble", "Papagayo-NG")
+            self.config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         phoneme = ""
         if len(self.phrases) > 0:
             start_frame = self.phrases[0].start_frame
@@ -523,11 +641,18 @@ class LipsyncVoice:
         json.dump(json_data, file_path, indent=True)
         file_path.close()
 
+    def __str__(self):
+        out_string = "LipSyncVoice:{}|Phrases:{}".format(self.name, self.phrases)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
+
 
 ###############################################################
 
 class LipsyncDoc:
-    def __init__(self, langman, parent):
+    def __init__(self, langman: LanguageManager, parent):
         self._dirty = False
         self.name = "Untitled"
         self.path = None
@@ -710,33 +835,108 @@ class LipsyncDoc:
         out_file.close()
         self._dirty = False
 
-    def auto_recognize_phoneme(self):
-        try:
-            phonemes = Rhubarb(self.soundPath).run()
-            if not phonemes:
-                return
-            end_frame = math.floor(self.fps * phonemes[-1]['end'])
-            phrase = LipsyncPhrase()
-            phrase.text = 'Auto detection rhubarb'
-            phrase.start_frame = 0
-            phrase.end_frame = end_frame
+    def convert_to_phonemeset(self):
+        # The base set is the CMU39 set, we will convert everything to that and from it to the desired one for now
+        new_set = self.parent.main_window.phoneme_set.currentText()
+        old_set = self.parent.phonemeset.selected_set
+        if old_set != new_set:
+            if old_set != "CMU_39":
+                conversion_map_to_cmu = {v: k for k, v in self.parent.phonemeset.conversion.items()}
+                for voice in self.voices:
+                    for phrase in voice.phrases:
+                        for word in phrase.words:
+                            for phoneme in word.phonemes:
+                                if phoneme.text != "rest":
+                                    phoneme.text = conversion_map_to_cmu[phoneme.text]
+            new_map = PhonemeSet()
+            new_map.load(new_set)
+            conversion_map_from_cmu = new_map.conversion
 
-            word = LipsyncWord()
-            word.text = 'rhubarb'
-            word.start_frame = 0
-            word.end_frame = end_frame
+            for voice in self.voices:
+                for phrase in voice.phrases:
+                    for word in phrase.words:
+                        for phoneme in word.phonemes:
+                            if phoneme.text != "rest":
+                                phoneme.text = conversion_map_from_cmu[phoneme.text]
+            self.dirty = True
+            self.parent.main_window.waveform_view.set_document(self, force=True)
 
-            for phoneme in phonemes:
-                pg_phoneme = LipsyncPhoneme()
-                pg_phoneme.frame = math.floor(self.fps * phoneme['start'])
-                pg_phoneme.text = phoneme['value'] if phoneme['value'] != 'X' else 'rest'
-                word.phonemes.append(pg_phoneme)
+    def auto_recognize_phoneme(self, manual_invoke=False):
+        settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
+        if settings.value("run_allosaurus", True) or manual_invoke:
+            if auto_recognition:
+                allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
+                results, peaks, allo_output = allo_recognizer.recognize_allosaurus()
+                if results:
+                    phonemes_as_text = ""
+                    end_frame = math.floor(self.fps * (results[-1]["start"] + results[-1]["duration"] * 2))
+                    phrase = LipsyncPhrase()
+                    phrase.text = 'Auto detection Allosaurus'
+                    phrase.start_frame = 0
+                    phrase.end_frame = end_frame
+                    if len(peaks) % 2 != 0:
+                        peaks.append(peaks[-1])
+                    for i in range(len(peaks) - 2):
+                        peak_left = peaks[i]
+                        peak_right = peaks[i + 1]
 
-            phrase.words.append(word)
-            self.current_voice.phrases.append(phrase)
+                        word_chunk = results[peak_left:peak_right]
+                        word = LipsyncWord()
 
-        except RhubarbTimeoutException:
-            pass
+                        word.text = "".join(letter["phoneme"] if letter["phoneme"] is not None else "rest" for letter in word_chunk)
+                        word.start_frame = math.floor(self.fps * results[peak_left]["start"])
+                        # word.end_frame = math.floor(self.fps * results[peak_right]["start"])
+                        previous_frame_pos = math.floor(self.fps * results[peak_left]["start"]) - 1
+                        for phoneme in word_chunk:
+                            current_frame_pos = math.floor(self.fps * phoneme['start'])
+                            if current_frame_pos == previous_frame_pos:
+                                current_frame_pos += 1
+                            pg_phoneme = LipsyncPhoneme()
+                            pg_phoneme.frame = current_frame_pos
+                            previous_frame_pos = current_frame_pos
+                            pg_phoneme.text = phoneme['phoneme'] if phoneme['phoneme'] is not None else 'rest'
+                            word.phonemes.append(pg_phoneme)
+                            phonemes_as_text += pg_phoneme.text
+                        phonemes_as_text += " "
+                        word.end_frame = previous_frame_pos + 1
+                        phrase.words.append(word)
+                    phonemes_as_text += "\n{}".format(str(allo_output))
+                    self.parent.main_window.text_edit.setText(phonemes_as_text)
+                    phrase.end_frame = phrase.words[-1].end_frame
+                    self.current_voice.phrases.append(phrase)
+                    self.parent.phonemeset.selected_set = self.parent.phonemeset.load("CMU_39")
+                    current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
+                    self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
+                else:
+                    try:
+                        phonemes = Rhubarb(self.soundPath).run()
+                        if not phonemes:
+                            return
+                        end_frame = math.floor(self.fps * phonemes[-1]['end'])
+                        phrase = LipsyncPhrase()
+                        phrase.text = 'Auto detection rhubarb'
+                        phrase.start_frame = 0
+                        phrase.end_frame = end_frame
+
+                        word = LipsyncWord()
+                        word.text = 'rhubarb'
+                        word.start_frame = 0
+                        word.end_frame = end_frame
+
+                        for phoneme in phonemes:
+                            pg_phoneme = LipsyncPhoneme()
+                            pg_phoneme.frame = math.floor(self.fps * phoneme['start'])
+                            pg_phoneme.text = phoneme['value'] if phoneme['value'] != 'X' else 'rest'
+                            word.phonemes.append(pg_phoneme)
+
+                        phrase.words.append(word)
+                        self.current_voice.phrases.append(phrase)
+                        self.parent.phonemeset.selected_set = self.parent.phonemeset.load("rhubarb")
+                        current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
+                        self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
+
+                    except RhubarbTimeoutException:
+                        pass
 
 
 class PhonemeSet:
@@ -748,7 +948,6 @@ class PhonemeSet:
         self.conversion = {}
         self.alternatives = []
         for file in os.listdir(os.path.join(get_main_dir(), "phonemes")):
-            print(file)
             if fnmatch.fnmatch(file, '*.json'):
                 self.alternatives.append(file.split(".")[0])
 
@@ -768,97 +967,3 @@ class PhonemeSet:
         else:
             print(("Can't find phonemeset! ({})".format(name)))
             return False
-
-
-class LanguageManager:
-    __shared_state = {}
-
-    def __init__(self):
-        self.__dict__ = self.__shared_state
-        self.language_table = {}
-        self.phoneme_dictionary = {}
-        self.raw_dictionary = {}
-        self.current_language = ""
-
-        self.export_conversion = {}
-        self.init_languages()
-
-    def load_dictionary(self, path):
-        try:
-            in_file = open(path, 'r')
-        except FileNotFoundError:
-            print("Unable to open phoneme dictionary!:{}".format(path))
-            return
-        new_cmu_version = False
-        if in_file.readline().startswith(";;; # CMUdict"):
-            new_cmu_version = True
-        # process dictionary entries
-        for line in in_file.readlines():
-            if not new_cmu_version:
-                if line[0] == '#':
-                    continue  # skip comments in the dictionary
-            else:
-                if line.startswith(";;;"):
-                    continue
-            # strip out leading/trailing whitespace
-            line.strip()
-            line = line.rstrip('\r\n')
-
-            # split into components
-            entry = line.split()
-            if len(entry) == 0:
-                continue
-            # check if this is a duplicate word (alternate transcriptions end with a number in parentheses) - if so, throw it out
-            if entry[0].endswith(')'):
-                continue
-            # add this entry to the in-memory dictionary
-            for i in range(len(entry)):
-                if i == 0:
-                    self.raw_dictionary[entry[0]] = []
-                else:
-                    rawentry = entry[i]
-                    self.raw_dictionary[entry[0]].append(rawentry)
-        in_file.close()
-        in_file = None
-
-    def load_language(self, language_config, force=False):
-        if self.current_language == language_config["label"] and not force:
-            return
-        self.current_language = language_config["label"]
-
-        if "dictionaries" in language_config:
-            for dictionary in language_config["dictionaries"]:
-                self.load_dictionary(os.path.join(get_main_dir(),
-                                                  language_config["location"],
-                                                  language_config["dictionaries"][dictionary]))
-
-    def language_details(self, dirname, names):
-        if "language.ini" in names:
-            config = configparser.ConfigParser()
-            config.read(os.path.join(dirname, "language.ini"))
-            label = config.get("configuration", "label")
-            ltype = config.get("configuration", "type")
-            details = {"label": label, "type": ltype, "location": dirname}
-            if ltype == "breakdown":
-                details["breakdown_class"] = config.get("configuration", "breakdown_class")
-                self.language_table[label] = details
-            elif ltype == "dictionary":
-                try:
-                    details["case"] = config.get("configuration", "case")
-                except:
-                    details["case"] = "upper"
-                details["dictionaries"] = {}
-
-                if config.has_section('dictionaries'):
-                    for key, value in config.items('dictionaries'):
-                        details["dictionaries"][key] = value
-                self.language_table[label] = details
-            else:
-                print("unknown type ignored language not added to table")
-
-    def init_languages(self):
-        if len(self.language_table) > 0:
-            return
-        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc", "languages")):
-            if "language.ini" in files:
-                self.language_details(path, files)

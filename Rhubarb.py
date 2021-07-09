@@ -10,9 +10,9 @@ from PySide2.QtCore import QCoreApplication
 import sys
 
 if sys.platform == "win32":
-    RHUBARB_PATH = os.path.join(utilities.get_main_dir(), 'rhubarb', 'rhubarb.exe')
+    RHUBARB_PATH = os.path.join(utilities.get_app_data_path(), 'rhubarb.exe')
 else:
-    RHUBARB_PATH = os.path.join(utilities.get_main_dir(), 'rhubarb', 'rhubarb')
+    RHUBARB_PATH = os.path.join(utilities.get_app_data_path(), 'rhubarb')
 
 
 def subprocess_args(include_stdout=True):

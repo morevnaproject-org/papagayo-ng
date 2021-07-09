@@ -1,5 +1,33 @@
 <RCC>
   <qresource>
+    <file>rsrc/arrow-left-right-line.png</file>
+    <file>rsrc/pie-chart-line.png</file>
+    <file>rsrc/refresh-line.png</file>
+    <file>rsrc/share-forward-box-line.png</file>
+    <file>rsrc/gallery-line.png</file>
+    <file>rsrc/shut-down-line.png</file>
+    <file>rsrc/arrow-go-back-line.png</file>
+    <file>rsrc/clipboard-line.png</file>
+    <file>rsrc/file-copy-2-line.png</file>
+    <file>rsrc/information-line.png</file>
+    <file>rsrc/scissors-cut-line.png</file>
+    <file>rsrc/zoom-1-line.png</file>
+    <file>rsrc/folder-open-line.png</file>
+    <file>rsrc/play-line.png</file>
+    <file>rsrc/question-line.png</file>
+    <file>rsrc/save-3-fill.png</file>
+    <file>rsrc/save-3-line.png</file>
+    <file>rsrc/settings-3-line.png</file>
+    <file>rsrc/stop-line.png</file>
+    <file>rsrc/zoom-in-line.png</file>
+    <file>rsrc/zoom-out-line.png</file>
+    <file>rsrc/papagayo-ng.png</file>
+    <file>rsrc/list-settings-line.png</file>
+    <file>rsrc/voice-recognition-fill.png</file>
+    <file>rsrc/eye-2-line.png</file>
+    <file>rsrc/settings-3-fill.png</file>
+    <file>rsrc/user-voice-line.png</file>
+    <file>rsrc/window-fill.png</file>
     <file>rsrc/window_icon.png</file>
     <file>rsrc/open.png</file>
     <file>rsrc/papagayo-ng.ui</file>

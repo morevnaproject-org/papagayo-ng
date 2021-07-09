@@ -75,6 +75,24 @@ class MouthView(QtWidgets.QGraphicsView):
         self.cur_frame = frame
         self.draw_me()
 
+    def set_phoneme_picture(self, phoneme):
+        if not self.current_mouth:
+            self.current_mouth = list(self.mouths)[0]
+        if self.current_mouth in self.mouths.keys():
+            if phoneme in self.mouths[self.current_mouth].keys():
+                bitmap = self.mouths[self.current_mouth][phoneme]
+            else:
+                bitmap = self.mouths[self.current_mouth]["rest"]
+        else:
+            bitmap = self.mouths[list(self.mouths)[0]]["rest"]
+        self.scene().clear()
+        bitmap = bitmap.scaled(self.sceneRect().width() or 200, self.sceneRect().height() or 200,
+                               QtCore.Qt.KeepAspectRatio)
+        self.scene().addPixmap(bitmap)
+        if phoneme not in self.mouths[self.current_mouth].keys():
+            self.scene().addText("Missing Mouth: {0}".format(phoneme), QtGui.QFont("Swiss", 14))
+        self.fitInView(self.x(), self.y(), self.width(), self.height())
+
     def set_document(self, doc):
         self.doc = doc
         self.draw_me()

@@ -250,7 +250,7 @@ class LipsyncFrame(wx.Frame):
         self.exportChoice.SetSelection(select)
 
         self.ignoreTextChanges = False
-        self.config = wx.Config("Papagayo-NG", "Lost Marble")
+        self.config = wx.Config("Papagayo-NG", "Morevna Project")
         self.curFrame = 0
         self.timer = None
 
