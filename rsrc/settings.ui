@@ -246,7 +246,7 @@
           <height>441</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="gridLayout_4" rowstretch="2,0,0,0" columnstretch="0">
+        <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0,0" columnstretch="0">
          <property name="sizeConstraint">
           <enum>QLayout::SetDefaultConstraint</enum>
          </property>
@@ -254,15 +254,8 @@
           <number>6</number>
          </property>
          <property name="verticalSpacing">
-          <number>165</number>
+          <number>105</number>
          </property>
-         <item row="0" column="0">
-          <widget class="QPushButton" name="ffmpeg_delete_button">
-           <property name="text">
-            <string>Remove FFMpeg</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0">
           <widget class="QPushButton" name="allo_delete_button">
            <property name="text">
@@ -270,8 +263,8 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <layout class="QGridLayout" name="gridLayout_5" rowstretch="1,2">
+         <item row="3" column="0">
+          <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,0">
            <item row="1" column="1">
             <widget class="QLineEdit" name="app_data_path">
              <property name="readOnly">
@@ -294,6 +287,20 @@
             </widget>
            </item>
           </layout>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="ffmpeg_delete_button">
+           <property name="text">
+            <string>Remove FFMpeg</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QPushButton" name="rhubarb_delete_button">
+           <property name="text">
+            <string>Remove Rhubarb</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>

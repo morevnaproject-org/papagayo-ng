@@ -87,6 +87,16 @@ def allosaurus_model_exists():
         return False
 
 
+def rhubarb_binaries_exists():
+    rhubarb_path = os.path.join(get_app_data_path(), "rhubarb.exe")
+    if platform.system() == "Darwin":
+        rhubarb_path = os.path.join(get_app_data_path(), "rhubarb")
+    if os.path.exists(rhubarb_path):
+        return True
+    else:
+        return False
+
+
 class WorkerSignals(QtCore.QObject):
     '''
     Defines the signals available from a running worker thread.

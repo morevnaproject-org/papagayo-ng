@@ -236,6 +236,10 @@ class LipsyncFrame:
             self.model_action = QtWidgets.QAction("Download AI Model")
             self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
             self.main_window.menubar.addAction(self.model_action)
+        if not utilities.rhubarb_binaries_exists():
+            self.rhubarb_action = QtWidgets.QAction("Download Rhubarb")
+            self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
+            self.main_window.menubar.addAction(self.rhubarb_action)
         self.phoneme_convert = QtWidgets.QAction("Convert Phonemes")
         self.cur_frame = 0
         self.timer = None
@@ -249,15 +253,26 @@ class LipsyncFrame:
         self.start_time = time.time()
         self.threadpool = QtCore.QThreadPool.globalInstance()
 
-    def download_allo_finished(self):
+    def download_general_finished(self):
         if utilities.allosaurus_model_exists():
-            self.main_window.menubar.removeAction(self.model_action)
+            try:
+                self.main_window.menubar.removeAction(self.model_action)
+            except AttributeError:
+                pass  # was already deleted
+        if utilities.ffmpeg_binaries_exists():
+            try:
+                self.main_window.menubar.removeAction(self.ffmpeg_action)
+            except AttributeError:
+                pass  # was already deleted
+        if utilities.rhubarb_binaries_exists():
+            try:
+                self.main_window.menubar.removeAction(self.rhubarb_action)
+            except AttributeError:
+                pass  # was already deleted
         self.status_progress.hide()
 
     def download_ffmpeg_finished(self):
-        if utilities.ffmpeg_binaries_exists():
-            self.main_window.menubar.removeAction(self.ffmpeg_action)
-        self.status_progress.hide()
+        self.download_general_finished()
         dlg = QtWidgets.QMessageBox()
         dlg.setText("Download of FFMPEG is finished. \nPlease close and restart Papagayo-NG")
         dlg.setWindowTitle(app_title)
@@ -272,7 +287,9 @@ class LipsyncFrame:
         if work_job == self.download_ffmpeg:
             worker.signals.finished.connect(self.download_ffmpeg_finished)
         elif work_job == self.download_allosaurus_model:
-            worker.signals.finished.connect(self.download_allo_finished)
+            worker.signals.finished.connect(self.download_general_finished)
+        elif work_job == self.download_rhubarb:
+            worker.signals.finished.connect(self.download_general_finished)
         worker.signals.progress.connect(self.status_bar_progress)
         self.status_progress.show()
         self.status_progress.setMaximum(100)
@@ -358,6 +375,56 @@ class LipsyncFrame:
                                 ffprobe_file = open(ffprobe_path, "wb")
                                 ffprobe_file.write(ffprobe_file_content)
                                 ffprobe_file.close()
+            except TimeoutError:
+                # Download Failed
+                pass
+            return
+
+    def download_rhubarb(self, progress_callback):
+        binary = "rhubarb.exe"
+        release_url = ""
+        if platform.system() == "Darwin":
+            binary = "rhubarb"
+        github_url = "https://api.github.com/repos/DanielSWolf/rhubarb-lip-sync/releases"
+        download_json = json.loads(urllib.request.urlopen(github_url).read())
+        for download in download_json[0]["assets"]:
+            if platform.system() == "Darwin":
+                if download["name"].endswith("-osx.zip"):
+                    release_url = download["browser_download_url"]
+            else:
+                if download["name"].endswith("-win32.zip"):
+                    release_url = download["browser_download_url"]
+        rhubarb_path = os.path.join(utilities.get_app_data_path(), binary)
+
+        if os.path.exists(rhubarb_path):
+            return
+        else:
+            try:
+                with urllib.request.urlopen(release_url) as req:
+                    length = req.getheader('content-length')
+                    block_size = 1000000
+                    if length:
+                        length = int(length)
+                        block_size = max(4096, length // 100)
+                    buffer_all = io.BytesIO()
+                    size = 0
+                    while True:
+                        buffer_now = req.read(block_size)
+                        if not buffer_now:
+                            break
+                        buffer_all.write(buffer_now)
+                        size += len(buffer_now)
+                        if length:
+                            percent = int((size / length) * 100)
+                            progress_callback.emit(percent)
+                    if buffer_all:
+                        rhubarb_zip = ZipFile(buffer_all)
+                        for zfile in rhubarb_zip.filelist:
+                            if binary in zfile.filename:
+                                rhubarb_file_content = rhubarb_zip.read(zfile.filename)
+                                rhubarb_file = open(rhubarb_path, "wb")
+                                rhubarb_file.write(rhubarb_file_content)
+                                rhubarb_file.close()
             except TimeoutError:
                 # Download Failed
                 pass
@@ -649,6 +716,10 @@ class LipsyncFrame:
             self.model_action = QtWidgets.QAction("Download AI Model")
             self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
             self.main_window.menubar.addAction(self.model_action)
+        if not utilities.rhubarb_binaries_exists():
+            self.rhubarb_action = QtWidgets.QAction("Download Rhubarb")
+            self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
+            self.main_window.menubar.addAction(self.rhubarb_action)
 
     def on_play(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):

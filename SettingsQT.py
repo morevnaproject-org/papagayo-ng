@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import os
 import platform
 import shutil
 
@@ -49,6 +50,7 @@ class SettingsWindow:
         self.main_window.delete_settings.clicked.connect(self.delete_settings)
         self.main_window.ffmpeg_delete_button.clicked.connect(self.delete_ffmpeg)
         self.main_window.allo_delete_button.clicked.connect(self.delete_ai_model)
+        self.main_window.rhubarb_delete_button.clicked.connect(self.delete_rhubarb)
         self.main_window.accepted.connect(self.accepted)
         self.load_settings_to_gui()
         self.main_window.open_app_data_path.clicked.connect(self.open_app_data)
@@ -103,6 +105,14 @@ class SettingsWindow:
             os.remove(ffmpeg_path_new)
         if os.path.exists(ffprobe_path_new):
             os.remove(ffprobe_path_new)
+
+    def delete_rhubarb(self):
+        binary = "rhubarb.exe"
+        if platform.system() == "Darwin":
+            binary = "rhubarb"
+        rhubarb_path = os.path.join(utilities.get_app_data_path(), binary)
+        if os.path.exists(rhubarb_path):
+            os.remove(rhubarb_path)
 
     def delete_ai_model(self):
         allosaurus_model_path_old = os.path.join(get_main_dir(), "allosaurus_model")
