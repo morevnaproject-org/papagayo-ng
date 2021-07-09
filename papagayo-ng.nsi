@@ -69,5 +69,7 @@ Section "Uninstall"
   Delete "$INSTDIR\*.*"
   RMDir /r "$INSTDIR"
   Delete "$SMPROGRAMS\$(^Name)\*.*"
-  RMDir "$SMPROGRAMS\$(^Name)"  
+  RMDir "$SMPROGRAMS\$(^Name)"
+  Delete "$LocalAppdata\Morevna Project\PapagayoNG\*.*"
+  RMDir /r "$LocalAppdata\Morevna Project\PapagayoNG"
 SectionEnd
