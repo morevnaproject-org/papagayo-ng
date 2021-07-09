@@ -169,6 +169,13 @@ class LipsyncPhoneme:
             if self._frame == self._orig_frame:
                 self.dirty = False
 
+    def __str__(self):
+        out_string = "LipSyncPhoneme:{}|frame:{}".format(self.text, self.frame)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
+
 
 ###############################################################
 
@@ -244,6 +251,13 @@ class LipsyncWord:
         if phoneme.frame > self.end_frame:
             phoneme.frame = self.end_frame
 
+    def __str__(self):
+        out_string = "LipSyncWord:{}|start_frame:{}|end_frame:{}|Phonemes:{}".format(self.text, self.start_frame, self.end_frame, self.phonemes)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
+
 
 ###############################################################
 
@@ -302,6 +316,13 @@ class LipsyncPhrase:
             cur_frame += frames_per_phoneme
         for phoneme in word.phonemes:
             word.reposition_phoneme(phoneme)
+
+    def __str__(self):
+        out_string = "LipSyncPhrase:{}|start_frame:{}|end_frame:{}|Words:{}".format(self.text,self.start_frame, self.end_frame, self.words)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
 
 
 ###############################################################
@@ -619,6 +640,13 @@ class LipsyncVoice:
         file_path = open(path, "w")
         json.dump(json_data, file_path, indent=True)
         file_path.close()
+
+    def __str__(self):
+        out_string = "LipSyncVoice:{}|Phrases:{}".format(self.name, self.phrases)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
 
 
 ###############################################################
