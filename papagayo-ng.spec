@@ -69,6 +69,9 @@ if not standalone_exe:
         upx_exclude="vcruntime140.dll, qwindows.dll"
     )
 else:
+    spec_file = None
+    if sys.platform == "win32":
+        spec_file = "./file_version_info.txt"
     exe = EXE(pyz,
               a.scripts,
               a.binaries,
@@ -77,6 +80,7 @@ else:
               [],
               name='papagayo-ng',
               icon='./papagayo-ng.ico',
+              version= spec_file,
               debug=False,
               bootloader_ignore_signals=False,
               strip=False,
@@ -101,3 +105,5 @@ if with_rhubarb:
 shutil.copy("./papagayo-ng.nsi", os.path.join(installer_folder , "papagayo-ng.nsi"))
 shutil.copy("./papagayo-ng.ico", os.path.join(installer_folder , "papagayo-ng.ico"))
 shutil.copy("./ipa_cmu.json", os.path.join(installer_folder , "ipa_cmu.json"))
+shutil.copy("./version_information.txt", os.path.join(installer_folder , "version_information.txt"))
+shutil.copy("./about_markdown.html", os.path.join(installer_folder , "about_markdown.html"))
