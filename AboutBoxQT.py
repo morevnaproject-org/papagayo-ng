@@ -22,6 +22,7 @@
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
+import yaml
 from PySide2.QtGui import QDesktopServices
 import PySide2.QtWidgets as QtWidgets
 # from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
@@ -29,6 +30,7 @@ import PySide2.QtWidgets as QtWidgets
 from PySide2.QtUiTools import QUiLoader as uic
 from PySide2.QtCore import QFile
 
+import utilities
 from utilities import *
 
 
@@ -42,6 +44,16 @@ class AboutBox:
         self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
         self.main_window.about_ok_button.clicked.connect(self.close)
         self.main_window.license.anchorClicked.connect(self.open_license)
+        self.main_window.license_version.setText("Version: {}".format(self.get_version_from_yaml()))
+        self.markdown_url = QtCore.QUrl("file:///{}".format(os.path.join(utilities.get_main_dir(),
+                                                                         "about_markdown.html")))
+        self.main_window.license.setAlignment(QtCore.Qt.AlignCenter)
+        self.main_window.license.setSource(self.markdown_url)
+
+    def get_version_from_yaml(self):
+        version_file = open(os.path.join(utilities.get_main_dir(), "version_information.txt"))
+        version_data = yaml.safe_load(version_file)
+        return version_data["Version"]
 
     def open_license(self, event):
         if event.toString() == "gpl.html":
