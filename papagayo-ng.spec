@@ -6,6 +6,12 @@ standalone_exe = True
 block_cipher = None
 with_rhubarb = False
 
+if sys.platform == "win32":
+    import pyinstaller_versionfile
+    pyinstaller_versionfile.create_versionfile_from_input_file(
+    output_file="./file_version_info.txt",
+    input_file="./version_information.txt")
+
 a = Analysis(['papagayo-ng.py'],
              pathex=['./'],
              binaries=[],

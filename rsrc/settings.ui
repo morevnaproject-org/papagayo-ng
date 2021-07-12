@@ -58,6 +58,12 @@
      </property>
      <item>
       <widget class="QToolButton" name="general_2">
+       <property name="minimumSize">
+        <size>
+         <width>109</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>General</string>
        </property>
@@ -93,6 +99,12 @@
      </item>
      <item>
       <widget class="QToolButton" name="graphical_2">
+       <property name="minimumSize">
+        <size>
+         <width>109</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Graphical</string>
        </property>
@@ -119,6 +131,12 @@
      </item>
      <item>
       <widget class="QToolButton" name="voice_rec">
+       <property name="minimumSize">
+        <size>
+         <width>109</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Voicerecognition</string>
        </property>
@@ -147,8 +165,8 @@
       <widget class="QToolButton" name="misc_2">
        <property name="minimumSize">
         <size>
-         <width>0</width>
-         <height>0</height>
+         <width>109</width>
+         <height>50</height>
         </size>
        </property>
        <property name="baseSize">
