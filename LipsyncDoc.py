@@ -846,8 +846,7 @@ class LipsyncDoc:
                     for phrase in voice.phrases:
                         for word in phrase.words:
                             for phoneme in word.phonemes:
-                                if phoneme.text != "rest":
-                                    phoneme.text = conversion_map_to_cmu[phoneme.text]
+                                phoneme.text = conversion_map_to_cmu.get(phoneme.text, "rest")
             new_map = PhonemeSet()
             new_map.load(new_set)
             conversion_map_from_cmu = new_map.conversion
@@ -856,8 +855,7 @@ class LipsyncDoc:
                 for phrase in voice.phrases:
                     for word in phrase.words:
                         for phoneme in word.phonemes:
-                            if phoneme.text != "rest":
-                                phoneme.text = conversion_map_from_cmu[phoneme.text]
+                            phoneme.text = conversion_map_from_cmu.get(phoneme.text, "rest")
             self.dirty = True
             self.parent.main_window.waveform_view.set_document(self, force=True)
 
