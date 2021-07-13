@@ -862,6 +862,8 @@ class LipsyncDoc:
     def auto_recognize_phoneme(self, manual_invoke=False):
         settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         if settings.value("run_allosaurus", True) or manual_invoke:
+            self.voices = [LipsyncVoice()]
+            self.current_voice = self.voices[0]
             if auto_recognition:
                 allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
                 results, peaks, allo_output = allo_recognizer.recognize_allosaurus()

@@ -17,8 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import os
 
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore, QtWidgets, QtGui
+
+import utilities
+from MouthViewQT import MouthView
 from math import sqrt
 
 
@@ -35,6 +39,12 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.confirm_button = QtWidgets.QPushButton("OK")
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.phoneme_ctrl = QtWidgets.QLineEdit()
+        self.mouth_view = MouthView()
+        for widget in QtWidgets.QApplication.instance().topLevelWidgets():
+            if isinstance(widget, QtWidgets.QMainWindow):
+                self.main_window = widget
+        self.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
+        self.mouth_view.set_document(self.main_window.lip_sync_frame.doc)
 
         self.gave_ok = False
         self.curr_x = 0
@@ -42,6 +52,7 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.max_x = round(sqrt(len(phoneme_set)))  # This way the grid should always be as square as possible
 
         self.box.addWidget(self.word_label)
+        self.box.addWidget(self.mouth_view)
         self.box.addLayout(self.phoneme_grid)
         self.box.addWidget(self.phoneme_ctrl)
         self.box.addWidget(self.decide_box)
@@ -51,9 +62,10 @@ class PronunciationDialog(QtWidgets.QDialog):
 
         for phoneme in phoneme_set:
             if phoneme != "rest":
-                phoneme_ids[phoneme] = QtWidgets.QPushButton(phoneme, self)
-                phoneme_ids[phoneme].clicked.connect(self.on_phoneme_click)
-                self.phoneme_grid.addWidget(phoneme_ids[phoneme], self.curr_y, self.curr_x)
+                self.phoneme_buttons[phoneme] = QtWidgets.QPushButton(phoneme, self)
+                self.phoneme_buttons[phoneme].clicked.connect(self.on_phoneme_click)
+                self.phoneme_buttons[phoneme].enterEvent = self.hover_phoneme
+                self.phoneme_grid.addWidget(self.phoneme_buttons[phoneme], self.curr_y, self.curr_x)
                 self.curr_x += 1
                 if self.curr_x >= self.max_x:
                     self.curr_x = 0
@@ -64,7 +76,13 @@ class PronunciationDialog(QtWidgets.QDialog):
 
         self.setLayout(self.box)
         self.setModal(True)
+        self.setWindowIcon(QtGui.QIcon(os.path.join(utilities.get_main_dir(), "rsrc", "window_icon.bmp")))
         self.show()
+
+    def hover_phoneme(self, event=None):
+        for phoneme in self.phoneme_buttons:
+            if self.phoneme_buttons[phoneme].underMouse():
+                self.mouth_view.set_phoneme_picture(phoneme)
 
     def add_phoneme(self, phoneme):
         text = "{} {}".format(self.phoneme_ctrl.text().strip(), phoneme)
