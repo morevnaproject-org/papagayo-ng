@@ -182,5 +182,4 @@ if __name__ == "__main__":
                  'på', 'hänsyn'
                  ]
     for eachword in testwords:
-        print(eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownWord(
-            unicode(eachword, input_encoding)))
+        print(eachword, ':', breakdownWord(eachword), '--', breakdownWord(eachword))

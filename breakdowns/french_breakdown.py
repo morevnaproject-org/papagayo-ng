@@ -463,4 +463,4 @@ if __name__ == "__main__":
                  'éhonté', 'elle', 'elles', 'émeraude', 'émerger', 'fauve', 'semblant'
                  ]
     for word in testwords:
-        print(word, breakdownWord(unicode(word, input_encoding)))
+        print(word, breakdownWord(word))

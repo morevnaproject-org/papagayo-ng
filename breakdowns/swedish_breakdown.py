@@ -103,7 +103,7 @@ def prefixen(word):
         u"post": ["P", "AO0", "S", "T"],
     }
     prefixes = prefix_pronunciation.keys()
-    prefixes.sort()
+    #prefixes.sort()
     for each_prefix in prefixes:
         if len(word) >= len(each_prefix) + 2 and word.startswith(each_prefix):
             # if each_prefix[-1] in ['a', 'e', 'i', 'o', 'u', 'j', 'ÿ', ý']:
@@ -242,9 +242,9 @@ def breakdownSwedishSyllable(word, recursive=False, phonetic=False):
                                                                         u'\N{LATIN SMALL LETTER A WITH DIAERESIS}',
                                                                         u'\N{LATIN SMALL LETTER O WITH DIAERESIS}']:
                 phonemes.append('CH')
-            elif word == unicode('människa', input_encoding):
+            elif word == 'människa':
                 phonemes.append('SH')
-            elif word == unicode('människor', input_encoding):
+            elif word == 'människor':
                 phonemes.append('SH')
             elif len(word) == pos + 1 and previous == 's':  # ends in SK
                 phonemes.append('S')
@@ -493,5 +493,4 @@ if __name__ == "__main__":
                  'meñe', 'êtres', 'français', 'égaux'
                  ]
     for eachword in testwords:
-        print(eachword, ':', breakdownWord(unicode(eachword, input_encoding)), '--', breakdownSwedishWordPhonetic(
-            unicode(eachword, input_encoding)))
+        print(eachword, ':', breakdownWord(eachword), '--', breakdownSwedishWordPhonetic(eachword))

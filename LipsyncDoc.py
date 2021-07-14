@@ -231,12 +231,17 @@ class LipsyncWord:
             if dlg.stop_decode:
                 return -1
             if dlg.gave_ok:
+                conversion_map_to_cmu = {v: k for k, v in parent_window.doc.parent.phonemeset.conversion.items()}
+                phonemes_as_list = []
                 for p in dlg.phoneme_ctrl.text().split():
                     if len(p) == 0:
                         continue
                     phoneme = LipsyncPhoneme()
                     phoneme.text = p
+                    phoneme_as_cmu = conversion_map_to_cmu.get(p, "rest")
+                    phonemes_as_list.append(phoneme_as_cmu)
                     self.phonemes.append(phoneme)
+                languagemanager.raw_dictionary[self.text.upper()] = phonemes_as_list
             dlg.destroy()
 
     def reposition_phoneme(self, phoneme):

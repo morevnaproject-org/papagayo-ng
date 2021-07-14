@@ -401,4 +401,4 @@ if __name__ == "__main__":
                  'boot', 'boten', 'ogen', 'muur', 'fuut', 'duren', 'mooi', 'ce', 'ci', 'hec', 'på', 'hänsyn']
     for word in testwords:
         #print(word, wordToSyllables(word), syllablesToPhonemes(wordToSyllables(word)), breakdownWord(word))
-        print(word, wordToSyllables(word), breakdownWord(unicode(word, input_encoding)))
+        print(word, wordToSyllables(word), breakdownWord(word))
