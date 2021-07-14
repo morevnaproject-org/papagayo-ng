@@ -18,10 +18,15 @@
 
 import math
 import shutil
-import codecs
+
+import anytree
+from anytree import NodeMixin, Node, RenderTree
 import importlib
 import json
 import fnmatch
+
+from anytree.exporter import DotExporter
+
 try:
     import auto_recognition
 except ModuleNotFoundError:
@@ -46,7 +51,6 @@ elif sys.platform == "darwin":
     import SoundPlayerOSX as SoundPlayer
 else:
     import SoundPlayer as SoundPlayer
-
 
 strip_symbols = '.,!?;-/()"'
 strip_symbols += '\N{INVERTED QUESTION MARK}'
@@ -147,6 +151,122 @@ class LanguageManager:
         for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc", "languages")):
             if "language.ini" in files:
                 self.language_details(path, files)
+
+
+class LipSyncObject(NodeMixin):
+    '''
+    This should be a general class for all LipSync Objects
+    '''
+    def __init__(self, parent=None, children=None, object_type="voice", text="", start_frame=0, end_frame=0, name="",
+                 tags=None, num_children=0, sound_duration=0, fps=24):
+        self.parent = parent
+        if children:
+            self.children = children
+        self.object_type = object_type
+        self.name = name
+        self.text = text
+        self.start_frame = start_frame
+        self.end_frame = end_frame
+        self.tags = tags
+        self.num_children = num_children
+        self.move_button = None
+        self.sound_duration = sound_duration
+        self.fps = fps
+
+    def get_min_size(self):
+        # An object should be at least be able to contain all it's phonemes since only 1 phoneme per frame is allowed.
+        if self.object_type == "phoneme":
+            num_of_phonemes = 1
+        else:
+            num_of_phonemes = 0
+            for descendant in self.descendants:
+                if descendant.object_type == "phoneme":
+                    num_of_phonemes += 1
+        return num_of_phonemes
+
+    def get_left_sibling(self):
+        return anytree.util.leftsibling(self)
+
+    def get_right_sibling(self):
+        return anytree.util.rightsibling(self)
+
+    def get_parent(self):
+        if self.object_type != "phrase":
+            return self.parent
+        else:
+            return None
+
+    def get_frame_size(self):
+        if self.object_type == "phoneme":
+            return 1
+        else:
+            return self.end_frame - self.start_frame
+
+    def has_shrink_room(self):
+        if self.object_type == "phoneme":
+            return False
+        else:
+            if self.get_min_size() >= self.get_frame_size():
+                return False
+            else:
+                return True
+
+    def has_left_sibling(self):
+        try:
+            left_sibling = bool(self.get_left_sibling())
+        except AttributeError:
+            left_sibling = False
+        print(self.text + "has_left_sibling:"+ str(left_sibling))
+        return left_sibling
+
+    def has_right_sibling(self):
+        try:
+            right_sibling = bool(self.get_right_sibling())
+        except AttributeError:
+            right_sibling = False
+        print(self.text + "has_right_sibling:" + str(right_sibling))
+        return right_sibling
+
+    def get_left_max(self):
+        try:
+            temp = self.get_left_sibling()
+            if not temp.object_type == "phoneme":
+                left_most_pos = temp.end_frame
+            else:
+                left_most_pos = temp.end_frame + 1
+        except AttributeError:
+            if self.depth > 2:
+                left_most_pos = self.parent.start_frame
+            else:
+                left_most_pos = 0
+        return left_most_pos
+
+    def get_right_max(self):
+        try:
+            temp = self.get_right_sibling()
+            right_most_pos = temp.start_frame
+        except AttributeError:
+            if self.depth > 2:
+                right_most_pos = self.parent.end_frame
+            else:
+                right_most_pos = self.sound_duration
+        return right_most_pos
+
+    def get_phoneme_at_frame(self, frame):
+        for descendant in self.descendants:
+            if descendant.object_type == "phoneme":
+                if descendant.start_frame == frame:
+                    return descendant.text
+        return "rest"
+
+    def __str__(self):
+        out_string = "LipSyncObject:{}|start_frame:{}|end_frame:{}|Children:{}".format(self.text, self.start_frame,
+                                                                                       self.end_frame, self.children)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class LipsyncPhoneme:
     def __init__(self, text="", frame=0):
@@ -259,7 +379,8 @@ class LipsyncWord:
             phoneme.frame = self.end_frame
 
     def __str__(self):
-        out_string = "LipSyncWord:{}|start_frame:{}|end_frame:{}|Phonemes:{}".format(self.text, self.start_frame, self.end_frame, self.phonemes)
+        out_string = "LipSyncWord:{}|start_frame:{}|end_frame:{}|Phonemes:{}".format(self.text, self.start_frame,
+                                                                                     self.end_frame, self.phonemes)
         return out_string
 
     def __repr__(self):
@@ -327,7 +448,8 @@ class LipsyncPhrase:
             word.reposition_phoneme(phoneme)
 
     def __str__(self):
-        out_string = "LipSyncPhrase:{}|start_frame:{}|end_frame:{}|Words:{}".format(self.text,self.start_frame, self.end_frame, self.words)
+        out_string = "LipSyncPhrase:{}|start_frame:{}|end_frame:{}|Words:{}".format(self.text, self.start_frame,
+                                                                                    self.end_frame, self.words)
         return out_string
 
     def __repr__(self):
@@ -599,7 +721,8 @@ class LipsyncVoice:
                     else:
                         try:
                             out_file.write("{:d} {:d} {}\n".format(last_phoneme.frame, phoneme.frame - 1,
-                                                                   languagemanager.export_conversion[last_phoneme_text]))
+                                                                   languagemanager.export_conversion[
+                                                                       last_phoneme_text]))
                         except KeyError:
                             pass
                     if phoneme.text.lower() == "sil":
@@ -673,6 +796,7 @@ class LipsyncDoc:
         self.current_voice = None
         self.language_manager = langman
         self.parent = parent
+        self.project_node = Node(self.name)
 
     @property
     def dirty(self):
@@ -687,7 +811,47 @@ class LipsyncDoc:
         if self.sound is not None:
             del self.sound
 
-    def open2(self, path):
+    def open_json(self, path):
+        self._dirty = False
+        self.path = os.path.normpath(path)
+        self.name = os.path.basename(path)
+        self.sound = None
+        self.voices = []
+        self.current_voice = None
+        file_data = open(self.path, "r")
+        json_data = json.load(file_data)
+        self.soundPath = json_data["sound_path"]
+        if not os.path.isabs(self.soundPath):
+            self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
+        self.fps = json_data["fps"]
+        self.soundDuration = json_data["sound_duration"]
+        num_voices = json_data["num_voices"]
+        for voice in json_data["voices"]:
+            temp_voice = LipSyncObject(name=voice["name"], text=voice["text"], num_children=voice["num_children"],
+                                       fps=self.fps, parent=self.project_node, object_type="voice",
+                                       sound_duration=self.soundDuration)
+            for phrase in voice["phrases"]:
+                temp_phrase = LipSyncObject(text=phrase["text"], start_frame= phrase["start_frame"],
+                                            end_frame=phrase["end_frame"], tags=phrase["tags"], fps=self.fps,
+                                            object_type="phrase", parent=temp_voice, sound_duration=self.soundDuration)
+                for word in phrase["words"]:
+                    temp_word = LipSyncObject(text=word["text"], start_frame=word["start_frame"], fps=self.fps,
+                                              end_frame=word["end_frame"], tags=word["tags"], object_type="word",
+                                              parent=temp_phrase, sound_duration=self.soundDuration)
+                    for phoneme in word["phonemes"]:
+                        temp_phoneme = LipSyncObject(text=phoneme["text"], start_frame=phoneme["frame"],
+                                                     end_frame=phoneme["frame"], tags=phoneme["tags"], fps=self.fps,
+                                                     object_type="phoneme", parent=temp_word, sound_duration=self.soundDuration)
+            self.voices.append(temp_voice)
+        file_data.close()
+        self.open_audio(self.soundPath)
+        if len(self.voices) > 0:
+            self.current_voice = self.voices[0]
+        print(RenderTree(self.project_node))
+        DotExporter(self.project_node).to_picture("{}.jpg".format(self.name.split(".")[0]))
+        DotExporter(self.project_node).to_dotfile("{}.dot".format(self.name.split(".")[0]))
+
+    def open_json2(self, path):
         self._dirty = False
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
@@ -732,7 +896,6 @@ class LipsyncDoc:
         self.open_audio(self.soundPath)
         if len(self.voices) > 0:
             self.current_voice = self.voices[0]
-
 
     def open(self, path):
         self._dirty = False
@@ -788,7 +951,8 @@ class LipsyncDoc:
             saved_sound_path = os.path.basename(self.soundPath)
         else:
             saved_sound_path = self.soundPath
-        out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration, "num_voices": len(self.voices)}
+        out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration,
+                    "num_voices": len(self.voices)}
         list_of_voices = []
         for voi_id, voice in enumerate(self.voices):
             start_frame = 0
@@ -892,7 +1056,8 @@ class LipsyncDoc:
                         word_chunk = results[peak_left:peak_right]
                         word = LipsyncWord()
 
-                        word.text = "".join(letter["phoneme"] if letter["phoneme"] is not None else "rest" for letter in word_chunk)
+                        word.text = "".join(
+                            letter["phoneme"] if letter["phoneme"] is not None else "rest" for letter in word_chunk)
                         word.start_frame = math.floor(self.fps * results[peak_left]["start"])
                         # word.end_frame = math.floor(self.fps * results[peak_right]["start"])
                         previous_frame_pos = math.floor(self.fps * results[peak_left]["start"]) - 1
@@ -941,7 +1106,8 @@ class LipsyncDoc:
                         phrase.words.append(word)
                         self.current_voice.phrases.append(phrase)
                         self.parent.phonemeset.selected_set = self.parent.phonemeset.load("rhubarb")
-                        current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
+                        current_index = self.parent.main_window.phoneme_set.findText(
+                            self.parent.phonemeset.selected_set)
                         self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
 
                     except RhubarbTimeoutException:

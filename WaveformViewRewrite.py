@@ -85,7 +85,7 @@ class MovableButton(QtWidgets.QPushButton):
     def __init__(self, lipsync_object, wfv_parent, phoneme_offset=None):
         super(MovableButton, self).__init__(lipsync_object.text, None)
         self.title = lipsync_object.text
-        self.node = None
+        self.node = lipsync_object
         self.phoneme_offset = phoneme_offset
         self.lipsync_object = lipsync_object
         self.style = None
@@ -106,9 +106,9 @@ class MovableButton(QtWidgets.QPushButton):
 
     def text_fits_in_button(self):
         if not self.is_phoneme():
-            return self.text_size() < self.convert_to_pixels(self.get_frame_size()) + self.convert_to_pixels(0.5)
+            return self.text_size() < self.convert_to_pixels(self.lipsync_object.get_frame_size()) + self.convert_to_pixels(0.5)
         else:
-            return self.text_size() < self.convert_to_pixels(self.get_frame_size()) - self.convert_to_pixels(0.5)
+            return self.text_size() < self.convert_to_pixels(self.lipsync_object.get_frame_size()) - self.convert_to_pixels(0.5)
 
     def fit_text_to_size(self):
         self.title = self.lipsync_object.text
@@ -121,7 +121,7 @@ class MovableButton(QtWidgets.QPushButton):
 
     def get_handle_width(self):
         resize_handle_width = 1.5
-        return int(min(self.wfv_parent.frame_width * resize_handle_width,self.convert_to_pixels(self.get_frame_size()) / 4))
+        return int(min(self.wfv_parent.frame_width * resize_handle_width, self.convert_to_pixels(self.lipsync_object.get_frame_size()) / 4))
 
     def create_and_set_style(self):
         if not self.style:
@@ -134,7 +134,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border-color: rgb({0},{1},{2});".format(phrase_outline_col.red(),
                                                                              phrase_outline_col.green(),
                                                                              phrase_outline_col.blue())
-                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(str(self.get_handle_width()))
+                self.style += "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(str(self.get_handle_width()))
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     word_fill_col.red(),
@@ -143,7 +143,7 @@ class MovableButton(QtWidgets.QPushButton):
                 self.style += "border-color: rgb({0},{1},{2});".format(word_outline_col.red(),
                                                                             word_outline_col.green(),
                                                                             word_outline_col.blue())
-                self.style +=  "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(str(self.get_handle_width()))
+                self.style += "border-style: solid solid solid solid; border-width: 1px {0}px}};" .format(str(self.get_handle_width()))
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
                     phoneme_fill_col.red(),
@@ -155,113 +155,23 @@ class MovableButton(QtWidgets.QPushButton):
             self.setStyleSheet(self.style)
 
     def is_phoneme(self):
-        if self.lipsync_object.is_phoneme:
-            return True
-        else:
-            return False
+        return self.lipsync_object.object_type == "phoneme"
 
     def is_word(self):
-        try:
-            self.lipsync_object.phonemes
-        except AttributeError:
-            return False
-        return True
+        return self.lipsync_object.object_type == "word"
 
     def is_phrase(self):
-        try:
-            self.lipsync_object.words
-        except AttributeError:
-            return False
-        return True
+        return self.lipsync_object.object_type == "phrase"
 
     def object_type(self):
-        if self.is_phoneme():
-            return "phoneme"
-        elif self.is_word():
-            return "word"
-        elif self.is_phrase():
-            return "phrase"
-        else:
-            return None
+        return self.lipsync_object.object_type
 
     def after_reposition(self):
-        if self.is_phoneme():
-            self.setGeometry(self.convert_to_pixels(self.lipsync_object.frame), self.y(),
-                             self.convert_to_pixels(self.get_frame_size()), self.height())
-        else:
-            self.setGeometry(self.convert_to_pixels(self.lipsync_object.start_frame), self.y(),
-                             self.convert_to_pixels(self.get_frame_size()), self.height())
+        self.setGeometry(self.convert_to_pixels(self.lipsync_object.start_frame), self.y(),
+                         self.convert_to_pixels(self.lipsync_object.get_frame_size()), self.height())
         replaced = re.sub('(border-width: \dpx) \d+px', r'\1 {}px'.format(str(self.get_handle_width())), self.styleSheet())
         self.setStyleSheet(replaced)
         self.update()
-
-    def get_min_size(self):
-        # An object should be at least be able to contain all it's phonemes since only 1 phoneme per frame is allowed.
-        if self.is_phoneme():
-            num_of_phonemes = 1
-        else:
-            num_of_phonemes = 0
-            for descendant in self.node.descendants:
-                if descendant.name.is_phoneme():
-                    num_of_phonemes += 1
-        return num_of_phonemes
-
-    def get_frame_size(self):
-        if self.is_phoneme():
-            return 1
-        else:
-            return self.lipsync_object.end_frame - self.lipsync_object.start_frame
-
-    def has_shrink_room(self):
-        if self.is_phoneme():
-            return False
-        else:
-            if self.get_min_size() >= self.get_frame_size():
-                return False
-            else:
-                return True
-
-    def has_left_sibling(self):
-        try:
-            left_sibling = bool(self.get_left_sibling())
-        except AttributeError:
-            left_sibling = False
-        return left_sibling
-
-    def has_right_sibling(self):
-        try:
-            right_sibling = bool(self.get_right_sibling())
-        except AttributeError:
-            right_sibling = False
-        return right_sibling
-
-    def get_left_max(self):
-        try:
-            temp = self.get_left_sibling().name
-            if not temp.lipsync_object.is_phoneme:
-                left_most_pos = temp.lipsync_object.end_frame
-            else:
-                left_most_pos = temp.lipsync_object.frame + 1
-        except AttributeError:
-            if self.node.depth > 1:
-                left_most_pos = self.node.parent.name.lipsync_object.start_frame
-            else:
-                left_most_pos = 0
-        return left_most_pos
-
-    def get_right_max(self):
-        try:
-            temp = self.get_right_sibling().name
-            if not temp.is_phoneme():
-                right_most_pos = temp.lipsync_object.start_frame
-            else:
-                right_most_pos = temp.lipsync_object.frame
-        except AttributeError:
-            if self.node.depth > 1:
-                right_most_pos = self.node.parent.name.lipsync_object.end_frame
-            else:
-                right_most_pos = self.convert_to_frames(self.wfv_parent.list_of_lines[-1].p2().x())
-        return right_most_pos
 
     def convert_to_pixels(self, frame_pos):
         return frame_pos * self.wfv_parent.frame_width
@@ -289,14 +199,14 @@ class MovableButton(QtWidgets.QPushButton):
                 if self.resize_origin == 1:  # start resize from right side
                     if self.convert_to_frames(
                              event.x() + self.x()) >= self.lipsync_object.start_frame + self.get_min_size():
-                        if self.convert_to_frames(event.x() + self.x()) <= self.get_right_max():
+                        if self.convert_to_frames(event.x() + self.x()) <= self.lipsync_object.get_right_max():
                             self.lipsync_object.end_frame = math.ceil(self.convert_to_frames(event.x() + self.x()))
                             self.wfv_parent.doc.dirty = True
                             self.resize(self.convert_to_pixels(self.lipsync_object.end_frame) - 
                                         self.convert_to_pixels(self.lipsync_object.start_frame), self.height())
                 elif self.resize_origin == 0:  # start resize from left side
                     if self.convert_to_frames(event.x() + self.x()) < self.lipsync_object.end_frame:
-                        if self.convert_to_frames(event.x() + self.x()) >= self.get_left_max():
+                        if self.convert_to_frames(event.x() + self.x()) >= self.lipsync_object.get_left_max():
                             self.lipsync_object.start_frame = math.floor(self.convert_to_frames(event.x() + self.x()))
                             if self.get_frame_size() < self.get_min_size():
                                 self.lipsync_object.start_frame = self.lipsync_object.end_frame - self.get_min_size()
@@ -326,7 +236,7 @@ class MovableButton(QtWidgets.QPushButton):
                 dlg.setWindowTitle(self.title)
                 prev_phoneme_list = ""
                 for p in self.node.children:
-                    prev_phoneme_list += " " + p.name.lipsync_object.text
+                    prev_phoneme_list += " " + p.text
                 dlg.phoneme_ctrl.setText(prev_phoneme_list)
                 if dlg.exec_():
                     list_of_new_phonemes = dlg.phoneme_ctrl.text().split()
@@ -398,6 +308,7 @@ class MovableButton(QtWidgets.QPushButton):
     def mouseReleaseEvent(self, event):
         if self.is_moving:
             self.is_moving = False
+            print("end_move")
         if self.is_resizing:
             self.reposition_descendants2(True)
             self.is_resizing = False
@@ -418,34 +329,31 @@ class MovableButton(QtWidgets.QPushButton):
     def reposition_descendants(self, did_resize=False, x_diff=0):
         if did_resize:
             for child in self.node.children:
-                child.name.reposition_to_left()
+                child.move_button.reposition_to_left()
         else:
             for child in self.node.descendants:
-                if child.name.is_phoneme():
-                    child.name.lipsync_object.frame += x_diff
-                else:
-                    child.name.lipsync_object.start_frame += x_diff
-                    child.name.lipsync_object.end_frame += x_diff
-                child.name.after_reposition()
+                child.start_frame += x_diff
+                child.end_frame += x_diff
+                child.move_button.after_reposition()
             self.wfv_parent.doc.dirty = True
 
     def reposition_descendants2(self, did_resize=False, x_diff=0):
         if did_resize:
             if self.is_word():
                 for position, child in enumerate(self.node.children):
-                    child.name.lipsync_object.frame = round(self.lipsync_object.start_frame +
-                                                            ((self.get_frame_size() / self.get_min_size()) * position))
-                    child.name.after_reposition()
+                    child.start_frame = round(self.lipsync_object.start_frame +
+                                              ((self.get_frame_size() / self.get_min_size()) * position))
+                    child.move_button.after_reposition()
                 self.wfv_parent.doc.dirty = True
             elif self.is_phrase():
                 extra_space = self.get_frame_size() - self.get_min_size()
                 for child in self.node.children:
-                    if child.name.has_left_sibling():
-                        child.name.lipsync_object.start_frame = child.name.get_left_sibling().name.lipsync_object.end_frame
-                        child.name.lipsync_object.end_frame = child.name.lipsync_object.start_frame + child.name.get_min_size()
+                    if child.has_left_sibling():
+                        child.start_frame = child.get_left_sibling().end_frame
+                        child.end_frame = child.start_frame + child.get_min_size()
                     else:
-                        child.name.lipsync_object.start_frame = child.name.node.parent.name.lipsync_object.start_frame
-                        child.name.lipsync_object.end_frame = child.name.lipsync_object.start_frame + child.name.get_min_size()
+                        child.start_frame = self.lipsync_object.start_frame
+                        child.end_frame = child.start_frame + child.get_min_size()
                 last_position = -1
                 moved_child = False
                 while extra_space > 0:
@@ -455,40 +363,37 @@ class MovableButton(QtWidgets.QPushButton):
                         last_position = -1
                     moved_child = False
                     for position, child in enumerate(self.node.children):
-                        if child.name.has_left_sibling():
-                            if child.name.lipsync_object.start_frame < child.name.get_left_sibling().name.lipsync_object.end_frame:
-                                child.name.lipsync_object.start_frame += 1
-                                child.name.lipsync_object.end_frame += 1
+                        if child.has_left_sibling():
+                            if child.start_frame < child.get_left_sibling().end_frame:
+                                child.start_frame += 1
+                                child.end_frame += 1
                             else:
                                 if extra_space and not moved_child and (position > last_position):
-                                    child.name.lipsync_object.end_frame += 1
+                                    child.end_frame += 1
                                     extra_space -= 1
                                     moved_child = True
                                     last_position = position
                         else:
                             if extra_space and not moved_child and (position > last_position):
-                                child.name.lipsync_object.end_frame += 1
+                                child.end_frame += 1
                                 extra_space -= 1
                                 moved_child = True
                                 last_position = position
                     if not moved_child and extra_space == 0:
                         break
                 for child in self.node.children:
-                    child.name.after_reposition()
-                    child.name.reposition_descendants2(True, 0)
+                    child.move_button.after_reposition()
+                    child.move_button.reposition_descendants2(True, 0)
                 self.wfv_parent.doc.dirty = True
         else:
             for child in self.node.descendants:
-                if child.name.is_phoneme():
-                    child.name.lipsync_object.frame += x_diff
-                else:
-                    child.name.lipsync_object.start_frame += x_diff
-                    child.name.lipsync_object.end_frame += x_diff
-                child.name.after_reposition()
-                self.wfv_parent.doc.dirty = True
+                child.lipsync_object.start_frame += x_diff
+                child.lipsync_object.end_frame += x_diff
+                child.move_button.after_reposition()
+            self.wfv_parent.doc.dirty = True
 
     def reposition_to_left(self):
-        if self.has_left_sibling():
+        if self.lipsync_object.has_left_sibling():
             if self.is_phoneme():
                 self.lipsync_object.frame = self.get_left_sibling().name.lipsync_object.frame + 1
             else:
@@ -652,13 +557,13 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.main_window.parent_tags.clear()
                 self.main_window.parent_tags.setEnabled(False)
                 for i in range(self.main_window.voice_for_selection.count()):
-                    if self.main_node.name == self.main_window.voice_for_selection.itemText(i):
+                    if self.main_node == self.main_window.voice_for_selection.itemText(i):
                         self.main_window.voice_for_selection.setCurrentIndex(i)
                 if self.currently_selected_object.object_type() == "phoneme":
-                    parent_word = self.currently_selected_object.get_parent().name
-                    parent_phrase = parent_word.get_parent().name
-                    word_tags = parent_word.lipsync_object.tags
-                    phrase_tags = parent_phrase.lipsync_object.tags
+                    parent_word = self.currently_selected_object.get_parent()
+                    parent_phrase = parent_word.get_parent()
+                    word_tags = parent_word.tags
+                    phrase_tags = parent_phrase.tags
                     if word_tags or phrase_tags:
                         self.main_window.parent_tags.setEnabled(True)
                     if phrase_tags:
@@ -666,7 +571,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in phrase_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_phrase_tags.append(new_tag)
-                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.lipsync_object.text])
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.text])
                         phrase_tree.addChildren(list_of_phrase_tags)
                         self.main_window.parent_tags.addTopLevelItem(phrase_tree)
                         phrase_tree.setExpanded(True)
@@ -675,20 +580,20 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in word_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_word_tags.append(new_tag)
-                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.lipsync_object.text])
+                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.text])
                         word_tree.addChildren(list_of_word_tags)
                         self.main_window.parent_tags.addTopLevelItem(word_tree)
                         word_tree.setExpanded(True)
                 elif self.currently_selected_object.object_type() == "word":
-                    parent_phrase = self.currently_selected_object.get_parent().name
-                    parent_tags = parent_phrase.lipsync_object.tags
+                    parent_phrase = self.currently_selected_object.get_parent()
+                    parent_tags = parent_phrase.tags
                     list_of_tags = []
                     if parent_tags:
                         self.main_window.parent_tags.setEnabled(True)
                         for tag in parent_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_tags.append(new_tag)
-                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.lipsync_object.text])
+                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.text])
                         phrase_tree.addChildren(list_of_tags)
                         self.main_window.parent_tags.addTopLevelItem(phrase_tree)
                         phrase_tree.setExpanded(True)
@@ -729,24 +634,22 @@ class WaveformView(QtWidgets.QGraphicsView):
                 else:
                     new_x = e.pos().x() + self.horizontalScrollBar().value() - e.source().hot_spot
                 dropped_widget = e.source()
-                if new_x >= dropped_widget.get_left_max() * self.frame_width:
-                    if new_x + dropped_widget.width() <= dropped_widget.get_right_max() * self.frame_width:
+                if new_x >= dropped_widget.lipsync_object.get_left_max() * self.frame_width:
+                    if new_x + dropped_widget.width() <= dropped_widget.lipsync_object.get_right_max() * self.frame_width:
                         x_diff = 0
                         dropped_widget.move(new_x, dropped_widget.y())
                         # after moving save the position and align to the grid based on that. Hacky but works!
-                        if dropped_widget.lipsync_object.is_phoneme:
-                            x_diff = round(dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.frame
-                            dropped_widget.lipsync_object.frame = round(new_x / self.frame_width)
-                            dropped_widget.move(dropped_widget.lipsync_object.frame * self.frame_width,
-                                                dropped_widget.y())
+                        if dropped_widget.is_phoneme():
+                            x_diff = round(dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
+                            dropped_widget.lipsync_object.start_frame = round(new_x / self.frame_width)
+                            dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width, dropped_widget.y())
                         else:
                             x_diff = round(
                                 dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
                             dropped_widget.lipsync_object.start_frame = round(dropped_widget.x() / self.frame_width)
-                            dropped_widget.lipsync_object.end_frame = round(
+                            dropped_widget.end_frame = round(
                                 (dropped_widget.x() + dropped_widget.width()) / self.frame_width)
-                            dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width,
-                                                dropped_widget.y())
+                            dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width, dropped_widget.y())
                             # Move the children!
                             dropped_widget.reposition_descendants(False, x_diff)
                         self.doc.dirty = True
@@ -905,11 +808,12 @@ class WaveformView(QtWidgets.QGraphicsView):
             text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             current_num = 0
-            self.main_node = Node(
-                self.doc.current_voice.name)  # Not actually needed, but should make everything a bit easier
-            for phrase in self.doc.current_voice.phrases:
+            self.main_node = self.doc.current_voice
+
+            for phrase in self.doc.current_voice.children:
                 self.temp_button = MovableButton(phrase, self)
-                self.temp_button.node = Node(self.temp_button, parent=self.main_node)
+                phrase.move_button = self.temp_button
+                #self.temp_button.node = Node(self.temp_button, parent=self.main_node)
                 temp_scene_widget = self.scene().addWidget(self.temp_button)
                 temp_rect = QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
                                          (phrase.end_frame - phrase.start_frame) * self.frame_width + 1, text_height)
@@ -922,9 +826,10 @@ class WaveformView(QtWidgets.QGraphicsView):
                 if self.doc.current_voice.num_children:
                     self.main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
                         str(int((current_num / self.doc.current_voice.num_children) * 100))))
-                for word in phrase.words:
+                for word in phrase.children:
                     self.temp_button = MovableButton(word, self)
-                    self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
+                    word.move_button = self.temp_button
+                    #self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
                     temp_scene_widget = self.scene().addWidget(self.temp_button)
                     temp_rect = QtCore.QRect(word.start_frame * self.frame_width, top_border + 4 + text_height +
                                              (text_height * (word_count % 2)), (word.end_frame - word.start_frame) *
@@ -939,11 +844,12 @@ class WaveformView(QtWidgets.QGraphicsView):
                     if self.doc.current_voice.num_children:
                         self.main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
                             str(int((current_num / self.doc.current_voice.num_children) * 100))))
-                    for phoneme in word.phonemes:
+                    for phoneme in word.children:
                         self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
-                        self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
+                        phoneme.move_button = self.temp_button
+                        #self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
                         temp_scene_widget = self.scene().addWidget(self.temp_button)
-                        temp_rect = QtCore.QRect(phoneme.frame * self.frame_width, self.height() -
+                        temp_rect = QtCore.QRect(phoneme.start_frame * self.frame_width, self.height() -
                                                  (self.horizontalScrollBar().height() * 1.5) -
                                                  (text_height + (text_height * (phoneme_count % 2))),
                                                  self.frame_width, text_height)

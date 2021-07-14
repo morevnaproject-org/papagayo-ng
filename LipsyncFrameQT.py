@@ -627,7 +627,7 @@ class LipsyncFrame:
                 self.doc.open(path)
             elif path.endswith(lipsync_extension.split(" ")[1][1:]):
                 # open a json based lipsync project
-                self.doc.open2(path)
+                self.doc.open_json(path)
             while self.doc.sound is None:
                 # if no sound file found, then ask user to specify one
                 dlg = QtWidgets.QMessageBox(self.main_window)
