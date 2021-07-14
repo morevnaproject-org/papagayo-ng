@@ -38,6 +38,8 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.decide_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.confirm_button = QtWidgets.QPushButton("OK")
         self.cancel_button = QtWidgets.QPushButton("Cancel")
+        self.stop_button = self.decide_box.addButton("Stop", QtWidgets.QDialogButtonBox.RejectRole)
+
         self.phoneme_ctrl = QtWidgets.QLineEdit()
         self.mouth_view = MouthView()
         for widget in QtWidgets.QApplication.instance().topLevelWidgets():
@@ -47,6 +49,7 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.mouth_view.set_document(self.main_window.lip_sync_frame.doc)
 
         self.gave_ok = False
+        self.stop_decode = False
         self.curr_x = 0
         self.curr_y = 0
         self.max_x = round(sqrt(len(phoneme_set)))  # This way the grid should always be as square as possible
@@ -73,6 +76,7 @@ class PronunciationDialog(QtWidgets.QDialog):
 
         self.decide_box.accepted.connect(self.on_accept)
         self.decide_box.rejected.connect(self.on_reject)
+        self.stop_button.clicked.connect(self.on_abort)
 
         self.setLayout(self.box)
         self.setModal(True)
@@ -102,5 +106,10 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.gave_ok = False
         self.reject()
         # self.close()
+
+    def on_abort(self):
+        self.gave_ok = False
+        self.stop_decode = True
+        self.reject()
 
 # end of class PronunciationDialog

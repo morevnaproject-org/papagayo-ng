@@ -228,6 +228,8 @@ class LipsyncWord:
             dlg = PronunciationDialog(parent_window, phonemeset.set)
             dlg.word_label.setText("{} {}".format(dlg.word_label.text(), self.text))
             dlg.exec_()
+            if dlg.stop_decode:
+                return -1
             if dlg.gave_ok:
                 for p in dlg.phoneme_ctrl.text().split():
                     if len(p) == 0:
@@ -279,7 +281,9 @@ class LipsyncPhrase:
             word.text = w
             self.words.append(word)
         for word in self.words:
-            word.run_breakdown(parent_window, language, languagemanager, phonemeset)
+            result = word.run_breakdown(parent_window, language, languagemanager, phonemeset)
+            if result == -1:
+                return
 
     def reposition_word(self, word):
         current_id = 0
