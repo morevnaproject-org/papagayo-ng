@@ -43,7 +43,7 @@ except ImportError:
 import PySide2.QtCore as QtCore
 
 from utilities import *
-from PronunciationDialogQT import PronunciationDialog
+from PronunciationDialogQT import PronunciationDialog, show_pronunciation_dialog
 
 if sys.platform == "win32":
     import SoundPlayerNew as SoundPlayer
@@ -388,24 +388,20 @@ class LipSyncObject(NodeMixin):
             except KeyError:
                 # this word was not found in the phoneme dictionary
                 # TODO: This now depends on QT, make it neutral!
-                dlg = PronunciationDialog(parent_window, phonemeset.set)
-                dlg.word_label.setText("{} {}".format(dlg.word_label.text(), self.text))
-                dlg.exec_()
-                if dlg.stop_decode:
+                return_value = show_pronunciation_dialog(parent_window, phonemeset.set, self.text)
+                if return_value == -1:
                     return -1
-                if dlg.gave_ok:
+                elif not return_value:
+                    pass
+                else:
                     conversion_map_to_cmu = {v: k for k, v in parent_window.doc.parent.phonemeset.conversion.items()}
                     phonemes_as_list = []
-                    for p in dlg.phoneme_ctrl.text().split():
-                        if len(p) == 0:
-                            continue
+                    for p in return_value:
                         phoneme = LipSyncObject(object_type="phoneme", parent=self)
                         phoneme.text = p
                         phoneme_as_cmu = conversion_map_to_cmu.get(p, "rest")
                         phonemes_as_list.append(phoneme_as_cmu)
-                        #self.phonemes.append(phoneme)
                     languagemanager.raw_dictionary[self.text.upper()] = phonemes_as_list
-                dlg.destroy()
 
     def __str__(self):
         out_string = "LipSyncObject:{}|start_frame:{}|end_frame:{}|Children:{}".format(self.text, self.start_frame,

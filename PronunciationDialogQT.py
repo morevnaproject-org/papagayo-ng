@@ -113,3 +113,21 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.reject()
 
 # end of class PronunciationDialog
+
+
+def show_pronunciation_dialog(parent_window, phoneme_set, word_to_decode, prev_text=""):
+    dlg = PronunciationDialog(parent_window, phoneme_set)
+    dlg.word_label.setText("{} {}".format(dlg.word_label.text(), word_to_decode))
+    dlg.phoneme_ctrl.setText(prev_text)
+    dlg.exec_()
+    if dlg.stop_decode:
+        dlg.destroy()
+        return -1
+    if dlg.gave_ok:
+        phonemes_as_list = []
+        for p in dlg.phoneme_ctrl.text().split():
+            if len(p) == 0:
+                continue
+            phonemes_as_list.append(p)
+        dlg.destroy()
+        return phonemes_as_list
