@@ -649,7 +649,7 @@ class LipsyncFrame:
             if self.doc.sound is None:
                 self.doc = None
             else:
-                self.doc.voices.append(LipsyncVoice("Voice 1"))
+                self.doc.voices.append(LipSyncObject(object_type="voice", parent=self.doc.project_node, name="Voice1"))
                 self.doc.current_voice = self.doc.voices[0]
                 self.doc.auto_recognize_phoneme()
                 # check for a .trans file with the same name as the doc

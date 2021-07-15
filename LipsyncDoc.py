@@ -167,7 +167,7 @@ class LipSyncObject(NodeMixin):
         self.text = text
         self.start_frame = start_frame
         self.end_frame = end_frame
-        self.tags = tags
+        self.tags = tags if tags else []
         self.num_children = num_children
         self.move_button = None
         self.sound_duration = sound_duration
@@ -258,6 +258,33 @@ class LipSyncObject(NodeMixin):
                 if descendant.start_frame == frame:
                     return descendant.text
         return "rest"
+
+    def open(self, in_file):
+        self.name = in_file.readline().strip()
+        temp_text = in_file.readline().strip()
+        self.text = temp_text.replace('|', '\n')
+        num_phrases = int(in_file.readline())
+        for p in range(num_phrases):
+            self.num_children += 1
+            phrase = LipSyncObject(object_type="phrase", parent=self)
+            phrase.text = in_file.readline().strip()
+            phrase.start_frame = int(in_file.readline())
+            phrase.end_frame = int(in_file.readline())
+            num_words = int(in_file.readline())
+            for w in range(num_words):
+                self.num_children += 1
+                word = LipSyncObject(object_type="word", parent=phrase)
+                word_line = in_file.readline().split()
+                word.text = word_line[0]
+                word.start_frame = int(word_line[1])
+                word.end_frame = int(word_line[2])
+                num_phonemes = int(word_line[3])
+                for p2 in range(num_phonemes):
+                    self.num_children += 1
+                    phoneme = LipSyncObject(object_type="phoneme", parent=word)
+                    phoneme_line = in_file.readline().split()
+                    phoneme.start_frame = phoneme.end_frame = int(phoneme_line[0])
+                    phoneme.text = phoneme_line[1]
 
     def __str__(self):
         out_string = "LipSyncObject:{}|start_frame:{}|end_frame:{}|Children:{}".format(self.text, self.start_frame,
@@ -574,14 +601,14 @@ class LipsyncVoice:
         num_phrases = int(in_file.readline())
         for p in range(num_phrases):
             self.num_children += 1
-            phrase = LipsyncPhrase()
+            phrase = LipSyncObject(object_type="phrase", parent=self)
             phrase.text = in_file.readline().strip()
             phrase.start_frame = int(in_file.readline())
             phrase.end_frame = int(in_file.readline())
             num_words = int(in_file.readline())
             for w in range(num_words):
                 self.num_children += 1
-                word = LipsyncWord()
+                word = LipSyncObject(object_type="word", parent=phrase)
                 word_line = in_file.readline().split()
                 word.text = word_line[0]
                 word.start_frame = int(word_line[1])
@@ -589,13 +616,10 @@ class LipsyncVoice:
                 num_phonemes = int(word_line[3])
                 for p2 in range(num_phonemes):
                     self.num_children += 1
-                    phoneme = LipsyncPhoneme()
+                    phoneme = LipSyncObject(object_type="phoneme", parent=word)
                     phoneme_line = in_file.readline().split()
                     phoneme.frame = int(phoneme_line[0])
                     phoneme.text = phoneme_line[1]
-                    word.phonemes.append(phoneme)
-                phrase.words.append(word)
-            self.phrases.append(phrase)
 
     def save(self, out_file):
         out_file.write("\t{}\n".format(self.name))
@@ -915,7 +939,7 @@ class LipsyncDoc:
         print(("self.soundDuration: {:d}".format(self.soundDuration)))
         num_voices = int(in_file.readline())
         for i in range(num_voices):
-            voice = LipsyncVoice()
+            voice = LipSyncObject(object_type="voice", parent=self.project_node)
             voice.open(in_file)
             self.voices.append(voice)
         in_file.close()
