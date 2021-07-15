@@ -443,71 +443,60 @@ class LipsyncFrame:
 
     def change_voice_for_selection(self):
         print("Currently Selected Object: " + self.main_window.waveform_view.currently_selected_object.title)
-        print("Corresponding LipsyncObject: " + str(vars(self.main_window.waveform_view.currently_selected_object.lipsync_object)))
+        print("Corresponding LipsyncObject: " + str(vars(self.main_window.waveform_view.currently_selected_object.node)))
         print("Current Voice: " + self.doc.current_voice.name)
         print("New Voice: " + self.main_window.voice_for_selection.currentText())
-        moving_object = self.main_window.waveform_view.currently_selected_object.lipsync_object
+        moving_object = self.main_window.waveform_view.currently_selected_object.node
         new_voice_parent = None
         for voice in self.doc.voices:
             if voice.name == self.main_window.voice_for_selection.currentText():
                 new_voice_parent = voice
         # Find existing parent object for selected one
-        parent_instance = "voice"
-        if isinstance(moving_object, LipsyncWord):
-            parent_instance = "phrase"
-        elif isinstance(moving_object, LipsyncPhoneme):
-            parent_instance = "word"
-        elif isinstance(moving_object, LipsyncPhrase):
-            parent_instance = "voice"
+        old_parent = moving_object.parent
+        parent_instance = old_parent.object_type
         new_parent_object = None
+
         if parent_instance == "voice":
             new_parent_object = new_voice_parent
         else:
-            for possible_parent in new_voice_parent.phrases:
+            for possible_parent in new_voice_parent.children:
                 if parent_instance == "phrase":
                     if possible_parent.start_frame <= moving_object.start_frame and possible_parent.end_frame >= moving_object.end_frame:
                         new_parent_object = possible_parent
                 elif parent_instance == "word":
-                    for possible_word_parent in possible_parent.words:
-                        if possible_word_parent.start_frame <= moving_object.frame <= possible_word_parent.end_frame:
+                    for possible_word_parent in possible_parent.children:
+                        if possible_word_parent.start_frame <= moving_object.start_frame <= possible_word_parent.end_frame:
                             new_parent_object = possible_word_parent
             if not new_parent_object:
                 if parent_instance == "phrase":
-                    new_temp_parent = LipsyncPhrase()
-                    new_temp_parent.text = moving_object.text
-                    new_temp_parent.start_frame = moving_object.start_frame
-                    new_temp_parent.end_frame = moving_object.end_frame
-                    new_temp_parent.words.append(moving_object)
-                    new_voice_parent.phrases.append(new_temp_parent)
+                    new_temp_parent = LipSyncObject(object_type="phrase", text=moving_object.text,
+                                                    start_frame=moving_object.start_frame,
+                                                    end_frame=moving_object.end_frame, parent=new_voice_parent,
+                                                    children=[moving_object])
+                    moving_object.parent = new_temp_parent
+
                 if parent_instance == "word":
-                    new_temp_parent = LipsyncPhrase()
-                    new_temp_parent.text = moving_object.text
-                    new_temp_parent.start_frame = moving_object.frame
-                    new_temp_parent.end_frame = moving_object.frame
+                    new_temp_parent = LipSyncObject(object_type="phrase", text=moving_object.text,
+                                                    start_frame=moving_object.start_frame,
+                                                    end_frame=moving_object.end_frame, parent=new_voice_parent)
+                    new_word_parent = LipSyncObject(object_type="word", text=moving_object.text,
+                                                    start_frame=moving_object.start_frame,
+                                                    end_frame=moving_object.end_frame, parent=new_temp_parent,
+                                                    children=[moving_object])
+                    moving_object.parent = new_word_parent
 
-                    new_word_parent = LipsyncWord()
-                    new_word_parent.text = moving_object.text
-                    new_word_parent.start_frame = moving_object.frame
-                    new_word_parent.end_frame = moving_object.frame
-                    new_word_parent.phonemes.append(moving_object)
-                    new_temp_parent.words.append(new_word_parent)
-                    new_voice_parent.phrases.append(new_temp_parent)
             else:
-                if parent_instance == "phrase":
-                    new_parent_object.words.append(moving_object)
-                elif parent_instance == "word":
-                    new_parent_object.phonemes.append(moving_object)
-                elif parent_instance == "voice":
-                    new_parent_object.phrases.append(moving_object)
+                moving_object.parent = new_parent_object
 
-        parent_object = self.main_window.waveform_view.currently_selected_object.get_parent().name.lipsync_object
-        if isinstance(moving_object, LipsyncWord):
-            parent_object.words.remove(moving_object)
-        elif isinstance(moving_object, LipsyncPhrase):
-            parent_object.phrases.remove(moving_object)
-        elif isinstance(moving_object, LipsyncPhoneme):
-            parent_object.phonemes.remove(moving_object)
-
+        if old_parent.object_type == "word":
+            phrase_parent = old_parent.parent
+            if not old_parent.children:
+                old_parent.parent = None
+            if not phrase_parent.children:
+                phrase_parent.parent = None
+        if old_parent.object_type == "phrase":
+            if not old_parent.children:
+                old_parent.parent = None
         self.main_window.waveform_view.set_document(self.doc, force=True)
 
     def add_tag(self):

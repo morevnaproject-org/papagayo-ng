@@ -88,7 +88,6 @@ class MovableButton(QtWidgets.QPushButton):
         self.title = lipsync_object.text
         self.node = lipsync_object
         self.phoneme_offset = phoneme_offset
-        self.lipsync_object = lipsync_object
         self.style = None
         self.is_resizing = False
         self.is_moving = False
@@ -97,7 +96,7 @@ class MovableButton(QtWidgets.QPushButton):
         self.wfv_parent = wfv_parent
         self.setToolTip(lipsync_object.text)
         self.create_and_set_style()
-        self.set_tags(self.lipsync_object.tags)
+        self.set_tags(self.node.tags)
         self.setMinimumWidth(self.convert_to_pixels(1))
         self.fit_text_to_size()
 
@@ -280,8 +279,8 @@ class MovableButton(QtWidgets.QPushButton):
 
     def mouseDoubleClickEvent(self, event):
         if not self.wfv_parent.doc.sound.is_playing() and not self.is_phoneme():
-            start = self.lipsync_object.start_frame / self.wfv_parent.doc.fps
-            length = (self.lipsync_object.end_frame - self.lipsync_object.start_frame) / self.wfv_parent.doc.fps
+            start = self.node.start_frame / self.wfv_parent.doc.fps
+            length = (self.node.end_frame - self.node.start_frame) / self.wfv_parent.doc.fps
             self.wfv_parent.doc.sound.play_segment(start, length)
             old_cur_frame = 0
             start_time = 0
@@ -320,13 +319,13 @@ class MovableButton(QtWidgets.QPushButton):
             self.reposition_descendants2(True)
             self.is_resizing = False
         if self.is_phoneme():
-            self.wfv_parent.main_window.mouth_view.set_phoneme_picture(self.lipsync_object.text)
+            self.wfv_parent.main_window.mouth_view.set_phoneme_picture(self.node.text)
 
     def set_tags(self, new_taglist):
-        self.lipsync_object.tags = new_taglist
-        self.setToolTip("".join("{}\n".format(entry) for entry in self.lipsync_object.tags)[:-1])
+        self.node.tags = new_taglist
+        self.setToolTip("".join("{}\n".format(entry) for entry in self.node.tags)[:-1])
         # Change the border-style or something like that depending on whether there are tags or not
-        if len(self.lipsync_object.tags) > 0:
+        if len(self.node.tags) > 0:
             if "solid" in self.styleSheet():
                 self.setStyleSheet(self.styleSheet().replace("solid solid solid solid", "dashed double dashed double"))
         else:
@@ -359,7 +358,7 @@ class MovableButton(QtWidgets.QPushButton):
                         child.start_frame = child.get_left_sibling().end_frame
                         child.end_frame = child.start_frame + child.get_min_size()
                     else:
-                        child.start_frame = self.lipsync_object.start_frame
+                        child.start_frame = self.node.start_frame
                         child.end_frame = child.start_frame + child.get_min_size()
                 last_position = -1
                 moved_child = False
@@ -394,26 +393,26 @@ class MovableButton(QtWidgets.QPushButton):
                 self.wfv_parent.doc.dirty = True
         else:
             for child in self.node.descendants:
-                child.lipsync_object.start_frame += x_diff
-                child.lipsync_object.end_frame += x_diff
+                child.node.start_frame += x_diff
+                child.node.end_frame += x_diff
                 child.move_button.after_reposition()
             self.wfv_parent.doc.dirty = True
 
     def reposition_to_left(self):
-        if self.lipsync_object.has_left_sibling():
+        if self.node.has_left_sibling():
             if self.is_phoneme():
-                self.lipsync_object.frame = self.get_left_sibling().name.lipsync_object.frame + 1
+                self.node.frame = self.get_left_sibling().name.node.frame + 1
             else:
-                self.lipsync_object.start_frame = self.get_left_sibling().name.lipsync_object.end_frame
-                self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
+                self.node.start_frame = self.get_left_sibling().name.node.end_frame
+                self.node.end_frame = self.node.start_frame + self.get_min_size()
                 for child in self.node.children:
                     child.name.reposition_to_left()
         else:
             if self.is_phoneme():
-                self.lipsync_object.frame = self.node.parent.name.lipsync_object.start_frame
+                self.node.frame = self.node.parent.name.node.start_frame
             else:
-                self.lipsync_object.start_frame = self.node.parent.name.lipsync_object.start_frame
-                self.lipsync_object.end_frame = self.lipsync_object.start_frame + self.get_min_size()
+                self.node.start_frame = self.node.parent.name.node.start_frame
+                self.node.end_frame = self.node.start_frame + self.get_min_size()
                 for child in self.node.children:
                     child.name.reposition_to_left()
         self.after_reposition()
@@ -481,7 +480,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.first_update = True
         self.node = None
         self.did_resize = None
-        self.main_node = None
         self.threadpool = QtCore.QThreadPool.globalInstance()
         self.scene().setSceneRect(0, 0, self.width(), self.height())
         self.resize_timer = QtCore.QTimer(self)
@@ -555,17 +553,14 @@ class WaveformView(QtWidgets.QGraphicsView):
                     pass
                 self.currently_selected_object.setStyleSheet(new_style)
                 self.main_window.list_of_tags.clear()
-                self.main_window.list_of_tags.addItems(self.currently_selected_object.lipsync_object.tags)
-                title_part_two = self.currently_selected_object.lipsync_object.text
-                if len(self.currently_selected_object.lipsync_object.text) > 40:
-                    title_part_two = self.currently_selected_object.lipsync_object.text[0:40] + "..."
+                self.main_window.list_of_tags.addItems(self.currently_selected_object.node.tags)
+                title_part_two = self.currently_selected_object.node.text
+                if len(self.currently_selected_object.node.text) > 40:
+                    title_part_two = self.currently_selected_object.node.text[0:40] + "..."
                 new_title = self.currently_selected_object.object_type().title() + ": " + title_part_two
                 self.main_window.tag_list_group.setTitle(new_title)
                 self.main_window.parent_tags.clear()
                 self.main_window.parent_tags.setEnabled(False)
-                for i in range(self.main_window.voice_for_selection.count()):
-                    if self.main_node == self.main_window.voice_for_selection.itemText(i):
-                        self.main_window.voice_for_selection.setCurrentIndex(i)
                 if self.currently_selected_object.object_type() == "phoneme":
                     parent_word = self.currently_selected_object.get_parent()
                     parent_phrase = parent_word.get_parent()
@@ -641,24 +636,24 @@ class WaveformView(QtWidgets.QGraphicsView):
                 else:
                     new_x = e.pos().x() + self.horizontalScrollBar().value() - e.source().hot_spot
                 dropped_widget = e.source()
-                if new_x >= dropped_widget.lipsync_object.get_left_max() * self.frame_width:
-                    if new_x + dropped_widget.width() <= dropped_widget.lipsync_object.get_right_max() * self.frame_width:
+                if new_x >= dropped_widget.node.get_left_max() * self.frame_width:
+                    if new_x + dropped_widget.width() <= dropped_widget.node.get_right_max() * self.frame_width:
                         x_diff = 0
                         dropped_widget.move(new_x, dropped_widget.y())
                         # after moving save the position and align to the grid based on that. Hacky but works!
                         if dropped_widget.is_phoneme():
                             x_diff = round(
-                                dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
-                            dropped_widget.lipsync_object.start_frame = round(new_x / self.frame_width)
-                            dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width,
+                                dropped_widget.x() / self.frame_width) - dropped_widget.node.start_frame
+                            dropped_widget.node.start_frame = round(new_x / self.frame_width)
+                            dropped_widget.move(dropped_widget.node.start_frame * self.frame_width,
                                                 dropped_widget.y())
                         else:
                             x_diff = round(
-                                dropped_widget.x() / self.frame_width) - dropped_widget.lipsync_object.start_frame
-                            dropped_widget.lipsync_object.start_frame = round(dropped_widget.x() / self.frame_width)
+                                dropped_widget.x() / self.frame_width) - dropped_widget.node.start_frame
+                            dropped_widget.node.start_frame = round(dropped_widget.x() / self.frame_width)
                             dropped_widget.end_frame = round(
                                 (dropped_widget.x() + dropped_widget.width()) / self.frame_width)
-                            dropped_widget.move(dropped_widget.lipsync_object.start_frame * self.frame_width,
+                            dropped_widget.move(dropped_widget.node.start_frame * self.frame_width,
                                                 dropped_widget.y())
                             # Move the children!
                             dropped_widget.reposition_descendants(False, x_diff)
@@ -750,12 +745,12 @@ class WaveformView(QtWidgets.QGraphicsView):
             text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
             text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
-            if self.main_node:
-                if self.main_node.children:
-                    for phoneme_node in self.main_node.leaves:  # this should be all phonemes
-                        widget = phoneme_node.name
+            if self.doc.current_voice:
+                if self.doc.current_voice.children:
+                    for phoneme_node in self.doc.current_voice.leaves:  # this should be all phonemes
+                        widget = phoneme_node.move_button
                         if widget:
-                            if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
+                            if widget.is_phoneme():  # shouldn't be needed, just to be sure
                                 widget.setGeometry(widget.x(),
                                                    self.height() - (self.horizontalScrollBar().height() * 1.5) -
                                                    (text_height + (text_height * widget.phoneme_offset)),
@@ -955,13 +950,12 @@ class WaveformView(QtWidgets.QGraphicsView):
             text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
             text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
-            for phoneme_node in self.main_node.leaves:  # this should be all phonemes
-                widget = phoneme_node.name
-                if widget and not isinstance(widget, str):
-                    if widget.lipsync_object.is_phoneme:  # shouldn't be needed, just to be sure
-                        widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
-                                           (text_height + (text_height * widget.phoneme_offset)), self.frame_width + 5,
-                                           text_height)
+            for phoneme_node in self.doc.current_voice.leaves:  # this should be all phonemes
+                widget = phoneme_node.move_button
+                if widget.is_phoneme():  # shouldn't be needed, just to be sure
+                    widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
+                                       (text_height + (text_height * widget.phoneme_offset)), self.frame_width + 5,
+                                       text_height)
             self.resize_timer.start(150)
         self.horizontalScrollBar().setValue(self.scroll_position)
         if self.temp_play_marker:
