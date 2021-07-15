@@ -442,6 +442,7 @@ class LipsyncFrame:
         return self.ui
 
     def change_voice_for_selection(self):
+        # TODO: We don't handle overlapping objects yet!
         print("Currently Selected Object: " + self.main_window.waveform_view.currently_selected_object.title)
         print("Corresponding LipsyncObject: " + str(vars(self.main_window.waveform_view.currently_selected_object.node)))
         print("Current Voice: " + self.doc.current_voice.name)
@@ -458,6 +459,7 @@ class LipsyncFrame:
 
         if parent_instance == "voice":
             new_parent_object = new_voice_parent
+            moving_object.parent = new_parent_object
         else:
             for possible_parent in new_voice_parent.children:
                 if parent_instance == "phrase":

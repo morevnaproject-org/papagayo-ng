@@ -284,6 +284,22 @@ class LipSyncObject(NodeMixin):
                     phoneme.start_frame = phoneme.end_frame = int(phoneme_line[0])
                     phoneme.text = phoneme_line[1]
 
+    def save(self, out_file):
+        out_file.write("\t{}\n".format(self.name))
+        temp_text = self.text.replace('\n', '|')
+        out_file.write("\t{}\n".format(temp_text))
+        out_file.write("\t{:d}\n".format(len(self.children)))
+        for phrase in self.children:
+            out_file.write("\t\t{}\n".format(phrase.text))
+            out_file.write("\t\t{:d}\n".format(phrase.start_frame))
+            out_file.write("\t\t{:d}\n".format(phrase.end_frame))
+            out_file.write("\t\t{:d}\n".format(len(phrase.children)))
+            for word in phrase.children:
+                out_file.write(
+                    "\t\t\t{} {:d} {:d} {:d}\n".format(word.text, word.start_frame, word.end_frame, len(word.children)))
+                for phoneme in word.children:
+                    out_file.write("\t\t\t\t{:d} {}\n".format(phoneme.start_frame, phoneme.text))
+
     def run_breakdown(self, frame_duration, parent_window, language, languagemanager, phonemeset):
         if self.object_type == "voice":
             # First we delete all children
@@ -743,16 +759,16 @@ class LipsyncVoice:
         temp_text = self.text.replace('\n', '|')
         out_file.write("\t{}\n".format(temp_text))
         out_file.write("\t{:d}\n".format(len(self.phrases)))
-        for phrase in self.phrases:
+        for phrase in self.children:
             out_file.write("\t\t{}\n".format(phrase.text))
             out_file.write("\t\t{:d}\n".format(phrase.start_frame))
             out_file.write("\t\t{:d}\n".format(phrase.end_frame))
             out_file.write("\t\t{:d}\n".format(len(phrase.words)))
-            for word in phrase.words:
+            for word in phrase.children:
                 out_file.write(
-                    "\t\t\t{} {:d} {:d} {:d}\n".format(word.text, word.start_frame, word.end_frame, len(word.phonemes)))
-                for phoneme in word.phonemes:
-                    out_file.write("\t\t\t\t{:d} {}\n".format(phoneme.frame, phoneme.text))
+                    "\t\t\t{} {:d} {:d} {:d}\n".format(word.text, word.start_frame, word.end_frame, len(word.children)))
+                for phoneme in word.children:
+                    out_file.write("\t\t\t\t{:d} {}\n".format(phoneme.start_frame, phoneme.text))
 
     def get_phoneme_at_frame(self, frame):
         for phrase in self.phrases:
@@ -1098,24 +1114,24 @@ class LipsyncDoc:
         for voi_id, voice in enumerate(self.voices):
             start_frame = 0
             end_frame = 1
-            if len(voice.phrases) > 0:
-                start_frame = voice.phrases[0].start_frame
-                end_frame = voice.phrases[-1].end_frame
+            if len(voice.children) > 0:
+                start_frame = voice.children[0].start_frame
+                end_frame = voice.children[-1].end_frame
             json_data = {"name": voice.name, "start_frame": start_frame, "end_frame": end_frame,
-                         "text": voice.text, "num_children": voice.num_children}
+                         "text": voice.text, "num_children": len(voice.descendants)}
             list_of_phrases = []
             list_of_used_phonemes = []
-            for phr_id, phrase in enumerate(voice.phrases):
+            for phr_id, phrase in enumerate(voice.children):
                 dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
                                "end_frame": phrase.end_frame, "tags": phrase.tags}
                 list_of_words = []
-                for wor_id, word in enumerate(phrase.words):
+                for wor_id, word in enumerate(phrase.children):
                     dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
                                  "end_frame": word.end_frame, "tags": word.tags}
                     list_of_phonemes = []
-                    for pho_id, phoneme in enumerate(word.phonemes):
+                    for pho_id, phoneme in enumerate(word.children):
                         dict_phoneme = {"id": pho_id, "text": phoneme.text,
-                                        "frame": phoneme.frame, "tags": phoneme.tags}
+                                        "frame": phoneme.start_frame, "tags": phoneme.tags}
                         list_of_phonemes.append(dict_phoneme)
                         if phoneme.text not in list_of_used_phonemes:
                             list_of_used_phonemes.append(phoneme.text)
