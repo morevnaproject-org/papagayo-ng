@@ -341,12 +341,12 @@ class MovableButton(QtWidgets.QPushButton):
         if did_resize:
             if self.is_word():
                 for position, child in enumerate(self.node.children):
-                    child.start_frame = round(self.lipsync_object.start_frame +
-                                              ((self.get_frame_size() / self.get_min_size()) * position))
+                    child.start_frame = round(self.node.start_frame +
+                                              ((self.node.get_frame_size() / self.node.get_min_size()) * position))
                     child.move_button.after_reposition()
                 self.wfv_parent.doc.dirty = True
             elif self.is_phrase():
-                extra_space = self.get_frame_size() - self.get_min_size()
+                extra_space = self.node.get_frame_size() - self.node.get_min_size()
                 for child in self.node.children:
                     if child.has_left_sibling():
                         child.start_frame = child.get_left_sibling().end_frame

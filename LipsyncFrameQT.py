@@ -528,14 +528,14 @@ class LipsyncFrame:
 
     def spread_out(self):
         wfv = self.main_window.waveform_view
-        top_nodes = wfv.main_node.children
+        top_nodes = self.doc.current_voice.children
         num_frames = wfv.waveform_polygon.polygon().boundingRect().width() / wfv.frame_width
         frames_per_top_level = num_frames / len(top_nodes)
         for num, top_node in enumerate(top_nodes):
-            top_node.name.lipsync_object.start_frame = round((num * frames_per_top_level) + int(bool(num)))
-            top_node.name.lipsync_object.end_frame = round((num * frames_per_top_level) + frames_per_top_level)
-            top_node.name.after_reposition()
-            top_node.name.reposition_descendants2(True)
+            top_node.start_frame = round((num * frames_per_top_level) + int(bool(num)))
+            top_node.end_frame = round((num * frames_per_top_level) + frames_per_top_level)
+            top_node.move_button.after_reposition()
+            top_node.move_button.reposition_descendants2(True)
             
     def apply_changed_fps(self):
         new_fps_value = self.main_window.fps_input.value()
