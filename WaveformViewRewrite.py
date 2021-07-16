@@ -27,7 +27,6 @@ import PySide2.QtWidgets as QtWidgets
 import anytree.util
 import numpy as np
 import re
-from anytree import Node
 
 from LipsyncDoc import *
 
@@ -656,7 +655,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                             dropped_widget.move(dropped_widget.node.start_frame * self.frame_width,
                                                 dropped_widget.y())
                             # Move the children!
-                            dropped_widget.reposition_descendants(False, x_diff)
+                        dropped_widget.reposition_descendants(False, x_diff)
                         self.doc.dirty = True
         e.accept()
 
@@ -720,7 +719,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         worker.signals.progress.connect(self.main_window.lip_sync_frame.status_bar_progress)
 
         self.main_window.lip_sync_frame.status_progress.show()
-        available_height = self.height() / 2
+        available_height = int(self.height() / 2)
         fitted_samples = self.amp * available_height
         self.main_window.lip_sync_frame.status_progress.setMaximum(len(fitted_samples))
         self.threadpool.start(worker)
@@ -729,45 +728,27 @@ class WaveformView(QtWidgets.QGraphicsView):
     def waveform_finished(self):
         self.main_window.lip_sync_frame.status_progress.hide()
         update_rect = self.scene().sceneRect()
-        width_factor = 1  # Only the height needs to change.
-        height_factor = 1
         update_rect.setHeight(self.size().height() - 1)
         if self.doc:
             update_rect.setWidth(self.waveform_polygon.polygon().boundingRect().width())
             self.setSceneRect(update_rect)
             self.scene().setSceneRect(update_rect)
-            origin_x, origin_y = 0, 0
-            height_factor = height_factor * self.waveform_polygon.transform().m22()  # We need to add the factors
-            self.waveform_polygon.setTransform(QtGui.QTransform().translate(
-                origin_x, origin_y).scale(width_factor, height_factor).translate(-origin_x, -origin_y))
             # We need to at least update the Y Position of the Phonemes
             font_metrics = QtGui.QFontMetrics(font)
             text_width, top_border = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() * 2
             text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
-            if self.doc.current_voice:
-                if self.doc.current_voice.children:
-                    for phoneme_node in self.doc.current_voice.leaves:  # this should be all phonemes
-                        widget = phoneme_node.move_button
-                        if widget:
-                            if widget.is_phoneme():  # shouldn't be needed, just to be sure
-                                widget.setGeometry(widget.x(),
-                                                   self.height() - (self.horizontalScrollBar().height() * 1.5) -
-                                                   (text_height + (text_height * widget.phoneme_offset)),
-                                                   self.frame_width + 5,
-                                                   text_height)
         self.horizontalScrollBar().setValue(self.scroll_position)
         try:
             if self.temp_play_marker:
                 self.temp_play_marker.setRect(self.temp_play_marker.rect().x(), 1, self.frame_width + 1, self.height())
         except RuntimeError:
             pass  # When changing a file we get a RuntimeError from QT because it deletes the temp_play_marker
+        self.waveform_polygon.resetTransform()  # Change the transform back when resize is finished.
         self.scene().update()
 
     def create_waveform(self, progress_callback):
-        if self.waveform_polygon in self.scene().items():
-            self.scene().removeItem(self.waveform_polygon)
-        available_height = self.height() / 2
+        available_height = int(self.height() / 2)
         fitted_samples = self.amp * available_height
         offset = 0  # available_height / 2
         temp_polygon = QtGui.QPolygonF()
@@ -787,7 +768,10 @@ class WaveformView(QtWidgets.QGraphicsView):
             if x > 0:
                 temp_polygon.append(QtCore.QPointF((len(fitted_samples) - x - 1) * self.sample_width,
                                                    available_height + y + offset))
-        self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
+        if self.waveform_polygon:
+            self.waveform_polygon.setPolygon(temp_polygon)
+        else:
+            self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
         self.waveform_polygon.setZValue(1)
         self.main_window.statusbar.showMessage("Papagayo-NG")
 
@@ -814,18 +798,20 @@ class WaveformView(QtWidgets.QGraphicsView):
             text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             current_num = 0
-            self.main_node = self.doc.current_voice
 
             for phrase in self.doc.current_voice.children:
-                self.temp_button = MovableButton(phrase, self)
-                phrase.move_button = self.temp_button
-                # self.temp_button.node = Node(self.temp_button, parent=self.main_node)
-                temp_scene_widget = self.scene().addWidget(self.temp_button)
-                temp_rect = QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
-                                         (phrase.end_frame - phrase.start_frame) * self.frame_width + 1, text_height)
-                temp_scene_widget.setGeometry(temp_rect)
-                temp_scene_widget.setZValue(99)
-                self.temp_phrase = self.temp_button
+                if not phrase.move_button:
+                    self.temp_button = MovableButton(phrase, self)
+                    phrase.move_button = self.temp_button
+                    # self.temp_button.node = Node(self.temp_button, parent=self.main_node)
+                    temp_scene_widget = self.scene().addWidget(self.temp_button)
+                    temp_rect = QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
+                                             (phrase.end_frame - phrase.start_frame) * self.frame_width + 1, text_height)
+                    temp_scene_widget.setGeometry(temp_rect)
+                    temp_scene_widget.setZValue(99)
+                    self.temp_phrase = self.temp_button
+                else:
+                    phrase.move_button.setVisible(True)
                 word_count = 0
                 current_num += 1
                 progress_callback(current_num)
@@ -833,16 +819,19 @@ class WaveformView(QtWidgets.QGraphicsView):
                     self.main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
                         str(int((current_num / self.doc.current_voice.num_children) * 100))))
                 for word in phrase.children:
-                    self.temp_button = MovableButton(word, self)
-                    word.move_button = self.temp_button
-                    # self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
-                    temp_scene_widget = self.scene().addWidget(self.temp_button)
-                    temp_rect = QtCore.QRect(word.start_frame * self.frame_width, top_border + 4 + text_height +
-                                             (text_height * (word_count % 2)), (word.end_frame - word.start_frame) *
-                                             self.frame_width + 1, text_height)
-                    temp_scene_widget.setGeometry(temp_rect)
-                    temp_scene_widget.setZValue(99)
-                    self.temp_word = self.temp_button
+                    if not word.move_button:
+                        self.temp_button = MovableButton(word, self)
+                        word.move_button = self.temp_button
+                        # self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
+                        temp_scene_widget = self.scene().addWidget(self.temp_button)
+                        temp_rect = QtCore.QRect(word.start_frame * self.frame_width, top_border + 4 + text_height +
+                                                 (text_height * (word_count % 2)), (word.end_frame - word.start_frame) *
+                                                 self.frame_width + 1, text_height)
+                        temp_scene_widget.setGeometry(temp_rect)
+                        temp_scene_widget.setZValue(99)
+                        self.temp_word = self.temp_button
+                    else:
+                        word.move_button.setVisible(True)
                     word_count += 1
                     phoneme_count = 0
                     current_num += 1
@@ -851,17 +840,20 @@ class WaveformView(QtWidgets.QGraphicsView):
                         self.main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
                             str(int((current_num / self.doc.current_voice.num_children) * 100))))
                     for phoneme in word.children:
-                        self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
-                        phoneme.move_button = self.temp_button
-                        # self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
-                        temp_scene_widget = self.scene().addWidget(self.temp_button)
-                        temp_rect = QtCore.QRect(phoneme.start_frame * self.frame_width, self.height() -
-                                                 (self.horizontalScrollBar().height() * 1.5) -
-                                                 (text_height + (text_height * (phoneme_count % 2))),
-                                                 self.frame_width, text_height)
-                        temp_scene_widget.setGeometry(temp_rect)
-                        temp_scene_widget.setZValue(99)
-                        self.temp_phoneme = self.temp_button
+                        if not phoneme.move_button:
+                            self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
+                            phoneme.move_button = self.temp_button
+                            # self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
+                            temp_scene_widget = self.scene().addWidget(self.temp_button)
+                            temp_rect = QtCore.QRect(phoneme.start_frame * self.frame_width, self.height() -
+                                                     int(self.horizontalScrollBar().height() * 1.5) -
+                                                     (text_height + (text_height * (phoneme_count % 2))),
+                                                     self.frame_width, text_height)
+                            temp_scene_widget.setGeometry(temp_rect)
+                            temp_scene_widget.setZValue(99)
+                            self.temp_phoneme = self.temp_button
+                        else:
+                            phoneme.move_button.setVisible(True)
                         phoneme_count += 1
                         current_num += 1
                         progress_callback(current_num)
@@ -906,7 +898,9 @@ class WaveformView(QtWidgets.QGraphicsView):
         if document != self.doc or force:
             self.doc = document
             if (self.doc is not None) and (self.doc.sound is not None):
-                self.scene().clear()
+                for l_object in self.doc.project_node.descendants:
+                    if l_object.move_button:
+                        l_object.move_button.setVisible(False)
                 self.create_movbuttons(self.main_window.lip_sync_frame.status_bar_progress)
                 self.start_recalc()
                 if self.temp_play_marker not in self.scene().items():
