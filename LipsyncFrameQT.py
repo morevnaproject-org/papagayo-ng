@@ -449,7 +449,7 @@ class LipsyncFrame:
         print("New Voice: " + self.main_window.voice_for_selection.currentText())
         moving_object = self.main_window.waveform_view.currently_selected_object.node
         new_voice_parent = None
-        for voice in self.doc.voices:
+        for voice in self.doc.project_node.children:
             if voice.name == self.main_window.voice_for_selection.currentText():
                 new_voice_parent = voice
         # Find existing parent object for selected one
@@ -499,7 +499,7 @@ class LipsyncFrame:
         if old_parent.object_type == "phrase":
             if not old_parent.children:
                 old_parent.parent = None
-        self.main_window.waveform_view.set_document(self.doc, force=True)
+        self.main_window.waveform_view.set_document(self.doc, force=True, clear_scene=True)
 
     def add_tag(self):
         if self.main_window.tag_entry.text():
@@ -562,9 +562,9 @@ class LipsyncFrame:
 
     def on_voice_recognize(self):
         if self.doc and self.doc.sound:
-            if len(self.doc.voices) < 1:
-                self.doc.voices.append(LipsyncVoice("Voice 1"))
-            self.doc.current_voice = self.doc.voices[0]
+            if len(self.doc.project_node.children) < 1:
+                self.doc.current_voice = LipSyncObject(object_type="voice", name="Voice 1",
+                                                       parent=self.doc.project_node)
             self.doc.auto_recognize_phoneme(manual_invoke=True)
             self.main_window.waveform_view.set_document(self.doc, force=True)
             self.main_window.mouth_view.set_document(self.doc)
@@ -640,8 +640,10 @@ class LipsyncFrame:
             if self.doc.sound is None:
                 self.doc = None
             else:
-                self.doc.voices.append(LipSyncObject(object_type="voice", parent=self.doc.project_node, name="Voice1"))
-                self.doc.current_voice = self.doc.voices[0]
+                if len(self.doc.project_node.children) < 1:
+                    self.doc.current_voice = LipSyncObject(object_type="voice", name="Voice 1", parent=self.doc.project_node)
+                elif not self.doc.current_voice:
+                    self.doc.current_voice = self.doc.project_node.children[0]
                 self.doc.auto_recognize_phoneme()
                 # check for a .trans file with the same name as the doc
                 try:
@@ -662,6 +664,8 @@ class LipsyncFrame:
             self.main_window.volume_slider.setValue(self.config.value("volume", 50))
             self.main_window.action_save.setEnabled(True)
             self.main_window.action_save_as.setEnabled(True)
+            self.main_window.action_cut.setEnabled(True)
+            self.main_window.action_cut.triggered.connect(self.on_del_object)
             self.main_window.menu_edit.setEnabled(True)
             self.main_window.choose_imageset_button.setEnabled(False)
             self.phoneme_convert.triggered.connect(self.doc.convert_to_phonemeset)
@@ -673,12 +677,12 @@ class LipsyncFrame:
                 self.main_window.action_zoom_out.setEnabled(True)
                 self.main_window.action_reset_zoom.setEnabled(True)
             self.main_window.tag_list_group.setEnabled(False)
-            list_of_voices = [voice.name for voice in self.doc.voices]
+            list_of_voices = [voice.name for voice in self.doc.project_node.children]
             self.main_window.voice_for_selection.clear()
             self.main_window.voice_for_selection.addItems(list_of_voices)
 
             first_entry = True
-            for voice in self.doc.voices:
+            for voice in self.doc.project_node.children:
                 if not first_entry:
                     self.main_window.current_voice.tabBar().addTab(voice.name)
                 else:
@@ -933,8 +937,7 @@ class LipsyncFrame:
             return
         prev_dirty = self.doc.dirty
         self.ignore_text_changes = True
-
-        for voice in self.doc.voices:
+        for voice in self.doc.project_node.children:
             if voice.name == self.main_window.current_voice.tabBar().tabText(self.main_window.current_voice.tabBar().currentIndex()):
                 self.doc.current_voice = voice
 
@@ -953,51 +956,63 @@ class LipsyncFrame:
             return
         self.doc.dirty = True
         voice_exist_count = 1
-        new_voice_name = "Voice {:d}".format(len(self.doc.voices) + voice_exist_count)
+        new_voice_name = "Voice {:d}".format(len(self.doc.project_node.children) + voice_exist_count)
         voice_name_exists = True
         while voice_name_exists:
             voice_name_exists = False
-            new_voice_name = "Voice {:d}".format(len(self.doc.voices) + voice_exist_count)
-            for voice in self.doc.voices:
+            new_voice_name = "Voice {:d}".format(len(self.doc.project_node.children) + voice_exist_count)
+            for voice in self.doc.project_node.children:
                 if voice.name == new_voice_name:
                     voice_name_exists = True
                     voice_exist_count += 1
                     break
 
-        self.doc.voices.append(LipsyncVoice(new_voice_name))
-        self.doc.current_voice = self.doc.voices[-1]
+        self.doc.current_voice = LipSyncObject(object_type="voice", name=new_voice_name, parent=self.doc.project_node)
         self.main_window.current_voice.tabBar().addTab(self.doc.current_voice.name)
         self.main_window.current_voice.tabBar().setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
         self.ignore_text_changes = True
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.ignore_text_changes = False
-        list_of_voices = [voice.name for voice in self.doc.voices]
+        list_of_voices = [voice.name for voice in self.doc.project_node.children]
         self.main_window.voice_for_selection.clear()
         self.main_window.voice_for_selection.addItems(list_of_voices)
         self.main_window.voice_for_selection.setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
         self.main_window.waveform_view.set_document(self.doc, True)
         self.main_window.mouth_view.draw_me()
 
+    def on_del_object(self):
+        self.main_window.waveform_view.currently_selected_object.node.parent = None
+        all_delete_items = []
+        all_delete_items.extend(self.main_window.waveform_view.currently_selected_object.node.descendants)
+        all_delete_items.append(self.main_window.waveform_view.currently_selected_object.node)
+        for item in self.main_window.waveform_view.scene().items():
+            if isinstance(item, QtWidgets.QGraphicsProxyWidget):
+                for to_delete in all_delete_items:
+                    if item.widget() == to_delete.move_button:
+                        self.main_window.waveform_view.scene().removeItem(item)
+        del self.main_window.waveform_view.currently_selected_object.node
+
     def on_del_voice(self, event=None):
-        if (not self.doc) or (len(self.doc.voices) == 1):
+        if (not self.doc) or (len(self.doc.project_node.children) == 1):
             return
         self.doc.dirty = True
-        new_index = self.doc.voices.index(self.doc.current_voice)
+        new_index = self.doc.project_node.children.index(self.doc.current_voice)
         if new_index > 0:
             new_index -= 1
         else:
             new_index = 0
-        self.doc.voices.remove(self.doc.current_voice)
-        self.doc.current_voice = self.doc.voices[new_index]
+        self.doc.current_voice.parent = None
+        del self.doc.current_voice
+        self.doc.current_voice = self.doc.project_node.children[new_index]
         self.main_window.voice_name_input.setText(self.doc.current_voice.name)
         self.main_window.text_edit.setText(self.doc.current_voice.text)
         self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().currentIndex())
-        list_of_voices = [voice.name for voice in self.doc.voices]
+        list_of_voices = [voice.name for voice in self.doc.project_node.children]
         self.main_window.voice_for_selection.clear()
         self.main_window.voice_for_selection.addItems(list_of_voices)
         self.main_window.voice_for_selection.setCurrentIndex(new_index)
-        self.main_window.waveform_view.set_document(self.doc, True)
+        self.main_window.waveform_view.set_document(self.doc, True, True)
         self.main_window.mouth_view.draw_me()
 
     def on_voice_image_choose(self, event=None):

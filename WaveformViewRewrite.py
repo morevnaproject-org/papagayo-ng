@@ -811,7 +811,19 @@ class WaveformView(QtWidgets.QGraphicsView):
                     temp_scene_widget.setZValue(99)
                     self.temp_phrase = self.temp_button
                 else:
-                    phrase.move_button.setVisible(True)
+                    try:
+                        phrase.move_button.setVisible(True)
+                    except RuntimeError:
+                        self.temp_button = MovableButton(phrase, self)
+                        phrase.move_button = self.temp_button
+                        # self.temp_button.node = Node(self.temp_button, parent=self.main_node)
+                        temp_scene_widget = self.scene().addWidget(self.temp_button)
+                        temp_rect = QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
+                                                 (phrase.end_frame - phrase.start_frame) * self.frame_width + 1,
+                                                 text_height)
+                        temp_scene_widget.setGeometry(temp_rect)
+                        temp_scene_widget.setZValue(99)
+                        self.temp_phrase = self.temp_button
                 word_count = 0
                 current_num += 1
                 progress_callback(current_num)
@@ -831,7 +843,20 @@ class WaveformView(QtWidgets.QGraphicsView):
                         temp_scene_widget.setZValue(99)
                         self.temp_word = self.temp_button
                     else:
-                        word.move_button.setVisible(True)
+                        try:
+                            word.move_button.setVisible(True)
+                        except RuntimeError:
+                            self.temp_button = MovableButton(word, self)
+                            word.move_button = self.temp_button
+                            # self.temp_button.node = Node(self.temp_button, parent=self.temp_phrase.node)
+                            temp_scene_widget = self.scene().addWidget(self.temp_button)
+                            temp_rect = QtCore.QRect(word.start_frame * self.frame_width, top_border + 4 + text_height +
+                                                     (text_height * (word_count % 2)),
+                                                     (word.end_frame - word.start_frame) *
+                                                     self.frame_width + 1, text_height)
+                            temp_scene_widget.setGeometry(temp_rect)
+                            temp_scene_widget.setZValue(99)
+                            self.temp_word = self.temp_button
                     word_count += 1
                     phoneme_count = 0
                     current_num += 1
@@ -853,7 +878,20 @@ class WaveformView(QtWidgets.QGraphicsView):
                             temp_scene_widget.setZValue(99)
                             self.temp_phoneme = self.temp_button
                         else:
-                            phoneme.move_button.setVisible(True)
+                            try:
+                                phoneme.move_button.setVisible(True)
+                            except RuntimeError:
+                                self.temp_button = MovableButton(phoneme, self, phoneme_count % 2)
+                                phoneme.move_button = self.temp_button
+                                # self.temp_button.node = Node(self.temp_button, parent=self.temp_word.node)
+                                temp_scene_widget = self.scene().addWidget(self.temp_button)
+                                temp_rect = QtCore.QRect(phoneme.start_frame * self.frame_width, self.height() -
+                                                         int(self.horizontalScrollBar().height() * 1.5) -
+                                                         (text_height + (text_height * (phoneme_count % 2))),
+                                                         self.frame_width, text_height)
+                                temp_scene_widget.setGeometry(temp_rect)
+                                temp_scene_widget.setZValue(99)
+                                self.temp_phoneme = self.temp_button
                         phoneme_count += 1
                         current_num += 1
                         progress_callback(current_num)
@@ -894,16 +932,19 @@ class WaveformView(QtWidgets.QGraphicsView):
             time_pos += sample_dur
         self.amp = normalize(self.amp)
 
-    def set_document(self, document, force=False):
+    def set_document(self, document, force=False, clear_scene=False):
         if document != self.doc or force:
-            if document != self.doc:
+            if document != self.doc or clear_scene:
                 self.scene().clear()
                 self.waveform_polygon = None
             self.doc = document
             if (self.doc is not None) and (self.doc.sound is not None):
                 for l_object in self.doc.project_node.descendants:
-                    if l_object.move_button:
-                        l_object.move_button.setVisible(False)
+                    try:
+                        if l_object.move_button:
+                            l_object.move_button.setVisible(False)
+                    except RuntimeError:
+                        pass
                 self.create_movbuttons(self.main_window.lip_sync_frame.status_bar_progress)
                 self.start_recalc()
                 if self.temp_play_marker not in self.scene().items():
@@ -948,11 +989,12 @@ class WaveformView(QtWidgets.QGraphicsView):
             text_width, text_height = font_metrics.horizontalAdvance("Ojyg"), font_metrics.height() + 6
             top_border += 4
             for phoneme_node in self.doc.current_voice.leaves:  # this should be all phonemes
-                widget = phoneme_node.move_button
-                if widget.is_phoneme():  # shouldn't be needed, just to be sure
-                    widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
-                                       (text_height + (text_height * widget.phoneme_offset)), self.frame_width + 5,
-                                       text_height)
+                if phoneme_node.move_button:
+                    widget = phoneme_node.move_button
+                    if widget.is_phoneme():  # shouldn't be needed, just to be sure
+                        widget.setGeometry(widget.x(), self.height() - (self.horizontalScrollBar().height() * 1.5) -
+                                           (text_height + (text_height * widget.phoneme_offset)), self.frame_width + 5,
+                                           text_height)
             self.resize_timer.start(150)
         self.horizontalScrollBar().setValue(self.scroll_position)
         if self.temp_play_marker:
