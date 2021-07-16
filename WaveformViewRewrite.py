@@ -896,6 +896,9 @@ class WaveformView(QtWidgets.QGraphicsView):
 
     def set_document(self, document, force=False):
         if document != self.doc or force:
+            if document != self.doc:
+                self.scene().clear()
+                self.waveform_polygon = None
             self.doc = document
             if (self.doc is not None) and (self.doc.sound is not None):
                 for l_object in self.doc.project_node.descendants:
