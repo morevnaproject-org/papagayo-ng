@@ -976,6 +976,7 @@ class LipsyncDoc:
         self._dirty = False
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
+        self.project_node.name = self.name
         self.sound = None
         self.voices = []
         self.current_voice = None
@@ -1009,14 +1010,12 @@ class LipsyncDoc:
         self.open_audio(self.soundPath)
         if len(self.voices) > 0:
             self.current_voice = self.voices[0]
-        print(RenderTree(self.project_node))
-        DotExporter(self.project_node).to_picture("{}.jpg".format(self.name.split(".")[0]))
-        DotExporter(self.project_node).to_dotfile("{}.dot".format(self.name.split(".")[0]))
 
     def open_json2(self, path):
         self._dirty = False
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
+        self.project_node.name = self.name
         self.sound = None
         self.voices = []
         self.current_voice = None
@@ -1063,6 +1062,7 @@ class LipsyncDoc:
         self._dirty = False
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
+        self.project_node.name = self.name
         self.sound = None
         self.voices = []
         self.current_voice = None
@@ -1109,6 +1109,7 @@ class LipsyncDoc:
     def save2(self, path):
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
+        self.project_node.name = self.name
         if os.path.dirname(self.path) == os.path.dirname(self.soundPath):
             saved_sound_path = os.path.basename(self.soundPath)
         else:
@@ -1155,6 +1156,7 @@ class LipsyncDoc:
     def save(self, path):
         self.path = os.path.normpath(path)
         self.name = os.path.basename(path)
+        self.project_node.name = self.name
         if os.path.dirname(self.path) == os.path.dirname(self.soundPath):
             saved_sound_path = os.path.basename(self.soundPath)
         else:
