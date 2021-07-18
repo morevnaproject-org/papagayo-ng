@@ -157,5 +157,5 @@ class SoundPlayer:
         thread.start_new_thread(self._play, (0, self.Duration()))
 
     def play_segment(self, start, length):
-        if not self.isplaying:  # otherwise this get's kinda echo-y
+        if not self.isplaying:  # otherwise this gets kinda echo-y
             thread.start_new_thread(self._play, (start, length))

@@ -131,7 +131,7 @@ class SoundPlayer:
 
     def play_segment(self, start, length):
         print("Playing Segment")
-        if not self.isplaying:  # otherwise this get's kinda echo-y
+        if not self.isplaying:  # otherwise this gets kinda echo-y
             self.isplaying = True
             self.audio.setPosition(start * 1000.0)
             self.audio.play()

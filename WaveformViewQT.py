@@ -291,7 +291,7 @@ class MovableButton(QtWidgets.QPushButton):
         # if next_one:
         #     print("Next one: " + next_one.text)
         #     print(dir(next_one))
-        # We should now have the previous and next object and it's parent here.
+        # We should now have the previous and next object and its parent here.
 
         self.left_edge = 0
         self.right_edge = 0
