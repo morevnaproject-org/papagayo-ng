@@ -28,15 +28,9 @@ wget "${PYTHON_APPIMAGE_URL}"
 chmod +x "${PYTHON_APPIMAGE_FILENAME}"
 "./${PYTHON_APPIMAGE_FILENAME}" --appimage-extract
 
-./squashfs-root/AppRun -m pip install sounddevice
-./squashfs-root/AppRun -m pip install numpy
-./squashfs-root/AppRun -m pip install pydub
-./squashfs-root/AppRun -m pip install anytree
-./squashfs-root/AppRun -m pip install PySide2
-./squashfs-root/AppRun -m pip install audioread
-#./squashfs-root/AppRun -m pip install allosaurus
-./squashfs-root/AppRun -m pip install appdirs
-./squashfs-root/AppRun -m pip install pyyaml
+
+#./squashfs-root/AppRun -m pip install -r "${SOURCES_DIR}requirements.txt"
+./squashfs-root/AppRun -m pip install $(grep -ivE "allosaurus" "${SOURCES_DIR}requirements.txt")
 
 
 #find "${SOURCES_DIR}" -type f -not -iname '*/not-from-here/*' -exec cp -rf '{}' '/dest/{}' ';'
