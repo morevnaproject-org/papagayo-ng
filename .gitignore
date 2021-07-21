@@ -5,7 +5,7 @@ ffmpeg.exe
 .idea/
 
 venv/
-/build/
+/build/linux-appimage/build
 /dist/
 /.github/
 /output/
