@@ -28,9 +28,10 @@ wget "${PYTHON_APPIMAGE_URL}"
 chmod +x "${PYTHON_APPIMAGE_FILENAME}"
 "./${PYTHON_APPIMAGE_FILENAME}" --appimage-extract
 
-
-#./squashfs-root/AppRun -m pip install -r "${SOURCES_DIR}requirements.txt"
-./squashfs-root/AppRun -m pip install $(grep -ivE "allosaurus" "${SOURCES_DIR}requirements.txt")
+#export PATH="$(pwd)/squashfs-root/usr/bin:$PATH"
+./squashfs-root/AppRun -m pip install torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+./squashfs-root/AppRun -m pip install -r "${SOURCES_DIR}requirements.txt"
+#./squashfs-root/AppRun -m pip install $(grep -ivE "allosaurus" "${SOURCES_DIR}requirements.txt")
 
 
 #find "${SOURCES_DIR}" -type f -not -iname '*/not-from-here/*' -exec cp -rf '{}' '/dest/{}' ';'
