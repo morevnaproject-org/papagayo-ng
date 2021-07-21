@@ -14,13 +14,13 @@ YUM=$(which yum 2>/dev/null)
 APT_GET=$(which apt-get 2>/dev/null)
 
 echo "Installing required build tools."
+# libffi is required by cffi python package, which in turn is required by sounddevice
 if [[ ! -z $YUM ]]; then
     sudo yum install -y gcc libffi-devel
 elif [[ ! -z $APT_GET ]]; then
     sudo apt-get install -y build-essential libffi-dev
 fi
 
-#? libffi
 
 [ -d "${SCRIPTPATH}/build" ] || mkdir -p "${SCRIPTPATH}/build"
 cd "${SCRIPTPATH}/build"
