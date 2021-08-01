@@ -387,7 +387,7 @@ if __name__ == "__main__":
     u"\N{CYRILLIC SMALL LETTER TE}"
     u"\N{CYRILLIC SMALL LETTER VE}"
     u"\N{CYRILLIC SMALL LETTER A}".split()
-    # ~ for word in testwordsC:
-    # ~ print(word, breakdownWord(unicode(word, input_encoding)))
-    # ~ for word in testwords:
-    # ~ print(word, breakdownWord(unicode(word, input_encoding)))
+    for word in testwordsC:
+        print(word, breakdownWord(word))
+    for word in testwords:
+        print(word, breakdownWord(word))

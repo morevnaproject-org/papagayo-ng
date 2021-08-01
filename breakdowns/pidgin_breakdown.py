@@ -39,7 +39,8 @@ alphabet in mind i.e a-z,sh,ch. In summary play just with this 28 sounds to spel
 from breakdowns.unicode_hammer import latin1_to_ascii as hammer
 
 import locale
-input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
+
+input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'cp1252'
 # input_encoding = 'utf-8'
 # input_encoding = 'utf-16'
@@ -47,11 +48,21 @@ input_encoding = locale.getdefaultlocale()[1] # standard system encoding??
 # input_encoding = 'iso-8859-1'
 
 # lists containing different accented vowels
-accented_a = [u'\N{LATIN SMALL LETTER A WITH ACUTE}', u'\N{LATIN SMALL LETTER A WITH GRAVE}', u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER A WITH TILDE}', u'\N{LATIN SMALL LETTER A WITH DIAERESIS}', u'\N{LATIN SMALL LETTER A WITH RING ABOVE}', u'\N{LATIN SMALL LETTER AE}']
-accented_e = [u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER E WITH DIAERESIS}', u'\N{LATIN SMALL LETTER E WITH GRAVE}', u'\N{LATIN SMALL LETTER E WITH ACUTE}', u'\N{LATIN SMALL LIGATURE OE}']
-accented_i = [u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER I WITH GRAVE}', u'\N{LATIN SMALL LETTER I WITH DIAERESIS}']
-accented_o = [u'\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER O WITH DIAERESIS}', u'\N{LATIN SMALL LETTER O WITH STROKE}',u'\N{LATIN SMALL LETTER O WITH GRAVE}',u'\N{LATIN SMALL LETTER O WITH ACUTE}',u'\N{LATIN SMALL LETTER O WITH TILDE}']
-accented_u = [u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER U WITH GRAVE}',u'\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}',u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']
+accented_a = [u'\N{LATIN SMALL LETTER A WITH ACUTE}', u'\N{LATIN SMALL LETTER A WITH GRAVE}',
+              u'\N{LATIN SMALL LETTER A WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER A WITH TILDE}',
+              u'\N{LATIN SMALL LETTER A WITH DIAERESIS}', u'\N{LATIN SMALL LETTER A WITH RING ABOVE}',
+              u'\N{LATIN SMALL LETTER AE}']
+accented_e = [u'\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER E WITH DIAERESIS}',
+              u'\N{LATIN SMALL LETTER E WITH GRAVE}', u'\N{LATIN SMALL LETTER E WITH ACUTE}',
+              u'\N{LATIN SMALL LIGATURE OE}']
+accented_i = [u'\N{LATIN SMALL LETTER I WITH ACUTE}', u'\N{LATIN SMALL LETTER I WITH CIRCUMFLEX}',
+              u'\N{LATIN SMALL LETTER I WITH GRAVE}', u'\N{LATIN SMALL LETTER I WITH DIAERESIS}']
+accented_o = [u'\N{LATIN SMALL LETTER O WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER O WITH DIAERESIS}',
+              u'\N{LATIN SMALL LETTER O WITH STROKE}', u'\N{LATIN SMALL LETTER O WITH GRAVE}',
+              u'\N{LATIN SMALL LETTER O WITH ACUTE}', u'\N{LATIN SMALL LETTER O WITH TILDE}']
+accented_u = [u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER U WITH GRAVE}',
+              u'\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']
+
 
 def breakdownWord(word, recursive=False):
     word = word.lower()
@@ -70,54 +81,55 @@ def breakdownWord(word, recursive=False):
         'p': 'P',
         'q': 'K',
         'r': 'R',
-        's': 'S',  
+        's': 'S',
         't': 'T',
-        'v': 'V',  
+        'v': 'V',
         'w': 'W',
         'y': 'Y',
         'z': 'Z',
-        u'\N{LATIN SMALL LETTER C WITH CEDILLA}':'S' #  ç
+        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S'  # ç
     }
     easy_consonants = simple_convert.keys()
     pos = 0
     previous = ' '
     for letter in word:
-        if letter in ['a',accented_a]:            # a
-                phonemes.append('AE0')
-        elif letter in ['e',accented_e]:          # e
-               phonemes.append('EH0')      
-        elif letter in ['i',accented_i]:          # i
-                phonemes.append('IH0')
-        elif letter in ['o',accented_o]:          # o
-                phonemes.append('AO0')
-        elif letter in ['u',accented_u]:          # u
-                phonemes.append('UW0')
-                 
+        if letter in ['a', accented_a]:  # a
+            phonemes.append('AE0')
+        elif letter in ['e', accented_e]:  # e
+            phonemes.append('EH0')
+        elif letter in ['i', accented_i]:  # i
+            phonemes.append('IH0')
+        elif letter in ['o', accented_o]:  # o
+            phonemes.append('AO0')
+        elif letter in ['u', accented_u]:  # u
+            phonemes.append('UW0')
+
         elif letter == 'c':
-            if len(word) > pos+1 and word[pos+1] == 'h': # ch 
+            if len(word) > pos + 1 and word[pos + 1] == 'h':  # ch
                 phonemes.append('CH')
-            elif len(word) > pos+1 and word[pos+1] in ['e','i','y',accented_e,accented_i]: #ce, ci
+            elif len(word) > pos + 1 and word[pos + 1] in ['e', 'i', 'y', accented_e, accented_i]:  # ce, ci
                 phonemes.append('S')
-            elif len(word) > pos+1 and word[pos+1] in ['a','o','r','u',accented_a,accented_o,accented_u]:    # ca, co, cu, cr
+            elif len(word) > pos + 1 and word[pos + 1] in ['a', 'o', 'r', 'u', accented_a, accented_o,
+                                                           accented_u]:  # ca, co, cu, cr
                 phonemes.append('K')
             else:
                 phonemes.append('K')
-        elif  letter == 'h':     
-            if previous in ['c','s']:  
-                pass 
+        elif letter == 'h':
+            if previous in ['c', 's']:
+                pass
             else:
-                phonemes.append('HH')    # h      
-        elif letter == 's':     
-            if len(word) > pos+1 and word[pos+1] == 'h':  
-                phonemes.append('SH')   # sh
+                phonemes.append('HH')  # h
+        elif letter == 's':
+            if len(word) > pos + 1 and word[pos + 1] == 'h':
+                phonemes.append('SH')  # sh
             else:
-                phonemes.append('S')    # s
-        elif letter == 'x':             # x
-            if pos+1==len(word):
-               phonemes.append('Z')
+                phonemes.append('S')  # s
+        elif letter == 'x':  # x
+            if pos + 1 == len(word):
+                phonemes.append('Z')
             else:
-               phonemes.append('K')
-               phonemes.append('S')
+                phonemes.append('K')
+                phonemes.append('S')
 
         elif letter in easy_consonants:
             phonemes.append(simple_convert[letter])
@@ -128,8 +140,8 @@ def breakdownWord(word, recursive=False):
                 phon = breakdownWord(hammer(letter[0]), True)
                 if phon:
                     phonemes.append(phon[0])
-        #~ else:
-            #~ print "not handled", letter, word
+        # ~ else:
+        # ~ print "not handled", letter, word
         pos += 1
         previous = letter
     # return " ".join(phonemes)
@@ -141,16 +153,17 @@ def breakdownWord(word, recursive=False):
         previous_phoneme = phoneme
     return temp_phonemes
 
+
 if __name__ == "__main__":
-    testwords = ['y','gooooool','chalk','ghetto','laf','fada','yam','enegi','taxi', 'abi', 
-    'don', 'fufu', 'achu', 'jelof', 'seh', 'sah', 'fo','wahala', 'massa','shame',
-                        'contrih', 'camer', 'naija', 'ah', 'whosaiye', 'pikin',
-                        'babalaro', 'witch', 'doh',
-                        'di', 'sabi', 'sef', 'hambok', 'makala', 'accra', 'chop',
-                        'njama', 'mimbo', 'plat', 'motor', 'vex',
-                        'happi', 'joli', 'tiff', 'piss', 'akra',
-                        'eru', 'ndolo', 'munah', 'ndole', 'benskin', 'yi',
-                        'krouhkrouh', 'wan', 'kosh'
-                        ]
+    testwords = ['y', 'gooooool', 'chalk', 'ghetto', 'laf', 'fada', 'yam', 'enegi', 'taxi', 'abi',
+                 'don', 'fufu', 'achu', 'jelof', 'seh', 'sah', 'fo', 'wahala', 'massa', 'shame',
+                 'contrih', 'camer', 'naija', 'ah', 'whosaiye', 'pikin',
+                 'babalaro', 'witch', 'doh',
+                 'di', 'sabi', 'sef', 'hambok', 'makala', 'accra', 'chop',
+                 'njama', 'mimbo', 'plat', 'motor', 'vex',
+                 'happi', 'joli', 'tiff', 'piss', 'akra',
+                 'eru', 'ndolo', 'munah', 'ndole', 'benskin', 'yi',
+                 'krouhkrouh', 'wan', 'kosh'
+                 ]
     for word in testwords:
-        print(word, breakdownWord(unicode(word, input_encoding)))
+        print(word, breakdownWord(word))

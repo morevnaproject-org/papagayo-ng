@@ -180,4 +180,4 @@ if __name__ == '__main__':
                   'HO', 'HAi', 'CHE', 'CHIuso', 'anCHE', 'BanJo', 'marGIne',
                   'RAdio', 'ROnco', 'RUbino', 'REsto', 'ramaRRo', 'cROsta', 'på', 'hänsyn']
     for word in test_words:
-        print(word, " --> ", breakdownWord(unicode(word, input_encoding)))
+        print(word, " --> ", breakdownWord(word))

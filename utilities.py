@@ -33,6 +33,12 @@ def get_app_data_path():
     app_author = "Morevna Project"
     user_data_dir = appdirs.user_data_dir(app_name, app_author)
     config.setValue("appdata_dir", user_data_dir)
+    # If user data dir does not exist yet we create it.
+    author_dir = os.path.abspath(os.path.join(user_data_dir, os.pardir))
+    if not os.path.exists(author_dir):
+        os.mkdir(author_dir)
+    if not os.path.exists(user_data_dir):
+        os.mkdir(user_data_dir)
     return user_data_dir
 
 

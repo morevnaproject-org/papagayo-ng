@@ -187,4 +187,4 @@ if __name__ == "__main__":
     testwords = splitter.split(teststring)
     testwords.append('på')
     for word in testwords:
-        print(word, breakdownWord(unicode(word, input_encoding)))
+        print(word, breakdownWord(word))

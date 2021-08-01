@@ -17,8 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import os
 
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore, QtWidgets, QtGui
+
+import utilities
+from MouthViewQT import MouthView
 from math import sqrt
 
 
@@ -34,14 +38,24 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.decide_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.confirm_button = QtWidgets.QPushButton("OK")
         self.cancel_button = QtWidgets.QPushButton("Cancel")
+        self.stop_button = self.decide_box.addButton("Stop", QtWidgets.QDialogButtonBox.RejectRole)
+
         self.phoneme_ctrl = QtWidgets.QLineEdit()
+        self.mouth_view = MouthView()
+        for widget in QtWidgets.QApplication.instance().topLevelWidgets():
+            if isinstance(widget, QtWidgets.QMainWindow):
+                self.main_window = widget
+        self.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
+        self.mouth_view.set_document(self.main_window.lip_sync_frame.doc)
 
         self.gave_ok = False
+        self.stop_decode = False
         self.curr_x = 0
         self.curr_y = 0
         self.max_x = round(sqrt(len(phoneme_set)))  # This way the grid should always be as square as possible
 
         self.box.addWidget(self.word_label)
+        self.box.addWidget(self.mouth_view)
         self.box.addLayout(self.phoneme_grid)
         self.box.addWidget(self.phoneme_ctrl)
         self.box.addWidget(self.decide_box)
@@ -51,9 +65,10 @@ class PronunciationDialog(QtWidgets.QDialog):
 
         for phoneme in phoneme_set:
             if phoneme != "rest":
-                phoneme_ids[phoneme] = QtWidgets.QPushButton(phoneme, self)
-                phoneme_ids[phoneme].clicked.connect(self.on_phoneme_click)
-                self.phoneme_grid.addWidget(phoneme_ids[phoneme], self.curr_y, self.curr_x)
+                self.phoneme_buttons[phoneme] = QtWidgets.QPushButton(phoneme, self)
+                self.phoneme_buttons[phoneme].clicked.connect(self.on_phoneme_click)
+                self.phoneme_buttons[phoneme].enterEvent = self.hover_phoneme
+                self.phoneme_grid.addWidget(self.phoneme_buttons[phoneme], self.curr_y, self.curr_x)
                 self.curr_x += 1
                 if self.curr_x >= self.max_x:
                     self.curr_x = 0
@@ -61,10 +76,17 @@ class PronunciationDialog(QtWidgets.QDialog):
 
         self.decide_box.accepted.connect(self.on_accept)
         self.decide_box.rejected.connect(self.on_reject)
+        self.stop_button.clicked.connect(self.on_abort)
 
         self.setLayout(self.box)
         self.setModal(True)
+        self.setWindowIcon(QtGui.QIcon(os.path.join(utilities.get_main_dir(), "rsrc", "window_icon.bmp")))
         self.show()
+
+    def hover_phoneme(self, event=None):
+        for phoneme in self.phoneme_buttons:
+            if self.phoneme_buttons[phoneme].underMouse():
+                self.mouth_view.set_phoneme_picture(phoneme)
 
     def add_phoneme(self, phoneme):
         text = "{} {}".format(self.phoneme_ctrl.text().strip(), phoneme)
@@ -85,4 +107,27 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.reject()
         # self.close()
 
+    def on_abort(self):
+        self.gave_ok = False
+        self.stop_decode = True
+        self.reject()
+
 # end of class PronunciationDialog
+
+
+def show_pronunciation_dialog(parent_window, phoneme_set, word_to_decode, prev_text=""):
+    dlg = PronunciationDialog(parent_window, phoneme_set)
+    dlg.word_label.setText("{} {}".format(dlg.word_label.text(), word_to_decode))
+    dlg.phoneme_ctrl.setText(prev_text)
+    dlg.exec_()
+    if dlg.stop_decode:
+        dlg.destroy()
+        return -1
+    if dlg.gave_ok:
+        phonemes_as_list = []
+        for p in dlg.phoneme_ctrl.text().split():
+            if len(p) == 0:
+                continue
+            phonemes_as_list.append(p)
+        dlg.destroy()
+        return phonemes_as_list
