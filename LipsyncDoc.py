@@ -27,6 +27,8 @@ import fnmatch
 
 from anytree.exporter import DotExporter
 
+import utilities
+
 try:
     import auto_recognition
 except ModuleNotFoundError:
@@ -161,6 +163,7 @@ class LipSyncObject(NodeMixin):
     def __init__(self, parent=None, children=None, object_type="voice", text="", start_frame=0, end_frame=0, name="",
                  tags=None, num_children=0, sound_duration=0, fps=24):
         self.parent = parent
+        self.config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         if children:
             self.children = children
         self.object_type = object_type
@@ -419,6 +422,141 @@ class LipSyncObject(NodeMixin):
                         phoneme_as_cmu = conversion_map_to_cmu.get(p, "rest")
                         phonemes_as_list.append(phoneme_as_cmu)
                     languagemanager.raw_dictionary[self.text.upper()] = phonemes_as_list
+
+    ###
+
+    def export(self, path):
+
+        out_file = open(path, 'w')
+        out_file.write("MohoSwitch1\n")
+        phoneme = ""
+        if len(self.children) > 0:
+            start_frame = self.children[0].start_frame
+            end_frame = self.children[-1].end_frame
+            if start_frame != 0:
+                phoneme = "rest"
+                out_file.write("{:d} {}\n".format(1, phoneme))
+        else:
+            start_frame = 0
+            end_frame = 1
+        last_phoneme = self.leaves[0]
+        for phoneme in self.leaves:
+            if last_phoneme.text != phoneme.text:
+                if phoneme.text == "rest":
+                    # export an extra "rest" phoneme at the end of a pause between words or phrases
+                    out_file.write("{:d} {}\n".format(phoneme.start_frame, phoneme.text))
+            last_phoneme = phoneme
+            out_file.write("{:d} {}\n".format(phoneme.start_frame + 1, phoneme.text))
+        out_file.write("{:d} {}\n".format(end_frame + 2, "rest"))
+        out_file.close()
+
+    def export_images(self, path, currentmouth):
+        if not self.config.value("MouthDir"):
+            print("Use normal procedure.\n")
+            phonemedict = {}
+            for files in os.listdir(os.path.join(utilities.get_main_dir(), "rsrc", "mouths", currentmouth)):
+                phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
+            for phoneme in self.leaves:
+                try:
+                    shutil.copy(os.path.join(utilities.get_main_dir(), "rsrc", "mouths", currentmouth) + "/" +
+                                phoneme.text + phonemedict[phoneme.text],
+                                path + str(phoneme.start_frame).rjust(6, '0') +
+                                phoneme.text + phonemedict[phoneme.text])
+                except KeyError:
+                    print("Phoneme \'{0}\' does not exist in chosen directory.".format(phoneme.text))
+
+        else:
+            print("Use this dir: {}\n".format(self.config.value("MouthDir")))
+            phonemedict = {}
+            for files in os.listdir(self.config.value("MouthDir")):
+                phonemedict[os.path.splitext(files)[0]] = os.path.splitext(files)[1]
+            for phoneme in self.leaves:
+                try:
+                    shutil.copy(
+                        "{}/{}{}".format(self.config.value("MouthDir"), phoneme.text, phonemedict[phoneme.text]),
+                        "{}{}{}{}".format(path, str(phoneme.start_frame).rjust(6, "0"), phoneme.text,
+                                          phonemedict[phoneme.text]))
+                except KeyError:
+                    print("Phoneme \'{0}\' does not exist in chosen directory.".format(phoneme.text))
+
+    def export_alelo(self, path, language, languagemanager):
+        out_file = open(path, 'w')
+        for phrase in self.children:
+            for word in phrase.children:
+                text = word.text.strip(strip_symbols)
+                details = languagemanager.language_table[language]
+                if languagemanager.current_language != language:
+                    languagemanager.LoadLanguage(details)
+                    languagemanager.current_language = language
+                if details["case"] == "upper":
+                    pronunciation = languagemanager.raw_dictionary[text.upper()]
+                elif details["case"] == "lower":
+                    pronunciation = languagemanager.raw_dictionary[text.lower()]
+                else:
+                    pronunciation = languagemanager.raw_dictionary[text]
+                first = True
+                position = -1
+                #               print word.text
+                for phoneme in word.children:
+                    #                   print phoneme.text
+                    if first:
+                        first = False
+                    else:
+                        try:
+                            out_file.write("{:d} {:d} {}\n".format(last_phoneme.start_frame, phoneme.start_frame - 1,
+                                                                   languagemanager.export_conversion[
+                                                                       last_phoneme_text]))
+                        except KeyError:
+                            pass
+                    if phoneme.text.lower() == "sil":
+                        position += 1
+                        out_file.write("{:d} {:d} sil\n".format(phoneme.start_frame, phoneme.start_frame))
+                        continue
+                    position += 1
+                    last_phoneme_text = pronunciation[position]
+                    last_phoneme = phoneme
+                try:
+                    out_file.write("{:d} {:d} {}\n".format(last_phoneme.start_frame, word.end_frame,
+                                                           languagemanager.export_conversion[last_phoneme_text]))
+                except KeyError:
+                    pass
+        out_file.close()
+
+    def export_json(self, path):
+        if len(self.children) > 0:
+            start_frame = self.children[0].start_frame
+            end_frame = self.children[-1].end_frame
+        else:  # No phrases means no data, so do nothing
+            return
+        json_data = {"name": self.name, "start_frame": start_frame, "end_frame": end_frame,
+                     "text": self.text, "num_children": self.num_children}
+        list_of_phrases = []
+        list_of_used_phonemes = []
+        for phr_id, phrase in enumerate(self.children):
+            dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
+                           "end_frame": phrase.end_frame, "tags": phrase.tags}
+            list_of_words = []
+            for wor_id, word in enumerate(phrase.children):
+                dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
+                             "end_frame": word.end_frame, "tags": word.tags or phrase.tags}
+                list_of_phonemes = []
+                for pho_id, phoneme in enumerate(word.children):
+                    dict_phoneme = {"id": pho_id, "text": phoneme.text, "frame": phoneme.start_frame,
+                                    "tags": phoneme.tags or word.tags or phrase.tags}
+                    list_of_phonemes.append(dict_phoneme)
+                    if phoneme.text not in list_of_used_phonemes:
+                        list_of_used_phonemes.append(phoneme.text)
+                dict_word["phonemes"] = list_of_phonemes
+                list_of_words.append(dict_word)
+            dict_phrase["words"] = list_of_words
+            list_of_phrases.append(dict_phrase)
+        json_data["phrases"] = list_of_phrases
+        json_data["used_phonemes"] = list_of_used_phonemes
+        file_path = open(path, "w")
+        json.dump(json_data, file_path, indent=True)
+        file_path.close()
+
+    ###
 
     def __str__(self):
         out_string = "LipSync{}:{}|{}|start_frame:{}|end_frame:{}|Parent:{}|Children:{}".format(
