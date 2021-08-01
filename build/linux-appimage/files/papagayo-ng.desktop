@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Papagayo NG
+Comment=Lipsync tool
+Exec=papagayo-ng
+Icon=papagayo-ng
+Terminal=false
+Type=Application
+Categories=Graphics;Application;
+MimeType=application/x-papagayo;application/x-extension-pgo;
+X-Desktop-File-Install-Version=0.15
+X-AppImage-Version=bf4caf5
+
