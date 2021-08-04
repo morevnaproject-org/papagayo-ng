@@ -597,15 +597,12 @@ class LipsyncFrame:
     def on_open(self):
         if not self.close_doc_ok():
             return
-        print(self.config.value("WorkingDir", get_main_dir()))
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
                                                              "Open Audio or {} File".format(app_title),
                                                              self.config.value("WorkingDir", get_main_dir()),
                                                              open_wildcard)
         if file_path:
-            print(file_path)
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
-            print(os.path.dirname(file_path))
             self.open(file_path)
 
     def open(self, path):
@@ -626,7 +623,6 @@ class LipsyncFrame:
                 dlg.setWindowTitle(app_title)
                 dlg.setIcon(QtWidgets.QMessageBox.Warning)
                 dlg.exec_()  # This should open it as a modal blocking window
-                print(self.config.value("WorkingDir", get_main_dir()))
                 file_path = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
                                                      "Open Audio",
                                                      self.config.value("WorkingDir", get_main_dir()),
@@ -655,7 +651,7 @@ class LipsyncFrame:
         if self.doc is not None:
             self.main_window.setWindowTitle("{} [{}] - {}".format(self.doc.name, path, app_title))
             self.main_window.waveform_view.first_update = True
-            self.main_window.waveform_view.set_document(self.doc)
+            self.main_window.waveform_view.set_document(self.doc, force=True)
             self.main_window.mouth_view.set_document(self.doc)
             # Reenable all disabled widgets TODO: Can likely be reduced
             self.main_window.vertical_layout_right.setEnabled(True)
@@ -710,7 +706,6 @@ class LipsyncFrame:
     def on_save_as(self):
         if self.doc is None:
             return
-        print(self.config.value("WorkingDir", get_main_dir()))
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                              "Save {} File".format(app_title),
                                                              self.config.value("WorkingDir", get_main_dir()),
@@ -855,7 +850,6 @@ class LipsyncFrame:
             self.main_window.waveform_view.set_document(self.doc)
 
     def on_voice_text(self, event=None):
-        print(self.main_window.text_edit.toPlainText())
         if self.ignore_text_changes:
             return
         if (self.doc is not None) and (self.doc.current_voice is not None):
@@ -1025,14 +1019,11 @@ class LipsyncFrame:
                                                                                                         "rsrc", r"mouths/")))
             if voiceimage_path:
                 self.config.setValue("MouthDir", voiceimage_path)
-                print(voiceimage_path)
                 supported_imagetypes = QtGui.QImageReader.supportedImageFormats()
                 for directory, dir_names, file_names in os.walk(voiceimage_path):
-                    print("{0}:{1}:{2}".format(str(directory), str(dir_names), str(file_names)))
                     self.main_window.mouth_view.process_mouth_dir(directory, file_names, supported_imagetypes)
                 mouth_list = list(self.main_window.mouth_view.mouths.keys())
                 mouth_list.sort(key=sort_mouth_list_order)
-                print(mouth_list)
                 self.main_window.mouth_choice.clear()
                 for mouth in mouth_list:
                     self.main_window.mouth_choice.addItem(mouth)
