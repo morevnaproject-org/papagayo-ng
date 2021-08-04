@@ -26,6 +26,12 @@ from MouthViewQT import MouthView
 from math import sqrt
 
 
+def sort_mouth_list_order(elem):
+    try:
+        return int(elem.split("-")[0])
+    except ValueError:
+        return hash(elem)
+
 class PronunciationDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, phoneme_set=None):
         super(PronunciationDialog, self).__init__(None)
@@ -48,6 +54,14 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.mouth_view.current_mouth = self.main_window.mouth_choice.currentText()
         self.mouth_view.set_document(self.main_window.lip_sync_frame.doc)
 
+        self.mouth_choice = QtWidgets.QComboBox()
+        mouth_list = list(self.mouth_view.mouths.keys())
+        mouth_list.sort(key=sort_mouth_list_order)
+        for mouth in mouth_list:
+            self.mouth_choice.addItem(mouth)
+        self.mouth_choice.setCurrentIndex(self.main_window.mouth_choice.currentIndex())
+        self.mouth_choice.current_mouth = self.mouth_choice.currentText()
+
         self.gave_ok = False
         self.stop_decode = False
         self.curr_x = 0
@@ -56,6 +70,7 @@ class PronunciationDialog(QtWidgets.QDialog):
 
         self.box.addWidget(self.word_label)
         self.box.addWidget(self.mouth_view)
+        self.box.addWidget(self.mouth_choice)
         self.box.addLayout(self.phoneme_grid)
         self.box.addWidget(self.phoneme_ctrl)
         self.box.addWidget(self.decide_box)
@@ -77,6 +92,7 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.decide_box.accepted.connect(self.on_accept)
         self.decide_box.rejected.connect(self.on_reject)
         self.stop_button.clicked.connect(self.on_abort)
+        self.mouth_choice.currentIndexChanged.connect(self.on_mouth_choice)
 
         self.setLayout(self.box)
         self.setModal(True)
@@ -96,6 +112,10 @@ class PronunciationDialog(QtWidgets.QDialog):
         phoneme = self.sender().text()
         text = "{} {}".format(self.phoneme_ctrl.text().strip(), phoneme)
         self.phoneme_ctrl.setText(text.strip())
+
+    def on_mouth_choice(self, event=None):
+        self.mouth_view.current_mouth = self.mouth_choice.currentText()
+        self.mouth_view.draw_me()
 
     def on_accept(self):
         self.gave_ok = True
