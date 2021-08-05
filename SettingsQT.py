@@ -22,18 +22,32 @@
 import os
 import platform
 import shutil
+from functools import partial
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 from PySide2.QtGui import QDesktopServices
 import PySide2.QtWidgets as QtWidgets
 
-
 from PySide2.QtUiTools import QUiLoader as uic
 from PySide2.QtCore import QFile
 
 import utilities
 from utilities import *
+
+original_colors = {"wave_fill_color": QtGui.QColor(162, 205, 242),
+                   "wave_line_color": QtGui.QColor(30, 121, 198),
+                   "frame_color": QtGui.QColor(192, 192, 192),
+                   "frame_text_color": QtGui.QColor(64, 64, 64),
+                   "playback_fill_color": QtGui.QColor(209, 102, 121),
+                   "playback_line_color": QtGui.QColor(128, 0, 0),
+                   "phrase_fill_color": QtGui.QColor(205, 242, 162),
+                   "phrase_line_color": QtGui.QColor(121, 198, 30),
+                   "word_fill_color": QtGui.QColor(242, 205, 162),
+                   "word_line_color": QtGui.QColor(198, 121, 30),
+                   "phoneme_fill_color": QtGui.QColor(231, 185, 210),
+                   "phoneme_line_color": QtGui.QColor(173, 114, 146),
+                   "bg_fill_color": QtGui.QColor(255, 255, 255)}
 
 
 class SettingsWindow:
@@ -48,15 +62,19 @@ class SettingsWindow:
         self.main_window.misc_2.clicked.connect(self.change_tab)
         self.main_window.voice_rec.clicked.connect(self.change_tab)
         self.main_window.delete_settings.clicked.connect(self.delete_settings)
+        self.main_window.reset_colors.clicked.connect(self.on_reset_colors)
         self.main_window.ffmpeg_delete_button.clicked.connect(self.delete_ffmpeg)
         self.main_window.allo_delete_button.clicked.connect(self.delete_ai_model)
         self.main_window.rhubarb_delete_button.clicked.connect(self.delete_rhubarb)
         self.main_window.accepted.connect(self.accepted)
+        for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
+            self.main_window.connect(color_button, QtCore.SIGNAL("clicked()"),
+                                     partial(self.open_color_dialog, color_button))
         self.load_settings_to_gui()
         self.main_window.open_app_data_path.clicked.connect(self.open_app_data)
         self.main_window.settings_options.setCurrentIndex(0)
-        #self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
-        #self.main_window.about_ok_button.clicked.connect(self.close)
+        # self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
+        # self.main_window.about_ok_button.clicked.connect(self.close)
 
     def load_ui_widget(self, ui_filename, parent=None):
         loader = uic()
@@ -83,6 +101,17 @@ class SettingsWindow:
     def delete_settings(self, event=None):
         self.settings.clear()
 
+    def open_color_dialog(self, event=None):
+        print(event.text())
+        old_color = event.palette().button().color()
+        new_color = QtWidgets.QColorDialog().getColor(old_color)
+        print(event.objectName())
+        self.settings.setValue(event.objectName(), new_color.name())
+        style = "background-color: {};\nborder: transparent;".format(new_color.name())
+        event.setStyleSheet(style)
+        print(old_color)
+        print(new_color)
+
     def open_app_data(self):
         qt_url = QtCore.QUrl(r"file:///" + utilities.get_app_data_path(), QtCore.QUrl.TolerantMode)
         QtGui.QDesktopServices.openUrl(qt_url)
@@ -100,7 +129,7 @@ class SettingsWindow:
         if os.path.exists(ffprobe_path_old):
             os.remove(ffprobe_path_old)
         ffmpeg_path_new = os.path.join(utilities.get_app_data_path(), ffmpeg_binary)
-        ffprobe_path_new= os.path.join(utilities.get_app_data_path(), ffprobe_binary)
+        ffprobe_path_new = os.path.join(utilities.get_app_data_path(), ffprobe_binary)
         if os.path.exists(ffmpeg_path_new):
             os.remove(ffmpeg_path_new)
         if os.path.exists(ffprobe_path_new):
@@ -129,6 +158,18 @@ class SettingsWindow:
         self.main_window.run_allosaurus.setChecked(bool(self.settings.value("run_allosaurus", True)))
         self.main_window.app_data_path.setText(utilities.get_app_data_path())
         self.main_window.app_data_path.home(True)
+        for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
+            style = "background-color: {};\nborder: transparent;".format(
+                self.settings.value(color_button.objectName(), original_colors[color_button.objectName()]))
+            color_button.setStyleSheet(style)
+
+    def on_reset_colors(self):
+        for color_name, color_value in original_colors.items():
+            self.settings.setValue(color_name, color_value.name())
+        for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
+            style = "background-color: {};\nborder: transparent;".format(
+                self.settings.value(color_button.objectName(), original_colors[color_button.objectName()]))
+            color_button.setStyleSheet(style)
 
     def accepted(self, event=None):
         self.settings.setValue("LastFPS", self.main_window.fps_value.value())

@@ -20,13 +20,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import re
 import time
 
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 import anytree.util
 import numpy as np
-import re
 
 from LipsyncDoc import *
 
@@ -53,6 +53,20 @@ word_fill_col = QtGui.QColor(242, 205, 162)
 word_outline_col = QtGui.QColor(198, 121, 30)
 phoneme_fill_col = QtGui.QColor(231, 185, 210)
 phoneme_outline_col = QtGui.QColor(173, 114, 146)
+original_colors = {"wave_fill_color": QtGui.QColor(162, 205, 242),
+                   "wave_line_color": QtGui.QColor(30, 121, 198),
+                   "frame_color": QtGui.QColor(192, 192, 192),
+                   "frame_text_color": QtGui.QColor(64, 64, 64),
+                   "playback_fill_color": QtGui.QColor(209, 102, 121),
+                   "playback_line_color": QtGui.QColor(128, 0, 0),
+                   "phrase_fill_color": QtGui.QColor(205, 242, 162),
+                   "phrase_line_color": QtGui.QColor(121, 198, 30),
+                   "word_fill_color": QtGui.QColor(242, 205, 162),
+                   "word_line_color": QtGui.QColor(198, 121, 30),
+                   "phoneme_fill_color": QtGui.QColor(231, 185, 210),
+                   "phoneme_line_color": QtGui.QColor(173, 114, 146),
+                   "bg_fill_color": QtGui.QColor(255, 255, 255)}
+
 font = QtGui.QFont("Swiss", 6)
 
 # default_sample_width = 2
@@ -84,6 +98,7 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 class MovableButton(QtWidgets.QPushButton):
     def __init__(self, lipsync_object, wfv_parent, phoneme_offset=None):
         super(MovableButton, self).__init__(lipsync_object.text, None)
+        self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         self.title = lipsync_object.text
         self.node = lipsync_object
         self.phoneme_offset = phoneme_offset
@@ -129,33 +144,26 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.style:
             if self.is_phrase():
 
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    phrase_fill_col.red(),
-                    phrase_fill_col.green(),
-                    phrase_fill_col.blue())
-                self.style += "border-color: rgb({0},{1},{2});".format(phrase_outline_col.red(),
-                                                                       phrase_outline_col.green(),
-                                                                       phrase_outline_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:{0};".format(
+                    QtGui.QColor(self.settings.value("phrase_fill_color", original_colors["phrase_fill_color"])).name())
+                self.style += "border-color: {0};".format(
+                    QtGui.QColor(self.settings.value("phrase_line_color", original_colors["phrase_line_color"])).name())
                 self.style += "border-style: solid solid solid solid; border-width: 1px {0}px}};".format(
                     str(self.get_handle_width()))
             elif self.is_word():
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    word_fill_col.red(),
-                    word_fill_col.green(),
-                    word_fill_col.blue())
-                self.style += "border-color: rgb({0},{1},{2});".format(word_outline_col.red(),
-                                                                       word_outline_col.green(),
-                                                                       word_outline_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:{0};".format(
+                    QtGui.QColor(self.settings.value("word_fill_color", original_colors["word_fill_color"])).name())
+                self.style += "border-color: {0};".format(
+                    QtGui.QColor(self.settings.value("word_line_color", original_colors["word_line_color"])).name())
                 self.style += "border-style: solid solid solid solid; border-width: 1px {0}px}};".format(
                     str(self.get_handle_width()))
             elif self.is_phoneme():
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    phoneme_fill_col.red(),
-                    phoneme_fill_col.green(),
-                    phoneme_fill_col.blue())
-                self.style += "border:1px solid rgb({0},{1},{2});}};".format(phoneme_outline_col.red(),
-                                                                             phoneme_outline_col.green(),
-                                                                             phoneme_outline_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:{0};".format(
+                    QtGui.QColor(
+                        self.settings.value("phoneme_fill_color", original_colors["phoneme_fill_color"])).name())
+                self.style += "border:1px solid {0};}};".format(
+                    QtGui.QColor(
+                        self.settings.value("phoneme_line_color", original_colors["phoneme_line_color"])).name())
             self.setStyleSheet(self.style)
 
     def is_phoneme(self):
@@ -242,7 +250,8 @@ class MovableButton(QtWidgets.QPushButton):
                 prev_phoneme_list = ""
                 for p in self.node.children:
                     prev_phoneme_list += " " + p.text
-                return_value = show_pronunciation_dialog(self, self.wfv_parent.doc.parent.phonemeset.set, self.node.text, prev_text=prev_phoneme_list)
+                return_value = show_pronunciation_dialog(self, self.wfv_parent.doc.parent.phonemeset.set,
+                                                         self.node.text, prev_text=prev_phoneme_list)
                 if return_value == -1:
                     pass
                 elif not return_value:
@@ -445,6 +454,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
+        self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         # Other initialization
         self.main_window = None
         for widget in QtWidgets.QApplication.instance().topLevelWidgets():
@@ -673,7 +683,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.scene().update()
 
     def drawBackground(self, painter, rect):
-        background_brush = QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern)
+        background_brush = QtGui.QBrush(QtGui.QColor(self.settings.value("bg_fill_color", original_colors["bg_fill_color"])), QtCore.Qt.SolidPattern)
         painter.fillRect(rect, background_brush)
         if self.doc is not None:
             pen = QtGui.QPen(frame_col)
@@ -771,7 +781,9 @@ class WaveformView(QtWidgets.QGraphicsView):
         if self.waveform_polygon:
             self.waveform_polygon.setPolygon(temp_polygon)
         else:
-            self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
+            self.waveform_polygon = self.scene().addPolygon(temp_polygon, QtGui.QColor(
+                self.settings.value("wave_line_color", original_colors["wave_line_color"])), QtGui.QColor(
+                self.settings.value("wave_fill_color", original_colors["wave_fill_color"])))
         self.waveform_polygon.setZValue(1)
         self.main_window.statusbar.showMessage("Papagayo-NG")
 
@@ -806,7 +818,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                     # self.temp_button.node = Node(self.temp_button, parent=self.main_node)
                     temp_scene_widget = self.scene().addWidget(self.temp_button)
                     temp_rect = QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
-                                             (phrase.end_frame - phrase.start_frame) * self.frame_width + 1, text_height)
+                                             (phrase.end_frame - phrase.start_frame) * self.frame_width + 1,
+                                             text_height)
                     temp_scene_widget.setGeometry(temp_rect)
                     temp_scene_widget.setZValue(99)
                     self.temp_phrase = self.temp_button
@@ -949,8 +962,15 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.start_recalc()
                 if self.temp_play_marker not in self.scene().items():
                     self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
-                                                                 QtGui.QPen(play_outline_col),
-                                                                 QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+                                                                 QtGui.QPen(QtGui.QColor(
+                                                                     self.settings.value("playback_line_color",
+                                                                                         original_colors[
+                                                                                             "playback_line_color"]))),
+                                                                 QtGui.QBrush(QtGui.QColor(
+                                                                     self.settings.value("playback_fill_color",
+                                                                                         original_colors[
+                                                                                             "playback_fill_color"])),
+                                                                              QtCore.Qt.SolidPattern))
                     self.temp_play_marker.setZValue(1000)
                     self.temp_play_marker.setOpacity(0.5)
                     self.temp_play_marker.setVisible(False)
