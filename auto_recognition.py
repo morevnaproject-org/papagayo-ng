@@ -20,7 +20,9 @@ from utilities import get_main_dir
 
 class AutoRecognize:
     def __init__(self, sound_path):
-        self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
         self.allo_model_path = Path(os.path.join(utilities.get_app_data_path(), "allosaurus_model"))
         self.temp_wave_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
         self.duration_for_one_second = 1

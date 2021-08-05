@@ -108,8 +108,10 @@ class LipsyncFrame:
         self.main_window = self.load_ui_widget(self.ui_path)
         self.main_window.setWindowTitle("%s" % app_title)
         self.main_window.lip_sync_frame = self
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.config.setFallbacksEnabled(False)  # File only, not registry or or.
 
-        self.config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
         tree_style = r'''QTreeView::branch:has-siblings:!adjoins-item {
                              border-image: url(./rsrc/vline.png) 0;}               
                          QTreeView::branch:has-siblings:adjoins-item {

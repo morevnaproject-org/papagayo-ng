@@ -56,7 +56,9 @@ class SettingsWindow:
         self.ui = None
         self.ui_file = None
         self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "rsrc", "settings.ui"))
-        self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
         self.main_window.general_2.clicked.connect(self.change_tab)
         self.main_window.graphical_2.clicked.connect(self.change_tab)
         self.main_window.misc_2.clicked.connect(self.change_tab)
@@ -104,7 +106,7 @@ class SettingsWindow:
     def open_color_dialog(self, event=None):
         old_color = event.palette().button().color()
         new_color = QtWidgets.QColorDialog().getColor(old_color)
-        self.settings.setValue(event.objectName(), new_color.name())
+        self.settings.setValue("/Graphics/{}".format(event.objectName()), new_color.name())
         new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
         style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
         event.setStyleSheet(style)
@@ -157,14 +159,14 @@ class SettingsWindow:
         self.main_window.app_data_path.home(True)
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
             new_color = QtGui.QColor(
-                self.settings.value(color_button.objectName(), original_colors[color_button.objectName()]))
+                self.settings.value("/Graphics/{}".format(color_button.objectName()), original_colors[color_button.objectName()]))
             new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
             style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
             color_button.setStyleSheet(style)
 
     def on_reset_colors(self):
         for color_name, color_value in original_colors.items():
-            self.settings.setValue(color_name, color_value.name())
+            self.settings.setValue("/Graphics/{}".format(color_name), color_value.name())
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
             new_color = QtGui.QColor(self.settings.value(color_button.objectName(), original_colors[color_button.objectName()]))
             new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"

@@ -163,7 +163,9 @@ class LipSyncObject(NodeMixin):
     def __init__(self, parent=None, children=None, object_type="voice", text="", start_frame=0, end_frame=0, name="",
                  tags=None, num_children=0, sound_duration=0, fps=24):
         self.parent = parent
-        self.config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.config.setFallbacksEnabled(False)  # File only, not registry or or.
         if children:
             self.children = children
         self.object_type = object_type
@@ -573,6 +575,9 @@ class LipSyncObject(NodeMixin):
 class LipsyncDoc:
     def __init__(self, langman: LanguageManager, parent):
         self._dirty = False
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
         self.name = "Untitled"
         self.path = None
         self.fps = 24
@@ -776,8 +781,7 @@ class LipsyncDoc:
             self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
 
     def auto_recognize_phoneme(self, manual_invoke=False):
-        settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
-        if settings.value("run_allosaurus", True) or manual_invoke:
+        if self.settings.value("run_allosaurus", True) or manual_invoke:
             if auto_recognition:
                 allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
                 results, peaks, allo_output = allo_recognizer.recognize_allosaurus()

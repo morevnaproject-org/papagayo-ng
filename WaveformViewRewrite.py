@@ -98,7 +98,9 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 class MovableButton(QtWidgets.QPushButton):
     def __init__(self, lipsync_object, wfv_parent, phoneme_offset=None):
         super(MovableButton, self).__init__(lipsync_object.text, None)
-        self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
         self.title = lipsync_object.text
         self.node = lipsync_object
         self.phoneme_offset = phoneme_offset
@@ -145,25 +147,31 @@ class MovableButton(QtWidgets.QPushButton):
             if self.is_phrase():
 
                 self.style = "QPushButton {{color: #000000; background-color:{0};".format(
-                    QtGui.QColor(self.settings.value("phrase_fill_color", original_colors["phrase_fill_color"])).name())
+                    QtGui.QColor(self.settings.value("/Graphics/{}".format("phrase_fill_color"),
+                                                     original_colors["phrase_fill_color"])).name())
                 self.style += "border-color: {0};".format(
-                    QtGui.QColor(self.settings.value("phrase_line_color", original_colors["phrase_line_color"])).name())
+                    QtGui.QColor(self.settings.value("/Graphics/{}".format("phrase_line_color"),
+                                                     original_colors["phrase_line_color"])).name())
                 self.style += "border-style: solid solid solid solid; border-width: 1px {0}px}};".format(
                     str(self.get_handle_width()))
             elif self.is_word():
                 self.style = "QPushButton {{color: #000000; background-color:{0};".format(
-                    QtGui.QColor(self.settings.value("word_fill_color", original_colors["word_fill_color"])).name())
+                    QtGui.QColor(self.settings.value("/Graphics/{}".format("word_fill_color"),
+                                                     original_colors["word_fill_color"])).name())
                 self.style += "border-color: {0};".format(
-                    QtGui.QColor(self.settings.value("word_line_color", original_colors["word_line_color"])).name())
+                    QtGui.QColor(self.settings.value("/Graphics/{}".format("word_line_color"),
+                                                     original_colors["word_line_color"])).name())
                 self.style += "border-style: solid solid solid solid; border-width: 1px {0}px}};".format(
                     str(self.get_handle_width()))
             elif self.is_phoneme():
                 self.style = "QPushButton {{color: #000000; background-color:{0};".format(
                     QtGui.QColor(
-                        self.settings.value("phoneme_fill_color", original_colors["phoneme_fill_color"])).name())
+                        self.settings.value("/Graphics/{}".format("phoneme_fill_color"),
+                                            original_colors["phoneme_fill_color"])).name())
                 self.style += "border:1px solid {0};}};".format(
                     QtGui.QColor(
-                        self.settings.value("phoneme_line_color", original_colors["phoneme_line_color"])).name())
+                        self.settings.value("/Graphics/{}".format("phoneme_line_color"),
+                                            original_colors["phoneme_line_color"])).name())
             self.setStyleSheet(self.style)
 
     def is_phoneme(self):
@@ -454,7 +462,9 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
-        self.settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
         # Other initialization
         self.main_window = None
         for widget in QtWidgets.QApplication.instance().topLevelWidgets():
@@ -672,8 +682,16 @@ class WaveformView(QtWidgets.QGraphicsView):
     def set_frame(self, frame):
         if self.temp_play_marker not in self.scene().items():
             self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
-                                                         QtGui.QPen(play_outline_col),
-                                                         QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+                                                         QtGui.QPen(QtGui.QColor(
+                                                             self.settings.value(
+                                                                 "/Graphics/{}".format("playback_line_color"),
+                                                                 original_colors[
+                                                                     "playback_line_color"]))),
+                                                         QtGui.QBrush(QtGui.QColor(
+                                                             self.settings.value(
+                                                                 "/Graphics/{}".format("playback_fill_color"),
+                                                                 original_colors[
+                                                                     "playback_fill_color"])), QtCore.Qt.SolidPattern))
             self.temp_play_marker.setZValue(1000)
             self.temp_play_marker.setOpacity(0.5)
             self.temp_play_marker.setVisible(True)
@@ -683,10 +701,13 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.scene().update()
 
     def drawBackground(self, painter, rect):
-        background_brush = QtGui.QBrush(QtGui.QColor(self.settings.value("bg_fill_color", original_colors["bg_fill_color"])), QtCore.Qt.SolidPattern)
+        background_brush = QtGui.QBrush(
+            QtGui.QColor(self.settings.value("/Graphics/{}".format("bg_fill_color"), original_colors["bg_fill_color"])),
+            QtCore.Qt.SolidPattern)
         painter.fillRect(rect, background_brush)
         if self.doc is not None:
-            pen = QtGui.QPen(frame_col)
+            pen = QtGui.QPen(
+                QtGui.QColor(self.settings.value("/Graphics/{}".format("frame_color"), original_colors["frame_color"])))
             # pen.setWidth(5)
             painter.setPen(pen)
             painter.setFont(font)
@@ -782,8 +803,11 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.waveform_polygon.setPolygon(temp_polygon)
         else:
             self.waveform_polygon = self.scene().addPolygon(temp_polygon, QtGui.QColor(
-                self.settings.value("wave_line_color", original_colors["wave_line_color"])), QtGui.QColor(
-                self.settings.value("wave_fill_color", original_colors["wave_fill_color"])))
+                self.settings.value("/Graphics/{}".format("wave_line_color"), original_colors["wave_line_color"])),
+                                                            QtGui.QColor(
+                                                                self.settings.value(
+                                                                    "/Graphics/{}".format("wave_fill_color"),
+                                                                    original_colors["wave_fill_color"])))
         self.waveform_polygon.setZValue(1)
         self.main_window.statusbar.showMessage("Papagayo-NG")
 
@@ -963,14 +987,16 @@ class WaveformView(QtWidgets.QGraphicsView):
                 if self.temp_play_marker not in self.scene().items():
                     self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
                                                                  QtGui.QPen(QtGui.QColor(
-                                                                     self.settings.value("playback_line_color",
-                                                                                         original_colors[
-                                                                                             "playback_line_color"]))),
+                                                                     self.settings.value(
+                                                                         "/Graphics/{}".format("playback_line_color"),
+                                                                         original_colors[
+                                                                             "playback_line_color"]))),
                                                                  QtGui.QBrush(QtGui.QColor(
-                                                                     self.settings.value("playback_fill_color",
-                                                                                         original_colors[
-                                                                                             "playback_fill_color"])),
-                                                                              QtCore.Qt.SolidPattern))
+                                                                     self.settings.value(
+                                                                         "/Graphics/{}".format("playback_fill_color"),
+                                                                         original_colors[
+                                                                             "playback_fill_color"])),
+                                                                     QtCore.Qt.SolidPattern))
                     self.temp_play_marker.setZValue(1000)
                     self.temp_play_marker.setOpacity(0.5)
                     self.temp_play_marker.setVisible(False)
