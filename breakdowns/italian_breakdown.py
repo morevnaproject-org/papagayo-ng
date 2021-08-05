@@ -45,7 +45,7 @@ vowels = u'aeiou' + \
 
 # print vowels.encode('cp1252')
 
-def breakdownWord(word, recursive=False):
+def breakdown_word(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys(vowels)
     phonemes = []
@@ -212,7 +212,7 @@ def breakdownWord(word, recursive=False):
             pass
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownWord(hammer(letter), True)
+                phon = breakdown_word(hammer(letter), True)
                 if phon:
                     phonemes.append(phon[0])
                     # ~ else:
@@ -263,4 +263,4 @@ if __name__ == "__main__":
                  'på', 'hänsyn'
                  ]
     for word in testwords:
-        print(word, breakdownWord(word))
+        print(word, breakdown_word(word))

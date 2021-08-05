@@ -39,7 +39,7 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'latin-1'
 # input_encoding = 'iso-8859-1'
 
-def breakdownWord(word, recursive=False):
+def breakdown_word(word, recursive=False):
     word = word.lower()
     # isvowel = dict.fromkeys('aeiouáéíóúàèìòùâêîôû').has_key
     phonemes = []
@@ -163,7 +163,7 @@ def breakdownWord(word, recursive=False):
             phonemes.append(simple_convert[letter])
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownWord(hammer(letter), True)
+                phon = breakdown_word(hammer(letter), True)
                 if phon:
                     phonemes.append(phon[0])
                     # ~ else:
@@ -187,4 +187,4 @@ if __name__ == "__main__":
     testwords = splitter.split(teststring)
     testwords.append('på')
     for word in testwords:
-        print(word, breakdownWord(word))
+        print(word, breakdown_word(word))

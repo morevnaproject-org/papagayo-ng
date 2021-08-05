@@ -378,7 +378,7 @@ class LipSyncObject(NodeMixin):
                 details = languagemanager.language_table[language]
                 if details["type"] == "breakdown":
                     breakdown = importlib.import_module(details["breakdown_class"])
-                    pronunciation_raw = breakdown.breakdownWord(text)
+                    pronunciation_raw = breakdown.breakdown_word(text)
                 elif details["type"] == "dictionary":
                     if languagemanager.current_language != language:
                         languagemanager.load_language(details)

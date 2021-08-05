@@ -565,8 +565,10 @@ class LipsyncFrame:
             if len(self.doc.project_node.children) < 1:
                 self.doc.current_voice = LipSyncObject(object_type="voice", name="Voice 1",
                                                        parent=self.doc.project_node)
+            else:
+                self.doc.current_voice.children = []
             self.doc.auto_recognize_phoneme(manual_invoke=True)
-            self.main_window.waveform_view.set_document(self.doc, force=True)
+            self.main_window.waveform_view.set_document(self.doc, force=True, clear_scene=True)
             self.main_window.mouth_view.set_document(self.doc)
 
     def close_doc_ok(self):
@@ -862,13 +864,14 @@ class LipsyncFrame:
             phonemeset_name = self.main_window.phoneme_set.currentText()
             self.phonemeset.load(phonemeset_name)
             self.doc.dirty = True
+            self.doc.current_voice.children = []
             self.doc.current_voice.run_breakdown(self.doc.soundDuration, self, language, self.langman,
                                                  self.phonemeset)
             self.main_window.waveform_view.first_update = True
             self.ignore_text_changes = True
             self.main_window.text_edit.setText(self.doc.current_voice.text)
             self.ignore_text_changes = False
-            self.main_window.waveform_view.set_document(self.doc, True)
+            self.main_window.waveform_view.set_document(self.doc, True, True)
 
     def on_voice_export(self, event=None):
         language = self.main_window.language_choice.currentText()

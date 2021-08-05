@@ -38,7 +38,7 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'iso-8859-1'
 
 
-def breakdownWord(word, recursive=False):
+def breakdown_word(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys(
         u'aeiouy\N{LATIN SMALL LETTER A WITH RING ABOVE}\N{LATIN SMALL LETTER AE}\N{LATIN SMALL LETTER O WITH STROKE}')
@@ -193,7 +193,7 @@ def breakdownWord(word, recursive=False):
         elif len(hammer(letter)) == 1:
             # print "hammer"
             if not recursive:
-                phon = " ".join(breakdownWord(hammer(letter), True))
+                phon = " ".join(breakdown_word(hammer(letter), True))
                 if phon:
                     phonemes.append(phon)
                     # ~ else:
@@ -220,4 +220,4 @@ if __name__ == "__main__":
                  'êtres', 'français', 'égaux'
                  ]
     for eachword in testwords:
-        print(eachword, ':', breakdownWord(eachword), '--', breakdownWord(eachword))
+        print(eachword, ':', breakdown_word(eachword), '--', breakdown_word(eachword))
