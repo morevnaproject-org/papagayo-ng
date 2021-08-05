@@ -623,11 +623,11 @@ class LipSyncObject(NodeMixin):
             list_of_words = []
             for wor_id, word in enumerate(phrase.children):
                 dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
-                             "end_frame": word.end_frame, "tags": word.tags or phrase.tags}
+                             "end_frame": word.end_frame, "tags": word.tags + phrase.tags}
                 list_of_phonemes = []
                 for pho_id, phoneme in enumerate(word.children):
                     dict_phoneme = {"id": pho_id, "text": phoneme.text, "frame": phoneme.start_frame,
-                                    "tags": phoneme.tags or word.tags or phrase.tags}
+                                    "tags": phoneme.tags + word.tags + phrase.tags}
                     list_of_phonemes.append(dict_phoneme)
                     if phoneme.text not in list_of_used_phonemes:
                         list_of_used_phonemes.append(phoneme.text)
