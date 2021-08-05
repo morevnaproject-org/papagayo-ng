@@ -253,6 +253,7 @@ border: transparent;</string>
         <widget class="QPushButton" name="playback_line_color">
          <property name="styleSheet">
           <string notr="true">background-color: rgb(128, 0, 0);
+color: rgb(255, 255, 255);
 border: transparent;</string>
          </property>
          <property name="text">
@@ -336,6 +337,7 @@ border: transparent;</string>
         <widget class="QPushButton" name="frame_text_color">
          <property name="styleSheet">
           <string notr="true">background-color: rgb(64, 64, 64);
+color: rgb(255, 255, 255);
 border: transparent;</string>
          </property>
          <property name="text">

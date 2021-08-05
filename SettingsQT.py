@@ -102,15 +102,12 @@ class SettingsWindow:
         self.settings.clear()
 
     def open_color_dialog(self, event=None):
-        print(event.text())
         old_color = event.palette().button().color()
         new_color = QtWidgets.QColorDialog().getColor(old_color)
-        print(event.objectName())
         self.settings.setValue(event.objectName(), new_color.name())
-        style = "background-color: {};\nborder: transparent;".format(new_color.name())
+        new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
+        style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
         event.setStyleSheet(style)
-        print(old_color)
-        print(new_color)
 
     def open_app_data(self):
         qt_url = QtCore.QUrl(r"file:///" + utilities.get_app_data_path(), QtCore.QUrl.TolerantMode)
@@ -159,16 +156,19 @@ class SettingsWindow:
         self.main_window.app_data_path.setText(utilities.get_app_data_path())
         self.main_window.app_data_path.home(True)
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
-            style = "background-color: {};\nborder: transparent;".format(
+            new_color = QtGui.QColor(
                 self.settings.value(color_button.objectName(), original_colors[color_button.objectName()]))
+            new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
+            style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
             color_button.setStyleSheet(style)
 
     def on_reset_colors(self):
         for color_name, color_value in original_colors.items():
             self.settings.setValue(color_name, color_value.name())
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
-            style = "background-color: {};\nborder: transparent;".format(
-                self.settings.value(color_button.objectName(), original_colors[color_button.objectName()]))
+            new_color = QtGui.QColor(self.settings.value(color_button.objectName(), original_colors[color_button.objectName()]))
+            new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
+            style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
             color_button.setStyleSheet(style)
 
     def accepted(self, event=None):
