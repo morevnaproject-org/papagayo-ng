@@ -42,7 +42,7 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'latin-1'
 # input_encoding = 'iso-8859-1'
 
-def breakdownWord(word, recursive=False):
+def breakdown_word(word, recursive=False):
     word = word.lower()
     phonemes = []
     vowels = [
@@ -237,7 +237,7 @@ def breakdownWord(word, recursive=False):
             pass
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownWord(hammer(letter), True)
+                phon = breakdown_word(hammer(letter), True)
                 if phon:
                     phonemes.append(phon[0])
                     # ~ else:
@@ -416,6 +416,6 @@ if __name__ == "__main__":
     u"\N{CYRILLIC SMALL LETTER VE}"
     u"\N{CYRILLIC SMALL LETTER A}".split()
     for word in testwordsC:
-        print(word, breakdownWord(word))
+        print(word, breakdown_word(word))
     for word in testwords:
-        print(word, breakdownWord(word))
+        print(word, breakdown_word(word))

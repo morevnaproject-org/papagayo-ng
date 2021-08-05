@@ -52,7 +52,7 @@ setvowels = u'aeiou' + \
             u'\N{LATIN SMALL LETTER U WITH ACUTE}'
 
 
-def breakdownWord(word, recursive=False):
+def breakdown_word(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys(setvowels)
     phonemes = []
@@ -222,7 +222,7 @@ def breakdownWord(word, recursive=False):
             pass
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownWord(hammer(letter), True)
+                phon = breakdown_word(hammer(letter), True)
                 if phon:
                     phonemes.append(phon[0])
                     # ~ else:
@@ -249,4 +249,4 @@ if __name__ == "__main__":
                  'gorila', 'escada', 'mecânico'
                  ]
     for word in testwords:
-        print(word, breakdownWord(word))
+        print(word, breakdown_word(word))

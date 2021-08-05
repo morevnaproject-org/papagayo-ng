@@ -392,7 +392,7 @@ def splitWord(word):
         return pieces
 
 
-def breakdownWord(word, phonetic=False):
+def breakdown_word(word, phonetic=False):
     specialcase_words = {
         u"mage": ["M", "AH0", "G", "EH0"],
         u"krage": ["K", "R", "AH0", "G", "EH0"],
@@ -440,7 +440,7 @@ def breakdownWord(word, phonetic=False):
 
 def breakdownSwedishWordPhonetic(word):
     phonetic = True
-    CMUversion = breakdownWord(word, phonetic)
+    CMUversion = breakdown_word(word, phonetic)
     return CMUversion
 
 
@@ -493,4 +493,4 @@ if __name__ == "__main__":
                  'meñe', 'êtres', 'français', 'égaux'
                  ]
     for eachword in testwords:
-        print(eachword, ':', breakdownWord(eachword), '--', breakdownSwedishWordPhonetic(eachword))
+        print(eachword, ':', breakdown_word(eachword), '--', breakdownSwedishWordPhonetic(eachword))

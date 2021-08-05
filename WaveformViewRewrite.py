@@ -20,13 +20,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import re
 import time
 
-import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
-import anytree.util
 import numpy as np
-import re
 
 from LipsyncDoc import *
 
@@ -39,20 +37,6 @@ def normalize(x):
     return ((x - x.min()) / (np.ptp(x))) * 0.8
 
 
-fill_color = QtGui.QColor(162, 205, 242)
-line_color = QtGui.QColor(30, 121, 198)
-frame_col = QtGui.QColor(192, 192, 192)
-frame_text_col = QtGui.QColor(64, 64, 64)
-play_back_col = QtGui.QColor(255, 127, 127)
-play_fore_col = QtGui.QColor(209, 102, 121)
-play_outline_col = QtGui.QColor(128, 0, 0)
-text_col = QtGui.QColor(64, 64, 64)
-phrase_fill_col = QtGui.QColor(205, 242, 162)
-phrase_outline_col = QtGui.QColor(121, 198, 30)
-word_fill_col = QtGui.QColor(242, 205, 162)
-word_outline_col = QtGui.QColor(198, 121, 30)
-phoneme_fill_col = QtGui.QColor(231, 185, 210)
-phoneme_outline_col = QtGui.QColor(173, 114, 146)
 font = QtGui.QFont("Swiss", 6)
 
 # default_sample_width = 2
@@ -84,6 +68,9 @@ class SceneWithDrag(QtWidgets.QGraphicsScene):
 class MovableButton(QtWidgets.QPushButton):
     def __init__(self, lipsync_object, wfv_parent, phoneme_offset=None):
         super(MovableButton, self).__init__(lipsync_object.text, None)
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
         self.title = lipsync_object.text
         self.node = lipsync_object
         self.phoneme_offset = phoneme_offset
@@ -129,33 +116,32 @@ class MovableButton(QtWidgets.QPushButton):
         if not self.style:
             if self.is_phrase():
 
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    phrase_fill_col.red(),
-                    phrase_fill_col.green(),
-                    phrase_fill_col.blue())
-                self.style += "border-color: rgb({0},{1},{2});".format(phrase_outline_col.red(),
-                                                                       phrase_outline_col.green(),
-                                                                       phrase_outline_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:{0};".format(
+                    QtGui.QColor(self.settings.value("/Graphics/{}".format("phrase_fill_color"),
+                                                     utilities.original_colors["phrase_fill_color"])).name())
+                self.style += "border-color: {0};".format(
+                    QtGui.QColor(self.settings.value("/Graphics/{}".format("phrase_line_color"),
+                                                     utilities.original_colors["phrase_line_color"])).name())
                 self.style += "border-style: solid solid solid solid; border-width: 1px {0}px}};".format(
                     str(self.get_handle_width()))
             elif self.is_word():
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    word_fill_col.red(),
-                    word_fill_col.green(),
-                    word_fill_col.blue())
-                self.style += "border-color: rgb({0},{1},{2});".format(word_outline_col.red(),
-                                                                       word_outline_col.green(),
-                                                                       word_outline_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:{0};".format(
+                    QtGui.QColor(self.settings.value("/Graphics/{}".format("word_fill_color"),
+                                                     utilities.original_colors["word_fill_color"])).name())
+                self.style += "border-color: {0};".format(
+                    QtGui.QColor(self.settings.value("/Graphics/{}".format("word_line_color"),
+                                                     utilities.original_colors["word_line_color"])).name())
                 self.style += "border-style: solid solid solid solid; border-width: 1px {0}px}};".format(
                     str(self.get_handle_width()))
             elif self.is_phoneme():
-                self.style = "QPushButton {{color: #000000; background-color:rgb({0},{1},{2});".format(
-                    phoneme_fill_col.red(),
-                    phoneme_fill_col.green(),
-                    phoneme_fill_col.blue())
-                self.style += "border:1px solid rgb({0},{1},{2});}};".format(phoneme_outline_col.red(),
-                                                                             phoneme_outline_col.green(),
-                                                                             phoneme_outline_col.blue())
+                self.style = "QPushButton {{color: #000000; background-color:{0};".format(
+                    QtGui.QColor(
+                        self.settings.value("/Graphics/{}".format("phoneme_fill_color"),
+                                            utilities.original_colors["phoneme_fill_color"])).name())
+                self.style += "border:1px solid {0};}};".format(
+                    QtGui.QColor(
+                        self.settings.value("/Graphics/{}".format("phoneme_line_color"),
+                                            utilities.original_colors["phoneme_line_color"])).name())
             self.setStyleSheet(self.style)
 
     def is_phoneme(self):
@@ -242,7 +228,8 @@ class MovableButton(QtWidgets.QPushButton):
                 prev_phoneme_list = ""
                 for p in self.node.children:
                     prev_phoneme_list += " " + p.text
-                return_value = show_pronunciation_dialog(self, self.wfv_parent.doc.parent.phonemeset.set, self.node.text, prev_text=prev_phoneme_list)
+                return_value = show_pronunciation_dialog(self, self.wfv_parent.doc.parent.phonemeset.set,
+                                                         self.node.text, prev_text=prev_phoneme_list)
                 if return_value == -1:
                     pass
                 elif not return_value:
@@ -332,102 +319,16 @@ class MovableButton(QtWidgets.QPushButton):
                 self.setStyleSheet(self.styleSheet().replace("dashed double dashed double", "solid solid solid solid"))
 
     def reposition_descendants(self, did_resize=False, x_diff=0):
-        if did_resize:
-            for child in self.node.children:
-                child.move_button.reposition_to_left()
-        else:
-            for child in self.node.descendants:
-                child.start_frame += x_diff
-                child.end_frame += x_diff
-                child.move_button.after_reposition()
-            self.wfv_parent.doc.dirty = True
-
-    def reposition_descendants2(self, did_resize=False, x_diff=0):
-        if did_resize:
-            if self.is_word():
-                for position, child in enumerate(self.node.children):
-                    child.start_frame = round(self.node.start_frame +
-                                              ((self.node.get_frame_size() / self.node.get_min_size()) * position))
-                    child.move_button.after_reposition()
-                self.wfv_parent.doc.dirty = True
-            elif self.is_phrase():
-                extra_space = self.node.get_frame_size() - self.node.get_min_size()
-                for child in self.node.children:
-                    if child.has_left_sibling():
-                        child.start_frame = child.get_left_sibling().end_frame
-                        child.end_frame = child.start_frame + child.get_min_size()
-                    else:
-                        child.start_frame = self.node.start_frame
-                        child.end_frame = child.start_frame + child.get_min_size()
-                last_position = -1
-                moved_child = False
-                while extra_space > 0:
-                    if last_position == len(self.node.children) - 1:
-                        last_position = -1
-                    if not moved_child:
-                        last_position = -1
-                    moved_child = False
-                    for position, child in enumerate(self.node.children):
-                        if child.has_left_sibling():
-                            if child.start_frame < child.get_left_sibling().end_frame:
-                                child.start_frame += 1
-                                child.end_frame += 1
-                            else:
-                                if extra_space and not moved_child and (position > last_position):
-                                    child.end_frame += 1
-                                    extra_space -= 1
-                                    moved_child = True
-                                    last_position = position
-                        else:
-                            if extra_space and not moved_child and (position > last_position):
-                                child.end_frame += 1
-                                extra_space -= 1
-                                moved_child = True
-                                last_position = position
-                    if not moved_child and extra_space == 0:
-                        break
-                for child in self.node.children:
-                    child.move_button.after_reposition()
-                    child.move_button.reposition_descendants2(True, 0)
-                self.wfv_parent.doc.dirty = True
-        else:
-            for child in self.node.descendants:
-                child.node.start_frame += x_diff
-                child.node.end_frame += x_diff
-                child.move_button.after_reposition()
-            self.wfv_parent.doc.dirty = True
-
-    def reposition_to_left(self):
-        if self.node.has_left_sibling():
-            if self.is_phoneme():
-                self.node.frame = self.get_left_sibling().name.node.frame + 1
-            else:
-                self.node.start_frame = self.get_left_sibling().name.node.end_frame
-                self.node.end_frame = self.node.start_frame + self.get_min_size()
-                for child in self.node.children:
-                    child.name.reposition_to_left()
-        else:
-            if self.is_phoneme():
-                self.node.frame = self.node.parent.name.node.start_frame
-            else:
-                self.node.start_frame = self.node.parent.name.node.start_frame
-                self.node.end_frame = self.node.start_frame + self.get_min_size()
-                for child in self.node.children:
-                    child.name.reposition_to_left()
-        self.after_reposition()
+        self.node.reposition_descendants(did_resize, x_diff)
         self.wfv_parent.doc.dirty = True
 
-    def get_left_sibling(self):
-        return anytree.util.leftsibling(self.node)
+    def reposition_descendants2(self, did_resize=False, x_diff=0):
+        self.node.reposition_descendants2(did_resize, x_diff)
 
-    def get_right_sibling(self):
-        return anytree.util.rightsibling(self.node)
-
-    def get_parent(self):
-        if self.object_type() != "phrase":
-            return self.node.parent
-        else:
-            return None
+    def reposition_to_left(self):
+        self.node.reposition_to_left()
+        self.after_reposition()
+        self.wfv_parent.doc.dirty = True
 
     def __del__(self):
         try:
@@ -445,6 +346,9 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
         # Other initialization
         self.main_window = None
         for widget in QtWidgets.QApplication.instance().topLevelWidgets():
@@ -586,7 +490,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         self.main_window.parent_tags.addTopLevelItem(word_tree)
                         word_tree.setExpanded(True)
                 elif self.currently_selected_object.object_type() == "word":
-                    parent_phrase = self.currently_selected_object.get_parent()
+                    parent_phrase = self.currently_selected_object.node.get_parent()
                     parent_tags = parent_phrase.tags
                     list_of_tags = []
                     if parent_tags:
@@ -662,8 +566,16 @@ class WaveformView(QtWidgets.QGraphicsView):
     def set_frame(self, frame):
         if self.temp_play_marker not in self.scene().items():
             self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
-                                                         QtGui.QPen(play_outline_col),
-                                                         QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+                                                         QtGui.QPen(QtGui.QColor(
+                                                             self.settings.value(
+                                                                 "/Graphics/{}".format("playback_line_color"),
+                                                                 utilities.original_colors[
+                                                                     "playback_line_color"]))),
+                                                         QtGui.QBrush(QtGui.QColor(
+                                                             self.settings.value(
+                                                                 "/Graphics/{}".format("playback_fill_color"),
+                                                                 utilities.original_colors[
+                                                                     "playback_fill_color"])), QtCore.Qt.SolidPattern))
             self.temp_play_marker.setZValue(1000)
             self.temp_play_marker.setOpacity(0.5)
             self.temp_play_marker.setVisible(True)
@@ -673,10 +585,15 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.scene().update()
 
     def drawBackground(self, painter, rect):
-        background_brush = QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern)
+        background_brush = QtGui.QBrush(
+            QtGui.QColor(self.settings.value("/Graphics/{}".format("bg_fill_color"),
+                                             utilities.original_colors["bg_fill_color"])),
+            QtCore.Qt.SolidPattern)
         painter.fillRect(rect, background_brush)
         if self.doc is not None:
-            pen = QtGui.QPen(frame_col)
+            pen = QtGui.QPen(
+                QtGui.QColor(self.settings.value("/Graphics/{}".format("frame_color"),
+                                                 utilities.original_colors["frame_color"])))
             # pen.setWidth(5)
             painter.setPen(pen)
             painter.setFont(font)
@@ -771,7 +688,13 @@ class WaveformView(QtWidgets.QGraphicsView):
         if self.waveform_polygon:
             self.waveform_polygon.setPolygon(temp_polygon)
         else:
-            self.waveform_polygon = self.scene().addPolygon(temp_polygon, line_color, fill_color)
+            self.waveform_polygon = self.scene().addPolygon(temp_polygon, QtGui.QColor(
+                self.settings.value("/Graphics/{}".format("wave_line_color"),
+                                    utilities.original_colors["wave_line_color"])),
+                                                            QtGui.QColor(
+                                                                self.settings.value(
+                                                                    "/Graphics/{}".format("wave_fill_color"),
+                                                                    utilities.original_colors["wave_fill_color"])))
         self.waveform_polygon.setZValue(1)
         self.main_window.statusbar.showMessage("Papagayo-NG")
 
@@ -806,7 +729,8 @@ class WaveformView(QtWidgets.QGraphicsView):
                     # self.temp_button.node = Node(self.temp_button, parent=self.main_node)
                     temp_scene_widget = self.scene().addWidget(self.temp_button)
                     temp_rect = QtCore.QRect(phrase.start_frame * self.frame_width, top_border,
-                                             (phrase.end_frame - phrase.start_frame) * self.frame_width + 1, text_height)
+                                             (phrase.end_frame - phrase.start_frame) * self.frame_width + 1,
+                                             text_height)
                     temp_scene_widget.setGeometry(temp_rect)
                     temp_scene_widget.setZValue(99)
                     self.temp_phrase = self.temp_button
@@ -949,8 +873,17 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.start_recalc()
                 if self.temp_play_marker not in self.scene().items():
                     self.temp_play_marker = self.scene().addRect(0, 1, self.frame_width + 1, self.height(),
-                                                                 QtGui.QPen(play_outline_col),
-                                                                 QtGui.QBrush(play_fore_col, QtCore.Qt.SolidPattern))
+                                                                 QtGui.QPen(QtGui.QColor(
+                                                                     self.settings.value(
+                                                                         "/Graphics/{}".format("playback_line_color"),
+                                                                         utilities.original_colors[
+                                                                             "playback_line_color"]))),
+                                                                 QtGui.QBrush(QtGui.QColor(
+                                                                     self.settings.value(
+                                                                         "/Graphics/{}".format("playback_fill_color"),
+                                                                         utilities.original_colors[
+                                                                             "playback_fill_color"])),
+                                                                     QtCore.Qt.SolidPattern))
                     self.temp_play_marker.setZValue(1000)
                     self.temp_play_marker.setOpacity(0.5)
                     self.temp_play_marker.setVisible(False)

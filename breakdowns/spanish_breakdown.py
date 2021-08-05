@@ -86,7 +86,7 @@ unconditional_conversions = {
     u'z': 'S'}  # South American, Castilian Spanish uses ''TH'
 
 
-def breakdownWord(input_word, recursive=False):
+def breakdown_word(input_word, recursive=False):
     """breaks down a word into phonemes
     """
     # word = input_word.decode(input_encoding)  # decode input into Python default internal format (utf-16) from the GUI input format
@@ -218,7 +218,7 @@ def breakdownWord(input_word, recursive=False):
             breakdown_word.append(unconditional_conversions[letter])
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownWord(hammer(letter), True)
+                phon = breakdown_word(hammer(letter), True)
                 if phon:
                     breakdown_word.append(phon[0])
         previous = letter
@@ -239,4 +239,4 @@ if __name__ == '__main__':
     test_words = ['Holas', 'amigos', 'si', 'español', 'padré', 'Selecciones', 'de', 'la', 'semana', 'Los', 'mejores',
                   'sitios', 'los', 'derechos', 'humanos', 'en', 'américa', 'latina', 'y', 'färger', 'på', 'hänsyn']
     for eachword in test_words:
-        print(eachword, breakdownWord(eachword), " ".join(breakdownWord(eachword)))
+        print(eachword, breakdown_word(eachword), " ".join(breakdown_word(eachword)))

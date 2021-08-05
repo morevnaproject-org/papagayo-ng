@@ -5,7 +5,21 @@ import sys
 import traceback
 import appdirs
 
-from PySide2 import QtCore
+from PySide2 import QtCore, QtGui
+
+original_colors = {"wave_fill_color": QtGui.QColor(162, 205, 242),
+                   "wave_line_color": QtGui.QColor(30, 121, 198),
+                   "frame_color": QtGui.QColor(192, 192, 192),
+                   "frame_text_color": QtGui.QColor(64, 64, 64),
+                   "playback_fill_color": QtGui.QColor(209, 102, 121),
+                   "playback_line_color": QtGui.QColor(128, 0, 0),
+                   "phrase_fill_color": QtGui.QColor(205, 242, 162),
+                   "phrase_line_color": QtGui.QColor(121, 198, 30),
+                   "word_fill_color": QtGui.QColor(242, 205, 162),
+                   "word_line_color": QtGui.QColor(198, 121, 30),
+                   "phoneme_fill_color": QtGui.QColor(231, 185, 210),
+                   "phoneme_line_color": QtGui.QColor(173, 114, 146),
+                   "bg_fill_color": QtGui.QColor(255, 255, 255)}
 
 
 def main_is_frozen():
@@ -28,17 +42,20 @@ def get_main_dir():
 
 
 def get_app_data_path():
-    config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
     app_name = "PapagayoNG"
     app_author = "Morevna Project"
     user_data_dir = appdirs.user_data_dir(app_name, app_author)
-    config.setValue("appdata_dir", user_data_dir)
     # If user data dir does not exist yet we create it.
     author_dir = os.path.abspath(os.path.join(user_data_dir, os.pardir))
     if not os.path.exists(author_dir):
         os.mkdir(author_dir)
     if not os.path.exists(user_data_dir):
         os.mkdir(user_data_dir)
+    ini_path = os.path.join(user_data_dir, "settings.ini")
+    config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+    config.setFallbacksEnabled(False)  # File only, not registry or or.
+    config.setValue("appdata_dir", user_data_dir)
+
     return user_data_dir
 
 

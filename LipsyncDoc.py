@@ -163,7 +163,9 @@ class LipSyncObject(NodeMixin):
     def __init__(self, parent=None, children=None, object_type="voice", text="", start_frame=0, end_frame=0, name="",
                  tags=None, num_children=0, sound_duration=0, fps=24):
         self.parent = parent
-        self.config = QtCore.QSettings("Morevna Project", "Papagayo-NG")
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.config.setFallbacksEnabled(False)  # File only, not registry or or.
         if children:
             self.children = children
         self.object_type = object_type
@@ -260,6 +262,89 @@ class LipSyncObject(NodeMixin):
                 if descendant.start_frame == frame:
                     return descendant.text
         return "rest"
+
+    def reposition_to_left(self):
+        if self.has_left_sibling():
+            if self.object_type == "phoneme":
+                self.start_frame = self.get_left_sibling().start_frame + 1
+            else:
+                self.start_frame = self.get_left_sibling().end_frame
+                self.end_frame = self.start_frame + self.get_min_size()
+                for child in self.children:
+                    child.reposition_to_left()
+        else:
+            if self.object_type == "phoneme":
+                self.start_frame = self.parent.start_frame
+            else:
+                self.start_frame = self.parent.name.node.start_frame
+                self.end_frame = self.start_frame + self.get_min_size()
+                for child in self.children:
+                    child.reposition_to_left()
+
+    def reposition_descendants(self, did_resize=False, x_diff=0):
+        if did_resize:
+            for child in self.children:
+                child.reposition_to_left()
+        else:
+            for child in self.descendants:
+                child.start_frame += x_diff
+                child.end_frame += x_diff
+                child.move_button.after_reposition()
+
+    def reposition_descendants2(self, did_resize=False, x_diff=0):
+        if did_resize:
+            if self.object_type == "word":
+                for position, child in enumerate(self.children):
+                    child.start_frame = round(self.start_frame +
+                                              ((self.get_frame_size() / self.get_min_size()) * position))
+                    child.move_button.after_reposition()
+                #self.wfv_parent.doc.dirty = True
+            elif self.object_type == "phrase":
+                extra_space = self.get_frame_size() - self.get_min_size()
+                for child in self.children:
+                    if child.has_left_sibling():
+                        child.start_frame = child.get_left_sibling().end_frame
+                        child.end_frame = child.start_frame + child.get_min_size()
+                    else:
+                        child.start_frame = self.start_frame
+                        child.end_frame = child.start_frame + child.get_min_size()
+                last_position = -1
+                moved_child = False
+                while extra_space > 0:
+                    if last_position == len(self.children) - 1:
+                        last_position = -1
+                    if not moved_child:
+                        last_position = -1
+                    moved_child = False
+                    for position, child in enumerate(self.children):
+                        if child.has_left_sibling():
+                            if child.start_frame < child.get_left_sibling().end_frame:
+                                child.start_frame += 1
+                                child.end_frame += 1
+                            else:
+                                if extra_space and not moved_child and (position > last_position):
+                                    child.end_frame += 1
+                                    extra_space -= 1
+                                    moved_child = True
+                                    last_position = position
+                        else:
+                            if extra_space and not moved_child and (position > last_position):
+                                child.end_frame += 1
+                                extra_space -= 1
+                                moved_child = True
+                                last_position = position
+                    if not moved_child and extra_space == 0:
+                        break
+                for child in self.children:
+                    child.move_button.after_reposition()
+                    child.reposition_descendants2(True, 0)
+                #self.wfv_parent.doc.dirty = True
+        else:
+            for child in self.descendants:
+                child.start_frame += x_diff
+                child.end_frame += x_diff
+                child.move_button.after_reposition()
+            #self.wfv_parent.doc.dirty = True
 
     def open(self, in_file):
         self.name = in_file.readline().strip()
@@ -378,7 +463,7 @@ class LipSyncObject(NodeMixin):
                 details = languagemanager.language_table[language]
                 if details["type"] == "breakdown":
                     breakdown = importlib.import_module(details["breakdown_class"])
-                    pronunciation_raw = breakdown.breakdownWord(text)
+                    pronunciation_raw = breakdown.breakdown_word(text)
                 elif details["type"] == "dictionary":
                     if languagemanager.current_language != language:
                         languagemanager.load_language(details)
@@ -573,6 +658,9 @@ class LipSyncObject(NodeMixin):
 class LipsyncDoc:
     def __init__(self, langman: LanguageManager, parent):
         self._dirty = False
+        ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+        self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
         self.name = "Untitled"
         self.path = None
         self.fps = 24
@@ -776,8 +864,7 @@ class LipsyncDoc:
             self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
 
     def auto_recognize_phoneme(self, manual_invoke=False):
-        settings = QtCore.QSettings("Morevna Project", "Papagayo-NG")
-        if settings.value("run_allosaurus", True) or manual_invoke:
+        if self.settings.value("run_allosaurus", True) or manual_invoke:
             if auto_recognition:
                 allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
                 results, peaks, allo_output = allo_recognizer.recognize_allosaurus()

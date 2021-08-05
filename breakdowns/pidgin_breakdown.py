@@ -64,7 +64,7 @@ accented_u = [u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER U 
               u'\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}', u'\N{LATIN SMALL LETTER U WITH DIAERESIS}']
 
 
-def breakdownWord(word, recursive=False):
+def breakdown_word(word, recursive=False):
     word = word.lower()
     isvowel = dict.fromkeys('aабвгдежeийклiмнопoтуфхцшњuщъыь')
     phonemes = []
@@ -137,7 +137,7 @@ def breakdownWord(word, recursive=False):
             pass
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdownWord(hammer(letter[0]), True)
+                phon = breakdown_word(hammer(letter[0]), True)
                 if phon:
                     phonemes.append(phon[0])
         # ~ else:
@@ -166,4 +166,4 @@ if __name__ == "__main__":
                  'krouhkrouh', 'wan', 'kosh'
                  ]
     for word in testwords:
-        print(word, breakdownWord(word))
+        print(word, breakdown_word(word))
