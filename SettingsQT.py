@@ -35,20 +35,6 @@ from PySide2.QtCore import QFile
 import utilities
 from utilities import *
 
-original_colors = {"wave_fill_color": QtGui.QColor(162, 205, 242),
-                   "wave_line_color": QtGui.QColor(30, 121, 198),
-                   "frame_color": QtGui.QColor(192, 192, 192),
-                   "frame_text_color": QtGui.QColor(64, 64, 64),
-                   "playback_fill_color": QtGui.QColor(209, 102, 121),
-                   "playback_line_color": QtGui.QColor(128, 0, 0),
-                   "phrase_fill_color": QtGui.QColor(205, 242, 162),
-                   "phrase_line_color": QtGui.QColor(121, 198, 30),
-                   "word_fill_color": QtGui.QColor(242, 205, 162),
-                   "word_line_color": QtGui.QColor(198, 121, 30),
-                   "phoneme_fill_color": QtGui.QColor(231, 185, 210),
-                   "phoneme_line_color": QtGui.QColor(173, 114, 146),
-                   "bg_fill_color": QtGui.QColor(255, 255, 255)}
-
 
 class SettingsWindow:
     def __init__(self):
@@ -159,16 +145,16 @@ class SettingsWindow:
         self.main_window.app_data_path.home(True)
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
             new_color = QtGui.QColor(
-                self.settings.value("/Graphics/{}".format(color_button.objectName()), original_colors[color_button.objectName()]))
+                self.settings.value("/Graphics/{}".format(color_button.objectName()), utilities.original_colors[color_button.objectName()]))
             new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
             style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
             color_button.setStyleSheet(style)
 
     def on_reset_colors(self):
-        for color_name, color_value in original_colors.items():
+        for color_name, color_value in utilities.original_colors.items():
             self.settings.setValue("/Graphics/{}".format(color_name), color_value.name())
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
-            new_color = QtGui.QColor(self.settings.value(color_button.objectName(), original_colors[color_button.objectName()]))
+            new_color = QtGui.QColor(self.settings.value(color_button.objectName(), utilities.original_colors[color_button.objectName()]))
             new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
             style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
             color_button.setStyleSheet(style)

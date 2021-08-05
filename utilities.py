@@ -5,7 +5,21 @@ import sys
 import traceback
 import appdirs
 
-from PySide2 import QtCore
+from PySide2 import QtCore, QtGui
+
+original_colors = {"wave_fill_color": QtGui.QColor(162, 205, 242),
+                   "wave_line_color": QtGui.QColor(30, 121, 198),
+                   "frame_color": QtGui.QColor(192, 192, 192),
+                   "frame_text_color": QtGui.QColor(64, 64, 64),
+                   "playback_fill_color": QtGui.QColor(209, 102, 121),
+                   "playback_line_color": QtGui.QColor(128, 0, 0),
+                   "phrase_fill_color": QtGui.QColor(205, 242, 162),
+                   "phrase_line_color": QtGui.QColor(121, 198, 30),
+                   "word_fill_color": QtGui.QColor(242, 205, 162),
+                   "word_line_color": QtGui.QColor(198, 121, 30),
+                   "phoneme_fill_color": QtGui.QColor(231, 185, 210),
+                   "phoneme_line_color": QtGui.QColor(173, 114, 146),
+                   "bg_fill_color": QtGui.QColor(255, 255, 255)}
 
 
 def main_is_frozen():
