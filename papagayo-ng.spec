@@ -91,7 +91,7 @@ else:
               bootloader_ignore_signals=False,
               strip=False,
               upx=False,
-              upx_exclude="vcruntime140.dll, qwindows.dll",
+              upx_exclude="qwindows.dll, pyside2.abi3.dll, qtcore.pyd, qtgui.pyd, qtwidgets.pyd, qt5core.dll, qt5gui.dll, qt5svg.dll, qt5widgets.dll, qt5xml.dll",
               runtime_tmpdir=None,
               console=True )
 

@@ -210,7 +210,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="general">
       <layout class="QGridLayout" name="gridLayout_2">
@@ -238,77 +238,7 @@
      </widget>
      <widget class="QWidget" name="graphical">
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="3" column="0">
-        <widget class="QPushButton" name="phrase_fill_color">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(205, 242, 162);
-border: transparent;</string>
-         </property>
-         <property name="text">
-          <string>Phrase Fill Color</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QPushButton" name="playback_line_color">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(128, 0, 0);
-color: rgb(255, 255, 255);
-border: transparent;</string>
-         </property>
-         <property name="text">
-          <string>Playback Marker Line Color</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QPushButton" name="word_line_color">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(198, 121, 30);
-border: transparent;</string>
-         </property>
-         <property name="text">
-          <string>Word Line Color</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="frame_color">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(192, 192, 192);
-border: transparent;</string>
-         </property>
-         <property name="text">
-          <string>Frame Color</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QPushButton" name="phrase_line_color">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(121, 198, 30);
-border: transparent;</string>
-         </property>
-         <property name="text">
-          <string>Phrase Line Color</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QPushButton" name="wave_fill_color">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(30, 121, 198);
-border: transparent;</string>
-         </property>
-         <property name="text">
-          <string>Waveform Fill Color</string>
-         </property>
-         <property name="flat">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
+       <item row="0" column="2">
         <widget class="QPushButton" name="wave_line_color">
          <property name="styleSheet">
           <string notr="true">background-color: rgb(162, 205, 242);
@@ -322,18 +252,7 @@ border: transparent;</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QPushButton" name="word_fill_color">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(242, 205, 162);
-border: transparent;</string>
-         </property>
-         <property name="text">
-          <string>Word Fill Color</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
+       <item row="1" column="2">
         <widget class="QPushButton" name="frame_text_color">
          <property name="styleSheet">
           <string notr="true">background-color: rgb(64, 64, 64);
@@ -345,18 +264,29 @@ border: transparent;</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QPushButton" name="phoneme_line_color">
+       <item row="4" column="1">
+        <widget class="QPushButton" name="word_fill_color">
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(173, 114, 146);
+          <string notr="true">background-color: rgb(242, 205, 162);
 border: transparent;</string>
          </property>
          <property name="text">
-          <string>Phoneme Line Color</string>
+          <string>Word Fill Color</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="1" column="1">
+        <widget class="QPushButton" name="frame_color">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(192, 192, 192);
+border: transparent;</string>
+         </property>
+         <property name="text">
+          <string>Frame Color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
         <widget class="QPushButton" name="playback_fill_color">
          <property name="styleSheet">
           <string notr="true">background-color: rgb(209, 102, 121);
@@ -367,7 +297,7 @@ border: transparent;</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="5" column="1">
         <widget class="QPushButton" name="phoneme_fill_color">
          <property name="styleSheet">
           <string notr="true">background-color: rgb(231, 185, 210);
@@ -378,7 +308,77 @@ border: transparent;</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="0" column="1">
+        <widget class="QPushButton" name="wave_fill_color">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(30, 121, 198);
+border: transparent;</string>
+         </property>
+         <property name="text">
+          <string>Waveform Fill Color</string>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QPushButton" name="phoneme_line_color">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(173, 114, 146);
+border: transparent;</string>
+         </property>
+         <property name="text">
+          <string>Phoneme Line Color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QPushButton" name="phrase_fill_color">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(205, 242, 162);
+border: transparent;</string>
+         </property>
+         <property name="text">
+          <string>Phrase Fill Color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="playback_line_color">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(128, 0, 0);
+color: rgb(255, 255, 255);
+border: transparent;</string>
+         </property>
+         <property name="text">
+          <string>Playback Marker Line Color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QPushButton" name="word_line_color">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(198, 121, 30);
+border: transparent;</string>
+         </property>
+         <property name="text">
+          <string>Word Line Color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QPushButton" name="phrase_line_color">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(121, 198, 30);
+border: transparent;</string>
+         </property>
+         <property name="text">
+          <string>Phrase Line Color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="2">
         <widget class="QPushButton" name="bg_fill_color">
          <property name="styleSheet">
           <string notr="true">background-color: rgb(255, 255, 255);
@@ -386,6 +386,16 @@ border: transparent;</string>
          </property>
          <property name="text">
           <string>Background Color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLineEdit" name="qss_path"/>
+       </item>
+       <item row="7" column="2">
+        <widget class="QPushButton" name="set_qss_path_button">
+         <property name="text">
+          <string>QSS StyleSheet</string>
          </property>
         </widget>
        </item>

@@ -465,7 +465,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.main_window.parent_tags.clear()
                 self.main_window.parent_tags.setEnabled(False)
                 if self.currently_selected_object.object_type() == "phoneme":
-                    parent_word = self.currently_selected_object.get_parent()
+                    parent_word = self.currently_selected_object.node.get_parent()
                     parent_phrase = parent_word.get_parent()
                     word_tags = parent_word.tags
                     phrase_tags = parent_phrase.tags

@@ -623,11 +623,11 @@ class LipSyncObject(NodeMixin):
             list_of_words = []
             for wor_id, word in enumerate(phrase.children):
                 dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
-                             "end_frame": word.end_frame, "tags": word.tags or phrase.tags}
+                             "end_frame": word.end_frame, "tags": word.tags + phrase.tags}
                 list_of_phonemes = []
                 for pho_id, phoneme in enumerate(word.children):
                     dict_phoneme = {"id": pho_id, "text": phoneme.text, "frame": phoneme.start_frame,
-                                    "tags": phoneme.tags or word.tags or phrase.tags}
+                                    "tags": phoneme.tags + word.tags + phrase.tags}
                     list_of_phonemes.append(dict_phoneme)
                     if phoneme.text not in list_of_used_phonemes:
                         list_of_used_phonemes.append(phoneme.text)
@@ -846,7 +846,7 @@ class LipsyncDoc:
         if old_set != new_set:
             if old_set != "CMU_39":
                 conversion_map_to_cmu = {v: k for k, v in self.parent.phonemeset.conversion.items()}
-                for voice in self.voices:
+                for voice in self.project_node.children:
                     for phrase in voice.children:
                         for word in phrase.children:
                             for phoneme in word.children:
@@ -855,7 +855,7 @@ class LipsyncDoc:
             new_map.load(new_set)
             conversion_map_from_cmu = new_map.conversion
 
-            for voice in self.voices:
+            for voice in self.project_node.children:
                 for phrase in voice.children:
                     for word in phrase.children:
                         for phoneme in word.children:
