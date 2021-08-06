@@ -176,8 +176,9 @@ class SettingsWindow:
         self.settings.setValue("run_allosaurus", int(self.main_window.run_allosaurus.isChecked()))
         self.settings.setValue("qss_file_path", str(self.main_window.qss_path.text()))
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
-            self.settings.setValue("/Graphics/{}".format(color_button.objectName()),
-                                   color_button.palette().button().color().name())
+            if "Color" in color_button.text():
+                self.settings.setValue("/Graphics/{}".format(color_button.objectName()),
+                                       color_button.palette().button().color().name())
 
     def close(self):
         self.main_window.close()
