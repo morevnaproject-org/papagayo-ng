@@ -263,9 +263,9 @@ class LipsyncFrame:
         style_file_path = self.config.value("qss_file_path", "")
         if style_file_path:
             with open(style_file_path, "r") as style_file:
-                self.main_window.setStyleSheet(style_file.read())
+                self.app.setStyleSheet(style_file.read())
         else:
-            self.main_window.setStyleSheet("")
+            self.app.setStyleSheet("")
 
     def download_general_finished(self):
         if utilities.allosaurus_model_exists():
@@ -675,7 +675,7 @@ class LipsyncFrame:
             self.main_window.vertical_layout_right.setEnabled(True)
             self.main_window.vertical_layout_left.setEnabled(True)
             self.main_window.volume_slider.setEnabled(True)
-            self.main_window.volume_slider.setValue(self.config.value("volume", 50))
+            self.main_window.volume_slider.setValue(int(self.config.value("volume", 50)))
             self.main_window.action_save.setEnabled(True)
             self.main_window.action_save_as.setEnabled(True)
             self.main_window.action_cut.setEnabled(True)
