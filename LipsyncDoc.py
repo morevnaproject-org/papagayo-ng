@@ -846,7 +846,7 @@ class LipsyncDoc:
         if old_set != new_set:
             if old_set != "CMU_39":
                 conversion_map_to_cmu = {v: k for k, v in self.parent.phonemeset.conversion.items()}
-                for voice in self.voices:
+                for voice in self.project_node.children:
                     for phrase in voice.children:
                         for word in phrase.children:
                             for phoneme in word.children:
@@ -855,7 +855,7 @@ class LipsyncDoc:
             new_map.load(new_set)
             conversion_map_from_cmu = new_map.conversion
 
-            for voice in self.voices:
+            for voice in self.project_node.children:
                 for phrase in voice.children:
                     for word in phrase.children:
                         for phoneme in word.children:
