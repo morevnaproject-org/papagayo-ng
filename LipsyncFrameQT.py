@@ -246,6 +246,7 @@ class LipsyncFrame:
             self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
             self.main_window.menubar.addAction(self.rhubarb_action)
         self.phoneme_convert = QtWidgets.QAction("Convert Phonemes")
+        self.change_stylesheet()
         self.cur_frame = 0
         self.timer = None
         self.wv_height = 1
@@ -257,6 +258,14 @@ class LipsyncFrame:
         self.wv_brush = QtGui.QBrush(QtCore.Qt.blue)
         self.start_time = time.time()
         self.threadpool = QtCore.QThreadPool.globalInstance()
+
+    def change_stylesheet(self):
+        style_file_path = self.config.value("qss_file_path", "")
+        if style_file_path:
+            with open(style_file_path, "r") as style_file:
+                self.main_window.setStyleSheet(style_file.read())
+        else:
+            self.main_window.setStyleSheet("")
 
     def download_general_finished(self):
         if utilities.allosaurus_model_exists():
@@ -785,6 +794,7 @@ class LipsyncFrame:
             self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
             self.main_window.menubar.addAction(self.rhubarb_action)
         self.main_window.waveform_view.set_document(self.doc, True, True)
+        self.change_stylesheet()
 
     def on_play(self, event=None):
         if (self.doc is not None) and (self.doc.sound is not None):

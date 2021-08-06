@@ -19,18 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import os
-import platform
 import shutil
 from functools import partial
 
-import PySide2.QtCore as QtCore
-import PySide2.QtGui as QtGui
-from PySide2.QtGui import QDesktopServices
 import PySide2.QtWidgets as QtWidgets
-
-from PySide2.QtUiTools import QUiLoader as uic
 from PySide2.QtCore import QFile
+from PySide2.QtUiTools import QUiLoader as uic
 
 import utilities
 from utilities import *
@@ -56,10 +50,12 @@ class SettingsWindow:
         self.main_window.rhubarb_delete_button.clicked.connect(self.delete_rhubarb)
         self.main_window.accepted.connect(self.accepted)
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
-            self.main_window.connect(color_button, QtCore.SIGNAL("clicked()"),
-                                     partial(self.open_color_dialog, color_button))
+            if "Color" in color_button.text():
+                self.main_window.connect(color_button, QtCore.SIGNAL("clicked()"),
+                                         partial(self.open_color_dialog, color_button))
         self.load_settings_to_gui()
         self.main_window.open_app_data_path.clicked.connect(self.open_app_data)
+        self.main_window.set_qss_path_button.clicked.connect(self.select_qss_path)
         self.main_window.settings_options.setCurrentIndex(0)
         # self.main_window.setWindowIcon(QtGui.QIcon(os.path.join(get_main_dir(), "rsrc", "window_icon.bmp")))
         # self.main_window.about_ok_button.clicked.connect(self.close)
@@ -89,10 +85,17 @@ class SettingsWindow:
     def delete_settings(self, event=None):
         self.settings.clear()
 
+    def select_qss_path(self):
+        qss_file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
+                                                              "Open QSS StyleSheet",
+                                                              self.settings.value("/Graphics/qss_path",
+                                                                                  utilities.get_app_data_path()),
+                                                              "QSS files (*.qss)")
+        self.main_window.qss_path.setText(qss_file_name)
+
     def open_color_dialog(self, event=None):
         old_color = event.palette().button().color()
         new_color = QtWidgets.QColorDialog().getColor(old_color)
-        self.settings.setValue("/Graphics/{}".format(event.objectName()), new_color.name())
         new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
         style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
         event.setStyleSheet(style)
@@ -144,26 +147,37 @@ class SettingsWindow:
         self.main_window.app_data_path.setText(utilities.get_app_data_path())
         self.main_window.app_data_path.home(True)
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
-            new_color = QtGui.QColor(
-                self.settings.value("/Graphics/{}".format(color_button.objectName()), utilities.original_colors[color_button.objectName()]))
-            new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
-            style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
-            color_button.setStyleSheet(style)
+            if "Color" in color_button.text():
+                new_color = QtGui.QColor(
+                    self.settings.value("/Graphics/{}".format(color_button.objectName()),
+                                        utilities.original_colors[color_button.objectName()]))
+                new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
+                style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(),
+                                                                                           new_text_color)
+                color_button.setStyleSheet(style)
+        self.main_window.qss_path.setText(self.settings.value("qss_file_path", ""))
 
     def on_reset_colors(self):
         for color_name, color_value in utilities.original_colors.items():
             self.settings.setValue("/Graphics/{}".format(color_name), color_value.name())
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
-            new_color = QtGui.QColor(self.settings.value(color_button.objectName(), utilities.original_colors[color_button.objectName()]))
-            new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
-            style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(), new_text_color)
-            color_button.setStyleSheet(style)
+            if "Color" in color_button.text():
+                new_color = QtGui.QColor(self.settings.value(color_button.objectName(),
+                                                             utilities.original_colors[color_button.objectName()]))
+                new_text_color = "#ffffff" if new_color.lightnessF() < 0.5 else "#000000"
+                style = "background-color: {};\n color: {};\n border: transparent;".format(new_color.name(),
+                                                                                           new_text_color)
+                color_button.setStyleSheet(style)
 
     def accepted(self, event=None):
         self.settings.setValue("LastFPS", self.main_window.fps_value.value())
         self.settings.setValue("allo_lang_id", self.main_window.lang_id_value.text())
         self.settings.setValue("allo_emission", self.main_window.voice_emission_value.value())
         self.settings.setValue("run_allosaurus", int(self.main_window.run_allosaurus.isChecked()))
+        self.settings.setValue("qss_file_path", str(self.main_window.qss_path.text()))
+        for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
+            self.settings.setValue("/Graphics/{}".format(color_button.objectName()),
+                                   color_button.palette().button().color().name())
 
     def close(self):
         self.main_window.close()
