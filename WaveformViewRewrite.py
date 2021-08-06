@@ -313,10 +313,10 @@ class MovableButton(QtWidgets.QPushButton):
         # Change the border-style or something like that depending on whether there are tags or not
         if len(self.node.tags) > 0:
             if "solid" in self.styleSheet():
-                self.setStyleSheet(self.styleSheet().replace("solid solid solid solid", "dashed double dashed double"))
+                self.setStyleSheet(self.styleSheet().replace("solid solid solid solid", "dashed solid dashed solid"))
         else:
             if "dashed" in self.styleSheet():
-                self.setStyleSheet(self.styleSheet().replace("dashed double dashed double", "solid solid solid solid"))
+                self.setStyleSheet(self.styleSheet().replace("dashed solid dashed solid", "solid solid solid solid"))
 
     def reposition_descendants(self, did_resize=False, x_diff=0):
         self.node.reposition_descendants(did_resize, x_diff)

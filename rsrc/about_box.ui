@@ -37,6 +37,9 @@
   <property name="windowTitle">
    <string>About Papagayo-NG</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
   <property name="modal">
    <bool>true</bool>
   </property>
@@ -169,7 +172,7 @@
          <bool>false</bool>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: rgb(240, 240, 240);</string>
+         <string notr="true">background-color: transparent;</string>
         </property>
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
