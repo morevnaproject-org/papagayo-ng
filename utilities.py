@@ -111,9 +111,9 @@ def allosaurus_model_exists():
 
 
 def rhubarb_binaries_exists():
-    rhubarb_path = os.path.join(get_app_data_path(), "rhubarb.exe")
+    rhubarb_path = os.path.join(get_app_data_path(), "rhubarb/rhubarb.exe")
     if platform.system() == "Darwin":
-        rhubarb_path = os.path.join(get_app_data_path(), "rhubarb")
+        rhubarb_path = os.path.join(get_app_data_path(), "rhubarb/rhubarb")
     if os.path.exists(rhubarb_path):
         return True
     else:

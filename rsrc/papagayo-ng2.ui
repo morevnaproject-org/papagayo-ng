@@ -242,13 +242,22 @@
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="voice_recognition_button">
+                 <widget class="QToolButton" name="voice_recognition_button">
                   <property name="text">
                    <string>Voice Recognition</string>
                   </property>
                   <property name="icon">
                    <iconset resource="../qt-icons.qrc">
                     <normaloff>:/rsrc/voice-recognition-fill.png</normaloff>:/rsrc/voice-recognition-fill.png</iconset>
+                  </property>
+                  <property name="popupMode">
+                   <enum>QToolButton::MenuButtonPopup</enum>
+                  </property>
+                  <property name="toolButtonStyle">
+                   <enum>Qt::ToolButtonTextBesideIcon</enum>
+                  </property>
+                  <property name="arrowType">
+                   <enum>Qt::NoArrow</enum>
                   </property>
                  </widget>
                 </item>

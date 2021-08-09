@@ -105,11 +105,9 @@ class MouthView(QtWidgets.QGraphicsView):
                 has_images = True
         if not has_images:
             return
-        print(os.path.normpath(dir_name), names)
         self.add_mouth(os.path.normpath(dir_name), names)
 
     def load_mouths(self):
-        # print(os.path.join(get_main_dir(), "rsrc", "mouths"))
         supported_imagetypes = QtGui.QImageReader.supportedImageFormats()
         for directory, dir_names, file_names in os.walk(os.path.join(get_main_dir(), "rsrc", "mouths")):
             self.process_mouth_dir(directory, file_names, supported_imagetypes)

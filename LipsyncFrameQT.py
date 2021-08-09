@@ -24,11 +24,11 @@
 import os
 import tarfile
 import time
+from functools import partial
 from pprint import pprint
 
 from PySide2.QtCore import QFile
 from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtWidgets import QProgressDialog
 from PySide2.QtUiTools import QUiLoader as uic
 
 import urllib.request
@@ -231,6 +231,21 @@ class LipsyncFrame:
         self.tab_add_button.clicked.connect(self.on_new_voice)
         self.tab_remove_button.clicked.connect(self.on_del_voice)
         self.main_window.current_voice.tabBar().currentChanged.connect(self.on_sel_voice_tab)
+        self.recognize_menu = QtWidgets.QMenu()
+        self.allo_select = self.recognize_menu.addAction("Allosaurus")
+        self.rhubarb_select = self.recognize_menu.addAction("Rhubarb")
+        self.allo_select.setCheckable(True)
+        self.rhubarb_select.setCheckable(True)
+        if self.config.value("/VoiceRecognition/recognizer", "Allosaurus") == "Allosaurus":
+            self.allo_select.setChecked(True)
+        elif self.config.value("/VoiceRecognition/recognizer", "Allosaurus") == "Rhubarb":
+            self.rhubarb_select.setChecked(True)
+        self.main_window.connect(self.allo_select, QtCore.SIGNAL("triggered()"),
+                                 partial(self.select_voice_recognizer, "Allosaurus"))
+        self.main_window.connect(self.rhubarb_select, QtCore.SIGNAL("triggered()"),
+                                 partial(self.select_voice_recognizer, "Rhubarb"))
+        self.main_window.voice_recognition_button.setMenu(self.recognize_menu)
+
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
         if not utilities.ffmpeg_binaries_exists():
@@ -396,10 +411,10 @@ class LipsyncFrame:
             return
 
     def download_rhubarb(self, progress_callback):
-        binary = "rhubarb.exe"
+        binary = "/rhubarb/rhubarb.exe"
         release_url = ""
         if platform.system() == "Darwin":
-            binary = "rhubarb"
+            binary = "/rhubarb/rhubarb"
         github_url = "https://api.github.com/repos/DanielSWolf/rhubarb-lip-sync/releases"
         download_json = json.loads(urllib.request.urlopen(github_url).read())
         for download in download_json[0]["assets"]:
@@ -411,7 +426,7 @@ class LipsyncFrame:
                     release_url = download["browser_download_url"]
         rhubarb_path = os.path.join(utilities.get_app_data_path(), binary)
 
-        if os.path.exists(rhubarb_path):
+        if utilities.rhubarb_binaries_exists():
             return
         else:
             try:
@@ -434,12 +449,12 @@ class LipsyncFrame:
                             progress_callback.emit(percent)
                     if buffer_all:
                         rhubarb_zip = ZipFile(buffer_all)
-                        for zfile in rhubarb_zip.filelist:
-                            if binary in zfile.filename:
-                                rhubarb_file_content = rhubarb_zip.read(zfile.filename)
-                                rhubarb_file = open(rhubarb_path, "wb")
-                                rhubarb_file.write(rhubarb_file_content)
-                                rhubarb_file.close()
+                        print(os.path.join(utilities.get_app_data_path(), "rhubarb"))
+                        print(rhubarb_zip.filelist)
+                        rhubarb_zip.extractall(os.path.join(utilities.get_app_data_path()))
+                        dirs = list(set([os.path.dirname(x) for x in rhubarb_zip.namelist()]))
+                        main_dir = os.path.dirname([os.path.split(x)[0] for x in dirs][0])
+                        os.rename(os.path.join(utilities.get_app_data_path(), main_dir), os.path.join(utilities.get_app_data_path(), "rhubarb"))
             except TimeoutError:
                 # Download Failed
                 pass
@@ -454,6 +469,15 @@ class LipsyncFrame:
         self.ui = self.loader.load(file, parent)
         file.close()
         return self.ui
+
+    def select_voice_recognizer(self, event=None):
+        self.config.setValue("/VoiceRecognition/recognizer", event)
+        if event == "Allosaurus":
+            self.allo_select.setChecked(True)
+            self.rhubarb_select.setChecked(False)
+        elif event == "Rhubarb":
+            self.allo_select.setChecked(False)
+            self.rhubarb_select.setChecked(True)
 
     def change_voice_for_selection(self):
         # TODO: We don't handle overlapping objects yet!
@@ -794,6 +818,12 @@ class LipsyncFrame:
             self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
             self.main_window.menubar.addAction(self.rhubarb_action)
         self.main_window.waveform_view.set_document(self.doc, True, True)
+        if self.config.value("/VoiceRecognition/recognizer", "Allosaurus") == "Allosaurus":
+            self.allo_select.setChecked(True)
+            self.rhubarb_select.setChecked(False)
+        elif self.config.value("/VoiceRecognition/recognizer", "Allosaurus") == "Rhubarb":
+            self.rhubarb_select.setChecked(True)
+            self.allo_select.setChecked(False)
         self.change_stylesheet()
 
     def on_play(self, event=None):
