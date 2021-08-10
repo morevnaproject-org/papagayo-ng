@@ -3,10 +3,10 @@
 # https://github.com/AppImage/AppImageKit/wiki/Bundling-Python-apps
 
 SCRIPTPATH=$(cd `dirname "$0"`; pwd)
-SOURCES_DIR="${SCRIPTPATH}/../../"
+SOURCES_DIR="${SCRIPTPATH}/../../app_image_build/"
 
 #PYTHON_APPIMAGE_URL="https://github.com/niess/python-appimage/releases/download/python3.10/python3.10.0-cp310-cp310-manylinux2010_x86_64.AppImage"
-PYTHON_APPIMAGE_URL="https://github.com/niess/python-appimage/releases/download/python3.7/python3.7.11-cp37-cp37m-manylinux2010_x86_64.AppImage"
+PYTHON_APPIMAGE_URL="https://github.com/niess/python-appimage/releases/download/python3.9/python3.9.6-cp39-cp39-manylinux2014_x86_64.AppImage"
 PYTHON_APPIMAGE_FILENAME=`basename "${PYTHON_APPIMAGE_URL}"`
 
 # Detect package management system.
@@ -32,7 +32,9 @@ chmod +x "${PYTHON_APPIMAGE_FILENAME}"
 ./squashfs-root/AppRun -m pip install torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 ./squashfs-root/AppRun -m pip install -r "${SOURCES_DIR}requirements.txt"
 #./squashfs-root/AppRun -m pip install $(grep -ivE "allosaurus" "${SOURCES_DIR}requirements.txt")
-rm squashfs-root/opt/python3.7/lib/python3.7/site-packages/PySide2/Qt/lib/libQt5WebEngineCore.so.5
+rm squashfs-root/opt/python3.9/lib/python3.9/site-packages/PySide2/Qt/lib/libQt5WebEngineCore.so.5
+rm -rf ./squashfs-root/opt/python3.9/lib/python3.9/site-packages/torch/test
+
 
 #find "${SOURCES_DIR}" -type f -not -iname '*/not-from-here/*' -exec cp -rf '{}' '/dest/{}' ';'
 rsync -av --progress "${SOURCES_DIR}" "squashfs-root/opt/papagayo-ng" --exclude build
@@ -46,12 +48,12 @@ cp "${SOURCES_DIR}/rsrc/papagayo-ng.png" squashfs-root/
 rm squashfs-root/usr/share/metainfo/*
 
 # Change AppRun so that it launches papagayo-ng
-sed -i -e 's|/opt/python3.7/bin/python3.7|/usr/bin/papagayo-ng|g' ./squashfs-root/AppRun
+sed -i -e 's|/opt/python3.9/bin/python3.9|/usr/bin/papagayo-ng|g' ./squashfs-root/AppRun
 
 # Convert back into an AppImage
 wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
 chmod +x appimagetool-*.AppImage
-# 
+#
 # The following line does not work quite yet due to https://github.com/probonopd/go-appimage/issues/30
 # ./appimagetool-*-x86_64.AppImage deploy squashfs-root/usr/share/applications/taguette.desktop
 ./appimagetool-*-x86_64.AppImage squashfs-root/ # Replace "1" with the actual version/build number
