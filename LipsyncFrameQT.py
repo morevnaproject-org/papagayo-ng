@@ -97,6 +97,7 @@ def sort_mouth_list_order(elem):
 
 class LipsyncFrame:
     def __init__(self):
+        QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
         self.app = QtWidgets.QApplication(sys.argv)
         self.loader = None
         self.ui_file = None

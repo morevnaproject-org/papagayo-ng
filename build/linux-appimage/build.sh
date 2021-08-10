@@ -32,7 +32,7 @@ chmod +x "${PYTHON_APPIMAGE_FILENAME}"
 ./squashfs-root/AppRun -m pip install torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 ./squashfs-root/AppRun -m pip install -r "${SOURCES_DIR}requirements.txt"
 #./squashfs-root/AppRun -m pip install $(grep -ivE "allosaurus" "${SOURCES_DIR}requirements.txt")
-
+rm squashfs-root/opt/python3.7/lib/python3.7/site-packages/PySide2/Qt/lib/libQt5WebEngineCore.so.5
 
 #find "${SOURCES_DIR}" -type f -not -iname '*/not-from-here/*' -exec cp -rf '{}' '/dest/{}' ';'
 rsync -av --progress "${SOURCES_DIR}" "squashfs-root/opt/papagayo-ng" --exclude build
