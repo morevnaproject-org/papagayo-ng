@@ -176,7 +176,10 @@ class LipSyncObject(NodeMixin):
         self.tags = tags if tags else []
         self.num_children = num_children
         self.move_button = None
-        self.sound_duration = sound_duration
+        if self.parent:
+            self.sound_duration = self.root.sound_duration
+        else:
+            self.sound_duration = sound_duration
         self.fps = fps
 
     def get_min_size(self):
@@ -232,28 +235,29 @@ class LipSyncObject(NodeMixin):
         return right_sibling
 
     def get_left_max(self):
-        try:
+        if self.has_left_sibling():
             temp = self.get_left_sibling()
             if not temp.object_type == "phoneme":
                 left_most_pos = temp.end_frame
             else:
                 left_most_pos = temp.end_frame + 1
-        except AttributeError:
-            if self.depth > 2:
-                left_most_pos = self.parent.start_frame
-            else:
-                left_most_pos = 0
+        else:
+            left_most_pos = self.parent.start_frame
         return left_most_pos
 
     def get_right_max(self):
-        try:
-            temp = self.get_right_sibling()
-            right_most_pos = temp.start_frame
-        except AttributeError:
-            if self.depth > 2:
-                right_most_pos = self.parent.end_frame
+        if self.has_right_sibling():
+            right_most_pos = self.get_right_sibling().start_frame
+        else:
+            if self.parent.object_type == "voice":
+                right_most_pos = self.root.sound_duration
+            elif self.parent.object_type == "project":
+                right_most_pos = self.root.sound_duration
             else:
-                right_most_pos = self.sound_duration
+                try:
+                    right_most_pos = self.parent.end_frame
+                except AttributeError:
+                    right_most_pos = self.root.sound_duration
         return right_most_pos
 
     def get_phoneme_at_frame(self, frame):
@@ -671,7 +675,7 @@ class LipsyncDoc:
         self.current_voice = None
         self.language_manager = langman
         self.parent = parent
-        self.project_node = Node(self.name)
+        self.project_node = LipSyncObject(name=self.name, object_type="project")
 
     @property
     def dirty(self):
@@ -701,6 +705,7 @@ class LipsyncDoc:
             self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
         self.fps = json_data["fps"]
         self.soundDuration = json_data["sound_duration"]
+        self.project_node.sound_duration = self.soundDuration
         num_voices = json_data["num_voices"]
         for voice in json_data["voices"]:
             temp_voice = LipSyncObject(name=voice["name"], text=voice["text"], num_children=voice["num_children"],
@@ -742,6 +747,7 @@ class LipsyncDoc:
         print(("self.path: {}".format(self.path)))
         self.soundDuration = int(in_file.readline())
         print(("self.soundDuration: {:d}".format(self.soundDuration)))
+        self.project_node.sound_duration = self.soundDuration
         num_voices = int(in_file.readline())
         for i in range(num_voices):
             voice = LipSyncObject(object_type="voice", parent=self.project_node)
@@ -854,7 +860,6 @@ class LipsyncDoc:
             new_map = PhonemeSet()
             new_map.load(new_set)
             conversion_map_from_cmu = new_map.conversion
-
             for voice in self.project_node.children:
                 for phrase in voice.children:
                     for word in phrase.children:

@@ -208,7 +208,7 @@ class LipsyncFrame:
         self.main_window.action_zoom_out.triggered.connect(self.main_window.waveform_view.on_zoom_out)
         self.main_window.action_reset_zoom.triggered.connect(self.main_window.waveform_view.on_zoom_reset)
         self.main_window.action_settings.triggered.connect(self.show_settings)
-
+        self.main_window.action_select_as_current_set.triggered.connect(self.set_current_phoneme_set)
         self.main_window.reload_dict_button.clicked.connect(self.on_reload_dictionary)
         self.main_window.waveform_view.horizontalScrollBar().sliderMoved.connect(
             self.main_window.waveform_view.on_slider_change)
@@ -261,7 +261,6 @@ class LipsyncFrame:
             self.rhubarb_action = QtWidgets.QAction("Download Rhubarb")
             self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
             self.main_window.menubar.addAction(self.rhubarb_action)
-        self.phoneme_convert = QtWidgets.QAction("Convert Phonemes")
         self.change_stylesheet()
         self.cur_frame = 0
         self.timer = None
@@ -470,6 +469,11 @@ class LipsyncFrame:
         self.ui = self.loader.load(file, parent)
         file.close()
         return self.ui
+
+    def set_current_phoneme_set(self, event=None):
+        if self.doc:
+            phonemeset_name = self.main_window.phoneme_set.currentText()
+            self.phonemeset.selected_set = self.phonemeset.load(phonemeset_name)
 
     def select_voice_recognizer(self, event=None):
         self.config.setValue("/VoiceRecognition/recognizer", event)
@@ -707,8 +711,7 @@ class LipsyncFrame:
             self.main_window.action_cut.triggered.connect(self.on_del_object)
             self.main_window.menu_edit.setEnabled(True)
             self.main_window.choose_imageset_button.setEnabled(False)
-            self.phoneme_convert.triggered.connect(self.doc.convert_to_phonemeset)
-            self.main_window.menubar.addAction(self.phoneme_convert)
+            self.main_window.action_convert_phonemes.triggered.connect(self.doc.convert_to_phonemeset)
             if self.doc.sound is not None:
                 self.main_window.action_play.setEnabled(True)
                 # self.main_window.action_stop.setEnabled(True)
@@ -913,11 +916,11 @@ class LipsyncFrame:
         if (self.doc is not None) and (self.doc.current_voice is not None):
             language = self.main_window.language_choice.currentText()
             phonemeset_name = self.main_window.phoneme_set.currentText()
-            self.phonemeset.load(phonemeset_name)
             self.doc.dirty = True
             self.doc.current_voice.children = []
             self.doc.current_voice.run_breakdown(self.doc.soundDuration, self, language, self.langman,
                                                  self.phonemeset)
+            self.phonemeset.selected_set = self.phonemeset.load(phonemeset_name)
             self.main_window.waveform_view.first_update = True
             self.ignore_text_changes = True
             self.main_window.text_edit.setText(self.doc.current_voice.text)
