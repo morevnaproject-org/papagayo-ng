@@ -176,7 +176,10 @@ class LipSyncObject(NodeMixin):
         self.tags = tags if tags else []
         self.num_children = num_children
         self.move_button = None
-        self.sound_duration = sound_duration
+        if self.parent:
+            self.sound_duration = self.root.sound_duration
+        else:
+            self.sound_duration = sound_duration
         self.fps = fps
 
     def get_min_size(self):
@@ -232,28 +235,29 @@ class LipSyncObject(NodeMixin):
         return right_sibling
 
     def get_left_max(self):
-        try:
+        if self.has_left_sibling():
             temp = self.get_left_sibling()
             if not temp.object_type == "phoneme":
                 left_most_pos = temp.end_frame
             else:
                 left_most_pos = temp.end_frame + 1
-        except AttributeError:
-            if self.depth > 2:
-                left_most_pos = self.parent.start_frame
-            else:
-                left_most_pos = 0
+        else:
+            left_most_pos = self.parent.start_frame
         return left_most_pos
 
     def get_right_max(self):
-        try:
-            temp = self.get_right_sibling()
-            right_most_pos = temp.start_frame
-        except AttributeError:
-            if self.depth > 2:
-                right_most_pos = self.parent.end_frame
+        if self.has_right_sibling():
+            right_most_pos = self.get_right_sibling().start_frame
+        else:
+            if self.parent.object_type == "voice":
+                right_most_pos = self.root.sound_duration
+            elif self.parent.object_type == "project":
+                right_most_pos = self.root.sound_duration
             else:
-                right_most_pos = self.sound_duration
+                try:
+                    right_most_pos = self.parent.end_frame
+                except AttributeError:
+                    right_most_pos = self.root.sound_duration
         return right_most_pos
 
     def get_phoneme_at_frame(self, frame):
@@ -671,7 +675,7 @@ class LipsyncDoc:
         self.current_voice = None
         self.language_manager = langman
         self.parent = parent
-        self.project_node = Node(self.name)
+        self.project_node = LipSyncObject(name=self.name, object_type="project")
 
     @property
     def dirty(self):
@@ -701,6 +705,8 @@ class LipsyncDoc:
             self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
         self.fps = json_data["fps"]
         self.soundDuration = json_data["sound_duration"]
+        self.project_node.sound_duration = self.soundDuration
+        self.parent.phonemeset.selected_set = json_data.get("phoneme_set", "preston_blair")
         num_voices = json_data["num_voices"]
         for voice in json_data["voices"]:
             temp_voice = LipSyncObject(name=voice["name"], text=voice["text"], num_children=voice["num_children"],
@@ -742,6 +748,7 @@ class LipsyncDoc:
         print(("self.path: {}".format(self.path)))
         self.soundDuration = int(in_file.readline())
         print(("self.soundDuration: {:d}".format(self.soundDuration)))
+        self.project_node.sound_duration = self.soundDuration
         num_voices = int(in_file.readline())
         for i in range(num_voices):
             voice = LipSyncObject(object_type="voice", parent=self.project_node)
@@ -782,7 +789,7 @@ class LipsyncDoc:
         else:
             saved_sound_path = self.soundPath
         out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration,
-                    "num_voices": len(self.voices)}
+                    "num_voices": len(self.voices), "phoneme_set": self.parent.phonemeset.selected_set}
         list_of_voices = []
         for voi_id, voice in enumerate(self.voices):
             start_frame = 0
@@ -854,62 +861,63 @@ class LipsyncDoc:
             new_map = PhonemeSet()
             new_map.load(new_set)
             conversion_map_from_cmu = new_map.conversion
-
             for voice in self.project_node.children:
                 for phrase in voice.children:
                     for word in phrase.children:
                         for phoneme in word.children:
                             phoneme.text = conversion_map_from_cmu.get(phoneme.text, "rest")
             self.dirty = True
+            self.parent.phonemeset.selected_set = new_set
             self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
 
     def auto_recognize_phoneme(self, manual_invoke=False):
         if self.settings.value("run_allosaurus", True) or manual_invoke:
             if auto_recognition:
-                allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
-                results, peaks, allo_output = allo_recognizer.recognize_allosaurus()
-                if results:
-                    phonemes_as_text = ""
-                    end_frame = math.floor(self.fps * (results[-1]["start"] + results[-1]["duration"] * 2))
-                    phrase = LipSyncObject(object_type="phrase", parent=self.current_voice)
-                    phrase.text = 'Auto detection Allosaurus'
-                    phrase.start_frame = 0
-                    phrase.end_frame = end_frame
-                    if len(peaks) % 2 != 0:
-                        peaks.append(peaks[-1])
-                    for i in range(len(peaks) - 2):
-                        peak_left = peaks[i]
-                        peak_right = peaks[i + 1]
+                if self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Allosaurus":
+                    allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
+                    results, peaks, allo_output = allo_recognizer.recognize_allosaurus()
+                    if results:
+                        phonemes_as_text = ""
+                        end_frame = math.floor(self.fps * (results[-1]["start"] + results[-1]["duration"] * 2))
+                        phrase = LipSyncObject(object_type="phrase", parent=self.current_voice)
+                        phrase.text = 'Auto detection Allosaurus'
+                        phrase.start_frame = 0
+                        phrase.end_frame = end_frame
+                        if len(peaks) % 2 != 0:
+                            peaks.append(peaks[-1])
+                        for i in range(len(peaks) - 2):
+                            peak_left = peaks[i]
+                            peak_right = peaks[i + 1]
 
-                        word_chunk = results[peak_left:peak_right]
-                        word = LipSyncObject(object_type="word", parent=phrase)
+                            word_chunk = results[peak_left:peak_right]
+                            word = LipSyncObject(object_type="word", parent=phrase)
 
-                        word.text = "".join(
-                            letter["phoneme"] if letter["phoneme"] is not None else "rest" for letter in word_chunk)
-                        word.start_frame = math.floor(self.fps * results[peak_left]["start"])
-                        # word.end_frame = math.floor(self.fps * results[peak_right]["start"])
-                        previous_frame_pos = math.floor(self.fps * results[peak_left]["start"]) - 1
-                        for phoneme in word_chunk:
-                            current_frame_pos = math.floor(self.fps * phoneme['start'])
-                            if current_frame_pos == previous_frame_pos:
-                                current_frame_pos += 1
-                            pg_phoneme = LipSyncObject(object_type="phoneme", parent=word)
-                            pg_phoneme.start_frame = pg_phoneme.end_frame = current_frame_pos
-                            previous_frame_pos = current_frame_pos
-                            pg_phoneme.text = phoneme['phoneme'] if phoneme['phoneme'] is not None else 'rest'
-                            # word.phonemes.append(pg_phoneme)
-                            phonemes_as_text += pg_phoneme.text
-                        phonemes_as_text += " "
-                        word.end_frame = previous_frame_pos + 1
-                        # phrase.words.append(word)
-                    phonemes_as_text += "\n{}".format(str(allo_output))
-                    self.parent.main_window.text_edit.setText(phonemes_as_text)
-                    phrase.end_frame = phrase.children[-1].end_frame
-                    # self.current_voice.phrases.append(phrase)
-                    self.parent.phonemeset.selected_set = self.parent.phonemeset.load("CMU_39")
-                    current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
-                    self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
-                else:
+                            word.text = "".join(
+                                letter["phoneme"] if letter["phoneme"] is not None else "rest" for letter in word_chunk)
+                            word.start_frame = math.floor(self.fps * results[peak_left]["start"])
+                            # word.end_frame = math.floor(self.fps * results[peak_right]["start"])
+                            previous_frame_pos = math.floor(self.fps * results[peak_left]["start"]) - 1
+                            for phoneme in word_chunk:
+                                current_frame_pos = math.floor(self.fps * phoneme['start'])
+                                if current_frame_pos == previous_frame_pos:
+                                    current_frame_pos += 1
+                                pg_phoneme = LipSyncObject(object_type="phoneme", parent=word)
+                                pg_phoneme.start_frame = pg_phoneme.end_frame = current_frame_pos
+                                previous_frame_pos = current_frame_pos
+                                pg_phoneme.text = phoneme['phoneme'] if phoneme['phoneme'] is not None else 'rest'
+                                # word.phonemes.append(pg_phoneme)
+                                phonemes_as_text += pg_phoneme.text
+                            phonemes_as_text += " "
+                            word.end_frame = previous_frame_pos + 1
+                            # phrase.words.append(word)
+                        phonemes_as_text += "\n{}".format(str(allo_output))
+                        self.parent.main_window.text_edit.setText(phonemes_as_text)
+                        phrase.end_frame = phrase.children[-1].end_frame
+                        # self.current_voice.phrases.append(phrase)
+                        self.parent.phonemeset.selected_set = self.parent.phonemeset.load("CMU_39")
+                        current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
+                        self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
+                elif self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Rhubarb":
                     try:
                         phonemes = Rhubarb(self.soundPath).run()
                         if not phonemes:

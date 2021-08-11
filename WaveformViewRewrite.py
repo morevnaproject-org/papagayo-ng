@@ -389,8 +389,6 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.resize_timer.setSingleShot(True)
         self.connect(self.resize_timer, QtCore.SIGNAL("timeout()"), self.resize_finished)
 
-        print("LoadedWaveFormView")
-
     def dropEvent(self, event):
         print("DragLeave")  # Strangely no dragLeaveEvent fires but a dropEvent instead...
         if event.mimeData().hasUrls():

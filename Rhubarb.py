@@ -10,9 +10,9 @@ from PySide2.QtCore import QCoreApplication
 import sys
 
 if sys.platform == "win32":
-    RHUBARB_PATH = os.path.join(utilities.get_app_data_path(), 'rhubarb.exe')
+    RHUBARB_PATH = os.path.join(utilities.get_app_data_path(), 'rhubarb/rhubarb.exe')
 else:
-    RHUBARB_PATH = os.path.join(utilities.get_app_data_path(), 'rhubarb')
+    RHUBARB_PATH = os.path.join(utilities.get_app_data_path(), 'rhubarb/rhubarb')
 
 
 def subprocess_args(include_stdout=True):
@@ -98,7 +98,7 @@ class Rhubarb:
         return json.loads(result)
 
     def run(self):
-        if not os.path.exists(RHUBARB_PATH):
+        if not utilities.rhubarb_binaries_exists():
             return None
         args = [RHUBARB_PATH, self.file_path, '--machineReadable', '-f', 'json']
 

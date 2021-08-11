@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1028</width>
     <height>768</height>
    </rect>
   </property>
@@ -242,13 +242,22 @@
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="voice_recognition_button">
+                 <widget class="QToolButton" name="voice_recognition_button">
                   <property name="text">
                    <string>Voice Recognition</string>
                   </property>
                   <property name="icon">
                    <iconset resource="../qt-icons.qrc">
                     <normaloff>:/rsrc/voice-recognition-fill.png</normaloff>:/rsrc/voice-recognition-fill.png</iconset>
+                  </property>
+                  <property name="popupMode">
+                   <enum>QToolButton::MenuButtonPopup</enum>
+                  </property>
+                  <property name="toolButtonStyle">
+                   <enum>Qt::ToolButtonTextBesideIcon</enum>
+                  </property>
+                  <property name="arrowType">
+                   <enum>Qt::NoArrow</enum>
                   </property>
                  </widget>
                 </item>
@@ -666,7 +675,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1028</width>
      <height>21</height>
     </rect>
    </property>
@@ -699,8 +708,16 @@
     <addaction name="action_help_topics"/>
     <addaction name="action_about_papagayo_ng"/>
    </widget>
+   <widget class="QMenu" name="menu_Conversion">
+    <property name="title">
+     <string>&amp;Conversion</string>
+    </property>
+    <addaction name="action_convert_phonemes"/>
+    <addaction name="action_select_as_current_set"/>
+   </widget>
    <addaction name="menu_file"/>
    <addaction name="menu_edit"/>
+   <addaction name="menu_Conversion"/>
    <addaction name="menu_help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
@@ -912,6 +929,22 @@
    </property>
    <property name="toolTip">
     <string>Preferences</string>
+   </property>
+  </action>
+  <action name="action_convert_phonemes">
+   <property name="text">
+    <string>Convert Phonemes</string>
+   </property>
+   <property name="toolTip">
+    <string>Convert Phonemes to currently selected Phoneme Set.</string>
+   </property>
+  </action>
+  <action name="action_select_as_current_set">
+   <property name="text">
+    <string>Select as Current Set</string>
+   </property>
+   <property name="toolTip">
+    <string>This sets the currently selected Phoneme Set for the Project.</string>
    </property>
   </action>
  </widget>

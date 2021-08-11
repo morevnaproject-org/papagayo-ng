@@ -210,7 +210,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="general">
       <layout class="QGridLayout" name="gridLayout_2">
@@ -504,10 +504,33 @@ border: transparent;</string>
      </widget>
      <widget class="QWidget" name="voice">
       <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="1">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
           <string>Emission Multiplier</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLineEdit" name="lang_id_value">
+         <property name="text">
+          <string>eng</string>
          </property>
         </widget>
        </item>
@@ -528,13 +551,6 @@ border: transparent;</string>
          </property>
          <property name="checked">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLineEdit" name="lang_id_value">
-         <property name="text">
-          <string>eng</string>
          </property>
         </widget>
        </item>
@@ -564,21 +580,19 @@ border: transparent;</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Voice Recognizer</string>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QComboBox" name="selected_recognizer">
+         <property name="currentText">
+          <string/>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </widget>

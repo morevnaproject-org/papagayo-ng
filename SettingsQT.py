@@ -124,12 +124,9 @@ class SettingsWindow:
             os.remove(ffprobe_path_new)
 
     def delete_rhubarb(self):
-        binary = "rhubarb.exe"
-        if platform.system() == "Darwin":
-            binary = "rhubarb"
-        rhubarb_path = os.path.join(utilities.get_app_data_path(), binary)
+        rhubarb_path = os.path.join(utilities.get_app_data_path(), "rhubarb")
         if os.path.exists(rhubarb_path):
-            os.remove(rhubarb_path)
+            shutil.rmtree(rhubarb_path)
 
     def delete_ai_model(self):
         allosaurus_model_path_old = os.path.join(get_main_dir(), "allosaurus_model")
@@ -146,6 +143,12 @@ class SettingsWindow:
         self.main_window.run_allosaurus.setChecked(bool(self.settings.value("run_allosaurus", True)))
         self.main_window.app_data_path.setText(utilities.get_app_data_path())
         self.main_window.app_data_path.home(True)
+        list_of_recognizers = ["Allosaurus", "Rhubarb"]
+        self.main_window.selected_recognizer.addItems(list_of_recognizers)
+        if self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Allosaurus":
+            self.main_window.selected_recognizer.setCurrentIndex(0)
+        elif self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Rhubarb":
+            self.main_window.selected_recognizer.setCurrentIndex(1)
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
             if "Color" in color_button.text():
                 new_color = QtGui.QColor(
@@ -175,9 +178,11 @@ class SettingsWindow:
         self.settings.setValue("allo_emission", self.main_window.voice_emission_value.value())
         self.settings.setValue("run_allosaurus", int(self.main_window.run_allosaurus.isChecked()))
         self.settings.setValue("qss_file_path", str(self.main_window.qss_path.text()))
+        self.settings.setValue("/VoiceRecognition/recognizer", self.main_window.selected_recognizer.currentText())
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
-            self.settings.setValue("/Graphics/{}".format(color_button.objectName()),
-                                   color_button.palette().button().color().name())
+            if "Color" in color_button.text():
+                self.settings.setValue("/Graphics/{}".format(color_button.objectName()),
+                                       color_button.palette().button().color().name())
 
     def close(self):
         self.main_window.close()
