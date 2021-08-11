@@ -1,6 +1,8 @@
 import os
 import shutil
 
+PREPARE_FOR_PYINSTALLER = True
+
 
 def main():
     source_dir = os.getcwd()
@@ -17,9 +19,13 @@ def main():
                      "WaveformViewRewrite.py", "papagayongrcc.py",
                      "LipsyncDoc.py", "LipsyncFrameQT.py",
                      "auto_recognition.py", "SoundPlayer.py", "gpl.txt",
-                     "papagayo-ng.ico", "ipa_cmu.json", "version_information.txt", "file_version_info.txt",
+                     "papagayo-ng.ico", "ipa_cmu.json", "version_information.txt",
                      "qt-icons.qrc", "readme.md", "about_markdown.html",
                      "rsrc/", "breakdowns/", "phonemes/", "requirements.txt"]
+
+    if PREPARE_FOR_PYINSTALLER:
+        list_of_files.append("nsis_extra_files/")
+        list_of_files.append("papagayo-ng.spec")
 
     for file_name in list_of_files:
         if file_name.endswith(r"/"):
