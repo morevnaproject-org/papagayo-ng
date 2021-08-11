@@ -108,7 +108,7 @@ shutil.copytree("./phonemes", os.path.join(installer_folder , "phonemes"))
 shutil.copytree("./rsrc", os.path.join(installer_folder , "rsrc"))
 if with_rhubarb:
     shutil.copytree("./rhubarb", os.path.join(installer_folder , "rhubarb"))
-shutil.copy("./papagayo-ng.nsi", os.path.join(installer_folder , "papagayo-ng.nsi"))
+shutil.copy("../papagayo-ng.nsi", os.path.join(installer_folder , "papagayo-ng.nsi"))
 shutil.copy("./papagayo-ng.ico", os.path.join(installer_folder , "papagayo-ng.ico"))
 shutil.copy("./ipa_cmu.json", os.path.join(installer_folder , "ipa_cmu.json"))
 shutil.copy("./version_information.txt", os.path.join(installer_folder , "version_information.txt"))
