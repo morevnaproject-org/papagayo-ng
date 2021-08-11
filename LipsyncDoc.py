@@ -777,6 +777,7 @@ class LipsyncDoc:
             if self.soundDuration < self.sound.Duration() * self.fps:
                 self.soundDuration += 1
                 print(("soundDuration2: {:d}".format(self.soundDuration)))
+            self.project_node.sound_duration = self.soundDuration
         else:
             self.sound = None
 
