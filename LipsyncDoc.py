@@ -706,6 +706,7 @@ class LipsyncDoc:
         self.fps = json_data["fps"]
         self.soundDuration = json_data["sound_duration"]
         self.project_node.sound_duration = self.soundDuration
+        self.parent.phonemeset.selected_set = json_data.get("phoneme_set", "preston_blair")
         num_voices = json_data["num_voices"]
         for voice in json_data["voices"]:
             temp_voice = LipSyncObject(name=voice["name"], text=voice["text"], num_children=voice["num_children"],
@@ -788,7 +789,7 @@ class LipsyncDoc:
         else:
             saved_sound_path = self.soundPath
         out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration,
-                    "num_voices": len(self.voices)}
+                    "num_voices": len(self.voices), "phoneme_set": self.parent.phonemeset.selected_set}
         list_of_voices = []
         for voi_id, voice in enumerate(self.voices):
             start_frame = 0
@@ -866,6 +867,7 @@ class LipsyncDoc:
                         for phoneme in word.children:
                             phoneme.text = conversion_map_from_cmu.get(phoneme.text, "rest")
             self.dirty = True
+            self.parent.phonemeset.selected_set = new_set
             self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
 
     def auto_recognize_phoneme(self, manual_invoke=False):

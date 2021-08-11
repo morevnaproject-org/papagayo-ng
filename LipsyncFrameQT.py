@@ -722,6 +722,8 @@ class LipsyncFrame:
             list_of_voices = [voice.name for voice in self.doc.project_node.children]
             self.main_window.voice_for_selection.clear()
             self.main_window.voice_for_selection.addItems(list_of_voices)
+            current_index = self.main_window.phoneme_set.findText(self.phonemeset.selected_set)
+            self.main_window.phoneme_set.setCurrentIndex(current_index)
 
             first_entry = True
             for voice in self.doc.project_node.children:
