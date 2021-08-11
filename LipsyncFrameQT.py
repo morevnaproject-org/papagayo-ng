@@ -603,6 +603,7 @@ class LipsyncFrame:
             wfv.scroll_position *= resize_multiplier
             wfv.scroll_position = 0
             wfv.horizontalScrollBar().setValue(wfv.scroll_position)
+            self.doc.project_node.sound_duration = int(self.doc.sound.Duration() * self.doc.fps)
 
     def on_voice_recognize(self):
         if self.doc and self.doc.sound:
