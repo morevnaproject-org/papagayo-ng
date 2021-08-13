@@ -797,9 +797,9 @@ class LipsyncDoc:
         else:
             saved_sound_path = self.soundPath
         out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration,
-                    "num_voices": len(self.voices), "phoneme_set": self.parent.phonemeset.selected_set}
+                    "num_voices": len(self.project_node.children), "phoneme_set": self.parent.phonemeset.selected_set}
         list_of_voices = []
-        for voi_id, voice in enumerate(self.voices):
+        for voi_id, voice in enumerate(self.project_node.children):
             start_frame = 0
             end_frame = 1
             if len(voice.children) > 0:
@@ -848,8 +848,8 @@ class LipsyncDoc:
         out_file.write("{}\n".format(saved_sound_path))
         out_file.write("{:d}\n".format(self.fps))
         out_file.write("{:d}\n".format(self.soundDuration))
-        out_file.write("{:d}\n".format(len(self.voices)))
-        for voice in self.voices:
+        out_file.write("{:d}\n".format(len(self.project_node.children)))
+        for voice in self.project_node.children:
             voice.save(out_file)
         out_file.close()
         self._dirty = False

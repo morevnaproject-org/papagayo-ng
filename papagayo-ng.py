@@ -47,7 +47,16 @@ def parse_cli():
             list_of_doc_objects.append(new_doc)
 
         for i in list_of_doc_objects:
+            if args.output_type == "MOHO":
+                for voice in i.project_node.children:
+                    if args.output_file:
+                        if os.path.isdir(args.output_file):
+                            voice_file_path = os.path.join(args.output_file, "{}.dat".format(voice.name))
+                            voice.export(voice_file_path)
+                        else:
+                            voice.export(args.output_file)
             print(i)
+
     return args.use_cli
 
 
