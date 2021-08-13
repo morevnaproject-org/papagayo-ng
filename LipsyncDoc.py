@@ -48,7 +48,7 @@ from utilities import *
 from PronunciationDialogQT import PronunciationDialog, show_pronunciation_dialog
 
 if sys.platform == "win32":
-    import SoundPlayerNew as SoundPlayer
+    import SoundPlayer as SoundPlayer
 elif sys.platform == "darwin":
     import SoundPlayerOSX as SoundPlayer
 else:
@@ -648,11 +648,18 @@ class LipSyncObject(NodeMixin):
     ###
 
     def __str__(self):
-        out_string = "LipSync{}:{}|{}|start_frame:{}|end_frame:{}|Parent:{}|Children:{}".format(
-            self.object_type.capitalize(),
-            self.name, self.text,
-            self.start_frame,
-            self.end_frame, self.parent.name or self.parent.text, self.children)
+        if self.is_root:
+            out_string = "LipSync{}:{}|{}|start_frame:{}|end_frame:{}|Children:{}".format(
+                self.object_type.capitalize(),
+                self.name, self.text,
+                self.start_frame,
+                self.end_frame, self.children)
+        else:
+            out_string = "LipSync{}:{}|{}|start_frame:{}|end_frame:{}|Parent:{}|Children:{}".format(
+                self.object_type.capitalize(),
+                self.name, self.text,
+                self.start_frame,
+                self.end_frame, self.parent.name or self.parent.text, self.children)
         return out_string
 
     def __repr__(self):
@@ -949,6 +956,13 @@ class LipsyncDoc:
 
                     except RhubarbTimeoutException:
                         pass
+
+    def __str__(self):
+        out_string = "LipSyncDoc:{}|Objects:{}|Sound:{}|".format(self.name, self.project_node, self.soundPath)
+        return out_string
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class PhonemeSet:

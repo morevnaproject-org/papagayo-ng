@@ -48,16 +48,12 @@ from SettingsQT import SettingsWindow
 from LipsyncDoc import *
 
 app_title = "Papagayo-NG"
-lipsync_extension = "*.pgo *.pg2"
-audio_extensions = "*.wav *.mp3 *.aiff *.aif *.au *.snd *.mov *.m4a"
+lipsync_extension_list = ("pgo", "pg2")
+audio_extension_list = ("wav", "mp3", "aiff", "aif", "au", "snd", "mov", "m4a")
+lipsync_extension = "".join(" *.{}".format(ext) for ext in lipsync_extension_list)[1:]
+audio_extensions = "".join(" *.{}".format(ext) for ext in audio_extension_list)[1:]
 open_wildcard = "{} and sound files ({} {})".format(app_title, audio_extensions, lipsync_extension)
-audioExtensions = "*.wav;*.mp3;*.aiff;*.aif;*.au;*.snd;*.mov;*.m4a"
 save_wildcard = "{} files ({})".format(app_title, lipsync_extension)
-
-
-# openWildcard = "%s and sound files|*%s;%s" % (appTitle, lipsyncExtension, audioExtensions)
-# openAudioWildcard = "Sound files|%s" % (audioExtensions)
-# saveWildcard = "%s files (*%s)|*%s" % (appTitle, lipsyncExtension, lipsyncExtension)
 
 
 class DropFilter(QtCore.QObject):
@@ -93,6 +89,37 @@ def sort_mouth_list_order(elem):
         return int(elem.split("-")[0])
     except ValueError:
         return hash(elem)
+
+
+def open_file_no_gui(path, parent):
+    langman = LanguageManager()
+    langman.init_languages()
+    ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+    config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+    doc = LipsyncDoc(langman, parent)
+    if path.endswith(lipsync_extension_list):
+        if path.endswith(lipsync_extension_list[0]):
+            # open a lipsync project
+            doc.open(path)
+        elif path.endswith(lipsync_extension_list[1]):
+            # open a json based lipsync project
+            doc.open_json(path)
+        if doc.sound is None:
+            print("Could not load Sound file.")
+            sys.exit()
+    else:
+        # open an audio file
+        doc.fps = int(config.value("LastFPS", 24))
+        doc.open_audio(path)
+        if doc.sound is None:
+            doc = None
+        else:
+            if len(doc.project_node.children) < 1:
+                doc.current_voice = LipSyncObject(object_type="voice", name="Voice 1", parent=doc.project_node)
+            elif not doc.current_voice:
+                doc.current_voice = doc.project_node.children[0]
+            doc.auto_recognize_phoneme()
+    return doc
 
 
 class LipsyncFrame:
@@ -656,11 +683,11 @@ class LipsyncFrame:
         while self.main_window.current_voice.tabBar().count() > 1:
             self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().count() - 1)
         self.doc = LipsyncDoc(self.langman, self)
-        if path.endswith((lipsync_extension.split(" ")[0][1:], lipsync_extension.split(" ")[1][1:])):
-            if path.endswith(lipsync_extension.split(" ")[0][1:]):
+        if path.endswith(lipsync_extension_list):
+            if path.endswith(lipsync_extension_list[0]):
                 # open a lipsync project
                 self.doc.open(path)
-            elif path.endswith(lipsync_extension.split(" ")[1][1:]):
+            elif path.endswith(lipsync_extension_list[1]):
                 # open a json based lipsync project
                 self.doc.open_json(path)
             while self.doc.sound is None:
@@ -747,9 +774,9 @@ class LipsyncFrame:
         if self.doc.path is None:
             self.on_save_as()
             return
-        if self.doc.path.endswith(lipsync_extension.split(" ")[0][1:]):
+        if self.doc.path.endswith(lipsync_extension_list[0]):
             self.doc.save(self.doc.path)
-        elif self.doc.path.endswith(lipsync_extension.split(" ")[1][1:]):
+        elif self.doc.path.endswith(lipsync_extension_list[1]):
             self.doc.save2(self.doc.path)
 
     def on_save_as(self):
@@ -761,9 +788,9 @@ class LipsyncFrame:
                                                              save_wildcard)
         if file_path:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
-            if file_path.endswith(lipsync_extension.split(" ")[0][1:]):
+            if file_path.endswith(lipsync_extension_list[0]):
                 self.doc.save(file_path)
-            elif file_path.endswith(lipsync_extension.split(" ")[1][1:]):
+            elif file_path.endswith(lipsync_extension_list[1]):
                 self.doc.save2(file_path)
             self.main_window.setWindowTitle("{} [{}] - {}".format(self.doc.name, file_path, app_title))
 
