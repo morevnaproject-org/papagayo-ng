@@ -1,9 +1,9 @@
 # --coding: utf-8 --
 import argparse
 import ctypes
+import os
 import platform
 import sys
-import os
 import papagayongrcc
 import LipsyncFrameQT
 
@@ -18,6 +18,12 @@ def parse_cli():
     parser.add_argument("-i", dest="input_file_path",
                         help="The input file, either a supported Papagayo-NG Project or a sound file.", metavar="FILE")
     parser.add_argument("--cli", dest="use_cli", action="store_true", help="Set this to disable the GUI.")
+    parser.add_argument("-o", dest="output_file",
+                        help="The output file, should be one of these filetypes or a directory: {}".format(
+                            LipsyncFrameQT.lipsync_extension_list + LipsyncFrameQT.export_file_types))
+    parser.add_argument("--output-type", dest="output_type", help="Possible options: {}".format(
+        "".join(" {},".format(o_type.upper()) for o_type in
+                LipsyncFrameQT.lipsync_extension_list + LipsyncFrameQT.exporter_list)[:-1]))
     args = parser.parse_args()
     list_of_input_files = []
     if args.input_file_path:
@@ -27,6 +33,7 @@ def parse_cli():
                 list_of_input_files.extend(os.path.join(dirpath, filename) if filename.endswith(
                     LipsyncFrameQT.lipsync_extension_list + LipsyncFrameQT.audio_extension_list) else "" for filename in
                                            filenames)
+                break
         else:
             if args.input_file_path.endswith(
                     LipsyncFrameQT.lipsync_extension_list + LipsyncFrameQT.audio_extension_list):

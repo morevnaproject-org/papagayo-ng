@@ -919,12 +919,18 @@ class LipsyncDoc:
                             word.end_frame = previous_frame_pos + 1
                             # phrase.words.append(word)
                         phonemes_as_text += "\n{}".format(str(allo_output))
-                        self.parent.main_window.text_edit.setText(phonemes_as_text)
+                        try:
+                            self.parent.main_window.text_edit.setText(phonemes_as_text)
+                        except AttributeError:
+                            pass
                         phrase.end_frame = phrase.children[-1].end_frame
                         # self.current_voice.phrases.append(phrase)
                         self.parent.phonemeset.selected_set = self.parent.phonemeset.load("CMU_39")
-                        current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
-                        self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
+                        try:
+                            current_index = self.parent.main_window.phoneme_set.findText(self.parent.phonemeset.selected_set)
+                            self.parent.main_window.phoneme_set.setCurrentIndex(current_index)
+                        except AttributeError:
+                            pass
                 elif self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Rhubarb":
                     try:
                         phonemes = Rhubarb(self.soundPath).run()

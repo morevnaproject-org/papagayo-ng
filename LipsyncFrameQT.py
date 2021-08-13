@@ -50,6 +50,8 @@ from LipsyncDoc import *
 app_title = "Papagayo-NG"
 lipsync_extension_list = ("pgo", "pg2")
 audio_extension_list = ("wav", "mp3", "aiff", "aif", "au", "snd", "mov", "m4a")
+export_file_types = ("txt", "json", "dat")
+exporter_list = ("MOHO", "ALELO", "Images", "JSON")
 lipsync_extension = "".join(" *.{}".format(ext) for ext in lipsync_extension_list)[1:]
 audio_extensions = "".join(" *.{}".format(ext) for ext in audio_extension_list)[1:]
 open_wildcard = "{} and sound files ({} {})".format(app_title, audio_extensions, lipsync_extension)
@@ -106,7 +108,8 @@ def open_file_no_gui(path, parent):
             doc.open_json(path)
         if doc.sound is None:
             print("Could not load Sound file.")
-            sys.exit()
+            print(doc.soundPath)
+            return None
     else:
         # open an audio file
         doc.fps = int(config.value("LastFPS", 24))
@@ -185,8 +188,6 @@ class LipsyncFrame:
         current_index = self.main_window.phoneme_set.findText(self.phonemeset.selected_set)
         self.main_window.phoneme_set.setCurrentIndex(current_index)
 
-        # setup export initialisation here
-        exporter_list = ["MOHO", "ALELO", "Images", "JSON"]
         c = 0
         select = 0
         for exporter in exporter_list:
