@@ -47,12 +47,18 @@ import PySide2.QtCore as QtCore
 from utilities import *
 from PronunciationDialogQT import PronunciationDialog, show_pronunciation_dialog
 
-if sys.platform == "win32":
+ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
+config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+
+if config.value("audio_output", "old") == "old":
     import SoundPlayer as SoundPlayer
-elif sys.platform == "darwin":
-    import SoundPlayerOSX as SoundPlayer
 else:
-    import SoundPlayer as SoundPlayer
+    if sys.platform == "win32":
+        import SoundPlayerNew as SoundPlayer
+    elif sys.platform == "darwin":
+        import SoundPlayerOSX as SoundPlayer
+    else:
+        import SoundPlayer as SoundPlayer
 
 strip_symbols = '.,!?;-/()"'
 strip_symbols += '\N{INVERTED QUESTION MARK}'

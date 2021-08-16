@@ -3,7 +3,8 @@ import platform
 import time
 import utilities
 import os
-
+if platform.system() == "Windows":
+    os.environ['QT_MULTIMEDIA_PREFERRED_PLUGINS'] = 'windowsmediafoundation'
 if utilities.get_app_data_path() not in os.environ['PATH']:
     os.environ['PATH'] += os.pathsep + utilities.get_app_data_path()
 import audioread
