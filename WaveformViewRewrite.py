@@ -363,7 +363,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.default_samples_per_frame = default_samples_per_frame
         self.sample_width = self.default_sample_width
         self.samples_per_frame = self.default_samples_per_frame
-        self.samples_per_sec = 24 * self.samples_per_frame
+        self.samples_per_sec = int(self.settings.value("LastFPS", 24)) * self.samples_per_frame
         self.frame_width = self.sample_width * self.samples_per_frame
         self.phrase_bottom = 16
         self.word_bottom = 32

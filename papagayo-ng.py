@@ -24,8 +24,31 @@ def parse_cli():
     parser.add_argument("--output-type", dest="output_type", help="Possible options: {}".format(
         "".join(" {},".format(o_type.upper()) for o_type in
                 LipsyncFrameQT.lipsync_extension_list + LipsyncFrameQT.exporter_list)[:-1]))
+    parser.add_argument("--language", dest="language", help="Choose the language for Alelo Export.")
+    parser.add_argument("--mouth-images", dest="mouth_image_dir", help="The Directory containing the mouth Images.")
+    parser.add_argument("--use-allosaurus", dest="allosaurus", action="store_true",
+                        help="Set this to run Allosaurus on your input files.")
+    parser.add_argument("--use-rhubarb", dest="rhubarb", action="store_true",
+                        help="Set this to run Rhubarb on your input files.")
+    parser.add_argument("--fps", dest="fps", help="Set FPS for Input.", metavar="INT")
     args = parser.parse_args()
     list_of_input_files = []
+    langman = LipsyncFrameQT.LanguageManager()
+    langman.init_languages()
+    ini_path = os.path.join(LipsyncFrameQT.utilities.get_app_data_path(), "settings.ini")
+    config = LipsyncFrameQT.QtCore.QSettings(ini_path, LipsyncFrameQT.QtCore.QSettings.IniFormat)
+    if args.allosaurus:
+        config.setValue("/VoiceRecognition/recognizer", "Allosaurus")
+        config.setValue("run_allosaurus", True)
+    if args.rhubarb:
+        config.setValue("/VoiceRecognition/recognizer", "Rhubarb")
+        config.setValue("run_allosaurus", True)
+    if not args.allosaurus and not args.rhubarb:
+        config.setValue("run_allosaurus", False)
+    if args.fps:
+        config.setValue("LastFPS", args.fps)
+    if args.mouth_image_dir:
+        config.setValue("MouthDir", args.mouth_image_dir)
     if args.input_file_path:
         parent = ParentClass()
         if os.path.isdir(args.input_file_path):
@@ -47,7 +70,7 @@ def parse_cli():
             list_of_doc_objects.append(new_doc)
 
         for i in list_of_doc_objects:
-            if args.output_type == "MOHO":
+            if args.output_type.upper() == "MOHO":
                 for voice in i.project_node.children:
                     if args.output_file:
                         if os.path.isdir(args.output_file):
@@ -55,7 +78,33 @@ def parse_cli():
                             voice.export(voice_file_path)
                         else:
                             voice.export(args.output_file)
-            print(i)
+            elif args.output_type.upper() == "ALELO":
+                for voice in i.project_node.children:
+                    if args.output_file:
+                        if os.path.isdir(args.output_file):
+                            voice_file_path = os.path.join(args.output_file, "{}.txt".format(voice.name))
+                            voice.export_alelo(voice_file_path, args.language, langman)
+                        else:
+                            voice.export_alelo(args.output_file, args.language, langman)
+            elif args.output_type.upper() == "JSON":
+                for voice in i.project_node.children:
+                    if args.output_file:
+                        if os.path.isdir(args.output_file):
+                            voice_file_path = os.path.join(args.output_file, "{}.json".format(voice.name))
+                            voice.export_json(voice_file_path)
+                        else:
+                            voice.export_json(args.output_file)
+            elif args.output_type.upper() == "IMAGES":
+                for voice in i.project_node.children:
+                    if args.output_file:
+                        if os.path.isdir(args.output_file):
+                            voice.export_images(args.output_file, "")
+            elif args.output_type.upper() == "PGO":
+                if args.output_file:
+                    i.save(args.output_file)
+            elif args.output_type.upper() == "PG2":
+                if args.output_file:
+                    i.save2(args.output_file)
 
     return args.use_cli
 

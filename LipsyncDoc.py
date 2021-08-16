@@ -707,7 +707,7 @@ class LipsyncDoc:
         self.current_voice = None
         file_data = open(self.path, "r")
         json_data = json.load(file_data)
-        self.soundPath = json_data["sound_path"]
+        self.soundPath = json_data.get("sound_path", "")
         if not os.path.isabs(self.soundPath):
             self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
         self.fps = json_data["fps"]

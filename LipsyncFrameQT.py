@@ -727,7 +727,7 @@ class LipsyncFrame:
         if self.doc is not None:
             self.main_window.setWindowTitle("{} [{}] - {}".format(self.doc.name, path, app_title))
             self.main_window.waveform_view.first_update = True
-            self.main_window.waveform_view.set_document(self.doc, force=True)
+            self.main_window.waveform_view.set_document(self.doc, force=True, clear_scene=True)
             self.main_window.mouth_view.set_document(self.doc)
             # Reenable all disabled widgets TODO: Can likely be reduced
             self.main_window.vertical_layout_right.setEnabled(True)
