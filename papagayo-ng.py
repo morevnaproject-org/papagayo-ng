@@ -10,7 +10,7 @@ import LipsyncFrameQT
 
 class ParentClass:
     def __init__(self):
-        self.phonemeset = LipsyncFrameQT.PhonemeSet()
+        self.phonemeset = LipsyncFrameQT.LipsyncDoc.PhonemeSet()
 
 
 def parse_cli():
@@ -33,7 +33,7 @@ def parse_cli():
     parser.add_argument("--fps", dest="fps", help="Set FPS for Input.", metavar="INT")
     args = parser.parse_args()
     list_of_input_files = []
-    langman = LipsyncFrameQT.LanguageManager()
+    langman = LipsyncFrameQT.LipsyncDoc.LanguageManager()
     langman.init_languages()
     ini_path = os.path.join(LipsyncFrameQT.utilities.get_app_data_path(), "settings.ini")
     config = LipsyncFrameQT.QtCore.QSettings(ini_path, LipsyncFrameQT.QtCore.QSettings.IniFormat)

@@ -21,6 +21,9 @@
 
 # import os
 # from utilities import Worker, WorkerSignals
+import importlib
+import json
+import sys
 import os
 import tarfile
 import time
@@ -45,7 +48,7 @@ from MouthViewQT import MouthView
 
 from AboutBoxQT import AboutBox
 from SettingsQT import SettingsWindow
-from LipsyncDoc import *
+import LipsyncDoc
 
 app_title = "Papagayo-NG"
 lipsync_extension_list = ("pgo", "pg2")
@@ -94,11 +97,12 @@ def sort_mouth_list_order(elem):
 
 
 def open_file_no_gui(path, parent):
-    langman = LanguageManager()
+    importlib.reload(LipsyncDoc)
+    langman = LipsyncDoc.LanguageManager()
     langman.init_languages()
     ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
     config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
-    doc = LipsyncDoc(langman, parent)
+    doc = LipsyncDoc.LipsyncDoc(langman, parent)
     if path.endswith(lipsync_extension_list):
         if path.endswith(lipsync_extension_list[0]):
             # open a lipsync project
@@ -118,7 +122,8 @@ def open_file_no_gui(path, parent):
             doc = None
         else:
             if len(doc.project_node.children) < 1:
-                doc.current_voice = LipSyncObject(object_type="voice", name="Voice 1", parent=doc.project_node)
+                doc.current_voice = LipsyncDoc.LipSyncObject(object_type="voice", name="Voice 1",
+                                                             parent=doc.project_node)
             elif not doc.current_voice:
                 doc.current_voice = doc.project_node.children[0]
             doc.auto_recognize_phoneme()
@@ -135,7 +140,7 @@ class LipsyncFrame:
         self.doc = None
         self.about_dlg = None
         self.settings_dlg = None
-        self.ui_path = os.path.join(get_main_dir(), "rsrc", "papagayo-ng2.ui")
+        self.ui_path = os.path.join(utilities.get_main_dir(), "rsrc", "papagayo-ng2.ui")
         self.main_window = self.load_ui_widget(self.ui_path)
         self.main_window.setWindowTitle("%s" % app_title)
         self.main_window.lip_sync_frame = self
@@ -166,8 +171,7 @@ class LipsyncFrame:
             self.main_window.mouth_choice.addItem(mouth)
         self.main_window.mouth_choice.setCurrentIndex(0)
         self.main_window.mouth_choice.current_mouth = self.main_window.mouth_choice.currentText()
-
-        self.langman = LanguageManager()
+        self.langman = LipsyncDoc.LanguageManager()
         self.langman.init_languages()
         language_list = list(self.langman.language_table.keys())
         language_list.sort()
@@ -182,7 +186,7 @@ class LipsyncFrame:
         self.main_window.language_choice.setCurrentIndex(select)
 
         # setup phonemeset initialisation here
-        self.phonemeset = PhonemeSet()
+        self.phonemeset = LipsyncDoc.PhonemeSet()
         for name in self.phonemeset.alternatives:
             self.main_window.phoneme_set.addItem(name)
         current_index = self.main_window.phoneme_set.findText(self.phonemeset.selected_set)
@@ -340,7 +344,7 @@ class LipsyncFrame:
         dlg.exec_()
 
     def start_download(self, work_job):
-        worker = Worker(work_job)
+        worker = utilities.Worker(work_job)
         if work_job == self.download_ffmpeg:
             worker.signals.finished.connect(self.download_ffmpeg_finished)
         elif work_job == self.download_allosaurus_model:
@@ -482,7 +486,8 @@ class LipsyncFrame:
                         rhubarb_zip.extractall(os.path.join(utilities.get_app_data_path()))
                         dirs = list(set([os.path.dirname(x) for x in rhubarb_zip.namelist()]))
                         main_dir = os.path.dirname([os.path.split(x)[0] for x in dirs][0])
-                        os.rename(os.path.join(utilities.get_app_data_path(), main_dir), os.path.join(utilities.get_app_data_path(), "rhubarb"))
+                        os.rename(os.path.join(utilities.get_app_data_path(), main_dir),
+                                  os.path.join(utilities.get_app_data_path(), "rhubarb"))
             except TimeoutError:
                 # Download Failed
                 pass
@@ -543,20 +548,23 @@ class LipsyncFrame:
                             new_parent_object = possible_word_parent
             if not new_parent_object:
                 if parent_instance == "phrase":
-                    new_temp_parent = LipSyncObject(object_type="phrase", text=moving_object.text,
-                                                    start_frame=moving_object.start_frame,
-                                                    end_frame=moving_object.end_frame, parent=new_voice_parent,
-                                                    children=[moving_object])
+                    new_temp_parent = LipsyncDoc.LipSyncObject(object_type="phrase", text=moving_object.text,
+                                                               start_frame=moving_object.start_frame,
+                                                               end_frame=moving_object.end_frame,
+                                                               parent=new_voice_parent,
+                                                               children=[moving_object])
                     moving_object.parent = new_temp_parent
 
                 if parent_instance == "word":
-                    new_temp_parent = LipSyncObject(object_type="phrase", text=moving_object.text,
-                                                    start_frame=moving_object.start_frame,
-                                                    end_frame=moving_object.end_frame, parent=new_voice_parent)
-                    new_word_parent = LipSyncObject(object_type="word", text=moving_object.text,
-                                                    start_frame=moving_object.start_frame,
-                                                    end_frame=moving_object.end_frame, parent=new_temp_parent,
-                                                    children=[moving_object])
+                    new_temp_parent = LipsyncDoc.LipSyncObject(object_type="phrase", text=moving_object.text,
+                                                               start_frame=moving_object.start_frame,
+                                                               end_frame=moving_object.end_frame,
+                                                               parent=new_voice_parent)
+                    new_word_parent = LipsyncDoc.LipSyncObject(object_type="word", text=moving_object.text,
+                                                               start_frame=moving_object.start_frame,
+                                                               end_frame=moving_object.end_frame,
+                                                               parent=new_temp_parent,
+                                                               children=[moving_object])
                     moving_object.parent = new_word_parent
 
             else:
@@ -636,8 +644,8 @@ class LipsyncFrame:
     def on_voice_recognize(self):
         if self.doc and self.doc.sound:
             if len(self.doc.project_node.children) < 1:
-                self.doc.current_voice = LipSyncObject(object_type="voice", name="Voice 1",
-                                                       parent=self.doc.project_node)
+                self.doc.current_voice = LipsyncDoc.LipSyncObject(object_type="voice", name="Voice 1",
+                                                                  parent=self.doc.project_node)
             else:
                 self.doc.current_voice.children = []
             self.doc.auto_recognize_phoneme(manual_invoke=True)
@@ -674,7 +682,7 @@ class LipsyncFrame:
             return
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
                                                              "Open Audio or {} File".format(app_title),
-                                                             self.config.value("WorkingDir", get_main_dir()),
+                                                             self.config.value("WorkingDir", utilities.get_main_dir()),
                                                              open_wildcard)
         if file_path:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
@@ -700,7 +708,8 @@ class LipsyncFrame:
                 dlg.exec_()  # This should open it as a modal blocking window
                 file_path = QtWidgets.QFileDialog.getOpenFileName(self.main_window,
                                                                   "Open Audio",
-                                                                  self.config.value("WorkingDir", get_main_dir()),
+                                                                  self.config.value("WorkingDir",
+                                                                                    utilities.get_main_dir()),
                                                                   audio_extensions)[0]
                 if file_path:
                     self.doc.open_audio(file_path)
@@ -712,8 +721,8 @@ class LipsyncFrame:
                 self.doc = None
             else:
                 if len(self.doc.project_node.children) < 1:
-                    self.doc.current_voice = LipSyncObject(object_type="voice", name="Voice 1",
-                                                           parent=self.doc.project_node)
+                    self.doc.current_voice = LipsyncDoc.LipSyncObject(object_type="voice", name="Voice 1",
+                                                                      parent=self.doc.project_node)
                 elif not self.doc.current_voice:
                     self.doc.current_voice = self.doc.project_node.children[0]
                 self.doc.auto_recognize_phoneme()
@@ -785,7 +794,7 @@ class LipsyncFrame:
             return
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                              "Save {} File".format(app_title),
-                                                             self.config.value("WorkingDir", get_main_dir()),
+                                                             self.config.value("WorkingDir", utilities.get_main_dir()),
                                                              save_wildcard)
         if file_path:
             self.config.setValue("WorkingDir", os.path.dirname(file_path))
@@ -827,7 +836,7 @@ class LipsyncFrame:
     def on_help(self, event=None):
         github_path = "https://github.com/morevnaproject/papagayo-ng/issues"
         test_path = "file://{}".format(r"D:\Program Files (x86)\Papagayo\help\index.html")
-        real_path = "file://{}".format(os.path.join(get_main_dir(), "help", "index.html"))
+        real_path = "file://{}".format(os.path.join(utilities.get_main_dir(), "help", "index.html"))
         QtGui.QDesktopServices.openUrl(github_path)
 
     def on_about(self, event=None):
@@ -1050,7 +1059,8 @@ class LipsyncFrame:
                     voice_exist_count += 1
                     break
 
-        self.doc.current_voice = LipSyncObject(object_type="voice", name=new_voice_name, parent=self.doc.project_node)
+        self.doc.current_voice = LipsyncDoc.LipSyncObject(object_type="voice", name=new_voice_name,
+                                                          parent=self.doc.project_node)
         self.main_window.current_voice.tabBar().addTab(self.doc.current_voice.name)
         self.main_window.current_voice.tabBar().setCurrentIndex(self.main_window.current_voice.tabBar().count() - 1)
         self.ignore_text_changes = True
@@ -1107,8 +1117,8 @@ class LipsyncFrame:
                                                                                            os.path.join(os.path.dirname(
                                                                                                os.path.abspath(
                                                                                                    __file__)),
-                                                                                                        "rsrc",
-                                                                                                        r"mouths/")))
+                                                                                               "rsrc",
+                                                                                               r"mouths/")))
             if voiceimage_path:
                 self.config.setValue("MouthDir", voiceimage_path)
                 supported_imagetypes = QtGui.QImageReader.supportedImageFormats()
