@@ -691,7 +691,7 @@ class LipsyncFrame:
     def open(self, path):
         while self.main_window.current_voice.tabBar().count() > 1:
             self.main_window.current_voice.tabBar().removeTab(self.main_window.current_voice.tabBar().count() - 1)
-        self.doc = LipsyncDoc(self.langman, self)
+        self.doc = LipsyncDoc.LipsyncDoc(self.langman, self)
         if path.endswith(lipsync_extension_list):
             if path.endswith(lipsync_extension_list[0]):
                 # open a lipsync project
