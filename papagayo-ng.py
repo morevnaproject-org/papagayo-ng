@@ -17,7 +17,7 @@ def parse_cli():
     parser = argparse.ArgumentParser(description="Papagayo-NG LipSync Tool")
     parser.add_argument("-i", dest="input_file_path",
                         help="The input file, either a supported Papagayo-NG Project or a sound file.", metavar="FILE")
-    parser.add_argument("--cli", dest="use_cli", action="store_true", help="Set this to disable the GUI.")
+    parser.add_argument("--cli", dest="use_cli", action="store_true", help="Set this to use CLI commands.")
     parser.add_argument("-o", dest="output_file",
                         help="The output file, should be one of these filetypes or a directory: {}".format(
                             LipsyncFrameQT.lipsync_extension_list + LipsyncFrameQT.export_file_types))
@@ -43,12 +43,12 @@ def parse_cli():
         config.setValue("audio_output", "old")
         if args.allosaurus:
             config.setValue("/VoiceRecognition/recognizer", "Allosaurus")
-            config.setValue("run_allosaurus", True)
+            config.setValue("run_voice_recognition", True)
         if args.rhubarb:
             config.setValue("/VoiceRecognition/recognizer", "Rhubarb")
-            config.setValue("run_allosaurus", True)
+            config.setValue("run_voice_recognition", True)
         if not args.allosaurus and not args.rhubarb:
-            config.setValue("run_allosaurus", False)
+            config.setValue("run_voice_recognition", False)
         if args.fps:
             config.setValue("LastFPS", args.fps)
         if args.mouth_image_dir:

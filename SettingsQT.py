@@ -140,7 +140,7 @@ class SettingsWindow:
         self.main_window.fps_value.setValue(int(self.settings.value("LastFPS", 24)))
         self.main_window.lang_id_value.setText(self.settings.value("allo_lang_id", "eng"))
         self.main_window.voice_emission_value.setValue(float(self.settings.value("allo_emission", 1.0)))
-        self.main_window.run_allosaurus.setChecked(bool(self.settings.value("run_allosaurus", True)))
+        self.main_window.run_voice_recognition.setChecked(bool(self.settings.value("run_voice_recognition", True)))
         self.main_window.app_data_path.setText(utilities.get_app_data_path())
         self.main_window.app_data_path.home(True)
         list_of_recognizers = ["Allosaurus", "Rhubarb"]
@@ -176,7 +176,7 @@ class SettingsWindow:
         self.settings.setValue("LastFPS", self.main_window.fps_value.value())
         self.settings.setValue("allo_lang_id", self.main_window.lang_id_value.text())
         self.settings.setValue("allo_emission", self.main_window.voice_emission_value.value())
-        self.settings.setValue("run_allosaurus", int(self.main_window.run_allosaurus.isChecked()))
+        self.settings.setValue("run_voice_recognition", int(self.main_window.run_voice_recognition.isChecked()))
         self.settings.setValue("qss_file_path", str(self.main_window.qss_path.text()))
         self.settings.setValue("/VoiceRecognition/recognizer", self.main_window.selected_recognizer.currentText())
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
