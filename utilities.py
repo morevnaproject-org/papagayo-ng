@@ -100,7 +100,7 @@ def ffmpeg_binaries_exists():
 
 
 def allosaurus_model_exists():
-    allosaurus_model_path = os.path.join(get_app_data_path(), "allosaurus_model")
+    allosaurus_model_path = os.path.join(get_app_data_path(), "allosaurus_model", "latest")
     if os.path.exists(allosaurus_model_path):
         if not os.listdir(allosaurus_model_path):
             return False
