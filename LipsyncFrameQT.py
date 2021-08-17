@@ -97,7 +97,7 @@ def sort_mouth_list_order(elem):
 
 
 def open_file_no_gui(path, parent):
-    importlib.reload(LipsyncDoc)
+    importlib.reload(LipsyncDoc)  # This makes the CLI version work on the first try but is very hacky
     langman = LipsyncDoc.LanguageManager()
     langman.init_languages()
     ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
@@ -616,22 +616,7 @@ class LipsyncFrame:
         if resize_multiplier != 1:
             self.doc.fps = new_fps_value
             wfv = self.main_window.waveform_view
-            # wfv.default_samples_per_frame *= resize_multiplier
-            # wfv.default_sample_width *= resize_multiplier
-            #
-            # wfv.sample_width = wfv.default_sample_width
-            # wfv.samples_per_frame = wfv.default_samples_per_frame
             wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
-            # wfv.frame_width = wfv.sample_width * wfv.samples_per_frame
-            #
-            # for node in wfv.main_node.descendants:
-            #     node.name.after_reposition()
-            #     node.name.fit_text_to_size()
-            # #self.main_window.waveform_view.recalc_waveform()
-            # #self.main_window.waveform_view.create_waveform()
-            # if wfv.temp_play_marker:
-            #     wfv.temp_play_marker.setRect(wfv.temp_play_marker.rect().x(), 1, wfv.frame_width + 1, wfv.height())
-
             wfv.start_recalc(True)
             wfv.scene().setSceneRect(wfv.scene().sceneRect().x(), wfv.scene().sceneRect().y(),
                                      wfv.sceneRect().width() * resize_multiplier, wfv.scene().sceneRect().height())
