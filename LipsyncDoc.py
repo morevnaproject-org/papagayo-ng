@@ -18,6 +18,7 @@
 
 import math
 import shutil
+import sys
 
 import anytree
 from anytree import NodeMixin, Node, RenderTree
@@ -44,7 +45,7 @@ except ImportError:
 
 import PySide2.QtCore as QtCore
 
-from utilities import *
+import utilities
 from PronunciationDialogQT import PronunciationDialog, show_pronunciation_dialog
 
 ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
@@ -125,7 +126,7 @@ class LanguageManager:
 
         if "dictionaries" in language_config:
             for dictionary in language_config["dictionaries"]:
-                self.load_dictionary(os.path.join(get_main_dir(),
+                self.load_dictionary(os.path.join(utilities.get_main_dir(),
                                                   language_config["location"],
                                                   language_config["dictionaries"][dictionary]))
 
@@ -156,7 +157,7 @@ class LanguageManager:
     def init_languages(self):
         if len(self.language_table) > 0:
             return
-        for path, dirs, files in os.walk(os.path.join(get_main_dir(), "rsrc", "languages")):
+        for path, dirs, files in os.walk(os.path.join(utilities.get_main_dir(), "rsrc", "languages")):
             if "language.ini" in files:
                 self.language_details(path, files)
 
@@ -985,7 +986,7 @@ class PhonemeSet:
         self.set = []
         self.conversion = {}
         self.alternatives = []
-        for file in os.listdir(os.path.join(get_main_dir(), "phonemes")):
+        for file in os.listdir(os.path.join(utilities.get_main_dir(), "phonemes")):
             if fnmatch.fnmatch(file, '*.json'):
                 self.alternatives.append(file.split(".")[0])
 
@@ -997,7 +998,7 @@ class PhonemeSet:
 
     def load(self, name=''):
         if name in self.alternatives:
-            with open(os.path.join(get_main_dir(), "./phonemes/{}.json".format(name)), "r") as loaded_file:
+            with open(os.path.join(utilities.get_main_dir(), "./phonemes/{}.json".format(name)), "r") as loaded_file:
                 json_data = json.load(loaded_file)
                 self.set = json_data["phoneme_set"]
                 self.conversion = json_data["phoneme_conversion"]
