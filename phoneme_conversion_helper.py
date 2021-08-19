@@ -4,8 +4,8 @@ import shutil
 import sys
 from functools import partial
 
-from PySide2.QtCore import Qt, QSize
-from PySide2.QtGui import QPixmap, QIcon
+from PySide2.QtCore import Qt, QSize, QRect
+from PySide2.QtGui import QPixmap, QIcon, QPainter, QFont, QPen
 from PySide2.QtWidgets import QWidget, QApplication, QGridLayout, QLabel, QScrollArea, QMainWindow, QComboBox, \
     QPushButton, QDialog
 
@@ -146,6 +146,27 @@ class PhonemeHelper(QMainWindow):
             if os.path.exists(in_path[key]):
                 key = os.path.basename(in_path[key]).split(".")[0]
                 pixmap = QPixmap(in_path[key])
+                # add Text to Picture
+                painter = QPainter()
+                painter.begin(pixmap)
+
+                painter.setPen(QPen(Qt.white))
+                font = QFont("Arial")
+                font.setPointSizeF(30)
+                font.setBold(True)
+                font.setHintingPreference(QFont.PreferNoHinting)
+                painter.setFont(font)
+                painter.drawText(pixmap.rect(), Qt.AlignHCenter | Qt.AlignBottom, key)
+
+                painter.setPen(QPen(Qt.black))
+                font = QFont("Arial")
+                font.setPointSizeF(30)
+                font.setBold(False)
+                font.setHintingPreference(QFont.PreferNoHinting)
+                painter.setFont(font)
+                painter.drawText(pixmap.rect(), Qt.AlignHCenter | Qt.AlignBottom, key)
+                painter.end()
+
                 r_icon = QIcon()
                 r_icon.addPixmap(pixmap)
                 input_icons[key] = r_icon
@@ -160,10 +181,11 @@ class PhonemeHelper(QMainWindow):
 
     def get_list_of_phoneme_sets(self):
         for phoneme_set in os.listdir(os.path.join(utilities.get_main_dir(), "phonemes")):
-            with open(os.path.join(utilities.get_main_dir(), "phonemes", phoneme_set), "r") as loaded_file:
-                json_data = json.load(loaded_file)
-                file_name = phoneme_set.split(".")[0]
-                self.phoneme_sets[file_name] = json_data
+            if phoneme_set.endswith(".json"):
+                with open(os.path.join(utilities.get_main_dir(), "phonemes", phoneme_set), "r") as loaded_file:
+                    json_data = json.load(loaded_file)
+                    file_name = phoneme_set.split(".")[0]
+                    self.phoneme_sets[file_name] = json_data
 
     def save_settings(self):
         # Move old set to backup
