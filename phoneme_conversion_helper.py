@@ -7,7 +7,7 @@ from functools import partial
 from PySide2.QtCore import Qt, QSize, QRect
 from PySide2.QtGui import QPixmap, QIcon, QPainter, QFont, QPen
 from PySide2.QtWidgets import QWidget, QApplication, QGridLayout, QLabel, QScrollArea, QMainWindow, QComboBox, \
-    QPushButton, QDialog
+    QPushButton, QDialog, QMessageBox
 
 import utilities
 
@@ -93,9 +93,10 @@ class PhonemeHelper(QMainWindow):
 
         num_columns = len(self.input_icons)
         num_rows = len(self.list_of_cmu_image_labels)
+        print(len(self.phoneme_sets))
 
-        self.scroll_area.setMinimumSize((widget_size[0] * len(self.phoneme_sets) * 2) +
-                                        self.scroll_area.verticalScrollBar().width(), 800)
+        self.scroll_area.setMinimumSize(int((widget_size[0] * (len(self.phoneme_sets) * 2)) +
+                                        self.scroll_area.verticalScrollBar().width() * 1.6), 800)
         self.scroll_view = QWidget(self)
         self.scroll_view.setLayout(self.image_grid)
         self.scroll_area.setWidget(self.scroll_view)
@@ -124,7 +125,7 @@ class PhonemeHelper(QMainWindow):
                 combobox.setIconSize(QSize(*widget_size))
                 combobox.setMinimumSize(widget_size[0], lbl.height())
                 output_layout.addWidget(combobox, row, 1, alignment=Qt.AlignCenter)
-                phoneme_label = lbl.text().split("Phoneme:")[1].split("</center>")[0].strip("'")
+                phoneme_label = lbl.text().split("Phoneme:<br>")[1].split("</center>")[0].strip("'")
                 output_phoneme_id = f"{output_name}#{phoneme_label}"
                 self.combo_box_dict[combobox] = output_phoneme_id
 
@@ -133,7 +134,7 @@ class PhonemeHelper(QMainWindow):
         for key in in_path:
             if os.path.exists(in_path[key]):
                 lbl = QLabel()
-                label_text = f"<html><img src='{in_path[key]}' width={widget_size[0]} height={widget_size[1]}></html><br><center> Phoneme:'{key}'</center>"
+                label_text = f"<html><img src='{in_path[key]}' width={widget_size[0]} height={widget_size[1]}></html><br><center> Phoneme:<br>'{key}'</center>"
                 lbl.setText(label_text)
                 lbl.setScaledContents(True)
                 lbl.setMaximumSize(widget_size[0], widget_size[1] + 50)
@@ -213,6 +214,10 @@ class PhonemeHelper(QMainWindow):
         out_file = open(out_file_path, "w")
         json.dump(export_json, out_file, indent=True)
         out_file.close()
+        save_finished = QMessageBox()
+        save_finished.setText("Saving finished.")
+        save_finished.setWindowTitle("Saving finished.")
+        save_finished.exec_()
 
     def set_phoneme_widgets(self):
         for c_box in self.scroll_view.children():
