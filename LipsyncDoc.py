@@ -861,7 +861,7 @@ class LipsyncDoc:
         out_file.close()
         self._dirty = False
 
-    def convert_to_phonemeset(self):
+    def convert_to_phonemeset_old(self):
         # The base set is the CMU39 set, we will convert everything to that and from it to the desired one for now
         new_set = self.parent.main_window.phoneme_set.currentText()
         old_set = self.parent.phonemeset.selected_set
@@ -884,6 +884,47 @@ class LipsyncDoc:
             self.dirty = True
             self.parent.phonemeset.selected_set = new_set
             self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
+
+    def convert_to_phonemeset(self):
+        # The base set is the CMU39 set, we will convert everything to that and from it to the desired one for now
+        new_set = self.parent.main_window.phoneme_set.currentText()
+        old_set = self.parent.phonemeset.selected_set
+        conversion_dict = {}
+        if old_set != new_set:
+            new_map = PhonemeSet()
+            new_map.load(new_set)
+            for conversion_name in new_map.alternate_conversions:
+                if conversion_name.startswith(old_set.lower()):
+                    print(conversion_name)
+                    conversion_dict = new_map.alternate_conversions[conversion_name]
+            if conversion_dict:
+                print(conversion_dict)
+                for voice in self.project_node.children:
+                    for phrase in voice.children:
+                        for word in phrase.children:
+                            for phoneme in word.children:
+                                phoneme.text = conversion_dict.get(phoneme.text, "rest")
+                self.dirty = True
+                self.parent.phonemeset.selected_set = new_set
+                self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
+            # if old_set != "CMU_39":
+            #     conversion_map_to_cmu = {v: k for k, v in self.parent.phonemeset.conversion.items()}
+            #     for voice in self.project_node.children:
+            #         for phrase in voice.children:
+            #             for word in phrase.children:
+            #                 for phoneme in word.children:
+            #                     phoneme.text = conversion_map_to_cmu.get(phoneme.text, "rest")
+            # new_map = PhonemeSet()
+            # new_map.load(new_set)
+            # conversion_map_from_cmu = new_map.conversion
+            # for voice in self.project_node.children:
+            #     for phrase in voice.children:
+            #         for word in phrase.children:
+            #             for phoneme in word.children:
+            #                 phoneme.text = conversion_map_from_cmu.get(phoneme.text, "rest")
+            # self.dirty = True
+            # self.parent.phonemeset.selected_set = new_set
+            # self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
 
     def auto_recognize_phoneme(self, manual_invoke=False):
         if self.settings.value("run_voice_recognition", True) or manual_invoke:
@@ -986,6 +1027,7 @@ class PhonemeSet:
         self.set = []
         self.conversion = {}
         self.alternatives = []
+        self.alternate_conversions = {}
         for file in os.listdir(os.path.join(utilities.get_main_dir(), "phonemes")):
             if fnmatch.fnmatch(file, '*.json'):
                 self.alternatives.append(file.split(".")[0])
@@ -1001,7 +1043,10 @@ class PhonemeSet:
             with open(os.path.join(utilities.get_main_dir(), "./phonemes/{}.json".format(name)), "r") as loaded_file:
                 json_data = json.load(loaded_file)
                 self.set = json_data["phoneme_set"]
-                self.conversion = json_data["phoneme_conversion"]
+                self.conversion = json_data.get("phoneme_conversion")
+                for key in json_data:
+                    if key != "phoneme_set":
+                        self.alternate_conversions[key] = json_data[key]
                 return name
         else:
             print(("Can't find phonemeset! ({})".format(name)))

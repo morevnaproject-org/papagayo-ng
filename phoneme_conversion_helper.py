@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sys
 from functools import partial
 
@@ -165,8 +166,16 @@ class PhonemeHelper(QMainWindow):
                 self.phoneme_sets[file_name] = json_data
 
     def save_settings(self):
-        export_json = {}
+        # Move old set to backup
+        backup_path = os.path.join(utilities.get_main_dir(), "phonemes", "backup")
+        if not os.path.exists(backup_path):
+            os.mkdir(backup_path)
         dest_set = list(self.current_phoneme_set.keys())[0]
+        old_path = os.path.join(utilities.get_main_dir(), "phonemes", "{}.json".format(dest_set))
+        backup_file_path = os.path.join(backup_path, "{}.json".format(dest_set))
+        shutil.move(old_path, backup_file_path)
+        # Now Save the new file to the old path
+        export_json = {}
         for c_box in self.scroll_view.children():
             if isinstance(c_box, QComboBox):
                 phoneme_info = self.combo_box_dict[c_box]
@@ -178,7 +187,7 @@ class PhonemeHelper(QMainWindow):
                 export_json[whish_conversion_name][phoneme] = phoneme_string
 
         export_json["phoneme_set"] = self.current_phoneme_set[dest_set]["phoneme_set"]
-        out_file_path = os.path.join(utilities.get_main_dir(), "phonemes", "{}_test.json".format(dest_set))
+        out_file_path = os.path.join(utilities.get_main_dir(), "phonemes", "{}.json".format(dest_set))
         out_file = open(out_file_path, "w")
         json.dump(export_json, out_file, indent=True)
         out_file.close()
