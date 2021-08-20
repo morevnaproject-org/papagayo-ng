@@ -1049,7 +1049,11 @@ class PhonemeSet:
             with open(os.path.join(utilities.get_main_dir(), "./phonemes/{}.json".format(name)), "r") as loaded_file:
                 json_data = json.load(loaded_file)
                 self.set = json_data["phoneme_set"]
-                self.conversion = json_data.get("phoneme_conversion")
+                if name.lower() != "cmu_39":
+                    self.conversion = json_data.get("cmu_39_phoneme_conversion")
+                else:
+                    for phoneme in self.set:
+                        self.conversion[phoneme] = phoneme
                 for key in json_data:
                     if key != "phoneme_set":
                         self.alternate_conversions[key] = json_data[key]
