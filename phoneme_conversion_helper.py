@@ -121,7 +121,7 @@ class PhonemeHelper(QMainWindow):
                 combobox = QComboBox()
                 for icon_name in input_data["images"]:
                     icon = input_data["images"][icon_name]
-                    combobox.addItem(icon, "")
+                    combobox.addItem(icon, icon_name)
                 combobox.setIconSize(QSize(*widget_size))
                 combobox.setMinimumSize(widget_size[0], lbl.height())
                 output_layout.addWidget(combobox, row, 1, alignment=Qt.AlignCenter)
@@ -204,7 +204,9 @@ class PhonemeHelper(QMainWindow):
                 phoneme_info = self.combo_box_dict[c_box]
                 p_set, phoneme = phoneme_info.split("#")
                 whish_conversion_name = "{}_phoneme_conversion".format(p_set.lower())
-                phoneme_string = self.current_phoneme_set[dest_set]["phoneme_set"][c_box.currentIndex()]
+                phoneme_string = c_box.currentText()
+                print(self.current_phoneme_set[dest_set]["phoneme_set"])
+                print(f"{c_box.currentIndex()} -- {whish_conversion_name} : {phoneme} = {phoneme_string}")
                 if whish_conversion_name not in export_json:
                     export_json[whish_conversion_name] = {}
                 export_json[whish_conversion_name][phoneme] = phoneme_string
@@ -227,13 +229,11 @@ class PhonemeHelper(QMainWindow):
                 dest_set = list(self.current_phoneme_set.keys())[0]
                 whish_conversion_name = "{}_phoneme_conversion".format(p_set.lower())
                 if p_set == "CMU_39":
-                    whish_conversion_name = "phoneme_conversion"
+                    if not whish_conversion_name:
+                        whish_conversion_name = "phoneme_conversion"
                 whish_conversion = self.current_phoneme_set[dest_set].get(whish_conversion_name, None)
                 if whish_conversion:
-                    try:
-                        c_index = self.current_phoneme_set[dest_set]["phoneme_set"].index(whish_conversion[phoneme])
-                    except (ValueError, KeyError):
-                        c_index = len(self.current_phoneme_set[dest_set]["phoneme_set"][-1])
+                    c_index = c_box.findText(whish_conversion[phoneme])
                     c_box.setCurrentIndex(c_index)
                 else:
                     print("Does not yet exists.")

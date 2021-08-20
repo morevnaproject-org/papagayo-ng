@@ -188,6 +188,7 @@ class LipSyncObject(NodeMixin):
         else:
             self.sound_duration = sound_duration
         self.fps = fps
+        self.last_returned_frame = "rest"
 
     def get_min_size(self):
         # An object should be at least be able to contain all it's phonemes since only 1 phoneme per frame is allowed.
@@ -271,8 +272,13 @@ class LipSyncObject(NodeMixin):
         for descendant in self.descendants:
             if descendant.object_type == "phoneme":
                 if descendant.start_frame == frame:
+                    self.last_returned_frame = descendant.text
                     return descendant.text
-        return "rest"
+
+        if not self.config.value("RepeatLastPhoneme", True):
+            return "rest"
+        else:
+            return self.last_returned_frame
 
     def reposition_to_left(self):
         if self.has_left_sibling():
