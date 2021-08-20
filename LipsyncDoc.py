@@ -497,7 +497,8 @@ class LipSyncObject(NodeMixin):
                 pronunciation = []
                 for i in range(len(pronunciation_raw)):
                     try:
-                        pronunciation.append(phonemeset.conversion[pronunciation_raw[i]])
+                        pronunciation_phoneme = pronunciation_raw[i].rstrip("0123456789")
+                        pronunciation.append(phonemeset.conversion[pronunciation_phoneme])
                     except KeyError:
                         print(("Unknown phoneme:", pronunciation_raw[i], "in word:", text))
 
