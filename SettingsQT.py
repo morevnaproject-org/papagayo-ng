@@ -33,6 +33,9 @@ from utilities import *
 class SettingsWindow:
     def __init__(self):
         self.loader = None
+        self.app = QtCore.QCoreApplication.instance()
+        self.translator = QtCore.QTranslator()
+        self.translator.load("en_text", utilities.get_main_dir())
         self.ui = None
         self.ui_file = None
         self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "rsrc", "settings.ui"))
@@ -70,16 +73,16 @@ class SettingsWindow:
 
     def change_tab(self, event=None):
         if self.main_window.graphical_2.isChecked():
-            print("Graphics")
+            print(self.app.translate("SettingsWindow", "Graphics"))
             self.main_window.settings_options.setCurrentIndex(1)
         elif self.main_window.general_2.isChecked():
-            print("General")
+            print(self.app.translate("SettingsWindow", "General"))
             self.main_window.settings_options.setCurrentIndex(0)
         elif self.main_window.misc_2.isChecked():
-            print("Misc")
+            print(self.app.translate("SettingsWindow", "Misc"))
             self.main_window.settings_options.setCurrentIndex(3)
         elif self.main_window.voice_rec.isChecked():
-            print("Voice")
+            print(self.app.translate("SettingsWindow", "Voice"))
             self.main_window.settings_options.setCurrentIndex(2)
 
     def delete_settings(self, event=None):
