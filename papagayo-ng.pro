@@ -17,4 +17,7 @@ FORMS += rsrc\papagayo-ng2.ui \
         rsrc\settings.ui \
         rsrc\about_box.ui
 
-TRANSLATIONS += en_text.ts
+OTHER_FILES += about_markdown.html
+
+TRANSLATIONS += en_us.ts \
+                de_de.ts

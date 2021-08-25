@@ -133,10 +133,9 @@ def open_file_no_gui(path, parent):
 class LipsyncFrame:
     def __init__(self):
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
+
         self.app = QtWidgets.QApplication(sys.argv)
-        self.translator = QtCore.QTranslator()
-        self.translator.load("en_text", utilities.get_main_dir())
-        self.app.installTranslator(self.translator)
+        self.translator = utilities.ApplicationTranslator()
         self.loader = None
         self.ui_file = None
         self.ui = None
@@ -206,9 +205,7 @@ class LipsyncFrame:
         self.app.aboutToQuit.connect(self.on_close)
         self.ignore_text_changes = False
         # This adds our statuses to the statusbar
-        self.mainframe_statusbar_fields = [app_title, self.app.translate("LipsyncFrame", "Stopped")]
-        print(self.app.translate("LipsyncFrame", "Stopped"))
-
+        self.mainframe_statusbar_fields = [app_title, self.translator.translate("LipsyncFrame", "Stopped")]
         self.play_status = QtWidgets.QLabel()
         self.play_status.setText(self.mainframe_statusbar_fields[1])
         # An empty Label to add a separator
@@ -840,15 +837,15 @@ class LipsyncFrame:
 
     def settings_closed(self):
         if not utilities.ffmpeg_binaries_exists():
-            self.ffmpeg_action = QtWidgets.QAction(self.app.translate("LipsyncFrame", "Download FFmpeg"))
+            self.ffmpeg_action = QtWidgets.QAction(self.translator.translate("LipsyncFrame", "Download FFmpeg"))
             self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
             self.main_window.menubar.addAction(self.ffmpeg_action)
         if not utilities.allosaurus_model_exists():
-            self.model_action = QtWidgets.QAction(self.app.translate("LipsyncFrame", "Download AI Model"))
+            self.model_action = QtWidgets.QAction(self.apptranslator.translate("LipsyncFrame", "Download AI Model"))
             self.model_action.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
             self.main_window.menubar.addAction(self.model_action)
         if not utilities.rhubarb_binaries_exists():
-            self.rhubarb_action = QtWidgets.QAction(self.app.translate("LipsyncFrame", "Download Rhubarb"))
+            self.rhubarb_action = QtWidgets.QAction(self.apptranslator.translate("LipsyncFrame", "Download Rhubarb"))
             self.rhubarb_action.triggered.connect(lambda: self.start_download(self.download_rhubarb))
             self.main_window.menubar.addAction(self.rhubarb_action)
         self.main_window.waveform_view.set_document(self.doc, True, True)
@@ -882,7 +879,7 @@ class LipsyncFrame:
             self.main_window.waveform_view.set_frame(0)
             self.main_window.action_stop.setEnabled(False)
             self.main_window.action_play.setEnabled(True)
-            self.main_window.statusbar.showMessage(self.app.translate("LipsyncFrame", "Stopped"))
+            self.main_window.statusbar.showMessage(self.translator.translate("LipsyncFrame", "Stopped"))
             self.main_window.waveform_view.horizontalScrollBar().setValue(
                 self.main_window.waveform_view.scroll_position)
             self.main_window.waveform_view.update()
@@ -900,7 +897,7 @@ class LipsyncFrame:
                         fps = 1.0 / (time.time() - self.start_time)
                     except ZeroDivisionError:
                         fps = 60
-                    self.main_window.statusbar.showMessage(self.app.translate("LipsyncFrame", "Frame: {:d} FPS: {:d}".format((cur_frame + 1), int(fps))))
+                    self.main_window.statusbar.showMessage(self.translator.translate("LipsyncFrame", "Frame: {:d} FPS: {:d}".format((cur_frame + 1), int(fps))))
                     self.main_window.waveform_view.scroll_position = self.main_window.waveform_view.horizontalScrollBar().value()
                     self.start_time = time.time()
             else:
@@ -965,38 +962,38 @@ class LipsyncFrame:
             default_file = ""
             wildcard = ""
             if exporter == "MOHO":
-                message = self.app.translate("LipsyncFrame", "Export Lipsync Data (MOHO)")
+                message = self.translator.translate("LipsyncFrame", "Export Lipsync Data (MOHO)")
                 default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0]) + ".dat"
-                wildcard = self.app.translate("LipsyncFrame", "Moho switch files (*.dat)")
+                wildcard = self.translator.translate("LipsyncFrame", "Moho switch files (*.dat)")
             elif exporter == "ALELO":
                 fps = int(self.config.value("FPS", 24))
                 if fps != 100:
                     dlg = QtWidgets.QMessageBox()
-                    dlg.setText(self.app.translate("LipsyncFrame", "FPS is NOT 100 continue? (You will have issues downstream.)"))
+                    dlg.setText(self.translator.translate("LipsyncFrame", "FPS is NOT 100 continue? (You will have issues downstream.)"))
                     dlg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
                     dlg.setDefaultButton(QtWidgets.QMessageBox.Yes)
                     dlg.setIcon(QtWidgets.QMessageBox.Question)
                     result = dlg.exec_()
                     if result == QtWidgets.QMessageBox.Yes:
-                        message = self.app.translate("LipsyncFrame", "Export Lipsync Data (ALELO)")
+                        message = self.translator.translate("LipsyncFrame", "Export Lipsync Data (ALELO)")
                         default_file = "{}.txt".format(self.doc.soundPath.rsplit('.', 1)[0])
-                        wildcard = self.app.translate("LipsyncFrame", "Alelo timing files (*.txt)|*.txt")
+                        wildcard = self.translator.translate("LipsyncFrame", "Alelo timing files (*.txt)|*.txt")
                     elif result == QtWidgets.QMessageBox.No:
                         return
                     elif result == QtWidgets.QMessageBox.Cancel:
                         return
                 else:
-                    message = self.app.translate("LipsyncFrame", "Export Lipsync Data (ALELO)")
+                    message = self.translator.translate("LipsyncFrame", "Export Lipsync Data (ALELO)")
                     default_file = "{}.txt".format(self.doc.soundPath.rsplit('.', 1)[0])
-                    wildcard = self.app.translate("LipsyncFrame", "Alelo timing files (*.txt)|*.txt")
+                    wildcard = self.translator.translate("LipsyncFrame", "Alelo timing files (*.txt)|*.txt")
             elif exporter == "Images":
-                message = self.app.translate("LipsyncFrame", "Export Image Strip")
+                message = self.translator.translate("LipsyncFrame", "Export Image Strip")
                 default_file = "{}".format(self.doc.soundPath.rsplit('.', 1)[0])
                 wildcard = ""
             elif exporter == "JSON":
-                message = self.app.translate("LipsyncFrame", "Export JSON Object")
+                message = self.translator.translate("LipsyncFrame", "Export JSON Object")
                 default_file = "{}.json".format(self.doc.soundPath.rsplit('.', 1)[0])
-                wildcard = self.app.translate("LipsyncFrame", "JSON object files (*.json)|*.json")
+                wildcard = self.translator.translate("LipsyncFrame", "JSON object files (*.json)|*.json")
             file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self.main_window,
                                                                  message,
                                                                  default_file,
@@ -1102,7 +1099,7 @@ class LipsyncFrame:
         language = self.main_window.language_choice.currentText()
         if (self.doc is not None) and (self.doc.current_voice is not None):
             voiceimage_path = QtWidgets.QFileDialog.getExistingDirectory(self.main_window,
-                                                                         self.app.translate("LipsyncFrame", "Choose Path for Images"),
+                                                                         self.translator.translate("LipsyncFrame", "Choose Path for Images"),
                                                                          self.config.value("MouthDir",
                                                                                            os.path.join(os.path.dirname(
                                                                                                os.path.abspath(

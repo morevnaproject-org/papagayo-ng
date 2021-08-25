@@ -63,6 +63,7 @@ class RhubarbTimeoutException(Exception):
 class Rhubarb:
     def __init__(self, file_path=None):
         self.file_path = file_path
+        self.translator = utilities.ApplicationTranslator()
         self.process = None
         self.progress = 0
         self.top_level_widget = None
@@ -75,7 +76,7 @@ class Rhubarb:
         self.top_level_widget.lip_sync_frame.status_progress.setMaximum(100)
 
     def _signal_handler(self):
-        print('Rhubarb did not respond for more than 30 seconds.')
+        print(self.translator.translate("Rhubarb", 'Rhubarb did not respond for more than 30 seconds.'))
         raise RhubarbTimeoutException()
 
     def _read_log(self):

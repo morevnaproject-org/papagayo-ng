@@ -214,6 +214,13 @@
      </property>
      <widget class="QWidget" name="general">
       <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="hold_phonemes">
+         <property name="text">
+          <string>Enable</string>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_3">
          <property name="layoutDirection">
@@ -250,10 +257,17 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="hold_phonemes">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Enable</string>
+          <string>Language (needs restart to apply)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="ui_language">
+         <property name="currentText">
+          <string/>
          </property>
         </widget>
        </item>
