@@ -126,6 +126,7 @@ class AutoRecognize:
                 time_list.append(float(start) - prev_start)
                 prev_start = float(start)
                 ipa_list.append(phone_dict)
+            time_list.append(self.sound_length - prev_start)
             peaks = self.get_level_peaks(time_list)
             return ipa_list, peaks, results
         else:
@@ -153,7 +154,7 @@ class AutoRecognize:
 
             i = pos_right
 
-        peaks.append(len(v))
+        peaks.append(len(v) - 1)
         return peaks
 
     def __del__(self):
