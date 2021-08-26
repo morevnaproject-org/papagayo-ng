@@ -949,6 +949,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.setSceneRect(self.scene().sceneRect())
             self.scroll_position *= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
+            self.start_create_waveform()
 
     def on_zoom_out(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame > 1):
@@ -966,6 +967,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.setSceneRect(self.scene().sceneRect())
             self.scroll_position /= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
+            self.start_create_waveform()
 
     def on_zoom_reset(self, event=None):
         if self.doc is not None:
@@ -987,5 +989,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                                           self.scene().sceneRect().width() / factor, self.scene().sceneRect().height())
                 self.setSceneRect(self.scene().sceneRect())
                 self.horizontalScrollBar().setValue(self.scroll_position)
+                self.start_create_waveform()
 
 # end of class WaveformView
