@@ -20,10 +20,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # import os
+import os
 
 from PySide2 import QtGui, QtCore, QtWidgets
 
-from utilities import *
+import utilities
 
 
 class MouthView(QtWidgets.QGraphicsView):
@@ -109,7 +110,7 @@ class MouthView(QtWidgets.QGraphicsView):
 
     def load_mouths(self):
         supported_imagetypes = QtGui.QImageReader.supportedImageFormats()
-        for directory, dir_names, file_names in os.walk(os.path.join(get_main_dir(), "rsrc", "mouths")):
+        for directory, dir_names, file_names in os.walk(os.path.join(utilities.get_main_dir(), "rsrc", "mouths")):
             self.process_mouth_dir(directory, file_names, supported_imagetypes)
 
     def add_mouth(self, dir_name, names):

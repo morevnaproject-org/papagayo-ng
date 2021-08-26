@@ -25,6 +25,7 @@ import time
 
 import PySide2.QtWidgets as QtWidgets
 import numpy as np
+from PySide2 import QtGui
 
 from LipsyncDoc import *
 
@@ -363,7 +364,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.default_samples_per_frame = default_samples_per_frame
         self.sample_width = self.default_sample_width
         self.samples_per_frame = self.default_samples_per_frame
-        self.samples_per_sec = 24 * self.samples_per_frame
+        self.samples_per_sec = int(self.settings.value("LastFPS", 24)) * self.samples_per_frame
         self.frame_width = self.sample_width * self.samples_per_frame
         self.phrase_bottom = 16
         self.word_bottom = 32
@@ -629,7 +630,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 painter.drawText(text_marker[0], QtCore.Qt.AlignLeft, text_marker[1])
 
     def start_create_waveform(self):
-        worker = Worker(self.create_waveform)
+        worker = utilities.Worker(self.create_waveform)
         worker.signals.finished.connect(self.waveform_finished)
         worker.signals.progress.connect(self.main_window.lip_sync_frame.status_bar_progress)
 
@@ -825,7 +826,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.setUpdatesEnabled(True)
 
     def start_recalc(self, wait_for_done=True):
-        worker = Worker(self.recalc_waveform)
+        worker = utilities.Worker(self.recalc_waveform)
         worker.signals.finished.connect(self.recalc_finished)
         worker.signals.progress.connect(self.main_window.lip_sync_frame.status_bar_progress)
 

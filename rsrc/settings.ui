@@ -210,7 +210,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="general">
       <layout class="QGridLayout" name="gridLayout_2">
@@ -240,6 +240,20 @@
          </property>
          <property name="value">
           <number>24</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Hold Phonemes during playback</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="hold_phonemes">
+         <property name="text">
+          <string>Enable</string>
          </property>
         </widget>
        </item>
@@ -542,7 +556,7 @@ border: transparent;</string>
         </widget>
        </item>
        <item row="2" column="2">
-        <widget class="QCheckBox" name="run_allosaurus">
+        <widget class="QCheckBox" name="run_voice_recognition">
          <property name="enabled">
           <bool>true</bool>
          </property>
@@ -576,7 +590,7 @@ border: transparent;</string>
        <item row="2" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Run Allosaurus</string>
+          <string>Auto Run Voice Recognition</string>
          </property>
         </widget>
        </item>
