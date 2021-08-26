@@ -347,6 +347,7 @@ class WaveformView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
+        self.translator = utilities.ApplicationTranslator()
         ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
         self.settings = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)  # File only, not registry or or.
@@ -431,7 +432,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 self.currently_selected_object = None
                 self.main_window.list_of_tags.clear()
                 self.main_window.tag_list_group.setEnabled(False)
-                self.main_window.tag_list_group.setTitle("Selected Object Tags")
+                self.main_window.tag_list_group.setTitle(self.translator.translate("WaveformView", "Selected Object Tags"))
                 self.main_window.parent_tags.clear()
                 self.main_window.parent_tags.setEnabled(False)
                 self.is_scrubbing = True
@@ -475,7 +476,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in phrase_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_phrase_tags.append(new_tag)
-                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.text])
+                        phrase_tree = QtWidgets.QTreeWidgetItem([self.translator.translate("WaveformView", "Phrase: ") + parent_phrase.text])
                         phrase_tree.addChildren(list_of_phrase_tags)
                         self.main_window.parent_tags.addTopLevelItem(phrase_tree)
                         phrase_tree.setExpanded(True)
@@ -484,7 +485,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in word_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_word_tags.append(new_tag)
-                        word_tree = QtWidgets.QTreeWidgetItem(["Word: " + parent_word.text])
+                        word_tree = QtWidgets.QTreeWidgetItem([self.translator.translate("WaveformView", "Word: ") + parent_word.text])
                         word_tree.addChildren(list_of_word_tags)
                         self.main_window.parent_tags.addTopLevelItem(word_tree)
                         word_tree.setExpanded(True)
@@ -497,7 +498,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         for tag in parent_tags:
                             new_tag = QtWidgets.QTreeWidgetItem([tag])
                             list_of_tags.append(new_tag)
-                        phrase_tree = QtWidgets.QTreeWidgetItem(["Phrase: " + parent_phrase.text])
+                        phrase_tree = QtWidgets.QTreeWidgetItem([self.translator.translate("WaveformView", "Phrase: ") + parent_phrase.text])
                         phrase_tree.addChildren(list_of_tags)
                         self.main_window.parent_tags.addTopLevelItem(phrase_tree)
                         phrase_tree.setExpanded(True)
@@ -671,14 +672,14 @@ class WaveformView(QtWidgets.QGraphicsView):
         for x, y in enumerate(fitted_samples):
             progress_callback.emit((x / 2))
             self.main_window.statusbar.showMessage(
-                "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100))))
+                self.translator.translate("WaveformView", "Preparing Waveform: {0}%").format(str(int(((x / 2) / len(fitted_samples)) * 100))))
             temp_polygon.append(QtCore.QPointF(x * self.sample_width, available_height - y + offset))
             if x < len(fitted_samples):
                 temp_polygon.append(QtCore.QPointF((x + 1) * self.sample_width, available_height - y + offset))
         for x, y in enumerate(fitted_samples[::-1]):
             progress_callback.emit((len(fitted_samples) / 2) + (x / 2))
             self.main_window.statusbar.showMessage(
-                "Preparing Waveform: {0}%".format(str(int(((x / 2) / len(fitted_samples)) * 100) + 50)))
+                self.translator.translate("WaveformView", "Preparing Waveform: {0}%").format(str(int(((x / 2) / len(fitted_samples)) * 100) + 50)))
             temp_polygon.append(QtCore.QPointF((len(fitted_samples) - x) * self.sample_width,
                                                available_height + y + offset))
             if x > 0:
@@ -751,7 +752,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                 current_num += 1
                 progress_callback(current_num)
                 if self.doc.current_voice.num_children:
-                    self.main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
+                    self.main_window.statusbar.showMessage(self.translator.translate("WaveformView", "Preparing Buttons: {0}%").format(
                         str(int((current_num / self.doc.current_voice.num_children) * 100))))
                 for word in phrase.children:
                     if not word.move_button:
@@ -785,7 +786,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                     current_num += 1
                     progress_callback(current_num)
                     if self.doc.current_voice.num_children:
-                        self.main_window.statusbar.showMessage("Preparing Buttons: {0}%".format(
+                        self.main_window.statusbar.showMessage(self.translator.translate("WaveformView", "Preparing Buttons: {0}%").format(
                             str(int((current_num / self.doc.current_voice.num_children) * 100))))
                     for phoneme in word.children:
                         if not phoneme.move_button:
@@ -820,7 +821,7 @@ class WaveformView(QtWidgets.QGraphicsView):
                         progress_callback(current_num)
                         if self.doc.current_voice.num_children:
                             self.main_window.statusbar.showMessage(
-                                "Preparing Buttons: {0}%".format(
+                                self.translator.translate("WaveformView", "Preparing Buttons: {0}%").format(
                                     str(int((current_num / self.doc.current_voice.num_children) * 100))))
             self.main_window.statusbar.showMessage("Papagayo-NG")
             self.setUpdatesEnabled(True)
@@ -948,6 +949,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.setSceneRect(self.scene().sceneRect())
             self.scroll_position *= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
+            self.start_create_waveform()
 
     def on_zoom_out(self, event=None):
         if (self.doc is not None) and (self.samples_per_frame > 1):
@@ -965,6 +967,7 @@ class WaveformView(QtWidgets.QGraphicsView):
             self.setSceneRect(self.scene().sceneRect())
             self.scroll_position /= 2
             self.horizontalScrollBar().setValue(self.scroll_position)
+            self.start_create_waveform()
 
     def on_zoom_reset(self, event=None):
         if self.doc is not None:
@@ -986,5 +989,6 @@ class WaveformView(QtWidgets.QGraphicsView):
                                           self.scene().sceneRect().width() / factor, self.scene().sceneRect().height())
                 self.setSceneRect(self.scene().sceneRect())
                 self.horizontalScrollBar().setValue(self.scroll_position)
+                self.start_create_waveform()
 
 # end of class WaveformView

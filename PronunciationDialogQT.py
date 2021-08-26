@@ -35,9 +35,9 @@ def sort_mouth_list_order(elem):
 class PronunciationDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, phoneme_set=None):
         super(PronunciationDialog, self).__init__(None)
-
-        self.setWindowTitle("Unknown Word")
-        self.word_label = QtWidgets.QLabel("Break down the word:", self)
+        self.translator = utilities.ApplicationTranslator()
+        self.setWindowTitle(self.translator.translate("PronunciationDialog", "Unknown Word"))
+        self.word_label = QtWidgets.QLabel(self.translator.translate("PronunciationDialog", "Break down the word:"), self)
         self.word_label.setAlignment(QtCore.Qt.AlignCenter)
         self.box = QtWidgets.QVBoxLayout()
         self.phoneme_grid = QtWidgets.QGridLayout()
