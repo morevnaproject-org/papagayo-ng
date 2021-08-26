@@ -33,6 +33,7 @@ class MouthView(QtWidgets.QGraphicsView):
         self.setScene(QtWidgets.QGraphicsScene(self))
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.translator = utilities.ApplicationTranslator()
         # Other initialization
         self.doc = None
         self.cur_frame = 0
@@ -68,7 +69,7 @@ class MouthView(QtWidgets.QGraphicsView):
                                QtCore.Qt.KeepAspectRatio)
         self.scene().addPixmap(bitmap)
         if self.current_phoneme not in self.mouths[self.current_mouth].keys():
-            self.scene().addText("Missing Mouth: {0}".format(self.current_phoneme), QtGui.QFont("Swiss", 14))
+            self.scene().addText(self.translator.translate("MouthView", "Missing Mouth: {0}").format(self.current_phoneme), QtGui.QFont("Swiss", 14))
         self.fitInView(self.x(), self.y(), self.width(), self.height())
 
     def set_frame(self, frame):
@@ -91,7 +92,7 @@ class MouthView(QtWidgets.QGraphicsView):
                                QtCore.Qt.KeepAspectRatio)
         self.scene().addPixmap(bitmap)
         if phoneme not in self.mouths[self.current_mouth].keys():
-            self.scene().addText("Missing Mouth: {0}".format(phoneme), QtGui.QFont("Swiss", 14))
+            self.scene().addText(self.translator.translate("MouthView", "Missing Mouth: {0}").format(phoneme), QtGui.QFont("Swiss", 14))
         self.fitInView(self.x(), self.y(), self.width(), self.height())
 
     def set_document(self, doc):

@@ -33,6 +33,10 @@ from utilities import *
 class SettingsWindow:
     def __init__(self):
         self.loader = None
+        self.translator = utilities.ApplicationTranslator()
+        #self.app = QtCore.QCoreApplication.instance()
+        #self.translator = QtCore.QTranslator()
+        #self.translator.load("en_text", utilities.get_main_dir())
         self.ui = None
         self.ui_file = None
         self.main_window = self.load_ui_widget(os.path.join(get_main_dir(), "rsrc", "settings.ui"))
@@ -70,16 +74,16 @@ class SettingsWindow:
 
     def change_tab(self, event=None):
         if self.main_window.graphical_2.isChecked():
-            print("Graphics")
+            print(self.translator.translate("SettingsWindow", "Graphics"))
             self.main_window.settings_options.setCurrentIndex(1)
         elif self.main_window.general_2.isChecked():
-            print("General")
+            print(self.translator.translate("SettingsWindow", "General"))
             self.main_window.settings_options.setCurrentIndex(0)
         elif self.main_window.misc_2.isChecked():
-            print("Misc")
+            print(self.translator.translate("SettingsWindow", "Misc"))
             self.main_window.settings_options.setCurrentIndex(3)
         elif self.main_window.voice_rec.isChecked():
-            print("Voice")
+            print(self.translator.translate("SettingsWindow", "Voice"))
             self.main_window.settings_options.setCurrentIndex(2)
 
     def delete_settings(self, event=None):
@@ -145,14 +149,18 @@ class SettingsWindow:
         self.main_window.app_data_path.home(True)
         list_of_recognizers = ["Allosaurus", "Rhubarb"]
         self.main_window.selected_recognizer.addItems(list_of_recognizers)
+        language_list = []
+        for f in os.listdir(os.path.join(utilities.get_main_dir(), "rsrc", "i18n")):
+            language_list.append(os.path.basename(f).split(".")[0])
+        self.main_window.ui_language.addItems(language_list)
+        lang_index = self.main_window.ui_language.findText(self.settings.value("language", "en_us"))
+        self.main_window.ui_language.setCurrentIndex(lang_index)
         if self.settings.value("RepeatLastPhoneme", True):
             self.main_window.hold_phonemes.setChecked(True)
         else:
             self.main_window.hold_phonemes.setChecked(False)
-        if self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Allosaurus":
-            self.main_window.selected_recognizer.setCurrentIndex(0)
-        elif self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Rhubarb":
-            self.main_window.selected_recognizer.setCurrentIndex(1)
+        recog_index = self.main_window.selected_recognizer.findText(self.settings.value("/VoiceRecognition/recognizer", "Allosaurus"))
+        self.main_window.selected_recognizer.setCurrentIndex(recog_index)
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
             if "Color" in color_button.text():
                 new_color = QtGui.QColor(
@@ -184,6 +192,7 @@ class SettingsWindow:
         self.settings.setValue("qss_file_path", str(self.main_window.qss_path.text()))
         self.settings.setValue("/VoiceRecognition/recognizer", self.main_window.selected_recognizer.currentText())
         self.settings.setValue("RepeatLastPhoneme", bool(self.main_window.hold_phonemes.isChecked()))
+        self.settings.setValue("language", self.main_window.ui_language.currentText())
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
             if "Color" in color_button.text():
                 self.settings.setValue("/Graphics/{}".format(color_button.objectName()),

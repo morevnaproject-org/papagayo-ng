@@ -120,6 +120,20 @@ def rhubarb_binaries_exists():
         return False
 
 
+class ApplicationTranslator:
+    def __init__(self):
+        self.app = QtCore.QCoreApplication.instance()
+        self.translator = QtCore.QTranslator()
+        ini_path = os.path.join(get_app_data_path(), "settings.ini")
+        config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
+        config.setFallbacksEnabled(False)  # File only, not registry or or.
+        self.translator.load(config.value("language", "en_us"), os.path.join(get_main_dir(), "rsrc", "i18n"))
+        self.app.installTranslator(self.translator)
+
+    def translate(self, context, text):
+        return self.app.translate(context, text)
+
+
 class WorkerSignals(QtCore.QObject):
     '''
     Defines the signals available from a running worker thread.
