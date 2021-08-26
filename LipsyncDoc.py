@@ -946,16 +946,14 @@ class LipsyncDoc:
                         phrase.text = 'Auto detection Allosaurus'
                         phrase.start_frame = 0
                         phrase.end_frame = end_frame
-                        if len(peaks) % 2 != 0:
-                            peaks.append(peaks[-1])
-                        for i in range(len(peaks) - 2):
+                        for i in range(len(peaks) - 1):
                             peak_left = peaks[i]
                             peak_right = peaks[i + 1]
 
                             word_chunk = results[peak_left:peak_right]
                             word = LipSyncObject(object_type="word", parent=phrase)
 
-                            word.text = "".join(
+                            word.text = "|".join(
                                 letter["phoneme"] if letter["phoneme"] is not None else "rest" for letter in word_chunk)
                             word.start_frame = math.floor(self.fps * results[peak_left]["start"])
                             # word.end_frame = math.floor(self.fps * results[peak_right]["start"])
