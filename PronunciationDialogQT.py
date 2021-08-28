@@ -32,12 +32,14 @@ def sort_mouth_list_order(elem):
     except ValueError:
         return hash(elem)
 
+
 class PronunciationDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, phoneme_set=None):
         super(PronunciationDialog, self).__init__(None)
         self.translator = utilities.ApplicationTranslator()
         self.setWindowTitle(self.translator.translate("PronunciationDialog", "Unknown Word"))
-        self.word_label = QtWidgets.QLabel(self.translator.translate("PronunciationDialog", "Break down the word:"), self)
+        self.word_label = QtWidgets.QLabel(self.translator.translate("PronunciationDialog", "Break down the word:"),
+                                           self)
         self.word_label.setAlignment(QtCore.Qt.AlignCenter)
         self.box = QtWidgets.QVBoxLayout()
         self.phoneme_grid = QtWidgets.QGridLayout()
@@ -131,6 +133,7 @@ class PronunciationDialog(QtWidgets.QDialog):
         self.gave_ok = False
         self.stop_decode = True
         self.reject()
+
 
 # end of class PronunciationDialog
 
