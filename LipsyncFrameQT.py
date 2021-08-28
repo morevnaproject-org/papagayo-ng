@@ -943,10 +943,12 @@ class LipsyncFrame:
         if (self.doc is not None) and (self.doc.current_voice is not None):
             language = self.main_window.language_choice.currentText()
             phonemeset_name = self.main_window.phoneme_set.currentText()
+            old_doc = self.doc.copy_to_json_string()
             self.doc.dirty = True
             self.doc.current_voice.children = []
-            self.doc.current_voice.run_breakdown(self.doc.soundDuration, self, language, self.langman,
-                                                 self.phonemeset)
+            return_value = self.doc.current_voice.run_breakdown(self.doc.soundDuration, self, language, self.langman, self.phonemeset)
+            if return_value == -1:
+                self.doc.open_from_json_string(old_doc)
             self.phonemeset.selected_set = self.phonemeset.load(phonemeset_name)
             self.main_window.waveform_view.first_update = True
             self.ignore_text_changes = True
