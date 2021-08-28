@@ -2,7 +2,10 @@ Unicode true
 
 OutFile "..\papagayo-ng_installer.exe"
 InstallDir "$PROGRAMFILES\Papagayo-NG"
+
 Name "Papagayo-NG"
+
+InstallDirRegKey HKLM "Software\Papagayo-NG" "Path"
 
 SetCompressor /final lzma
 !include MUI2.nsh
