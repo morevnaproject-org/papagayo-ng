@@ -429,7 +429,9 @@ class LipSyncObject(NodeMixin):
                 # self.children.append(phrase)
             # now break down the phrases
             for phrase in self.children:
-                phrase.run_breakdown(frame_duration, parent_window, language, languagemanager, phonemeset)
+                return_value = phrase.run_breakdown(frame_duration, parent_window, language, languagemanager, phonemeset)
+                if return_value == -1:
+                    return -1
             # for first-guess frame alignment, count how many phonemes we have
             phoneme_count = 0
             for phrase in self.children:
@@ -472,7 +474,7 @@ class LipSyncObject(NodeMixin):
             for word in self.children:
                 result = word.run_breakdown(frame_duration, parent_window, language, languagemanager, phonemeset)
                 if result == -1:
-                    return
+                    return -1
         elif self.object_type == "word":
             # self.phonemes = []
             try:
