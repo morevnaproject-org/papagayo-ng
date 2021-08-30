@@ -23,6 +23,7 @@
 # from utilities import Worker, WorkerSignals
 import importlib
 import json
+import shutil
 import sys
 import os
 import tarfile
@@ -283,6 +284,10 @@ class LipsyncFrame:
 
         self.dropfilter = DropFilter()
         self.main_window.topLevelWidget().installEventFilter(self.dropfilter)
+
+        self.main_window.action_allo_download.triggered.connect(lambda: self.start_download(self.download_allosaurus_model))
+        self.main_window.action_rhubarb_download.triggered.connect(lambda: self.start_download(self.download_rhubarb))
+        self.main_window.action_ffmpeg_download.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
         if not utilities.ffmpeg_binaries_exists():
             self.ffmpeg_action = QtWidgets.QAction("Download FFmpeg")
             self.ffmpeg_action.triggered.connect(lambda: self.start_download(self.download_ffmpeg))
@@ -363,7 +368,7 @@ class LipsyncFrame:
         QtCore.QCoreApplication.processEvents()
 
     def download_allosaurus_model(self, progress_callback):
-        model_name = "latest"
+        model_name = self.config.value("/VoiceRecognition/allosaurus_model", "latest")
         url = 'https://github.com/xinjli/allosaurus/releases/download/v1.0/' + model_name + '.tar.gz'
         model_dir = os.path.join(utilities.get_app_data_path(), "allosaurus_model")
         with urllib.request.urlopen(url) as req:
@@ -387,7 +392,10 @@ class LipsyncFrame:
                 buffer_all.seek(0)
                 files = tarfile.open(fileobj=buffer_all)
                 files.extractall(str(model_dir))
-                os.rename(os.path.join(model_dir, "uni2005"), os.path.join(model_dir, "latest"))
+                if os.path.exists(os.path.join(model_dir, "latest")):
+                    shutil.rmtree(os.path.join(model_dir, "latest"))
+                old_model_dirname = os.listdir(model_dir)[0]
+                os.rename(os.path.join(model_dir, old_model_dirname), os.path.join(model_dir, "latest"))
         return
 
     def download_ffmpeg(self, progress_callback):
@@ -405,44 +413,41 @@ class LipsyncFrame:
             ffmpeg_build_url = "https://evermeet.cx/ffmpeg/getrelease/zip"
         ffmpeg_path = os.path.join(utilities.get_app_data_path(), ffmpeg_binary)
         ffprobe_path = os.path.join(utilities.get_app_data_path(), ffprobe_binary)
-        if os.path.exists(ffmpeg_path) and os.path.exists(ffprobe_path):
-            return
-        else:
-            try:
-                with urllib.request.urlopen(ffmpeg_build_url) as req:
-                    length = req.getheader('content-length')
-                    block_size = 1000000
+        try:
+            with urllib.request.urlopen(ffmpeg_build_url) as req:
+                length = req.getheader('content-length')
+                block_size = 1000000
+                if length:
+                    length = int(length)
+                    block_size = max(4096, length // 100)
+                buffer_all = io.BytesIO()
+                size = 0
+                while True:
+                    buffer_now = req.read(block_size)
+                    if not buffer_now:
+                        break
+                    buffer_all.write(buffer_now)
+                    size += len(buffer_now)
                     if length:
-                        length = int(length)
-                        block_size = max(4096, length // 100)
-                    buffer_all = io.BytesIO()
-                    size = 0
-                    while True:
-                        buffer_now = req.read(block_size)
-                        if not buffer_now:
-                            break
-                        buffer_all.write(buffer_now)
-                        size += len(buffer_now)
-                        if length:
-                            percent = int((size / length) * 100)
-                            progress_callback.emit(percent)
-                    if buffer_all:
-                        ffmpeg_zip = ZipFile(buffer_all)
-                        for zfile in ffmpeg_zip.filelist:
-                            if ffmpeg_binary in zfile.filename:
-                                ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
-                                ffmpeg_file = open(ffmpeg_path, "wb")
-                                ffmpeg_file.write(ffmpeg_file_content)
-                                ffmpeg_file.close()
-                            elif ffprobe_binary in zfile.filename:
-                                ffprobe_file_content = ffmpeg_zip.read(zfile.filename)
-                                ffprobe_file = open(ffprobe_path, "wb")
-                                ffprobe_file.write(ffprobe_file_content)
-                                ffprobe_file.close()
-            except TimeoutError:
-                # Download Failed
-                pass
-            return
+                        percent = int((size / length) * 100)
+                        progress_callback.emit(percent)
+                if buffer_all:
+                    ffmpeg_zip = ZipFile(buffer_all)
+                    for zfile in ffmpeg_zip.filelist:
+                        if ffmpeg_binary in zfile.filename:
+                            ffmpeg_file_content = ffmpeg_zip.read(zfile.filename)
+                            ffmpeg_file = open(ffmpeg_path, "wb")
+                            ffmpeg_file.write(ffmpeg_file_content)
+                            ffmpeg_file.close()
+                        elif ffprobe_binary in zfile.filename:
+                            ffprobe_file_content = ffmpeg_zip.read(zfile.filename)
+                            ffprobe_file = open(ffprobe_path, "wb")
+                            ffprobe_file.write(ffprobe_file_content)
+                            ffprobe_file.close()
+        except TimeoutError:
+            # Download Failed
+            pass
+        return
 
     def download_rhubarb(self, progress_callback):
         binary = "/rhubarb/rhubarb.exe"
@@ -460,40 +465,39 @@ class LipsyncFrame:
                     release_url = download["browser_download_url"]
         rhubarb_path = os.path.join(utilities.get_app_data_path(), binary)
 
-        if utilities.rhubarb_binaries_exists():
-            return
-        else:
-            try:
-                with urllib.request.urlopen(release_url) as req:
-                    length = req.getheader('content-length')
-                    block_size = 1000000
+        try:
+            with urllib.request.urlopen(release_url) as req:
+                length = req.getheader('content-length')
+                block_size = 1000000
+                if length:
+                    length = int(length)
+                    block_size = max(4096, length // 100)
+                buffer_all = io.BytesIO()
+                size = 0
+                while True:
+                    buffer_now = req.read(block_size)
+                    if not buffer_now:
+                        break
+                    buffer_all.write(buffer_now)
+                    size += len(buffer_now)
                     if length:
-                        length = int(length)
-                        block_size = max(4096, length // 100)
-                    buffer_all = io.BytesIO()
-                    size = 0
-                    while True:
-                        buffer_now = req.read(block_size)
-                        if not buffer_now:
-                            break
-                        buffer_all.write(buffer_now)
-                        size += len(buffer_now)
-                        if length:
-                            percent = int((size / length) * 100)
-                            progress_callback.emit(percent)
-                    if buffer_all:
-                        rhubarb_zip = ZipFile(buffer_all)
-                        print(os.path.join(utilities.get_app_data_path(), "rhubarb"))
-                        print(rhubarb_zip.filelist)
-                        rhubarb_zip.extractall(os.path.join(utilities.get_app_data_path()))
-                        dirs = list(set([os.path.dirname(x) for x in rhubarb_zip.namelist()]))
-                        main_dir = os.path.dirname([os.path.split(x)[0] for x in dirs][0])
-                        os.rename(os.path.join(utilities.get_app_data_path(), main_dir),
-                                  os.path.join(utilities.get_app_data_path(), "rhubarb"))
-            except TimeoutError:
-                # Download Failed
-                pass
-            return
+                        percent = int((size / length) * 100)
+                        progress_callback.emit(percent)
+                if buffer_all:
+                    rhubarb_zip = ZipFile(buffer_all)
+                    print(os.path.join(utilities.get_app_data_path(), "rhubarb"))
+                    print(rhubarb_zip.filelist)
+                    dirs = list(set([os.path.dirname(x) for x in rhubarb_zip.namelist()]))
+                    main_dir = os.path.dirname([os.path.split(x)[0] for x in dirs][0])
+                    if os.path.exists(os.path.join(utilities.get_app_data_path(), "rhubarb")):
+                        shutil.rmtree(os.path.join(utilities.get_app_data_path(), "rhubarb"))
+                    rhubarb_zip.extractall(os.path.join(utilities.get_app_data_path()))
+                    os.rename(os.path.join(utilities.get_app_data_path(), main_dir),
+                              os.path.join(utilities.get_app_data_path(), "rhubarb"))
+        except TimeoutError:
+            # Download Failed
+            pass
+        return
 
     def load_ui_widget(self, ui_filename, parent=None):
         self.loader = uic()

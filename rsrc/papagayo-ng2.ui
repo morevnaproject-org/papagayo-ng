@@ -715,9 +715,36 @@
     <addaction name="action_convert_phonemes"/>
     <addaction name="action_select_as_current_set"/>
    </widget>
+   <widget class="QMenu" name="menuDownloads">
+    <property name="title">
+     <string>Download</string>
+    </property>
+    <widget class="QMenu" name="menuAllosaurus">
+     <property name="title">
+      <string>Allosaurus</string>
+     </property>
+     <addaction name="action_allo_download"/>
+    </widget>
+    <widget class="QMenu" name="menuRhubarb">
+     <property name="title">
+      <string>Rhubarb</string>
+     </property>
+     <addaction name="action_rhubarb_download"/>
+    </widget>
+    <widget class="QMenu" name="menuFFmpeg">
+     <property name="title">
+      <string>FFmpeg</string>
+     </property>
+     <addaction name="action_ffmpeg_download"/>
+    </widget>
+    <addaction name="menuAllosaurus"/>
+    <addaction name="menuRhubarb"/>
+    <addaction name="menuFFmpeg"/>
+   </widget>
    <addaction name="menu_file"/>
    <addaction name="menu_edit"/>
    <addaction name="menu_Conversion"/>
+   <addaction name="menuDownloads"/>
    <addaction name="menu_help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
@@ -945,6 +972,33 @@
    </property>
    <property name="toolTip">
     <string>This sets the currently selected Phoneme Set for the Project.</string>
+   </property>
+  </action>
+  <action name="action_allo_download">
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/refresh-line.png</normaloff>:/rsrc/refresh-line.png</iconset>
+   </property>
+   <property name="text">
+    <string>Update/Download</string>
+   </property>
+  </action>
+  <action name="action_rhubarb_download">
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/refresh-line.png</normaloff>:/rsrc/refresh-line.png</iconset>
+   </property>
+   <property name="text">
+    <string>Update/Download</string>
+   </property>
+  </action>
+  <action name="action_ffmpeg_download">
+   <property name="icon">
+    <iconset resource="../qt-icons.qrc">
+     <normaloff>:/rsrc/refresh-line.png</normaloff>:/rsrc/refresh-line.png</iconset>
+   </property>
+   <property name="text">
+    <string>Update/Download</string>
    </property>
   </action>
  </widget>

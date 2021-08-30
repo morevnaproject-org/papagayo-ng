@@ -55,8 +55,8 @@ class AutoRecognize:
             model = read_recognizer("latest")
         start_time = time.process_time()
         model.recognize(five_second_sample_temp_file, timestamp=True,
-                        lang_id=self.settings.value("allo_lang_id", "eng"),
-                        emit=float(self.settings.value("allo_emission", 1.0)))
+                        lang_id=self.settings.value("/VoiceRecognition/allo_lang_id", "eng"),
+                        emit=float(self.settings.value("/VoiceRecognition/allo_emission", 1.0)))
         self.duration_for_one_second = (time.process_time() - start_time) / 5
         os.remove(five_second_sample_temp_file)
 
@@ -97,8 +97,8 @@ class AutoRecognize:
             self.threadpool.start(worker)
 
         results = model.recognize(self.temp_wave_file, timestamp=True,
-                                  lang_id=self.settings.value("allo_lang_id", "eng"),
-                                  emit=float(self.settings.value("allo_emission", 1.0)))
+                                  lang_id=self.settings.value("/VoiceRecognition/allo_lang_id", "eng"),
+                                  emit=float(self.settings.value("/VoiceRecognition/allo_emission", 1.0)))
         self.analysis_finished = True
         ipa_list = []
 

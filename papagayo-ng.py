@@ -43,12 +43,12 @@ def parse_cli():
         config.setValue("audio_output", "old")
         if args.allosaurus:
             config.setValue("/VoiceRecognition/recognizer", "Allosaurus")
-            config.setValue("run_voice_recognition", True)
+            config.setValue("/VoiceRecognition/run_voice_recognition", True)
         if args.rhubarb:
             config.setValue("/VoiceRecognition/recognizer", "Rhubarb")
-            config.setValue("run_voice_recognition", True)
+            config.setValue("/VoiceRecognition/run_voice_recognition", True)
         if not args.allosaurus and not args.rhubarb:
-            config.setValue("run_voice_recognition", False)
+            config.setValue("/VoiceRecognition/run_voice_recognition", False)
         if args.fps:
             config.setValue("LastFPS", args.fps)
         if args.mouth_image_dir:
