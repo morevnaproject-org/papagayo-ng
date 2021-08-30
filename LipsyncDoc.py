@@ -804,16 +804,15 @@ class LipsyncDoc:
         else:
             self.sound = None
 
-    def open_from_json_string(self, json_string):
+    def open_from_dict(self, json_data):
         self._dirty = False
         # self.path = os.path.normpath(path)
         # self.name = os.path.basename(path)
         self.project_node.name = "Test_Copy"
+        self.project_node.children = []
         self.sound = None
         self.voices = []
         self.current_voice = None
-        # file_data = open(self.path, "r")
-        json_data = json.loads(json_string)
         self.soundPath = json_data.get("sound_path", "")
         if not os.path.isabs(self.soundPath):
             self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
@@ -845,12 +844,10 @@ class LipsyncDoc:
         if len(self.voices) > 0:
             self.current_voice = self.voices[0]
 
-    def copy_to_json_string(self):
-        # self.path = os.path.normpath(path)
-        # self.name = os.path.basename(path)
-        self.project_node.name = "Temp_Copy"
-        saved_sound_path = self.soundPath
-        out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps,
+    def copy_to_dict(self, saved_sound_path=""):
+        if not saved_sound_path:
+            saved_sound_path = self.soundPath
+        out_dict = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps,
                     "sound_duration": self.soundDuration,
                     "num_voices": len(self.project_node.children),
                     "phoneme_set": self.parent.phonemeset.selected_set}
@@ -886,8 +883,8 @@ class LipsyncDoc:
             json_data["phrases"] = list_of_phrases
             json_data["used_phonemes"] = list_of_used_phonemes
             list_of_voices.append(json_data)
-        out_json["voices"] = list_of_voices
-        return json.dumps(out_json)
+        out_dict["voices"] = list_of_voices
+        return out_dict
 
     def save2(self, path):
         self.path = os.path.normpath(path)
@@ -897,41 +894,7 @@ class LipsyncDoc:
             saved_sound_path = os.path.basename(self.soundPath)
         else:
             saved_sound_path = self.soundPath
-        out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration,
-                    "num_voices": len(self.project_node.children), "phoneme_set": self.parent.phonemeset.selected_set}
-        list_of_voices = []
-        for voi_id, voice in enumerate(self.project_node.children):
-            start_frame = 0
-            end_frame = 1
-            if len(voice.children) > 0:
-                start_frame = voice.children[0].start_frame
-                end_frame = voice.children[-1].end_frame
-            json_data = {"name": voice.name, "start_frame": start_frame, "end_frame": end_frame,
-                         "text": voice.text, "num_children": len(voice.descendants)}
-            list_of_phrases = []
-            list_of_used_phonemes = []
-            for phr_id, phrase in enumerate(voice.children):
-                dict_phrase = {"id": phr_id, "text": phrase.text, "start_frame": phrase.start_frame,
-                               "end_frame": phrase.end_frame, "tags": phrase.tags}
-                list_of_words = []
-                for wor_id, word in enumerate(phrase.children):
-                    dict_word = {"id": wor_id, "text": word.text, "start_frame": word.start_frame,
-                                 "end_frame": word.end_frame, "tags": word.tags}
-                    list_of_phonemes = []
-                    for pho_id, phoneme in enumerate(word.children):
-                        dict_phoneme = {"id": pho_id, "text": phoneme.text,
-                                        "frame": phoneme.start_frame, "tags": phoneme.tags}
-                        list_of_phonemes.append(dict_phoneme)
-                        if phoneme.text not in list_of_used_phonemes:
-                            list_of_used_phonemes.append(phoneme.text)
-                    dict_word["phonemes"] = list_of_phonemes
-                    list_of_words.append(dict_word)
-                dict_phrase["words"] = list_of_words
-                list_of_phrases.append(dict_phrase)
-            json_data["phrases"] = list_of_phrases
-            json_data["used_phonemes"] = list_of_used_phonemes
-            list_of_voices.append(json_data)
-        out_json["voices"] = list_of_voices
+        out_json = self.copy_to_dict(saved_sound_path)
         file_path = open(self.path, "w")
         json.dump(out_json, file_path, indent=True)
         file_path.close()
