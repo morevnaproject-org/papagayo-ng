@@ -984,7 +984,7 @@ class LipsyncDoc:
             # self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
 
     def auto_recognize_phoneme(self, manual_invoke=False):
-        if self.settings.value("/VoiceRecognition/run_voice_recognition", True) or manual_invoke:
+        if self.settings.value("/VoiceRecognition/run_voice_recognition", "true").lower() == "true" or manual_invoke:
             if auto_recognition:
                 if self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Allosaurus":
                     allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)

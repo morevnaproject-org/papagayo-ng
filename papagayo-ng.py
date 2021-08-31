@@ -7,6 +7,11 @@ import sys
 import papagayongrcc
 import LipsyncFrameQT
 
+try:
+    import pyi_splash
+except ImportError:
+    pyi_splash = None
+
 
 class ParentClass:
     def __init__(self):
@@ -114,6 +119,8 @@ def parse_cli():
 
 
 if __name__ == "__main__":
+    if pyi_splash:
+        pyi_splash.close()
     use_cli = parse_cli()
     if not use_cli:
         if platform.system() == "Windows":

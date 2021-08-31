@@ -144,7 +144,10 @@ class SettingsWindow:
         self.main_window.fps_value.setValue(int(self.settings.value("LastFPS", 24)))
         self.main_window.lang_id_value.setText(self.settings.value("/VoiceRecognition/allo_lang_id", "eng"))
         self.main_window.voice_emission_value.setValue(float(self.settings.value("/VoiceRecognition/allo_emission", 1.0)))
-        self.main_window.run_voice_recognition.setChecked(bool(self.settings.value("/VoiceRecognition/run_voice_recognition", True)))
+        if self.settings.value("/VoiceRecognition/run_voice_recognition", "true").lower() == "true":
+            self.main_window.run_voice_recognition.setChecked(True)
+        else:
+            self.main_window.run_voice_recognition.setChecked(False)
         self.main_window.app_data_path.setText(utilities.get_app_data_path())
         self.main_window.model_name.setText(self.settings.value("/VoiceRecognition/allosaurus_model", "latest"))
         self.main_window.app_data_path.home(True)
@@ -156,7 +159,7 @@ class SettingsWindow:
         self.main_window.ui_language.addItems(language_list)
         lang_index = self.main_window.ui_language.findText(self.settings.value("language", "en_us"))
         self.main_window.ui_language.setCurrentIndex(lang_index)
-        if self.settings.value("RepeatLastPhoneme", True):
+        if self.settings.value("RepeatLastPhoneme", "true").lower() == "true":
             self.main_window.hold_phonemes.setChecked(True)
         else:
             self.main_window.hold_phonemes.setChecked(False)
