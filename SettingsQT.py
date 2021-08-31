@@ -142,10 +142,14 @@ class SettingsWindow:
 
     def load_settings_to_gui(self):
         self.main_window.fps_value.setValue(int(self.settings.value("LastFPS", 24)))
-        self.main_window.lang_id_value.setText(self.settings.value("allo_lang_id", "eng"))
-        self.main_window.voice_emission_value.setValue(float(self.settings.value("allo_emission", 1.0)))
-        self.main_window.run_voice_recognition.setChecked(bool(self.settings.value("run_voice_recognition", True)))
+        self.main_window.lang_id_value.setText(self.settings.value("/VoiceRecognition/allo_lang_id", "eng"))
+        self.main_window.voice_emission_value.setValue(float(self.settings.value("/VoiceRecognition/allo_emission", 1.0)))
+        if self.settings.value("/VoiceRecognition/run_voice_recognition", "true").lower() == "true":
+            self.main_window.run_voice_recognition.setChecked(True)
+        else:
+            self.main_window.run_voice_recognition.setChecked(False)
         self.main_window.app_data_path.setText(utilities.get_app_data_path())
+        self.main_window.model_name.setText(self.settings.value("/VoiceRecognition/allosaurus_model", "latest"))
         self.main_window.app_data_path.home(True)
         list_of_recognizers = ["Allosaurus", "Rhubarb"]
         self.main_window.selected_recognizer.addItems(list_of_recognizers)
@@ -155,7 +159,7 @@ class SettingsWindow:
         self.main_window.ui_language.addItems(language_list)
         lang_index = self.main_window.ui_language.findText(self.settings.value("language", "en_us"))
         self.main_window.ui_language.setCurrentIndex(lang_index)
-        if self.settings.value("RepeatLastPhoneme", True):
+        if self.settings.value("RepeatLastPhoneme", "true").lower() == "true":
             self.main_window.hold_phonemes.setChecked(True)
         else:
             self.main_window.hold_phonemes.setChecked(False)
@@ -186,13 +190,14 @@ class SettingsWindow:
 
     def accepted(self, event=None):
         self.settings.setValue("LastFPS", self.main_window.fps_value.value())
-        self.settings.setValue("allo_lang_id", self.main_window.lang_id_value.text())
-        self.settings.setValue("allo_emission", self.main_window.voice_emission_value.value())
-        self.settings.setValue("run_voice_recognition", bool(self.main_window.run_voice_recognition.isChecked()))
+        self.settings.setValue("/VoiceRecognition/allo_lang_id", self.main_window.lang_id_value.text())
+        self.settings.setValue("/VoiceRecognition/allo_emission", self.main_window.voice_emission_value.value())
+        self.settings.setValue("/VoiceRecognition/run_voice_recognition", bool(self.main_window.run_voice_recognition.isChecked()))
         self.settings.setValue("qss_file_path", str(self.main_window.qss_path.text()))
         self.settings.setValue("/VoiceRecognition/recognizer", self.main_window.selected_recognizer.currentText())
         self.settings.setValue("RepeatLastPhoneme", bool(self.main_window.hold_phonemes.isChecked()))
         self.settings.setValue("language", self.main_window.ui_language.currentText())
+        self.settings.setValue("/VoiceRecognition/allosaurus_model", self.main_window.model_name.text())
         for color_button in self.main_window.graphical.findChildren(QtWidgets.QPushButton):
             if "Color" in color_button.text():
                 self.settings.setValue("/Graphics/{}".format(color_button.objectName()),

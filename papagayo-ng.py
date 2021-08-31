@@ -7,6 +7,11 @@ import sys
 import papagayongrcc
 import LipsyncFrameQT
 
+try:
+    import pyi_splash
+except ImportError:
+    pyi_splash = None
+
 
 class ParentClass:
     def __init__(self):
@@ -43,12 +48,12 @@ def parse_cli():
         config.setValue("audio_output", "old")
         if args.allosaurus:
             config.setValue("/VoiceRecognition/recognizer", "Allosaurus")
-            config.setValue("run_voice_recognition", True)
+            config.setValue("/VoiceRecognition/run_voice_recognition", True)
         if args.rhubarb:
             config.setValue("/VoiceRecognition/recognizer", "Rhubarb")
-            config.setValue("run_voice_recognition", True)
+            config.setValue("/VoiceRecognition/run_voice_recognition", True)
         if not args.allosaurus and not args.rhubarb:
-            config.setValue("run_voice_recognition", False)
+            config.setValue("/VoiceRecognition/run_voice_recognition", False)
         if args.fps:
             config.setValue("LastFPS", args.fps)
         if args.mouth_image_dir:
@@ -114,6 +119,8 @@ def parse_cli():
 
 
 if __name__ == "__main__":
+    if pyi_splash:
+        pyi_splash.close()
     use_cli = parse_cli()
     if not use_cli:
         if platform.system() == "Windows":

@@ -804,16 +804,53 @@ class LipsyncDoc:
         else:
             self.sound = None
 
-    def save2(self, path):
-        self.path = os.path.normpath(path)
-        self.name = os.path.basename(path)
-        self.project_node.name = self.name
-        if os.path.dirname(self.path) == os.path.dirname(self.soundPath):
-            saved_sound_path = os.path.basename(self.soundPath)
-        else:
+    def open_from_dict(self, json_data):
+        self._dirty = False
+        # self.path = os.path.normpath(path)
+        # self.name = os.path.basename(path)
+        self.project_node.name = "Test_Copy"
+        self.project_node.children = []
+        self.sound = None
+        self.voices = []
+        self.current_voice = None
+        self.soundPath = json_data.get("sound_path", "")
+        if not os.path.isabs(self.soundPath):
+            self.soundPath = os.path.normpath("{}/{}".format(os.path.dirname(self.path), self.soundPath))
+        self.fps = json_data["fps"]
+        self.soundDuration = json_data["sound_duration"]
+        self.project_node.sound_duration = self.soundDuration
+        self.parent.phonemeset.selected_set = json_data.get("phoneme_set", "preston_blair")
+        num_voices = json_data["num_voices"]
+        for voice in json_data["voices"]:
+            temp_voice = LipSyncObject(name=voice["name"], text=voice["text"], num_children=voice["num_children"],
+                                       fps=self.fps, parent=self.project_node, object_type="voice",
+                                       sound_duration=self.soundDuration)
+            for phrase in voice["phrases"]:
+                temp_phrase = LipSyncObject(text=phrase["text"], start_frame=phrase["start_frame"],
+                                            end_frame=phrase["end_frame"], tags=phrase["tags"], fps=self.fps,
+                                            object_type="phrase", parent=temp_voice, sound_duration=self.soundDuration)
+                for word in phrase["words"]:
+                    temp_word = LipSyncObject(text=word["text"], start_frame=word["start_frame"], fps=self.fps,
+                                              end_frame=word["end_frame"], tags=word["tags"], object_type="word",
+                                              parent=temp_phrase, sound_duration=self.soundDuration)
+                    for phoneme in word["phonemes"]:
+                        temp_phoneme = LipSyncObject(text=phoneme["text"], start_frame=phoneme["frame"],
+                                                     end_frame=phoneme["frame"], tags=phoneme["tags"], fps=self.fps,
+                                                     object_type="phoneme", parent=temp_word,
+                                                     sound_duration=self.soundDuration)
+            self.voices.append(temp_voice)
+        # file_data.close()
+        self.open_audio(self.soundPath)
+        if len(self.voices) > 0:
+            self.current_voice = self.voices[0]
+
+    def copy_to_dict(self, saved_sound_path=""):
+        if not saved_sound_path:
             saved_sound_path = self.soundPath
-        out_json = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps, "sound_duration": self.soundDuration,
-                    "num_voices": len(self.project_node.children), "phoneme_set": self.parent.phonemeset.selected_set}
+        out_dict = {"version": 2, "sound_path": saved_sound_path, "fps": self.fps,
+                    "sound_duration": self.soundDuration,
+                    "num_voices": len(self.project_node.children),
+                    "phoneme_set": self.parent.phonemeset.selected_set}
         list_of_voices = []
         for voi_id, voice in enumerate(self.project_node.children):
             start_frame = 0
@@ -846,7 +883,18 @@ class LipsyncDoc:
             json_data["phrases"] = list_of_phrases
             json_data["used_phonemes"] = list_of_used_phonemes
             list_of_voices.append(json_data)
-        out_json["voices"] = list_of_voices
+        out_dict["voices"] = list_of_voices
+        return out_dict
+
+    def save2(self, path):
+        self.path = os.path.normpath(path)
+        self.name = os.path.basename(path)
+        self.project_node.name = self.name
+        if os.path.dirname(self.path) == os.path.dirname(self.soundPath):
+            saved_sound_path = os.path.basename(self.soundPath)
+        else:
+            saved_sound_path = self.soundPath
+        out_json = self.copy_to_dict(saved_sound_path)
         file_path = open(self.path, "w")
         json.dump(out_json, file_path, indent=True)
         file_path.close()
@@ -936,7 +984,7 @@ class LipsyncDoc:
             # self.parent.main_window.waveform_view.set_document(self, force=True, clear_scene=True)
 
     def auto_recognize_phoneme(self, manual_invoke=False):
-        if self.settings.value("run_voice_recognition", True) or manual_invoke:
+        if self.settings.value("/VoiceRecognition/run_voice_recognition", "true").lower() == "true" or manual_invoke:
             if auto_recognition:
                 if self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Allosaurus":
                     allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)

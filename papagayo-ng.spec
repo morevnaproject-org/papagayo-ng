@@ -49,11 +49,17 @@ for d in a.datas:
     if d[0].startswith(useless_libs):
         a.datas.remove(d)
 
+if sys.platform == "win32":
+    splash = Splash('./rsrc/splash.png',
+                    binaries=a.binaries,
+                    datas=a.datas)
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 if not standalone_exe:
     exe = EXE(pyz,
               a.scripts,
+              splash,
               a.zipfiles,
               exclude_binaries=True,
               name='papagayo-ng',
@@ -67,6 +73,7 @@ if not standalone_exe:
               console=False )
     coll = COLLECT(
         exe,
+        splash.binaries,
         a.binaries,
         a.datas,
         name='papagayo-ng',
@@ -80,6 +87,8 @@ else:
         spec_file = "./file_version_info.txt"
     exe = EXE(pyz,
               a.scripts,
+              splash,
+              splash.binaries,
               a.binaries,
               a.zipfiles,
               a.datas,
