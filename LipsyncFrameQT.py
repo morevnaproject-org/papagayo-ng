@@ -621,6 +621,8 @@ class LipsyncFrame:
         resize_multiplier = new_fps_value / old_fps_value
         if resize_multiplier != 1:
             self.doc.fps = new_fps_value
+            for l_object in self.doc.project_node.descendants:
+                l_object.fps = new_fps_value
             wfv = self.main_window.waveform_view
             wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
             wfv.start_recalc(True)
