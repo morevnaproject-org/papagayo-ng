@@ -1,5 +1,7 @@
 <RCC>
   <qresource>
+    <file>rsrc/icons/add-line.png</file>
+    <file>rsrc/icons/delete-bin-line.png</file>
     <file>rsrc/icons/arrow-go-back-line.png</file>
     <file>rsrc/icons/arrow-left-right-line.png</file>
     <file>rsrc/icons/check-line.png</file>
@@ -32,15 +34,8 @@
     <file>rsrc/icons/zoom-out-line.png</file>
     <file>rsrc/papagayo-ng.png</file>
     <file>rsrc/window_icon.png</file>
-    <file>rsrc/open.png</file>
     <file>rsrc/papagayo-ng.ui</file>
-    <file>rsrc/play.png</file>
-    <file>rsrc/save.png</file>
-    <file>rsrc/stop.png</file>
     <file>rsrc/window_icon.bmp</file>
-    <file>rsrc/zoom_1.png</file>
-    <file>rsrc/zoom_in.png</file>
-    <file>rsrc/zoom_out.png</file>
     <file>rsrc/marker.png</file>
   </qresource>
 </RCC>
