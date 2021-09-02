@@ -1,43 +1,41 @@
 <RCC>
   <qresource>
-    <file>rsrc/arrow-left-right-line.png</file>
-    <file>rsrc/pie-chart-line.png</file>
-    <file>rsrc/refresh-line.png</file>
-    <file>rsrc/share-forward-box-line.png</file>
-    <file>rsrc/gallery-line.png</file>
-    <file>rsrc/shut-down-line.png</file>
-    <file>rsrc/arrow-go-back-line.png</file>
-    <file>rsrc/clipboard-line.png</file>
-    <file>rsrc/file-copy-2-line.png</file>
-    <file>rsrc/information-line.png</file>
-    <file>rsrc/scissors-cut-line.png</file>
-    <file>rsrc/zoom-1-line.png</file>
-    <file>rsrc/folder-open-line.png</file>
-    <file>rsrc/play-line.png</file>
-    <file>rsrc/question-line.png</file>
-    <file>rsrc/save-3-fill.png</file>
-    <file>rsrc/save-3-line.png</file>
-    <file>rsrc/settings-3-line.png</file>
-    <file>rsrc/stop-line.png</file>
-    <file>rsrc/zoom-in-line.png</file>
-    <file>rsrc/zoom-out-line.png</file>
+    <file>rsrc/icons/add-line.png</file>
+    <file>rsrc/icons/delete-bin-line.png</file>
+    <file>rsrc/icons/arrow-go-back-line.png</file>
+    <file>rsrc/icons/arrow-left-right-line.png</file>
+    <file>rsrc/icons/check-line.png</file>
+    <file>rsrc/icons/clipboard-line.png</file>
+    <file>rsrc/icons/eye-2-line.png</file>
+    <file>rsrc/icons/file-copy-2-line.png</file>
+    <file>rsrc/icons/folder-open-line.png</file>
+    <file>rsrc/icons/gallery-line.png</file>
+    <file>rsrc/icons/information-line.png</file>
+    <file>rsrc/icons/list-settings-line.png</file>
+    <file>rsrc/icons/pie-chart-line.png</file>
+    <file>rsrc/icons/play-line.png</file>
+    <file>rsrc/icons/question-line.png</file>
+    <file>rsrc/icons/refresh-line.png</file>
+    <file>rsrc/icons/save-3-fill.png</file>
+    <file>rsrc/icons/save-3-line.png</file>
+    <file>rsrc/icons/scissors-cut-line.png</file>
+    <file>rsrc/icons/settings-3-fill.png</file>
+    <file>rsrc/icons/settings-3-line.png</file>
+    <file>rsrc/icons/share-forward-box-line.png</file>
+    <file>rsrc/icons/shut-down-line.png</file>
+    <file>rsrc/icons/stop-line.png</file>
+    <file>rsrc/icons/user-voice-line.png</file>
+    <file>rsrc/icons/voice-recognition-fill.png</file>
+    <file>rsrc/icons/window_icon.bmp</file>
+    <file>rsrc/icons/window_icon.png</file>
+    <file>rsrc/icons/window-fill.png</file>
+    <file>rsrc/icons/zoom-1-line.png</file>
+    <file>rsrc/icons/zoom-in-line.png</file>
+    <file>rsrc/icons/zoom-out-line.png</file>
     <file>rsrc/papagayo-ng.png</file>
-    <file>rsrc/list-settings-line.png</file>
-    <file>rsrc/voice-recognition-fill.png</file>
-    <file>rsrc/eye-2-line.png</file>
-    <file>rsrc/settings-3-fill.png</file>
-    <file>rsrc/user-voice-line.png</file>
-    <file>rsrc/window-fill.png</file>
     <file>rsrc/window_icon.png</file>
-    <file>rsrc/open.png</file>
     <file>rsrc/papagayo-ng.ui</file>
-    <file>rsrc/play.png</file>
-    <file>rsrc/save.png</file>
-    <file>rsrc/stop.png</file>
     <file>rsrc/window_icon.bmp</file>
-    <file>rsrc/zoom_1.png</file>
-    <file>rsrc/zoom_in.png</file>
-    <file>rsrc/zoom_out.png</file>
     <file>rsrc/marker.png</file>
   </qresource>
 </RCC>

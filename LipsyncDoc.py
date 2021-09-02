@@ -634,7 +634,7 @@ class LipSyncObject(NodeMixin):
         else:  # No phrases means no data, so do nothing
             return
         json_data = {"name": self.name, "start_frame": start_frame, "end_frame": end_frame,
-                     "text": self.text, "num_children": self.num_children}
+                     "text": self.text, "num_children": self.num_children, "fps": self.fps}
         list_of_phrases = []
         list_of_used_phonemes = []
         for phr_id, phrase in enumerate(self.children):

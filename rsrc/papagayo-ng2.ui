@@ -202,7 +202,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="../qt-icons.qrc">
-                    <normaloff>:/rsrc/pie-chart-line.png</normaloff>:/rsrc/pie-chart-line.png</iconset>
+                    <normaloff>:/rsrc/icons/pie-chart-line.png</normaloff>:/rsrc/icons/pie-chart-line.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -213,7 +213,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="../qt-icons.qrc">
-                    <normaloff>:/rsrc/refresh-line.png</normaloff>:/rsrc/refresh-line.png</iconset>
+                    <normaloff>:/rsrc/icons/refresh-line.png</normaloff>:/rsrc/icons/refresh-line.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -224,7 +224,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="../qt-icons.qrc">
-                    <normaloff>:/rsrc/arrow-left-right-line.png</normaloff>:/rsrc/arrow-left-right-line.png</iconset>
+                    <normaloff>:/rsrc/icons/arrow-left-right-line.png</normaloff>:/rsrc/icons/arrow-left-right-line.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -248,7 +248,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="../qt-icons.qrc">
-                    <normaloff>:/rsrc/voice-recognition-fill.png</normaloff>:/rsrc/voice-recognition-fill.png</iconset>
+                    <normaloff>:/rsrc/icons/voice-recognition-fill.png</normaloff>:/rsrc/icons/voice-recognition-fill.png</iconset>
                   </property>
                   <property name="popupMode">
                    <enum>QToolButton::MenuButtonPopup</enum>
@@ -305,7 +305,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="../qt-icons.qrc">
-                    <normaloff>:/rsrc/share-forward-box-line.png</normaloff>:/rsrc/share-forward-box-line.png</iconset>
+                    <normaloff>:/rsrc/icons/share-forward-box-line.png</normaloff>:/rsrc/icons/share-forward-box-line.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -316,7 +316,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="../qt-icons.qrc">
-                    <normaloff>:/rsrc/gallery-line.png</normaloff>:/rsrc/gallery-line.png</iconset>
+                    <normaloff>:/rsrc/icons/gallery-line.png</normaloff>:/rsrc/icons/gallery-line.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -778,7 +778,7 @@
   <action name="action_help_topics">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/question-line.png</normaloff>:/rsrc/question-line.png</iconset>
+     <normaloff>:/rsrc/icons/question-line.png</normaloff>:/rsrc/icons/question-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Help Topics</string>
@@ -787,7 +787,7 @@
   <action name="action_about_papagayo_ng">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/information-line.png</normaloff>:/rsrc/information-line.png</iconset>
+     <normaloff>:/rsrc/icons/information-line.png</normaloff>:/rsrc/icons/information-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;About Papagayo-ng</string>
@@ -796,7 +796,7 @@
   <action name="action_open">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/folder-open-line.png</normaloff>:/rsrc/folder-open-line.png</iconset>
+     <normaloff>:/rsrc/icons/folder-open-line.png</normaloff>:/rsrc/icons/folder-open-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Open</string>
@@ -808,7 +808,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/save-3-fill.png</normaloff>:/rsrc/save-3-fill.png</iconset>
+     <normaloff>:/rsrc/icons/save-3-fill.png</normaloff>:/rsrc/icons/save-3-fill.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -820,7 +820,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/save-3-line.png</normaloff>:/rsrc/save-3-line.png</iconset>
+     <normaloff>:/rsrc/icons/save-3-line.png</normaloff>:/rsrc/icons/save-3-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Save As...</string>
@@ -829,7 +829,7 @@
   <action name="action_exit">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/shut-down-line.png</normaloff>:/rsrc/shut-down-line.png</iconset>
+     <normaloff>:/rsrc/icons/shut-down-line.png</normaloff>:/rsrc/icons/shut-down-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Exit</string>
@@ -841,7 +841,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/arrow-go-back-line.png</normaloff>:/rsrc/arrow-go-back-line.png</iconset>
+     <normaloff>:/rsrc/icons/arrow-go-back-line.png</normaloff>:/rsrc/icons/arrow-go-back-line.png</iconset>
    </property>
    <property name="text">
     <string>Undo</string>
@@ -853,7 +853,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/scissors-cut-line.png</normaloff>:/rsrc/scissors-cut-line.png</iconset>
+     <normaloff>:/rsrc/icons/scissors-cut-line.png</normaloff>:/rsrc/icons/scissors-cut-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Cut</string>
@@ -865,7 +865,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/file-copy-2-line.png</normaloff>:/rsrc/file-copy-2-line.png</iconset>
+     <normaloff>:/rsrc/icons/file-copy-2-line.png</normaloff>:/rsrc/icons/file-copy-2-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Copy</string>
@@ -877,7 +877,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/clipboard-line.png</normaloff>:/rsrc/clipboard-line.png</iconset>
+     <normaloff>:/rsrc/icons/clipboard-line.png</normaloff>:/rsrc/icons/clipboard-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Paste</string>
@@ -889,7 +889,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/play-line.png</normaloff>:/rsrc/play-line.png</iconset>
+     <normaloff>:/rsrc/icons/play-line.png</normaloff>:/rsrc/icons/play-line.png</iconset>
    </property>
    <property name="text">
     <string>Play</string>
@@ -901,7 +901,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/stop-line.png</normaloff>:/rsrc/stop-line.png</iconset>
+     <normaloff>:/rsrc/icons/stop-line.png</normaloff>:/rsrc/icons/stop-line.png</iconset>
    </property>
    <property name="text">
     <string>Stop</string>
@@ -913,7 +913,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/zoom-in-line.png</normaloff>:/rsrc/zoom-in-line.png</iconset>
+     <normaloff>:/rsrc/icons/zoom-in-line.png</normaloff>:/rsrc/icons/zoom-in-line.png</iconset>
    </property>
    <property name="text">
     <string>ZoomIn</string>
@@ -925,7 +925,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/zoom-out-line.png</normaloff>:/rsrc/zoom-out-line.png</iconset>
+     <normaloff>:/rsrc/icons/zoom-out-line.png</normaloff>:/rsrc/icons/zoom-out-line.png</iconset>
    </property>
    <property name="text">
     <string>ZoomOut</string>
@@ -937,7 +937,7 @@
    </property>
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/zoom-1-line.png</normaloff>:/rsrc/zoom-1-line.png</iconset>
+     <normaloff>:/rsrc/icons/zoom-1-line.png</normaloff>:/rsrc/icons/zoom-1-line.png</iconset>
    </property>
    <property name="text">
     <string>ResetZoom</string>
@@ -946,7 +946,7 @@
   <action name="action_settings">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/settings-3-line.png</normaloff>:/rsrc/settings-3-line.png</iconset>
+     <normaloff>:/rsrc/icons/settings-3-line.png</normaloff>:/rsrc/icons/settings-3-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Preferences</string>
@@ -977,7 +977,7 @@
   <action name="action_allo_download">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/refresh-line.png</normaloff>:/rsrc/refresh-line.png</iconset>
+     <normaloff>:/rsrc/icons/refresh-line.png</normaloff>:/rsrc/icons/refresh-line.png</iconset>
    </property>
    <property name="text">
     <string>Update/Download</string>
@@ -986,7 +986,7 @@
   <action name="action_rhubarb_download">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/refresh-line.png</normaloff>:/rsrc/refresh-line.png</iconset>
+     <normaloff>:/rsrc/icons/refresh-line.png</normaloff>:/rsrc/icons/refresh-line.png</iconset>
    </property>
    <property name="text">
     <string>Update/Download</string>
@@ -995,7 +995,7 @@
   <action name="action_ffmpeg_download">
    <property name="icon">
     <iconset resource="../qt-icons.qrc">
-     <normaloff>:/rsrc/refresh-line.png</normaloff>:/rsrc/refresh-line.png</iconset>
+     <normaloff>:/rsrc/icons/refresh-line.png</normaloff>:/rsrc/icons/refresh-line.png</iconset>
    </property>
    <property name="text">
     <string>Update/Download</string>

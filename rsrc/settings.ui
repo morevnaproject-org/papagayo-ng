@@ -69,7 +69,7 @@
        </property>
        <property name="icon">
         <iconset resource="../qt-icons.qrc">
-         <normaloff>:/rsrc/settings-3-fill.png</normaloff>:/rsrc/settings-3-fill.png</iconset>
+         <normaloff>:/rsrc/icons/settings-3-fill.png</normaloff>:/rsrc/icons/settings-3-fill.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -110,7 +110,7 @@
        </property>
        <property name="icon">
         <iconset resource="../qt-icons.qrc">
-         <normaloff>:/rsrc/window-fill.png</normaloff>:/rsrc/window-fill.png</iconset>
+         <normaloff>:/rsrc/icons/window-fill.png</normaloff>:/rsrc/icons/window-fill.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -142,7 +142,7 @@
        </property>
        <property name="icon">
         <iconset resource="../qt-icons.qrc">
-         <normaloff>:/rsrc/voice-recognition-fill.png</normaloff>:/rsrc/voice-recognition-fill.png</iconset>
+         <normaloff>:/rsrc/icons/voice-recognition-fill.png</normaloff>:/rsrc/icons/voice-recognition-fill.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -180,7 +180,7 @@
        </property>
        <property name="icon">
         <iconset resource="../qt-icons.qrc">
-         <normaloff>:/rsrc/list-settings-line.png</normaloff>:/rsrc/list-settings-line.png</iconset>
+         <normaloff>:/rsrc/icons/list-settings-line.png</normaloff>:/rsrc/icons/list-settings-line.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -220,7 +220,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="general">
       <layout class="QGridLayout" name="gridLayout_2">

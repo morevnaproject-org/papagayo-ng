@@ -223,8 +223,12 @@ class LipsyncFrame:
         self.tab_layout = QtWidgets.QHBoxLayout()
         self.tab_add_button = QtWidgets.QToolButton()
         self.tab_add_button.setText("+")
+        self.tab_add_button.setIcon(QtGui.QIcon(QtGui.QPixmap(":/rsrc/icons/add-line.png")))
+        self.tab_add_button.setToolTip(self.translator.translate("LipsyncFrame", "Add a new Voice."))
         self.tab_remove_button = QtWidgets.QToolButton()
         self.tab_remove_button.setText("-")
+        self.tab_remove_button.setIcon(QtGui.QIcon(QtGui.QPixmap(":/rsrc/icons/delete-bin-line.png")))
+        self.tab_remove_button.setToolTip(self.translator.translate("LipsyncFrame", "Delete Current Voice."))
         self.tab_layout.addWidget(self.tab_add_button)
         self.tab_layout.addWidget(self.tab_remove_button)
         self.tab_layout.setContentsMargins(0, 0, 0, 0)
@@ -621,6 +625,8 @@ class LipsyncFrame:
         resize_multiplier = new_fps_value / old_fps_value
         if resize_multiplier != 1:
             self.doc.fps = new_fps_value
+            for l_object in self.doc.project_node.descendants:
+                l_object.fps = new_fps_value
             wfv = self.main_window.waveform_view
             wfv.samples_per_sec = self.doc.fps * wfv.samples_per_frame
             wfv.start_recalc(True)
