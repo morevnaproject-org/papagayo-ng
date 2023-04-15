@@ -94,140 +94,140 @@ def breakdown_word(input_word, recursive=False):
     word = word.lower()
     previous = u''
     word_index = 0
-    breakdown_word = []
+    word_breakdown = []
     for letter in word:
         if letter == u'b':
             if word_index == 0 or previous in [u'm', u'n']:
-                breakdown_word.append('B')
+                word_breakdown.append('B')
             else:
-                breakdown_word.append('V')
+                word_breakdown.append('V')
         elif letter == u'c':
             if word_index < len(word) - 1 and word[word_index + 1] == u'h':
-                breakdown_word.append('CH')
+                word_breakdown.append('CH')
             elif previous == u'c':
-                breakdown_word.append('S')
+                word_breakdown.append('S')
             elif word_index < len(word) - 1 and word[word_index + 1] == u's':
                 pass
             elif word_index < len(word) - 1 and word[word_index + 1] in [u'e', u'i']:
                 # should this be SH before 'e', S before 'i' ??
-                breakdown_word.append('S')  # South American, Castilian Spanish uses 'TH'
+                word_breakdown.append('S')  # South American, Castilian Spanish uses 'TH'
             else:
-                breakdown_word.append('K')
+                word_breakdown.append('K')
         elif letter == u'd':
             if word_index == 0 or previous in [u'l', u'n']:
-                breakdown_word.append('D')
+                word_breakdown.append('D')
             else:
-                breakdown_word.append('DH')
+                word_breakdown.append('DH')
         elif letter == u'e':
             if word_index == len(word) - 1 or word[word_index + 1] in [u'a', u'e', u'i', u'o', u'u']:
-                breakdown_word.append('EY0')
+                word_breakdown.append('EY0')
             else:
-                breakdown_word.append('EH0')
+                word_breakdown.append('EH0')
         elif letter == u'\N{LATIN SMALL LETTER E WITH ACUTE}':
             if word_index == len(word) - 1 or word[word_index + 1] in [u'a', u'e', u'i', u'o', u'u']:
-                breakdown_word.append('EY1')
+                word_breakdown.append('EY1')
             else:
-                breakdown_word.append('EH1')
+                word_breakdown.append('EH1')
         elif letter == u'g':
             if word_index < len(word) - 1 and word[word_index + 1] == u'\N{LATIN SMALL LETTER U WITH DIAERESIS}':
-                breakdown_word.append('V')
+                word_breakdown.append('V')
             elif word_index < len(word) - 1 and word[word_index + 1] in [u'e', u'i']:
-                breakdown_word.append('HH')
+                word_breakdown.append('HH')
             else:
-                breakdown_word.append('G')
+                word_breakdown.append('G')
         elif letter == u'h':
             pass
         elif letter == u'l':
             if word_index < len(word) - 1 and word[word_index + 1] == u'l':
                 pass
             elif previous == u'l':
-                breakdown_word.append('Y')
+                word_breakdown.append('Y')
             else:
-                breakdown_word.append('L')
+                word_breakdown.append('L')
         elif letter == u'n':
             if word_index < len(word) - 1 and word[word_index + 1] == u'v':
-                breakdown_word.append('M')
+                word_breakdown.append('M')
             else:
-                breakdown_word.append('N')
+                word_breakdown.append('N')
         elif letter == u'\N{LATIN SMALL LETTER N WITH TILDE}':
-            breakdown_word.append('N')
-            breakdown_word.append('Y')
+            word_breakdown.append('N')
+            word_breakdown.append('Y')
         elif letter == u'o':
             if word_index < len(word) - 1 and word[word_index + 1] not in [u'a', u'e', u'i', u'o',
                                                                            u'u']:  # last bit necessary ?
-                breakdown_word.append('AO0')
+                word_breakdown.append('AO0')
             else:
-                breakdown_word.append('OW0')
+                word_breakdown.append('OW0')
         elif letter == u'\N{LATIN SMALL LETTER O WITH ACUTE}':
             if word_index < len(word) - 1 and word[word_index + 1] not in [u'a', u'e', u'i', u'o',
                                                                            u'u']:  # last bit necessary ?
-                breakdown_word.append('AO1')
+                word_breakdown.append('AO1')
             else:
-                breakdown_word.append('OW1')
+                word_breakdown.append('OW1')
         elif letter == u'p':
             if word_index == len(word) - 1:
                 pass
             else:
-                breakdown_word.append('P')
+                word_breakdown.append('P')
         elif letter == u'r':
             if previous == u'r':
                 pass
             elif word_index < len(word) - 1 and word[word_index + 1] == u'r':
-                breakdown_word.append('R')  # RR - trilled a lot
+                word_breakdown.append('R')  # RR - trilled a lot
             else:
-                breakdown_word.append('R')  # only a little trilled
+                word_breakdown.append('R')  # only a little trilled
         elif letter == u's':
             if word_index < len(word) - 1 and word[word_index + 1] in [u'd', u'g', u'l', u'm', u'n']:
-                breakdown_word.append('Z')
+                word_breakdown.append('Z')
             else:
-                breakdown_word.append('S')
+                word_breakdown.append('S')
         elif letter == u'u':
             if previous == u'q':
                 pass
             elif previous == u'g' and word_index < len(word) - 1 and word[word_index + 1] in [u'u', u'i']:
                 pass
             else:
-                breakdown_word.append('UW0')
+                word_breakdown.append('UW0')
         elif letter == u'\N{LATIN SMALL LETTER U WITH ACUTE}':
             if previous == u'q':
                 pass
             elif previous == u'g' and word_index < len(word) - 1 and word[word_index + 1] in [u'u', u'i']:
                 pass
             else:
-                breakdown_word.append('UW1')
+                word_breakdown.append('UW1')
         elif letter == u'v':
             if word_index == 0 or previous in [u'm', u'n']:
-                breakdown_word.append('B')
+                word_breakdown.append('B')
             else:
-                breakdown_word.append('V')
+                word_breakdown.append('V')
         elif letter == u'x':
             if previous in [u'a', u'e', u'i', u'o', u'u'] and word_index < len(word) - 1 and word[word_index + 1] in [
                 u'a', u'e', u'i', u'o', u'u']:
-                breakdown_word.append('K')
-                breakdown_word.append('S')
+                word_breakdown.append('K')
+                word_breakdown.append('S')
             else:
-                breakdown_word.append('S')
+                word_breakdown.append('S')
         elif letter == u'y':
             if len(word) == 1:
-                breakdown_word.append('IY1')
+                word_breakdown.append('IY1')
             elif word_index == len(word) - 1:
-                breakdown_word.append('IY0')
+                word_breakdown.append('IY0')
             else:
-                breakdown_word.append('Y')
+                word_breakdown.append('Y')
         elif letter in unconditional_conversions.keys():
-            breakdown_word.append(unconditional_conversions[letter])
+            word_breakdown.append(unconditional_conversions[letter])
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = breakdown_word(hammer(letter), True)
+                phon = word_breakdown(hammer(letter), True)
                 if phon:
-                    breakdown_word.append(phon[0])
+                    word_breakdown.append(phon[0])
         previous = letter
         word_index += 1
-    breakdown_word = stressSpanishWord(breakdown_word)
+    word_breakdown = stressSpanishWord(word_breakdown)
     # return breakdown_word
     temp_phonemes = []
     previous_phoneme = " "
-    for phoneme in breakdown_word:
+    for phoneme in word_breakdown:
         if phoneme != previous_phoneme:
             temp_phonemes.append(phoneme)
         previous_phoneme = phoneme
@@ -236,7 +236,10 @@ def breakdown_word(input_word, recursive=False):
 
 if __name__ == '__main__':
     # test the function
-    test_words = ['Holas', 'amigos', 'si', 'español', 'padré', 'Selecciones', 'de', 'la', 'semana', 'Los', 'mejores',
-                  'sitios', 'los', 'derechos', 'humanos', 'en', 'américa', 'latina', 'y', 'färger', 'på', 'hänsyn']
+    from yaml import load, Loader
+    with open('test/rsrc/breakdown_examples_spanish.yml', 'r') as file:
+        breakdown_examples = load(file, Loader)
+        test_words = breakdown_examples['words']
+
     for eachword in test_words:
         print(eachword, breakdown_word(eachword), " ".join(breakdown_word(eachword)))
