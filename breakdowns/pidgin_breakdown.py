@@ -66,7 +66,7 @@ accented_u = [u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER U 
 
 def breakdown_word(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys('aàáâãäåæeèéêëiìíîïoòóôõöøœuùúûü')
+    isvowel = dict.fromkeys('aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½ï¿½ï¿½ï¿½iï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½ï¿½')
     phonemes = []
     simple_convert = {
         'b': 'B',
@@ -87,7 +87,7 @@ def breakdown_word(word, recursive=False):
         'w': 'W',
         'y': 'Y',
         'z': 'Z',
-        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S'  # ç
+        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S'  # ï¿½
     }
     easy_consonants = simple_convert.keys()
     pos = 0
@@ -155,15 +155,10 @@ def breakdown_word(word, recursive=False):
 
 
 if __name__ == "__main__":
-    testwords = ['y', 'gooooool', 'chalk', 'ghetto', 'laf', 'fada', 'yam', 'enegi', 'taxi', 'abi',
-                 'don', 'fufu', 'achu', 'jelof', 'seh', 'sah', 'fo', 'wahala', 'massa', 'shame',
-                 'contrih', 'camer', 'naija', 'ah', 'whosaiye', 'pikin',
-                 'babalaro', 'witch', 'doh',
-                 'di', 'sabi', 'sef', 'hambok', 'makala', 'accra', 'chop',
-                 'njama', 'mimbo', 'plat', 'motor', 'vex',
-                 'happi', 'joli', 'tiff', 'piss', 'akra',
-                 'eru', 'ndolo', 'munah', 'ndole', 'benskin', 'yi',
-                 'krouhkrouh', 'wan', 'kosh'
-                 ]
+    from yaml import load, Loader
+    with open('test/rsrc/breakdown_examples_pidgin.yml', 'r') as file:
+        breakdown_examples = load(file, Loader)
+        testwords = breakdown_examples['words']
+    
     for word in testwords:
         print(word, breakdown_word(word))
