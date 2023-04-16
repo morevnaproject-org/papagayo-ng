@@ -55,14 +55,14 @@ accented_u = [u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER U 
 
 def breakdown_word(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys('a�������e����i����o�������u����')
+    isvowel = dict.fromkeys('aàáâãäåæeèéêëiìíîïoòóôõöøœuùúûü')
     phonemes = []
     simple_convert = {
         'j': 'JH',
         'k': 'K',
         'q': 'K',
         'v': 'V',
-        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S'  # �
+        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S'  # ç
     }
     easy_consonants = simple_convert.keys()
     pos = 0
