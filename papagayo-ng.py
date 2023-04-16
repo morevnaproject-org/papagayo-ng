@@ -7,6 +7,7 @@ import sys
 import papagayongrcc
 import LipsyncFrameQT
 import logging
+from utilities import init_logging
 
 logger = logging.getLogger('papagayo')
 
@@ -19,16 +20,6 @@ except ImportError:
 class ParentClass:
     def __init__(self):
         self.phonemeset = LipsyncFrameQT.LipsyncDoc.PhonemeSet()
-
-def init_logging():
-    root_logger = logging.root
-
-    root_formatter = logging.Formatter(fmt='{name}.{levelname}.{lineno}: {msg}', style='{')
-
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setFormatter(root_formatter)
-
-    root_logger.addHandler(stdout_handler)
 
 
 def parse_cli():

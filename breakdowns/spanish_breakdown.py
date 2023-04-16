@@ -218,7 +218,7 @@ def breakdown_word(input_word, recursive=False):
             word_breakdown.append(unconditional_conversions[letter])
         elif len(hammer(letter)) == 1:
             if not recursive:
-                phon = word_breakdown(hammer(letter), True)
+                phon = breakdown_word(hammer(letter), True)
                 if phon:
                     word_breakdown.append(phon[0])
         previous = letter
