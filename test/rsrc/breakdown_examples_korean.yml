@@ -7,7 +7,7 @@ phrases:
     latin: ddareuneun goemurui muri ddallayo
     phonemes:
       - D AA0 R UW0 N UW0 N
-      - G AO0 E0 M UW0 R IH0
+      - G AO0 EH0 M UW0 R IH0
       - M UW0 R IY0
       - D AA0 L L AA0 Y AO0
   - han: 밥솥 밥 값 값이 첫 첫차와 막차 찍다가 씨 있다
@@ -36,7 +36,7 @@ phrases:
     latin: https://ko.wepssaiteu.kom/jangso
     phonemes:
       # skips punctuation
-      - HH T T P S K AO0 W E0 P S AA0 IY0 T UW0 K AO0 M JH AA0 NG S AO0
+      - HH T T P S K AO0 W EH0 P S AA0 IY0 T UW0 K AO0 M JH AA0 NG S AO0
   - han: 않아 않다
     latin: anha anhda
     phonemes:
