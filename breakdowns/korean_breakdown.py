@@ -174,7 +174,7 @@ ROMAJA_TO_PHONEME = {
     'ae': 'AE0',
     'y': 'Y',
     'eo': 'AO0',
-    'e': 'E0',
+    'e': 'EH0',
     'o': 'AO0',
     'w': 'W',
     'u': 'UW0',
