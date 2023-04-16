@@ -26,9 +26,11 @@
 """
 
 from breakdowns.unicode_hammer import latin1_to_ascii as hammer
-import logging
 import locale
 import re
+import logging
+
+logger = logging.getLogger('korean-breakdown')
 
 input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'cp1252'
@@ -37,8 +39,8 @@ input_encoding = locale.getdefaultlocale()[1]  # standard system encoding??
 # input_encoding = 'latin-1'
 # input_encoding = 'iso-8859-1'
 
-logger = logging.getLogger('korean-breakdown')
-
+# uppercase jamo chars represent jamo that will later be updated depending on context of surrounding
+# jamo combinations
 HAN_CHO = [
 	'g', 'gg', 'n', 'd', 'dd', 'L', 'm', 'b',
 	'bb', 'S', 'SS', '', 'J', 'JJ', 'ch', 'k',
@@ -69,7 +71,8 @@ def han_to_latin(han: str):
     """Generate latin phonetic (romaja) spelling from hangeul 한글 string.
 
     This may not work for unicodes larger than 4 bytes.
-    Derived from [github.com/kawoou/jquery-korean-pron](https://github.com/kawoou/jquery-korean-pron).
+    Derived from [github.com/kawoou/jquery-korean-pron](https://github.com/kawoou/jquery-korean-pron)
+    and translated from [github.com/ogallagher/han_url](https://github.com/ogallagher/han_url).
     """
 
     out: str = ''
@@ -144,67 +147,194 @@ def han_to_latin(han: str):
     return out
 # end def
 
+ROMAJA_TO_PHONEME = {
+    'g': 'G',
+    'gg': 'G',
+    'n': 'N',
+    'd': 'D',
+    'dd': 'D',
+    'l': 'L',
+    'r': 'R',
+    'm': 'M',
+    'b': 'B',
+    'bb': 'B',
+    's': 'S',
+    'ss': 'S',
+    'sh': 'SH',
+    'ssh': 'SH',
+    'j': 'JH',
+    'jj': 'JH',
+    'ch': 'CH',
+    'k': 'K',
+    't': 'T',
+    'p': 'P',
+    'h': 'HH',
+
+    'a': 'AA0',
+    'ae': 'AE0',
+    'y': 'Y',
+    'eo': 'AO0',
+    'e': 'E0',
+    'o': 'AO0',
+    'w': 'W',
+    'u': 'UW0',
+    'eu': 'UW0',
+    'ui': 'IH0',
+    'i': 'IY0',
+
+    'nh': 'N',
+    'lg': 'L',
+    'lm': 'M',
+    'lt': 'T',
+    'lp': 'P',
+    'lh': 'L',
+    'ng': 'NG',
+    'hd': 'T'
+}
+"""Map a romaja phonetic string to a phoneme.
+"""
+
+# sort romaja_to_phoneme key length descending
+romaja_keys = list(ROMAJA_TO_PHONEME.keys())
+romaja_keys.sort(key=(lambda k: len(k)), reverse=True)
+ROMAJA_TO_PHONEME = {
+    romaja_key: ROMAJA_TO_PHONEME[romaja_key]
+    for romaja_key in romaja_keys
+}
+
+def consume_romaja_phoneme(romaja_word, char_idx):
+    """Convert the next block of available romaja characters into a phoneme.
+    
+    Args:
+        romaja_word: The entire romaja word.
+        har_idx: Char index from where to start the substring to convert into a single phoneme.
+
+    Returns:
+        Tuple[str, int]: The consumed phoneme(s) and a new char_idx value for where to start the next phoneme.
+        The phoneme is None if unable to convert.
+    """
+
+    phoneme: str = None
+    char_idx_next: int = char_idx
+
+    # generate phoneme
+    for romaja_key in ROMAJA_TO_PHONEME.keys():
+        if romaja_key == romaja_word[char_idx:char_idx+len(romaja_key)]:
+            logger.debug(f'found romaja key {romaja_key} at {char_idx}')
+            phoneme = ROMAJA_TO_PHONEME[romaja_key]
+            char_idx_next += len(romaja_key)
+            
+            return phoneme, char_idx_next
+        # else:
+        #     logger.debug(f'(no match on {romaja_key} {char_idx}:{char_idx+len(romaja_key)} {romaja_word[char_idx:char_idx+len(romaja_key)]})')
+    # end for romaja keys
+
+    # no phoneme found
+    return None, char_idx + 1
+# end def
+
 def breakdown_word(input_word, recursive=False):
-    """Breaks down a korean word into phonemes.  
+    """Breaks down a korean word into phonemes.
+
+    The full available phoneme set that is used seems to be CMU-39, but with an extra suffix on
+    vowels to indicate stressed syllables, being 0 (no stress) or 1 (stress).
     """
 
     romaja = han_to_latin(input_word)
-    letter_prev = u''
     word_idx = 0
     phonemes = []
-    for letter in romaja:
-        if letter == '':
-            pass
+    while word_idx < len(romaja):
+        phoneme, word_idx_next = consume_romaja_phoneme(romaja_word=romaja, char_idx=word_idx)
 
-        elif len(hammer(letter)) == 1:
-            if not recursive:
-                phon = breakdown_word(hammer(letter), recursive=True)
-                if phon:
-                    phonemes.append(phon[0])
-        
-        letter_prev = letter
-        word_idx += 1
+        if phoneme is not None:
+            phonemes.append(phoneme)
+            word_idx = word_idx_next
+
+        else:
+            letter_hammer = hammer(romaja[word_idx])
+            if len(letter_hammer) == 1:
+                if not recursive:
+                    phon = breakdown_word(letter_hammer, recursive=True)
+                    if phon:
+                        phonemes.append(phon[0])
+                # end if not recurse
+            # end if hammer
+
+            word_idx += 1
+        # end else
     # end for letters
 
-    # remove duplicates
-    phonemes_uq = []
-    phoneme_prev = ' '
-    for phoneme in phonemes:
-        if phoneme != phoneme_prev:
-            phonemes_uq.append(phoneme)
-        phoneme_prev = phoneme
-    # end for phonemes
+    # should we remove duplicates?
+    remove_duplicates = False
 
-    return phonemes_uq
+    if remove_duplicates:
+        phonemes_uq = []
+        phoneme_prev = ' '
+        for phoneme in phonemes:
+            if phoneme != phoneme_prev:
+                phonemes_uq.append(phoneme)
+            phoneme_prev = phoneme
+        # end for phonemes
+
+        phonemes = phonemes_uq
+    # end if remove duplicates
+
+    return phonemes
 # end def
 
 if __name__ == '__main__':
     # tests
     from typing import *
+    import traceback
     from utilities import init_logging
     init_logging()
     logging.root.setLevel(logging.DEBUG)
-
     logger.info(f'test korean phoneme breakdown examples')
 
     from yaml import load, Loader
     with open('test/rsrc/breakdown_examples_korean.yml', 'r') as file:
         tests: Dict[str, Union[str, List[Dict[str, str]]]] = load(file, Loader)
+
+    fails = []
     
     for test_phrase in tests['phrases']:
         words_han = test_phrase['han'].split(' ')
         words_latin = test_phrase['latin'].split(' ')
+        phonemes = test_phrase['phonemes']
+        words_latin_generated = []
+        phonemes_latin_generated = []
 
         for t in range(len(words_han)):
-            # test han to latin
-            test_han = words_han[t]
-            test_latin = han_to_latin(test_han)
-            logger.info(f'{test_han} phonetic romanization {test_latin}')
+            try:
+                # test han to latin
+                test_han = words_han[t]
+                test_latin = han_to_latin(test_han)
+                words_latin_generated.append(test_latin)
+                logger.debug(f'{test_han} phonetic romanization {test_latin}')
 
-            assert test_latin == words_latin[t]
+                # fail on wrong romaja
+                assert test_latin == words_latin[t]
 
-            # test full breakdown
-            logger.info(f'{test_han} phoneme breakdown = ' + ' '.join(breakdown_word(test_han)))
+                # test full breakdown
+                test_phonemes = ' '.join(breakdown_word(test_han))
+                logger.info(f'{test_han} phoneme breakdown = {test_phonemes}')
+
+                # fail on wrong phonemes
+                assert test_phonemes == phonemes[t]
+            
+            except AssertionError:
+                logger.error(f'test failure at "{test_phrase}": {words_han[t]}')
+                fails.append(traceback.format_exc())
         # end for words
+        
+        logger.info(f'{" ".join(words_han)} => {" ".join(words_latin_generated)}')
     # end for phrases
+
+    if len(fails) == 0:
+        logger.info(f'** all korean breakdown tests passed **')
+    else:
+        logger.error(
+            f'some korean breakdown tests failed:\n' +
+            "\n".join(f'- {fail}' for fail in fails)
+        )
 # end main

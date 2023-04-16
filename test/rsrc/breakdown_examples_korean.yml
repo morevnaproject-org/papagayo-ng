@@ -1,11 +1,45 @@
 phrases:
   - han: 라랄알을라
     latin: lararareulla
+    phonemes:
+      - L AA0 R AA0 R AA0 R UW0 L L AA0
   - han: 따르는 괴물의 물이 딸라요
     latin: ddareuneun goemurui muri ddallayo
+    phonemes:
+      - D AA0 R UW0 N UW0 N
+      - G AO0 E0 M UW0 R IH0
+      - M UW0 R IY0
+      - D AA0 L L AA0 Y AO0
   - han: 밥솥 밥 값 값이 첫 첫차와 막차 찍다가 씨 있다
     latin: bapsot bap gapt gapshi cheot cheotchawa makcha jjikdaga sshi itda
+    phonemes:
+      - B AA0 P S AO0 T
+      - B AA0 P
+      # TODO we may want 값 to not have trailing T when end of word
+      - G AA0 P T
+      - G AA0 P SH IY0
+      - CH AO0 T
+      - CH AO0 T CH AA0 W AA0
+      - M AA0 K CH AA0
+      - JH IY0 K D AA0 G AA0
+      - SH IY0
+      - IY0 T D AA0
   - han: 이 응용프로그램은 가끔 한링크라고 불러
     latin: i eungyongpeurogeuraemeun gaggeum hanlingkeurago bulleo
+    phonemes:
+      - IY0
+      - UW0 NG Y AO0 NG P UW0 R AO0 G UW0 R AE0 M UW0 N
+      - G AA0 G UW0 M
+      - HH AA0 N L IY0 NG K UW0 R AA0 G AO0
+      - B UW0 L L AO0
   - han: https://코.웹싸이트.콤/장소
     latin: https://ko.wepssaiteu.kom/jangso
+    phonemes:
+      # skips punctuation
+      - HH T T P S K AO0 W E0 P S AA0 IY0 T UW0 K AO0 M JH AA0 NG S AO0
+  - han: 않아 않다
+    latin: anha anhda
+    phonemes:
+      - AA0 N AA0
+      # TODO we may want ㅎㄷ(hd) and similar map to T
+      - AA0 N D AA0
