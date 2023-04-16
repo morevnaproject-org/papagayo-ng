@@ -49,7 +49,7 @@ Here are a couple tips for source code that you may want to modify:
 
 By default, Papagayo-NG uses the Preston Blair phoneme set. There is also Fleming & Dobbs phoneme set available. The phoneme sets are stored in the phonemes sub folder. If you want to add a different set of phonemes, you can use existing sets as examples.
 
-To add breakdowns for other languages create a new language configuration in `rsrc/languages/<language>` inside you need to place a configuration file (see italian for an example of how to configure a breakdown)  You will also need to create a breakdown class.  These live in breakdowns.  The naming convention is `<language>_breakdown.py`. Just examine one of the existing ones for how to make it work.  Make sure the function to call your breakdown processing is called breakdown_word.
+To add breakdowns for other languages create a new language configuration in `rsrc/languages/<language>` inside you need to place a configuration file (see italian for an example of how to configure a breakdown)  You will also need to create a breakdown class.  These live in breakdowns.  The naming convention is `<language>_breakdown.py`. Just examine one of the existing ones for how to make it work.  Make sure the function to call your breakdown processing is called **`breakdown_word`**.
 
 Papagayo-NG now only works with Moho, but support could be added for other animation software, 2D or 3D. To add support for other export formats, look in the `LipsyncDoc.py` file for the function `LipsyncVoice:Export` - this is where Papagayo-NG exports switch data for Moho. You will also need to modify the file `LipsyncFrame.py` to add a user interface for exporting the new format.
 
