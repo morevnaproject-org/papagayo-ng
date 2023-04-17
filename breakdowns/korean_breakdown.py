@@ -5,8 +5,8 @@
 # Papagayo-NG, a lip-sync tool for use with several different animation suites
 # Original Copyright (C) 2005 Mike Clifton
 #
-# this module Copyright (C) 2016 Azia Giles Abuara
-# Contact information at aziacomics-com.webs.com, aziagiles@gmail.com
+# this module Copyright (C) 2023 Owen Gallagher
+# Contact information at github.com/ogallagher, owenjpgallagher@outlook.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
