@@ -3,6 +3,7 @@ papagayo_glade.py
 temp.wav
 ffmpeg.exe
 .idea/
+settings.json
 
 venv/
 /build/linux-appimage/build
@@ -10,3 +11,4 @@ venv/
 /dist/
 /.github/
 /output/
+.DS_Store
