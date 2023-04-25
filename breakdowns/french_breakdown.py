@@ -55,14 +55,14 @@ accented_u = [u'\N{LATIN SMALL LETTER U WITH ACUTE}', u'\N{LATIN SMALL LETTER U 
 
 def breakdown_word(word, recursive=False):
     word = word.lower()
-    isvowel = dict.fromkeys('aàáâãäåæeèéêëiìíîïoòóôõöøœuùúûü')
+    isvowel = dict.fromkeys('aÃ Ã¡Ã¢Ã£Ã¤Ã¥Ã¦eÃ¨Ã©ÃªÃ«iÃ¬Ã­Ã®Ã¯oÃ²Ã³Ã´ÃµÃ¶Ã¸Å“uÃ¹ÃºÃ»Ã¼')
     phonemes = []
     simple_convert = {
         'j': 'JH',
         'k': 'K',
         'q': 'K',
         'v': 'V',
-        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S'  # ç
+        u'\N{LATIN SMALL LETTER C WITH CEDILLA}': 'S'  # Ã§
     }
     easy_consonants = simple_convert.keys()
     pos = 0
@@ -444,23 +444,10 @@ def breakdown_word(word, recursive=False):
 
 
 if __name__ == "__main__":
-    testwords = ['vin', 'milliardaire', 'villiform', 'tranquillisant', 'taxi', 'exemple', 'chien', 'blanc', 'travaille',
-                 'cailloux', 'champ', 'aime', 'ainsi', 'faim', 'mais', 'ennemmi', 'ennui', 'ensemble', 'plein', 'faux',
-                 'beau', 'je', 'parle', 'timbre', 'oui', 'royal', 'loi', 'loin', 'brun', 'coeur', 'yeux', 'respect',
-                 'blanc', 'village',
-                 'haricot', 'salut', 'nom', 'qui', 'langue', 'que', 'est', 'inefficace', 'gadget', 'frénésie', 'ample',
-                 'rendre', 'berlioz', 'chez', 'douze', 'lundi', 'faim', 'fin', 'zinc', 'condamné', 'bétail', 'taille',
-                 'beaucoup', 'son', 'huit', 'confrère', 'dialogue', 'soeur', 'femme', 'taxe',
-                 'as', 'homme', 'bonjour', 'oiseau', 'huit', 'famille', 'indemne', 'faux', 'fais', 'lait', 'papillons',
-                 'parfum', 'philosophe', 'mangue', 'banque', 'schema', 'atlas', 'lis', 'fils', 'syphilis', 'maison',
-                 'patience', 'nation', 'thomas', 'tout', 'tout_un', 'texte',
-                 'lundi', 'monsieur', 'condamner', 'faubourg', 'wagon', 'veau', 'innocence', 'deuxieme', 'exemple',
-                 'deux_enfants',
-                 'gâteau', 'fermer', 'magique', 'forêt', 'dégât', 'crèche', 'wider',
-                 'criante', 'cybercafé', 'décence', 'dégénérer', 'déglinguée', 'christ', 'chien',
-                 'dégoût', 'delayer', 'détaillant', 'deuil', 'roues', 'frère',
-                 'dinde', 'dinosaure', 'dirigeable', 'document', 'dinosaure', 'motto',
-                 'éhonté', 'elle', 'elles', 'émeraude', 'émerger', 'fauve', 'semblant'
-                 ]
+    from yaml import load, Loader
+    with open('test/rsrc/breakdown_examples_french.yml', 'r') as file:
+        breakdown_examples = load(file, Loader)
+        testwords = breakdown_examples['words']
+    
     for word in testwords:
         print(word, breakdown_word(word))

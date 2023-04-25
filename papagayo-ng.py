@@ -6,6 +6,10 @@ import platform
 import sys
 import papagayongrcc
 import LipsyncFrameQT
+import logging
+from utilities import init_logging
+
+logger = logging.getLogger('papagayo')
 
 try:
     import pyi_splash
@@ -19,6 +23,8 @@ class ParentClass:
 
 
 def parse_cli():
+    ARG_KEY_LOG_LEVEL = "log_level"
+
     parser = argparse.ArgumentParser(description="Papagayo-NG LipSync Tool")
     parser.add_argument("-i", dest="input_file_path",
                         help="The input file, either a supported Papagayo-NG Project or a sound file.", metavar="FILE")
@@ -36,7 +42,16 @@ def parse_cli():
     parser.add_argument("--use-rhubarb", dest="rhubarb", action="store_true",
                         help="Set this to run Rhubarb on your input files.")
     parser.add_argument("--fps", dest="fps", help="Set FPS for Input.", metavar="INT")
+    parser.add_argument("--log-level", "-l", dest=ARG_KEY_LOG_LEVEL, choices=logging._nameToLevel.keys(), help="Set logging level.", default=logging._levelToName[logging.WARNING])
     args = parser.parse_args()
+    
+    # update root logger log level
+    try:
+        log_level_name = getattr(args, ARG_KEY_LOG_LEVEL, None)
+        logging.root.setLevel(logging._nameToLevel[log_level_name])
+    except:
+        logger.warn(f"unable to set log level to {log_level_name}; leave at {logging._nameToLevel[logging.root.getEffectiveLevel()]}")
+
     list_of_input_files = []
     langman = LipsyncFrameQT.LipsyncDoc.LanguageManager()
     langman.init_languages()
@@ -119,6 +134,8 @@ def parse_cli():
 
 
 if __name__ == "__main__":
+    init_logging()
+
     if pyi_splash:
         pyi_splash.close()
     use_cli = parse_cli()

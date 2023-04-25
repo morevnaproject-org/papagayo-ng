@@ -4,6 +4,7 @@ import platform
 import sys
 import traceback
 import appdirs
+import logging
 
 from PySide2 import QtCore, QtGui
 
@@ -118,6 +119,27 @@ def rhubarb_binaries_exists():
         return True
     else:
         return False
+
+
+_INIT_LOGGING_DONE = False
+def init_logging():
+    """Set up logging streams and format.
+    """
+
+    global _INIT_LOGGING_DONE
+    if not _INIT_LOGGING_DONE:
+        root_logger = logging.root
+
+        root_formatter = logging.Formatter(fmt='{name}.{levelname}.{lineno}: {msg}', style='{')
+
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(root_formatter)
+
+        root_logger.addHandler(stdout_handler)
+        _INIT_LOGGING_DONE = True
+        
+    else:
+        logging.info(f'init_logging already called; skip creation of duplicate handlers')
 
 
 class ApplicationTranslator:

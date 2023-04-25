@@ -35,6 +35,7 @@ try:
 except ModuleNotFoundError:
     auto_recognition = None
 import os
+import logging
 
 from Rhubarb import Rhubarb, RhubarbTimeoutException
 
@@ -47,6 +48,8 @@ import PySide2.QtCore as QtCore
 
 import utilities
 from PronunciationDialogQT import PronunciationDialog, show_pronunciation_dialog
+
+logger = logging.getLogger('LipsyncDoc')
 
 ini_path = os.path.join(utilities.get_app_data_path(), "settings.ini")
 config = QtCore.QSettings(ini_path, QtCore.QSettings.IniFormat)
@@ -494,6 +497,7 @@ class LipSyncObject(NodeMixin):
                     else:
                         pronunciation_raw = languagemanager.raw_dictionary[text]
                 else:
+                    # TODO why is phonemeDictionary not defined?
                     pronunciation_raw = phonemeDictionary[text.upper()]
 
                 pronunciation = []
@@ -988,7 +992,14 @@ class LipsyncDoc:
             if auto_recognition:
                 if self.settings.value("/VoiceRecognition/recognizer", "Allosaurus") == "Allosaurus":
                     allo_recognizer = auto_recognition.AutoRecognize(self.soundPath)
-                    results, peaks, allo_output = allo_recognizer.recognize_allosaurus()
+                    out_or_none = allo_recognizer.recognize_allosaurus()
+                    if out_or_none is None:
+                        logger.warn('recognize_allosaurus returned None; no results')
+                        # set default/empty values on none
+                        results, peaks, allo_output = (None, None, None)
+                    else:
+                        results, peaks, allo_output = out_or_none
+
                     if results:
                         phonemes_as_text = ""
                         end_frame = math.floor(self.fps * (results[-1]["start"] + results[-1]["duration"] * 2))
